@@ -17,22 +17,29 @@
     "fs:allow-rename",
     "fs:allow-exists",
     "fs:allow-stat",
+    {
+      "identifier": "fs:scope",
+      "allow": [
         {
-          "identifier": "fs:scope",
-          "allow": [
-            {
-              "path": "$HOME/.tinynotes/**"
-            },
-            {
-              "path": "$HOME/.tinynotes"
-            }
-          ]
+          "path": "$HOME/.tinynotes/**"
         },
+        {
+          "path": "$HOME/.tinynotes"
+        },
+        { "path": "$HOME/**" },
+        { "path": "$HOME" }
+      ]
+    },
     "dialog:default",
     "dialog:allow-open",
     "dialog:allow-save",
     "clipboard-manager:default",
     "clipboard-manager:allow-write-text",
-    "clipboard-manager:allow-read-text"
+    "clipboard-manager:allow-read-text",
+    "shell:allow-open",
+    "shell:default",
+    "shell:allow-execute",
+    "opener:allow-open-path",
+    "opener:allow-reveal-item-in-dir"
   ]
 }

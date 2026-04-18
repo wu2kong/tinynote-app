@@ -3,8 +3,9 @@ import { useStore } from '@/store/useStore';
 import { Space } from '@/types';
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
-  Edit3, Trash2, Smile, GripVertical
+  Edit3, Trash2, Smile, GripVertical, FolderOpen
 } from 'lucide-react';
+import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import {
   DndContext,
   closestCenter,
@@ -111,6 +112,15 @@ const AppBar: React.FC = () => {
     closeContextMenu();
   };
 
+  const handleOpenDirectory = async (space: Space) => {
+    try {
+      await revealItemInDir(space.path);
+    } catch (e) {
+      console.error('Failed to reveal directory:', e);
+    }
+    closeContextMenu();
+  };
+
   const handleDragEnd = (event: import('@dnd-kit/core').DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -151,7 +161,7 @@ const AppBar: React.FC = () => {
           </SortableContext>
         </DndContext>
         <button
-          className="app-bar-space-add"
+          className="app-bar-space-add justify-start"
           onClick={() => setShowAddSpace(true)}
           title="新建空间"
         >
@@ -186,6 +196,10 @@ const AppBar: React.FC = () => {
             <button className="context-menu-item" onClick={() => handleRename(contextMenu.space)}>
               <Edit3 size={14} />
               重命名
+            </button>
+            <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.space)}>
+              <FolderOpen size={14} />
+              打开目录位置
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item danger" onClick={() => handleDelete(contextMenu.space)}>

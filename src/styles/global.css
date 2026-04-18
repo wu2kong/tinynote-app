@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 *,
 *::before,
 *::after {
@@ -261,7 +263,6 @@ input:focus, textarea:focus {
   background: var(--bg-tertiary);
   display: flex;
   align-items: center;
-  justify-content: center;
   color: var(--text-tertiary);
   transition: all var(--transition);
   overflow: hidden;
@@ -273,6 +274,7 @@ input:focus, textarea:focus {
   width: 36px;
   height: 36px;
   align-self: center;
+  justify-content: center;
 }
 
 .app-bar.expanded .app-bar-space-add {
