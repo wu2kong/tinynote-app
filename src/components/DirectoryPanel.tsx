@@ -14,8 +14,10 @@ const DirectoryPanel: React.FC = () => {
   const currentGroup = useStore((s) => s.currentGroup);
   const currentNotebook = useStore((s) => s.currentNotebook);
   const searchQuery = useStore((s) => s.searchQuery);
+  const expandedGroupPaths = useStore((s) => s.expandedGroupPaths);
   const selectGroup = useStore((s) => s.selectGroup);
   const selectNotebook = useStore((s) => s.selectNotebook);
+  const toggleExpandedGroupPath = useStore((s) => s.toggleExpandedGroupPath);
   const addGroup = useStore((s) => s.addGroup);
   const addNotebook = useStore((s) => s.addNotebook);
   const storeDeleteGroup = useStore((s) => s.deleteGroup);
@@ -25,7 +27,6 @@ const DirectoryPanel: React.FC = () => {
   const setSearchQuery = useStore((s) => s.setSearchQuery);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
 
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: Group | Notebook } | null>(null);
   const [blankContextMenu, setBlankContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [modalState, setModalState] = useState<{
@@ -42,15 +43,6 @@ const DirectoryPanel: React.FC = () => {
     message: string;
     onConfirm: () => void;
   }>({ open: false, title: '', message: '', onConfirm: () => {} });
-
-  const toggleGroup = (groupId: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(groupId)) next.delete(groupId);
-      else next.add(groupId);
-      return next;
-    });
-  };
 
   const handleContextMenu = (e: React.MouseEvent, item: Group | Notebook) => {
     e.preventDefault();
@@ -163,13 +155,13 @@ const DirectoryPanel: React.FC = () => {
     return filtered.map((item) => {
       if (isGroup(item)) {
         const group = item as Group;
-        const isExpanded = expandedGroups.has(group.id);
+        const isExpanded = expandedGroupPaths.includes(group.path);
         return (
           <div key={group.id}>
             <div
               className={`tree-item ${currentGroup?.path === group.path ? 'active' : ''}`}
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
-              onClick={() => { toggleGroup(group.id); selectGroup(group); }}
+              onClick={() => { toggleExpandedGroupPath(group.path); selectGroup(group); }}
               onContextMenu={(e) => handleContextMenu(e, group)}
             >
               <span className="tree-icon">

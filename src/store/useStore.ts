@@ -19,6 +19,7 @@ interface AppActions {
   selectSpace: (space: Space) => Promise<void>;
   selectGroup: (group: Group) => Promise<void>;
   selectNotebook: (notebook: Notebook) => Promise<void>;
+  toggleExpandedGroupPath: (path: string) => void;
   addSpace: (name: string) => Promise<void>;
   deleteSpace: (space: Space) => Promise<void>;
   renameSpace: (space: Space, newName: string) => Promise<void>;
@@ -41,6 +42,46 @@ interface AppActions {
 }
 
 type AppStore = AppState & AppActions;
+
+function findGroupByPath(items: (Group | Notebook)[], path: string): Group | null {
+  for (const item of items) {
+    if ('children' in item) {
+      if (item.path === path) return item;
+      const found = findGroupByPath(item.children, path);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function findNotebookByPath(items: (Group | Notebook)[], path: string): Notebook | null {
+  for (const item of items) {
+    if ('noteBlocks' in item && item.path === path) return item;
+    if ('children' in item) {
+      const found = findNotebookByPath(item.children, path);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function getAncestorPaths(items: (Group | Notebook)[], targetPath: string): string[] {
+  const ancestors: string[] = [];
+  function search(list: (Group | Notebook)[]): boolean {
+    for (const item of list) {
+      if (item.path === targetPath) return true;
+      if ('children' in item) {
+        if (search(item.children)) {
+          ancestors.push(item.path);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  search(items);
+  return ancestors;
+}
 
 function sortSpacesByOrder(spaces: Space[], order: string[]): Space[] {
   if (order.length === 0) return spaces;
@@ -86,6 +127,7 @@ export const useStore = create<AppStore>((set, get) => ({
   viewMode: 'list' as ViewMode,
   searchQuery: '',
   storagePath: null,
+  expandedGroupPaths: [],
 
   setSpace: (space) => set({ currentSpace: space, currentGroup: null, currentNotebook: null, currentNoteBlock: null }),
   setGroup: (group) => set({ currentGroup: group, currentNotebook: null, currentNoteBlock: null }),
@@ -135,7 +177,18 @@ export const useStore = create<AppStore>((set, get) => ({
       let spaces = await fs.loadSpaces(storagePath);
       spaces = applyIconsToSpaces(spaces, cfg.spaceIcons);
       spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
-      const currentSpace = spaces.length > 0 ? spaces[0] : null;
+
+      let currentSpace: Space | null = null;
+      let currentGroup: Group | null = null;
+      let currentNotebook: Notebook | null = null;
+
+      if (cfg.currentSpacePath) {
+        currentSpace = spaces.find((s) => s.path === cfg.currentSpacePath) || null;
+      }
+      if (!currentSpace && spaces.length > 0) {
+        currentSpace = spaces[0];
+      }
+
       if (currentSpace) {
         let groups = await fs.loadGroups(currentSpace.path);
         const groupOrder = cfg.groupOrder[currentSpace.path];
@@ -143,9 +196,35 @@ export const useStore = create<AppStore>((set, get) => ({
           groups = sortGroupsByOrder(groups, groupOrder);
         }
         const updatedSpace = { ...currentSpace, groups };
+        currentSpace = updatedSpace;
+
+        if (cfg.currentGroupPath) {
+          currentGroup = findGroupByPath(groups, cfg.currentGroupPath);
+        }
+        if (cfg.currentNotebookPath) {
+          const found = findNotebookByPath(groups, cfg.currentNotebookPath);
+          if (found) {
+            const loaded = await fs.loadNotebook(found.path);
+            if (loaded) currentNotebook = loaded;
+          }
+        }
+
+        const expandedPaths = [...cfg.expandedGroupPaths];
+        const targetPath = cfg.currentNotebookPath || cfg.currentGroupPath;
+        if (targetPath) {
+          const ancestors = getAncestorPaths(groups, targetPath);
+          for (const p of ancestors) {
+            if (!expandedPaths.includes(p)) expandedPaths.push(p);
+          }
+        }
+
         set({
           spaces,
-          currentSpace: updatedSpace,
+          currentSpace,
+          currentGroup,
+          currentNotebook,
+          currentNoteBlock: null,
+          expandedGroupPaths: expandedPaths,
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           viewMode: cfg.viewMode as ViewMode,
@@ -183,17 +262,35 @@ export const useStore = create<AppStore>((set, get) => ({
       currentNoteBlock: null,
       spaces: state.spaces.map((s) => s.id === space.id ? updatedSpace : s),
     }));
+    config.saveConfig({
+      currentSpacePath: space.path,
+      currentGroupPath: null,
+      currentNotebookPath: null,
+    });
   },
 
   selectGroup: async (group: Group) => {
     set({ currentGroup: group, currentNotebook: null, currentNoteBlock: null });
+    config.saveConfig({ currentGroupPath: group.path, currentNotebookPath: null });
   },
 
-  selectNotebook: async (notebook: Notebook) => {
+selectNotebook: async (notebook: Notebook) => {
     const loaded = await fs.loadNotebook(notebook.path);
     if (loaded) {
       set({ currentNotebook: loaded, currentNoteBlock: null });
+      config.saveConfig({ currentNotebookPath: notebook.path });
     }
+  },
+
+  toggleExpandedGroupPath: (path: string) => {
+    set((state) => {
+      const paths = state.expandedGroupPaths.includes(path)
+        ? state.expandedGroupPaths.filter((p) => p !== path)
+        : [...state.expandedGroupPaths, path];
+      return { expandedGroupPaths: paths };
+    });
+    const { expandedGroupPaths } = get();
+    config.saveConfig({ expandedGroupPaths });
   },
 
   addSpace: async (name) => {
@@ -207,19 +304,24 @@ export const useStore = create<AppStore>((set, get) => ({
       currentNotebook: null,
       currentNoteBlock: null,
     }));
+    config.saveConfig({ currentSpacePath: space.path, currentGroupPath: null, currentNotebookPath: null });
   },
 
   deleteSpace: async (space) => {
     await fs.deleteSpace(space.path);
     const newSpaces = get().spaces.filter((s) => s.id !== space.id);
+    const isCurrentSpace = get().currentSpace?.id === space.id;
     set((state) => ({
       spaces: newSpaces,
-      currentSpace: state.currentSpace?.id === space.id ? null : state.currentSpace,
-      currentGroup: state.currentSpace?.id === space.id ? null : state.currentGroup,
-      currentNotebook: state.currentSpace?.id === space.id ? null : state.currentNotebook,
-      currentNoteBlock: state.currentSpace?.id === space.id ? null : state.currentNoteBlock,
+      currentSpace: isCurrentSpace ? null : state.currentSpace,
+      currentGroup: isCurrentSpace ? null : state.currentGroup,
+      currentNotebook: isCurrentSpace ? null : state.currentNotebook,
+      currentNoteBlock: isCurrentSpace ? null : state.currentNoteBlock,
     }));
     config.saveConfig({ spaceOrder: newSpaces.map((s) => s.path) });
+    if (isCurrentSpace) {
+      config.saveConfig({ currentSpacePath: null, currentGroupPath: null, currentNotebookPath: null });
+    }
   },
 
   renameSpace: async (space, newName) => {
@@ -236,7 +338,11 @@ export const useStore = create<AppStore>((set, get) => ({
       delete newIcons[space.path];
     }
     const newOrder = get().spaces.map((s) => s.id === space.id ? newPath : s.path);
-    config.saveConfig({ spaceIcons: newIcons, spaceOrder: newOrder });
+    const updatedConfig: Partial<config.AppConfig> = { spaceIcons: newIcons, spaceOrder: newOrder };
+    if (cfg.currentSpacePath === space.path) {
+      updatedConfig.currentSpacePath = newPath;
+    }
+    config.saveConfig(updatedConfig);
   },
 
   updateSpaceIcon: async (_space, icon) => {
@@ -347,7 +453,13 @@ export const useStore = create<AppStore>((set, get) => ({
       if (order) {
         newGroupOrder[currentSpace.path] = order.map((p) => p === group.path ? newPath : p);
       }
-      config.saveConfig({ groupOrder: newGroupOrder });
+      const updatedConfig: Partial<config.AppConfig> = { groupOrder: newGroupOrder };
+      if (cfg.currentGroupPath === group.path) {
+        updatedConfig.currentGroupPath = newPath;
+      }
+      const expandedPaths = get().expandedGroupPaths.map((p) => p === group.path ? newPath : p);
+      updatedConfig.expandedGroupPaths = expandedPaths;
+      config.saveConfig(updatedConfig);
     }
   },
 
@@ -441,6 +553,10 @@ export const useStore = create<AppStore>((set, get) => ({
         currentNotebook: updatedCurrentNotebook,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
+      const cfg = config.getConfig();
+      if (cfg.currentNotebookPath === notebook.path) {
+        config.saveConfig({ currentNotebookPath: newPath });
+      }
     }
   },
 

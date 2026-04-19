@@ -8,6 +8,10 @@ export interface AppConfig {
   spaceOrder: string[];
   spaceIcons: Record<string, string>;
   groupOrder: Record<string, string[]>;
+  currentSpacePath: string | null;
+  currentGroupPath: string | null;
+  currentNotebookPath: string | null;
+  expandedGroupPaths: string[];
 }
 
 const DEFAULT_CONFIG: AppConfig = {
@@ -18,6 +22,10 @@ const DEFAULT_CONFIG: AppConfig = {
   spaceOrder: [],
   spaceIcons: {},
   groupOrder: {},
+  currentSpacePath: null,
+  currentGroupPath: null,
+  currentNotebookPath: null,
+  expandedGroupPaths: [],
 };
 
 const CONFIG_DIR = '.tinynotes';

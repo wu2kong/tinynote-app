@@ -47,4 +47,5 @@ export interface AppState {
   viewMode: ViewMode;
   searchQuery: string;
   storagePath: string | null;
+  expandedGroupPaths: string[];
 }
