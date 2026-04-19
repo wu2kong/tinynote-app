@@ -106,11 +106,12 @@ const NotePanel: React.FC = () => {
             items={filteredBlocks.map((b) => b.id)}
             strategy={verticalListSortingStrategy}
           >
-            {filteredBlocks.map((block) => (
+            {filteredBlocks.map((block, idx) => (
               <NoteBlockItem
                 key={block.id}
                 block={block}
                 viewMode={viewMode}
+                index={idx}
                 isSelected={currentNoteBlock?.id === block.id}
                 onSelect={() => setNoteBlock(block)}
               />

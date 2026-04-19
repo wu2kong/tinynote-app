@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { Tag, Trash2, X, Calendar } from 'lucide-react';
+import { Tag, Trash2, X, Calendar, Maximize2, Minimize2 } from 'lucide-react';
 
 const PropertyPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -8,6 +8,9 @@ const PropertyPanel: React.FC = () => {
   const updateNoteBlock = useStore((s) => s.updateNoteBlock);
   const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
   const [tagInput, setTagInput] = useState('');
+  const [contentExpanded, setContentExpanded] = useState(true);
+  const contentExpandedRef = useRef(true);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [localTitle, setLocalTitle] = useState('');
   const [localContent, setLocalContent] = useState('');
@@ -28,6 +31,28 @@ const PropertyPanel: React.FC = () => {
     if (!composingRef.current.title) setLocalTitle(currentNoteBlock.title);
     if (!composingRef.current.content) setLocalContent(currentNoteBlock.content);
   }, [currentNoteBlock?.title, currentNoteBlock?.content]);
+
+  const autoResizeTextarea = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea || !contentExpandedRef.current) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }, []);
+
+  const toggleContentExpanded = useCallback(() => {
+    contentExpandedRef.current = !contentExpandedRef.current;
+    setContentExpanded(contentExpandedRef.current);
+  }, []);
+
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [localContent, contentExpanded, autoResizeTextarea]);
+
+  useEffect(() => {
+    if (contentExpanded) {
+      autoResizeTextarea();
+    }
+  }, [contentExpanded, autoResizeTextarea]);
 
   const handleTitleChange = useCallback((value: string) => {
     setLocalTitle(value);
@@ -109,11 +134,22 @@ const PropertyPanel: React.FC = () => {
       </div>
 
       <div className="property-field property-field-content">
-        <label>内容</label>
+        <label>
+          内容
+        <button 
+          className="content-expand-btn" 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleContentExpanded(); }}
+          title={contentExpanded ? '收起' : '展开'}
+        >
+          {contentExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button>
+        </label>
         <textarea
-          className="property-textarea"
+          ref={textareaRef}
+          className={`property-textarea ${contentExpanded ? 'expanded' : 'collapsed'}`}
           value={localContent}
           onChange={(e) => handleContentChange(e.target.value)}
+          onInput={autoResizeTextarea}
           onCompositionStart={() => { composingRef.current.content = true; }}
           onCompositionEnd={() => handleCompositionEnd('content')}
           placeholder="笔记内容..."

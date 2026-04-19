@@ -31,6 +31,7 @@ interface AppActions {
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
   addNoteBlock: () => Promise<void>;
+  addNoteBlockAtIndex: (index: number) => Promise<void>;
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
@@ -450,6 +451,17 @@ export const useStore = create<AppStore>((set, get) => ({
       ...currentNotebook,
       noteBlocks: [...currentNotebook.noteBlocks, block],
     };
+    await fs.saveNotebook(updated);
+    set({ currentNotebook: updated, currentNoteBlock: block });
+  },
+
+  addNoteBlockAtIndex: async (index: number) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook) return;
+    const block = createNoteBlock();
+    const blocks = [...currentNotebook.noteBlocks];
+    blocks.splice(index, 0, block);
+    const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
     set({ currentNotebook: updated, currentNoteBlock: block });
   },

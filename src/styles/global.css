@@ -819,7 +819,7 @@ input:focus, textarea:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 3px 10px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background var(--transition);
@@ -931,6 +931,38 @@ input:focus, textarea:focus {
   font-size: 13px;
   line-height: 1.6;
   resize: vertical;
+  transition: max-height 0.3s ease;
+}
+
+.property-textarea.expanded {
+  min-height: 100px;
+  max-height: none;
+  resize: none;
+  overflow: hidden;
+}
+
+.property-textarea.collapsed {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.content-expand-btn {
+  margin-left: auto;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.content-expand-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .property-source-editor {
