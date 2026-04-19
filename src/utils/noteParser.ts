@@ -96,7 +96,8 @@ export function serializeNoteBlocks(blocks: NoteBlock[]): string {
   return blocks
     .map((block) => {
       const tags = block.tags.length > 0 ? `[${block.tags.join(', ')}]` : '[]';
-      return `---\ntitle: ${block.title}\ntags: ${tags}\ncreatedAt: ${block.createdAt}\nupdatedAt: ${block.updatedAt}\n---\n\n${block.content}`;
+      const content = block.content.replace(/^\n+|\n+$/g, '');
+      return `---\ntitle: ${block.title}\ntags: ${tags}\ncreatedAt: ${block.createdAt}\nupdatedAt: ${block.updatedAt}\n---\n${content}`;
     })
     .join('\n\n');
 }

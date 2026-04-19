@@ -383,8 +383,8 @@ input:focus, textarea:focus {
 }
 
 .directory-panel {
-  width: 250px;
-  min-width: 250px;
+  width: 300px;
+  min-width: 300px;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -460,9 +460,12 @@ input:focus, textarea:focus {
   background: var(--bg-hover);
 }
 
-.tree-item.active {
+
+.tree-item.notebook.active {
   background: var(--accent-light);
   color: var(--accent);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
 }
 
 .tree-icon {
@@ -588,8 +591,8 @@ input:focus, textarea:focus {
 }
 
 .note-panel {
-  flex: 1;
-  min-width: 0;
+  width: 400px;
+  min-width: 400px; 
   background: var(--bg-primary);
   display: flex;
   flex-direction: column;
@@ -862,8 +865,7 @@ input:focus, textarea:focus {
 }
 
 .property-panel {
-  width: 360px;
-  min-width: 360px;
+  flex: 1;
   background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
@@ -943,6 +945,50 @@ input:focus, textarea:focus {
   background: var(--bg-primary);
   color: var(--text-primary);
   resize: vertical;
+}
+
+.source-editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.source-editor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.source-editor-panel-header h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.source-editor-panel-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.source-editor-panel-footer {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-color);
 }
 
 .property-tags {

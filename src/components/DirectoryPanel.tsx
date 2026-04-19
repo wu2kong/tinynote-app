@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { isGroup } from '@/types/guards';
+import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
-  Trash2, FolderPlus, FilePlus, Edit3, Plus
+  Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks
 } from 'lucide-react';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
@@ -23,9 +23,11 @@ const DirectoryPanel: React.FC = () => {
   const storeRenameGroup = useStore((s) => s.renameGroup);
   const storeRenameNotebook = useStore((s) => s.renameNotebook);
   const setSearchQuery = useStore((s) => s.setSearchQuery);
+  const toggleSourceMode = useStore((s) => s.toggleSourceMode);
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: Group | Notebook } | null>(null);
+  const [blankContextMenu, setBlankContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [modalState, setModalState] = useState<{
     open: boolean;
     title: string;
@@ -55,7 +57,14 @@ const DirectoryPanel: React.FC = () => {
     setContextMenu({ x: e.clientX, y: e.clientY, item });
   };
 
-  const closeContextMenu = () => setContextMenu(null);
+  const closeContextMenu = () => { setContextMenu(null); setBlankContextMenu(null); };
+
+  const handleBlankContextMenu = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.tree-item')) return;
+    e.preventDefault();
+    closeContextMenu();
+    setBlankContextMenu({ x: e.clientX, y: e.clientY });
+  };
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
@@ -158,7 +167,7 @@ const DirectoryPanel: React.FC = () => {
         return (
           <div key={group.id}>
             <div
-              className={`tree-item ${currentGroup?.id === group.id ? 'active' : ''}`}
+              className={`tree-item ${currentGroup?.path === group.path ? 'active' : ''}`}
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
               onClick={() => { toggleGroup(group.id); selectGroup(group); }}
               onContextMenu={(e) => handleContextMenu(e, group)}
@@ -186,7 +195,7 @@ title="新建笔记本"
       return (
         <div
           key={notebook.id}
-          className={`tree-item notebook ${currentNotebook?.id === notebook.id ? 'active' : ''}`}
+          className={`tree-item notebook ${currentNotebook?.path === notebook.path ? 'active' : ''}`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
           onClick={() => selectNotebook(notebook)}
           onContextMenu={(e) => handleContextMenu(e, notebook)}
@@ -213,27 +222,9 @@ title="新建笔记本"
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        {currentSpace && (
-          <div className="directory-actions">
-            <button
-              className="icon-btn"
-              onClick={() => handleAddGroup(currentSpace.path)}
-              title="新建分组"
-            >
-              <FolderPlus size={16} />
-            </button>
-            <button
-              className="icon-btn"
-              onClick={() => handleAddNotebook(currentSpace.path)}
-              title="新建笔记本"
-            >
-              <FilePlus size={16} />
-            </button>
-          </div>
-        )}
       </div>
 
-      <div className="directory-tree">
+      <div className="directory-tree" onContextMenu={handleBlankContextMenu}>
         {currentSpace ? renderTree(currentSpace.groups) : (
           <div className="directory-empty">选择一个空间以浏览</div>
         )}
@@ -246,6 +237,15 @@ title="新建笔记本"
             className="context-menu"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
+            {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
+              <button className="context-menu-item" onClick={() => {
+                toggleSourceMode();
+                closeContextMenu();
+              }}>
+                {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
+                {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
+              </button>
+            )}
             {isGroup(contextMenu.item) && (
               <>
                 <button className="context-menu-item" onClick={() => {
@@ -262,9 +262,9 @@ title="新建笔记本"
                   <FilePlus size={14} />
                   新建笔记本
                 </button>
-                <div className="context-menu-divider" />
               </>
             )}
+            <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={() => {
               if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);
               else handleRenameNotebook(contextMenu!.item as Notebook);
@@ -280,6 +280,31 @@ title="新建笔记本"
             }}>
               <Trash2 size={14} />
               删除
+            </button>
+          </div>
+        </>
+      )}
+
+      {blankContextMenu && currentSpace && (
+        <>
+          <div className="context-menu-overlay" onClick={closeContextMenu} />
+          <div
+            className="context-menu"
+            style={{ top: blankContextMenu.y, left: blankContextMenu.x }}
+          >
+            <button className="context-menu-item" onClick={() => {
+              handleAddGroup(currentSpace.path);
+              closeContextMenu();
+            }}>
+              <FolderPlus size={14} />
+              新增分组
+            </button>
+            <button className="context-menu-item" onClick={() => {
+              handleAddNotebook(currentSpace.path);
+              closeContextMenu();
+            }}>
+              <FilePlus size={14} />
+              新建笔记本
             </button>
           </div>
         </>
