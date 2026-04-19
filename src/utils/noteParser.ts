@@ -1,4 +1,4 @@
-import { NoteBlock } from '@/types';
+import { NoteBlock, ContentType } from '@/types';
 
 export function parseNoteBlocks(content: string): NoteBlock[] {
   const blocks: NoteBlock[] = [];
@@ -28,6 +28,7 @@ export function parseNoteBlocks(content: string): NoteBlock[] {
     const frontmatter = fmLines.join('\n');
     const titleMatch = frontmatter.match(/^title:\s*(.+)$/m);
     const tagsMatch = frontmatter.match(/^tags:\s*\[(.+)\]$/m);
+    const contentTypeMatch = frontmatter.match(/^contentType:\s*(.+)$/m);
     const createdAtMatch = frontmatter.match(/^createdAt:\s*(.+)$/m);
     const updatedAtMatch = frontmatter.match(/^updatedAt:\s*(.+)$/m);
 
@@ -35,6 +36,7 @@ export function parseNoteBlocks(content: string): NoteBlock[] {
     const tags = tagsMatch
       ? tagsMatch[1].split(',').map((t) => t.trim()).filter(Boolean)
       : [];
+    const contentType = (contentTypeMatch ? contentTypeMatch[1].trim() : 'text') as ContentType;
     const createdAt = createdAtMatch ? createdAtMatch[1].trim() : new Date().toISOString();
     const updatedAt = updatedAtMatch ? updatedAtMatch[1].trim() : createdAt;
 
@@ -54,6 +56,7 @@ export function parseNoteBlocks(content: string): NoteBlock[] {
       id: crypto.randomUUID(),
       title,
       content: bodyContent,
+      contentType,
       tags,
       createdAt,
       updatedAt,
@@ -81,6 +84,7 @@ function isBlockStart(lines: string[], pos: number): boolean {
     if (
       line.startsWith('title:') ||
       line.startsWith('tags:') ||
+      line.startsWith('contentType:') ||
       line.startsWith('createdAt:') ||
       line.startsWith('updatedAt:')
     ) {
@@ -97,7 +101,7 @@ export function serializeNoteBlocks(blocks: NoteBlock[]): string {
     .map((block) => {
       const tags = block.tags.length > 0 ? `[${block.tags.join(', ')}]` : '[]';
       const content = block.content.replace(/^\n+|\n+$/g, '');
-      return `---\ntitle: ${block.title}\ntags: ${tags}\ncreatedAt: ${block.createdAt}\nupdatedAt: ${block.updatedAt}\n---\n${content}`;
+      return `---\ntitle: ${block.title}\ncontentType: ${block.contentType || 'text'}\ntags: ${tags}\ncreatedAt: ${block.createdAt}\nupdatedAt: ${block.updatedAt}\n---\n${content}`;
     })
     .join('\n\n');
 }
@@ -108,6 +112,7 @@ export function createNoteBlock(partial?: Partial<NoteBlock>): NoteBlock {
     id: crypto.randomUUID(),
     title: partial?.title ?? 'Untitled',
     content: partial?.content ?? '',
+    contentType: partial?.contentType ?? 'text',
     tags: partial?.tags ?? [],
     createdAt: partial?.createdAt ?? now,
     updatedAt: partial?.updatedAt ?? now,

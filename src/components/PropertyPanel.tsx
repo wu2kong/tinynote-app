@@ -1,6 +1,43 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { Tag, Trash2, X, Calendar, Maximize2, Minimize2 } from 'lucide-react';
+import { Tag, Trash2, X, Calendar, Maximize2, Minimize2, Code, Edit3, Eye, Copy, Check } from 'lucide-react';
+import { ContentType } from '@/types';
+import hljs from 'highlight.js';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+
+const CONTENT_TYPES: { value: ContentType; label: string }[] = [
+  { value: 'text', label: '纯文本' },
+  { value: 'json', label: 'JSON' },
+  { value: 'xml', label: 'XML' },
+  { value: 'bash', label: 'Bash' },
+  { value: 'shell', label: 'Shell' },
+  { value: 'sql', label: 'SQL' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'python', label: 'Python' },
+  { value: 'java', label: 'Java' },
+  { value: 'go', label: 'Go' },
+  { value: 'rust', label: 'Rust' },
+  { value: 'yaml', label: 'YAML' },
+  { value: 'markdown', label: 'Markdown' },
+];
+
+const CONTENT_TYPE_MAP: Record<ContentType, string> = {
+  text: 'plaintext',
+  json: 'json',
+  xml: 'xml',
+  bash: 'bash',
+  shell: 'shell',
+  sql: 'sql',
+  javascript: 'javascript',
+  typescript: 'typescript',
+  python: 'python',
+  java: 'java',
+  go: 'go',
+  rust: 'rust',
+  yaml: 'yaml',
+  markdown: 'markdown',
+};
 
 const PropertyPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -9,8 +46,11 @@ const PropertyPanel: React.FC = () => {
   const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
   const [tagInput, setTagInput] = useState('');
   const [contentExpanded, setContentExpanded] = useState(true);
+  const [isEditing, setIsEditing] = useState(true);
+  const [copied, setCopied] = useState(false);
   const contentExpandedRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const highlightRef = useRef<HTMLPreElement>(null);
 
   const [localTitle, setLocalTitle] = useState('');
   const [localContent, setLocalContent] = useState('');
@@ -39,20 +79,63 @@ const PropertyPanel: React.FC = () => {
     textarea.style.height = textarea.scrollHeight + 'px';
   }, []);
 
+  const highlightCode = useCallback(() => {
+    const highlight = highlightRef.current;
+    if (!highlight || !currentNoteBlock) return;
+    const contentType = currentNoteBlock.contentType || 'text';
+    const language = CONTENT_TYPE_MAP[contentType];
+    try {
+      const highlighted = hljs.highlight(localContent, { language, ignoreIllegals: true }).value;
+      highlight.innerHTML = highlighted || '<span class="hljs-empty">空内容</span>';
+    } catch {
+      highlight.textContent = localContent || '空内容';
+    }
+  }, [localContent, currentNoteBlock]);
+
+  const handleFocusContent = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleBlurContent = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  const handleCopyContent = useCallback(async () => {
+    try {
+      await writeText(localContent);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      try {
+        await navigator.clipboard.writeText(localContent);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {}
+    }
+  }, [localContent]);
+
   const toggleContentExpanded = useCallback(() => {
     contentExpandedRef.current = !contentExpandedRef.current;
     setContentExpanded(contentExpandedRef.current);
   }, []);
 
   useEffect(() => {
-    autoResizeTextarea();
-  }, [localContent, contentExpanded, autoResizeTextarea]);
+    if (isEditing) {
+      autoResizeTextarea();
+    }
+  }, [localContent, contentExpanded, isEditing, autoResizeTextarea]);
 
   useEffect(() => {
     if (contentExpanded) {
       autoResizeTextarea();
     }
   }, [contentExpanded, autoResizeTextarea]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      highlightCode();
+    }
+  }, [isEditing, highlightCode]);
 
   const handleTitleChange = useCallback((value: string) => {
     setLocalTitle(value);
@@ -134,27 +217,73 @@ const PropertyPanel: React.FC = () => {
       </div>
 
       <div className="property-field property-field-content">
+        <div className="property-field-header">
+          <label>内容</label>
+          <div className="property-field-actions">
+            <button 
+              className="content-action-btn" 
+              onClick={handleCopyContent}
+              title="复制内容"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+            <button 
+              className="content-action-btn" 
+              onClick={() => setIsEditing(!isEditing)}
+              title={isEditing ? '预览' : '编辑'}
+            >
+              {isEditing ? <Eye size={14} /> : <Edit3 size={14} />}
+            </button>
+            <button 
+              className="content-action-btn" 
+              onClick={toggleContentExpanded}
+              title={contentExpanded ? '收起' : '展开'}
+            >
+              {contentExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </button>
+          </div>
+        </div>
+        {isEditing ? (
+          <textarea
+            ref={textareaRef}
+            className={`property-textarea ${contentExpanded ? 'expanded' : 'collapsed'}`}
+            value={localContent}
+            onChange={(e) => handleContentChange(e.target.value)}
+            onInput={autoResizeTextarea}
+            onFocus={handleFocusContent}
+            onBlur={handleBlurContent}
+            onCompositionStart={() => { composingRef.current.content = true; }}
+            onCompositionEnd={() => handleCompositionEnd('content')}
+            placeholder="笔记内容..."
+            spellCheck={false}
+          />
+        ) : (
+          <pre 
+            ref={highlightRef} 
+            className={`property-highlight-box ${contentExpanded ? 'expanded' : 'collapsed'}`}
+            onClick={() => setIsEditing(true)}
+          >
+            {localContent || '点击编辑...'}
+          </pre>
+        )}
+      </div>
+
+      <div className="property-field">
         <label>
-          内容
-        <button 
-          className="content-expand-btn" 
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleContentExpanded(); }}
-          title={contentExpanded ? '收起' : '展开'}
-        >
-          {contentExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-        </button>
+          <Code size={14} />
+          内容类型
         </label>
-        <textarea
-          ref={textareaRef}
-          className={`property-textarea ${contentExpanded ? 'expanded' : 'collapsed'}`}
-          value={localContent}
-          onChange={(e) => handleContentChange(e.target.value)}
-          onInput={autoResizeTextarea}
-          onCompositionStart={() => { composingRef.current.content = true; }}
-          onCompositionEnd={() => handleCompositionEnd('content')}
-          placeholder="笔记内容..."
-          spellCheck={false}
-        />
+        <select
+          className="property-select"
+          value={currentNoteBlock.contentType || 'text'}
+          onChange={(e) => updateNoteBlock(currentNoteBlock.id, { contentType: e.target.value as ContentType })}
+        >
+          {CONTENT_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>
+              {type.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="property-field">

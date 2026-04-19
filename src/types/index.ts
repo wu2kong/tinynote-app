@@ -1,7 +1,10 @@
+export type ContentType = 'text' | 'json' | 'xml' | 'bash' | 'shell' | 'sql' | 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'yaml' | 'markdown';
+
 export interface NoteBlock {
   id: string;
   title: string;
   content: string;
+  contentType: ContentType;
   tags: string[];
   createdAt: string;
   updatedAt: string;

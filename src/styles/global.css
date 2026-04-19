@@ -916,38 +916,51 @@ input:focus, textarea:focus {
   font-size: 14px;
 }
 
+.property-select {
+  width: auto;
+  min-width: 60px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.property-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
 .property-field-content {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.property-textarea {
-  width: 100%;
-  min-height: 200px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
-  transition: max-height 0.3s ease;
+.property-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-.property-textarea.expanded {
-  min-height: 100px;
-  max-height: none;
-  resize: none;
-  overflow: hidden;
+.property-field-header label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.property-textarea.collapsed {
-  max-height: 300px;
-  overflow: auto;
+.property-field-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.content-expand-btn {
-  margin-left: auto;
+.content-action-btn {
   padding: 4px;
   background: transparent;
   border: none;
@@ -960,9 +973,72 @@ input:focus, textarea:focus {
   transition: all 0.2s ease;
 }
 
-.content-expand-btn:hover {
+.content-action-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.property-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  resize: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.property-textarea.expanded {
+  min-height: 200px;
+  overflow: hidden;
+}
+
+.property-textarea.collapsed {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.property-textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.property-highlight-box {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: text;
+  overflow: auto;
+}
+
+.property-highlight-box.expanded {
+  min-height: 200px;
+}
+
+.property-highlight-box.collapsed {
+  max-height: 400px;
+}
+
+.property-highlight-box:hover {
+  border-color: var(--accent-color);
+}
+
+.hljs-empty {
+  color: var(--text-tertiary);
 }
 
 .property-source-editor {
