@@ -32,6 +32,7 @@ interface AppActions {
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
   addNoteBlock: () => Promise<void>;
   addNoteBlockAtIndex: (index: number) => Promise<void>;
+  duplicateNoteBlock: (id: string, index: number) => Promise<void>;
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
@@ -464,6 +465,26 @@ export const useStore = create<AppStore>((set, get) => ({
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
     set({ currentNotebook: updated, currentNoteBlock: block });
+  },
+
+  duplicateNoteBlock: async (id: string, index: number) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook) return;
+    const sourceBlock = currentNotebook.noteBlocks.find((b) => b.id === id);
+    if (!sourceBlock) return;
+    const now = new Date().toISOString();
+    const duplicatedBlock: NoteBlock = {
+      ...sourceBlock,
+      id: crypto.randomUUID(),
+      title: sourceBlock.title ? `${sourceBlock.title} 副本` : '副本',
+      createdAt: now,
+      updatedAt: now,
+    };
+    const blocks = [...currentNotebook.noteBlocks];
+    blocks.splice(index, 0, duplicatedBlock);
+    const updated = { ...currentNotebook, noteBlocks: blocks };
+    await fs.saveNotebook(updated);
+    set({ currentNotebook: updated, currentNoteBlock: duplicatedBlock });
   },
 
   updateNoteBlock: async (id, updates) => {

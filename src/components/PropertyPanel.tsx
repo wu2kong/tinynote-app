@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { Tag, Trash2, X, Calendar, Maximize2, Minimize2, Code, Edit3, Eye, Copy, Check } from 'lucide-react';
+import { Tag, X, Calendar, Maximize2, Minimize2, Edit3, Eye, Copy, Check } from 'lucide-react';
 import { ContentType } from '@/types';
 import hljs from 'highlight.js';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -86,9 +86,9 @@ const PropertyPanel: React.FC = () => {
     const language = CONTENT_TYPE_MAP[contentType];
     try {
       const highlighted = hljs.highlight(localContent, { language, ignoreIllegals: true }).value;
-      highlight.innerHTML = highlighted || '<span class="hljs-empty">空内容</span>';
+      highlight.innerHTML = highlighted || '<span class="hljs-empty">空内容...</span>';
     } catch {
-      highlight.textContent = localContent || '空内容';
+      highlight.textContent = localContent || '空内容...';
     }
   }, [localContent, currentNoteBlock]);
 
@@ -218,7 +218,20 @@ const PropertyPanel: React.FC = () => {
 
       <div className="property-field property-field-content">
         <div className="property-field-header">
-          <label>内容</label>
+          <div className="property-field-label-group">
+            <label>正文</label>
+            <select
+              className="property-select-inline"
+              value={currentNoteBlock.contentType || 'text'}
+              onChange={(e) => updateNoteBlock(currentNoteBlock.id, { contentType: e.target.value as ContentType })}
+            >
+              {CONTENT_TYPES.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="property-field-actions">
             <button 
               className="content-action-btn" 
@@ -270,24 +283,6 @@ const PropertyPanel: React.FC = () => {
 
       <div className="property-field">
         <label>
-          <Code size={14} />
-          内容类型
-        </label>
-        <select
-          className="property-select"
-          value={currentNoteBlock.contentType || 'text'}
-          onChange={(e) => updateNoteBlock(currentNoteBlock.id, { contentType: e.target.value as ContentType })}
-        >
-          {CONTENT_TYPES.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="property-field">
-        <label>
           <Tag size={14} />
           标签
         </label>
@@ -330,10 +325,10 @@ const PropertyPanel: React.FC = () => {
         </span>
       </div>
 
-      <button className="btn btn-danger property-delete-btn" onClick={handleDelete}>
+      {/* <button className="btn btn-danger property-delete-btn" onClick={handleDelete}>
         <Trash2 size={14} />
-        删除笔记
-      </button>
+        删除笔记块
+      </button> */}
     </div>
   );
 };

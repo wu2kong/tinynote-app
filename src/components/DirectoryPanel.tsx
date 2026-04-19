@@ -217,7 +217,7 @@ title="新建笔记本"
           <Search size={14} />
           <input
             type="text"
-            placeholder="搜索..."
+            placeholder="搜索笔记本..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

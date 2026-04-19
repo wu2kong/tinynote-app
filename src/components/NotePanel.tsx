@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import NoteBlockItem from './NoteBlock';
 import { List, LayoutGrid, AlignJustify, Plus, Search } from 'lucide-react';
@@ -22,7 +22,8 @@ const NotePanel: React.FC = () => {
   const addNoteBlock = useStore((s) => s.addNoteBlock);
   const reorderNoteBlocks = useStore((s) => s.reorderNoteBlocks);
 
-  const [searchText, setSearchText] = React.useState('');
+  const [searchText, setSearchText] = useState('');
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -48,6 +49,21 @@ const NotePanel: React.FC = () => {
     const oldIndex = currentNotebook!.noteBlocks.findIndex((b) => b.id === active.id);
     const newIndex = currentNotebook!.noteBlocks.findIndex((b) => b.id === over.id);
     reorderNoteBlocks(oldIndex, newIndex);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.note-block-list,.note-block-card,.note-block-compact')) return;
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  const handleAddNoteBlock = () => {
+    addNoteBlock();
+    closeContextMenu();
   };
 
   if (!currentNotebook) {
@@ -95,7 +111,7 @@ const NotePanel: React.FC = () => {
         </div>
       </div>
 
-      <div className={`note-panel-list ${viewMode}`}>
+      <div className={`note-panel-list ${viewMode}`} onContextMenu={handleContextMenu}>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -124,6 +140,21 @@ const NotePanel: React.FC = () => {
         <Plus size={16} />
         添加笔记
       </button>
+
+      {contextMenu && (
+        <>
+          <div className="context-menu-overlay" onClick={closeContextMenu} />
+          <div
+            className="context-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            <button className="context-menu-item" onClick={handleAddNoteBlock}>
+              <Plus size={14} />
+              添加笔记块
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

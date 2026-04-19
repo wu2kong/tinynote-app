@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NoteBlock as NoteBlockType, ViewMode } from '@/types';
-import { Copy, Check, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -20,6 +20,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: block.id });
 
   const addNoteBlockAtIndex = useStore((s) => s.addNoteBlockAtIndex);
+  const duplicateNoteBlock = useStore((s) => s.duplicateNoteBlock);
   const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
 
   const style = {
@@ -70,6 +71,11 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
     closeContextMenu();
   };
 
+  const handleDuplicate = () => {
+    duplicateNoteBlock(block.id, index + 1);
+    closeContextMenu();
+  };
+
   const handleDelete = () => {
     deleteNoteBlock(block.id);
     closeContextMenu();
@@ -105,6 +111,10 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           <button className="context-menu-item" onClick={handleAddBelow}>
             <Plus size={14} />
             在下方增加笔记块
+          </button>
+          <button className="context-menu-item" onClick={handleDuplicate}>
+            <CopyPlus size={14} />
+            在下方创建副本
           </button>
           <div className="context-menu-divider" />
           <button className="context-menu-item" onClick={handleCopyContent}>

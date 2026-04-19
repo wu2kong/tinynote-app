@@ -954,6 +954,34 @@ input:focus, textarea:focus {
   letter-spacing: 0.5px;
 }
 
+.property-field-label-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.property-field-label-group label {
+  margin: 0;
+}
+
+.property-select-inline {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 1;
+  width: 90px;
+}
+
+.property-select-inline:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
 .property-field-actions {
   display: flex;
   align-items: center;
