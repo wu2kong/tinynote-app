@@ -5,7 +5,7 @@ import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
-  ChevronsDown, ChevronsUp
+  ChevronsDown, ChevronsUp, ArrowRight
 } from 'lucide-react';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
@@ -39,6 +39,7 @@ const DirectoryPanel: React.FC = () => {
   const reloadSpaces = useStore((s) => s.reloadSpaces);
   const expandAllGroups = useStore((s) => s.expandAllGroups);
   const collapseAllGroups = useStore((s) => s.collapseAllGroups);
+  const spaces = useStore((s) => s.spaces);
 
   const [dragItem, setDragItem] = useState<DragItemInfo | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
@@ -345,6 +346,26 @@ const DirectoryPanel: React.FC = () => {
                 </button>
               </>
             )}
+            <div className="context-menu-divider" />
+            <div className="context-menu-submenu">
+              <button className="context-menu-item" onClick={(e) => { e.stopPropagation(); }}>
+                <span className="context-menu-item-inner"><ArrowRight size={14} />移动到...</span>
+              </button>
+              <div className="context-menu-sub">
+                {spaces.filter((s) => s.path !== currentSpace?.path).map((s) => (
+                  <button key={s.id} className="context-menu-item" onClick={async () => {
+                    const item = contextMenu!.item;
+                    const kind = isGroup(item) ? 'group' as const : 'notebook' as const;
+                    closeContextMenu();
+                    await moveItem(item.path, kind, s.path);
+                    await reloadSpaces();
+                    showToast(`已移动到「${s.name}」`);
+                  }}>
+                    {s.icon || '📁'} {s.name}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={() => {
               if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);

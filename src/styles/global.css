@@ -609,6 +609,43 @@ input:focus, textarea:focus {
   margin: 4px 0;
 }
 
+.context-menu-submenu {
+  position: relative;
+}
+
+.context-menu-submenu > .context-menu-item {
+  width: 100%;
+}
+
+.context-menu-submenu:hover > .context-menu-sub,
+.context-menu-submenu:hover > .context-menu-item {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.context-menu-item-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu-sub {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  min-width: 150px;
+}
+
+.context-menu-submenu:hover > .context-menu-sub {
+  display: block;
+}
+
 .note-panel {
   width: 400px;
   min-width: 400px; 
