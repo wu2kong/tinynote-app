@@ -434,7 +434,7 @@ input:focus, textarea:focus {
 .directory-tree {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 12px 0;
 }
 
 .directory-empty {
@@ -526,10 +526,6 @@ input:focus, textarea:focus {
   color: var(--text-tertiary);
   flex-shrink: 0;
   transition: all var(--transition);
-}
-
-.tree-item:hover .tree-item-action {
-  display: flex;
 }
 
 .tree-item-action:hover {
