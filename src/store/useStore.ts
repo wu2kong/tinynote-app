@@ -36,6 +36,8 @@ interface AppActions {
   addNoteBlock: () => Promise<void>;
   addNoteBlockAtIndex: (index: number) => Promise<void>;
   duplicateNoteBlock: (id: string, index: number) => Promise<void>;
+  pasteNoteBlock: (block: NoteBlock, index: number) => Promise<void>;
+  pasteNoteBlockAtEnd: (block: NoteBlock) => Promise<void>;
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
@@ -629,6 +631,39 @@ selectNotebook: async (notebook: Notebook) => {
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
     set({ currentNotebook: updated, currentNoteBlock: duplicatedBlock });
+  },
+
+  pasteNoteBlock: async (block: NoteBlock, index: number) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook) return;
+    const now = new Date().toISOString();
+    const newBlock: NoteBlock = {
+      ...block,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    const blocks = [...currentNotebook.noteBlocks];
+    blocks.splice(index, 0, newBlock);
+    const updated = { ...currentNotebook, noteBlocks: blocks };
+    await fs.saveNotebook(updated);
+    set({ currentNotebook: updated, currentNoteBlock: newBlock });
+  },
+
+  pasteNoteBlockAtEnd: async (block: NoteBlock) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook) return;
+    const now = new Date().toISOString();
+    const newBlock: NoteBlock = {
+      ...block,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    const blocks = [...currentNotebook.noteBlocks, newBlock];
+    const updated = { ...currentNotebook, noteBlocks: blocks };
+    await fs.saveNotebook(updated);
+    set({ currentNotebook: updated, currentNoteBlock: newBlock });
   },
 
   updateNoteBlock: async (id, updates) => {
