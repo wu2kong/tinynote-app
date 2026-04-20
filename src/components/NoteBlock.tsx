@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NoteBlock as NoteBlockType, ViewMode } from '@/types';
-import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus } from 'lucide-react';
+import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus, ClipboardPaste } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
+import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
 
 interface NoteBlockProps {
   block: NoteBlockType;
@@ -17,11 +18,13 @@ interface NoteBlockProps {
 const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, index, onSelect }) => {
   const [copied, setCopied] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [clipboardHasNote, setClipboardHasNote] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: block.id });
 
   const addNoteBlockAtIndex = useStore((s) => s.addNoteBlockAtIndex);
   const duplicateNoteBlock = useStore((s) => s.duplicateNoteBlock);
   const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
+  const pasteNoteBlock = useStore((s) => s.pasteNoteBlock);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -56,6 +59,26 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
+
+  const checkClipboardForNote = async () => {
+    try {
+      const text = await readText();
+      if (text && text.trim().startsWith('---')) {
+        const blocks = parseNoteBlocks(text);
+        setClipboardHasNote(blocks.length > 0);
+      } else {
+        setClipboardHasNote(false);
+      }
+    } catch {
+      setClipboardHasNote(false);
+    }
+  };
+
+  useEffect(() => {
+    if (contextMenu) {
+      checkClipboardForNote();
+    }
+  }, [contextMenu]);
 
   const closeContextMenu = () => {
     setContextMenu(null);
@@ -92,6 +115,27 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
     closeContextMenu();
   };
 
+  const handleCopyNote = async () => {
+    const serialized = serializeNoteBlocks([block]);
+    await copyToClipboard(serialized);
+    closeContextMenu();
+  };
+
+  const handlePasteNote = async () => {
+    try {
+      const text = await readText();
+      if (text) {
+        const blocks = parseNoteBlocks(text);
+        if (blocks.length > 0) {
+          pasteNoteBlock(blocks[0], index + 1);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to paste note:', e);
+    }
+    closeContextMenu();
+  };
+
   const contentPreview = block.content.length > 100 ? block.content.slice(0, 100) + '...' : block.content;
   const lines = block.content.split('\n').length;
 
@@ -125,6 +169,16 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
             <Copy size={14} />
             复制标题和正文
           </button>
+          <button className="context-menu-item" onClick={handleCopyNote}>
+            <CopyPlus size={14} />
+            复制笔记
+          </button>
+          {clipboardHasNote && (
+            <button className="context-menu-item" onClick={handlePasteNote}>
+              <ClipboardPaste size={14} />
+              粘贴笔记
+            </button>
+          )}
           <div className="context-menu-divider" />
           <button className="context-menu-item danger" onClick={handleDelete}>
             <Trash2 size={14} />

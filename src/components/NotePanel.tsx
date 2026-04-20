@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import NoteBlockItem from './NoteBlock';
-import { List, LayoutGrid, AlignJustify, Plus, Search } from 'lucide-react';
+import { List, LayoutGrid, AlignJustify, Plus, Search, ClipboardPaste } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -12,6 +12,8 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { readText } from '@tauri-apps/plugin-clipboard-manager';
+import { parseNoteBlocks } from '@/utils/noteParser';
 
 const NotePanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -21,9 +23,11 @@ const NotePanel: React.FC = () => {
   const setNoteBlock = useStore((s) => s.setNoteBlock);
   const addNoteBlock = useStore((s) => s.addNoteBlock);
   const reorderNoteBlocks = useStore((s) => s.reorderNoteBlocks);
+  const pasteNoteBlockAtEnd = useStore((s) => s.pasteNoteBlockAtEnd);
 
   const [searchText, setSearchText] = useState('');
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [clipboardHasNote, setClipboardHasNote] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -57,12 +61,47 @@ const NotePanel: React.FC = () => {
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
 
+  const checkClipboardForNote = async () => {
+    try {
+      const text = await readText();
+      if (text && text.trim().startsWith('---')) {
+        const blocks = parseNoteBlocks(text);
+        setClipboardHasNote(blocks.length > 0);
+      } else {
+        setClipboardHasNote(false);
+      }
+    } catch {
+      setClipboardHasNote(false);
+    }
+  };
+
+  useEffect(() => {
+    if (contextMenu) {
+      checkClipboardForNote();
+    }
+  }, [contextMenu]);
+
   const closeContextMenu = () => {
     setContextMenu(null);
   };
 
   const handleAddNoteBlock = () => {
     addNoteBlock();
+    closeContextMenu();
+  };
+
+  const handlePasteNote = async () => {
+    try {
+      const text = await readText();
+      if (text) {
+        const blocks = parseNoteBlocks(text);
+        if (blocks.length > 0) {
+          pasteNoteBlockAtEnd(blocks[0]);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to paste note:', e);
+    }
     closeContextMenu();
   };
 
@@ -152,6 +191,12 @@ const NotePanel: React.FC = () => {
               <Plus size={14} />
               添加笔记块
             </button>
+            {clipboardHasNote && (
+              <button className="context-menu-item" onClick={handlePasteNote}>
+                <ClipboardPaste size={14} />
+                粘贴笔记
+              </button>
+            )}
           </div>
         </>
       )}
