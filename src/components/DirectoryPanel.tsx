@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
-  Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks
+  Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
+  ChevronsDown, ChevronsUp
 } from 'lucide-react';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
+import { showToast } from './Toast';
+
+interface DragItemInfo {
+  path: string;
+  kind: 'group' | 'notebook';
+}
+
+const DRAG_THRESHOLD = 64;
 
 const DirectoryPanel: React.FC = () => {
   const currentSpace = useStore((s) => s.currentSpace);
@@ -26,6 +35,129 @@ const DirectoryPanel: React.FC = () => {
   const storeRenameNotebook = useStore((s) => s.renameNotebook);
   const setSearchQuery = useStore((s) => s.setSearchQuery);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
+  const moveItem = useStore((s) => s.moveItem);
+  const reloadSpaces = useStore((s) => s.reloadSpaces);
+  const expandAllGroups = useStore((s) => s.expandAllGroups);
+  const collapseAllGroups = useStore((s) => s.collapseAllGroups);
+
+  const [dragItem, setDragItem] = useState<DragItemInfo | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const dragStartRef = useRef<{ x: number; y: number; item: DragItemInfo } | null>(null);
+  const isDraggingRef = useRef(false);
+  const dropTargetRef = useRef<string | null>(null);
+  const justDraggedRef = useRef(false);
+  const currentSpaceRef = useRef(currentSpace);
+  currentSpaceRef.current = currentSpace;
+  const moveItemRef = useRef(moveItem);
+  moveItemRef.current = moveItem;
+  const isMountedRef = useRef(true);
+
+  const updateDropTarget = useCallback((path: string | null) => {
+    dropTargetRef.current = path;
+    setDropTarget(path);
+  }, []);
+
+  const isDropValid = useCallback((dragPath: string, dragKind: 'group' | 'notebook', targetPath: string) => {
+    if (dragPath === targetPath) return false;
+    if (dragKind === 'group') {
+      if (targetPath.startsWith(dragPath + '/')) return false;
+    }
+    const parentPath = dragPath.substring(0, dragPath.lastIndexOf('/'));
+    if (parentPath === targetPath) return false;
+    return true;
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const onPointerMove = (e: PointerEvent) => {
+      const start = dragStartRef.current;
+      if (!start) return;
+
+      if (!isDraggingRef.current) {
+        const dx = e.clientX - start.x;
+        const dy = e.clientY - start.y;
+        if (dx * dx + dy * dy < DRAG_THRESHOLD) return;
+        isDraggingRef.current = true;
+        if (isMountedRef.current) {
+          setDragItem(start.item);
+        }
+      }
+
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      if (!el) {
+        updateDropTarget(null);
+        return;
+      }
+
+      const dropEl = el.closest('[data-drop-path]');
+      if (dropEl) {
+        const path = (dropEl as HTMLElement).getAttribute('data-drop-path')!;
+        if (isDropValid(start.item.path, start.item.kind, path)) {
+          updateDropTarget(path);
+        } else {
+          updateDropTarget(null);
+        }
+      } else {
+        updateDropTarget(null);
+      }
+    };
+
+    const onPointerUp = () => {
+      const start = dragStartRef.current;
+      if (start && isDraggingRef.current && dropTargetRef.current) {
+        moveItemRef.current(start.item.path, start.item.kind, dropTargetRef.current);
+      }
+
+      const wasDragging = isDraggingRef.current;
+      dragStartRef.current = null;
+      isDraggingRef.current = false;
+      if (isMountedRef.current) {
+        setDragItem(null);
+        updateDropTarget(null);
+      }
+
+      if (wasDragging) {
+        justDraggedRef.current = true;
+        setTimeout(() => { justDraggedRef.current = false; }, 50);
+      }
+    };
+
+    const onPointerCancel = () => {
+      dragStartRef.current = null;
+      isDraggingRef.current = false;
+      if (isMountedRef.current) {
+        setDragItem(null);
+        updateDropTarget(null);
+      }
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerCancel);
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerCancel);
+    };
+  }, [updateDropTarget, isDropValid]);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent, item: Group | Notebook) => {
+    if (e.button !== 0) return;
+    if ((e.target as HTMLElement).closest('button')) return;
+    const kind = isGroup(item) ? 'group' as const : 'notebook' as const;
+    dragStartRef.current = { x: e.clientX, y: e.clientY, item: { path: item.path, kind } };
+    isDraggingRef.current = false;
+  }, []);
+
+  const handleClick = useCallback((fn: () => void) => {
+    if (justDraggedRef.current) return;
+    fn();
+  }, []);
 
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: Group | Notebook } | null>(null);
   const [blankContextMenu, setBlankContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -60,81 +192,43 @@ const DirectoryPanel: React.FC = () => {
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
-      open: true,
-      title: '新建分组',
-      placeholder: '分组名称',
-      defaultValue: '',
-      confirmLabel: '新建',
-      onSubmit: (name) => {
-        addGroup(parentPath, name);
-        setModalState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '新建分组', placeholder: '分组名称', defaultValue: '', confirmLabel: '新建',
+      onSubmit: (name) => { addGroup(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleAddNotebook = (parentPath: string) => {
     setModalState({
-      open: true,
-      title: '新建笔记本',
-      placeholder: '笔记本名称',
-      defaultValue: '',
-      confirmLabel: '新建',
-      onSubmit: (name) => {
-        addNotebook(parentPath, name);
-        setModalState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '新建笔记本', placeholder: '笔记本名称', defaultValue: '', confirmLabel: '新建',
+      onSubmit: (name) => { addNotebook(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleRenameGroup = (group: Group) => {
     setModalState({
-      open: true,
-      title: '重命名分组',
-      placeholder: '新名称',
-      defaultValue: group.name,
-      confirmLabel: '保存',
-      onSubmit: (name) => {
-        storeRenameGroup(group, name);
-        setModalState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '重命名分组', placeholder: '新名称', defaultValue: group.name, confirmLabel: '保存',
+      onSubmit: (name) => { storeRenameGroup(group, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleRenameNotebook = (notebook: Notebook) => {
     setModalState({
-      open: true,
-      title: '重命名笔记本',
-      placeholder: '新名称',
-      defaultValue: notebook.name,
-      confirmLabel: '保存',
-      onSubmit: (name) => {
-        storeRenameNotebook(notebook, name);
-        setModalState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '重命名笔记本', placeholder: '新名称', defaultValue: notebook.name, confirmLabel: '保存',
+      onSubmit: (name) => { storeRenameNotebook(notebook, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleDeleteGroup = (group: Group) => {
     setConfirmState({
-      open: true,
-      title: '删除分组',
-      message: `确定要删除「${group.name}」吗？`,
-      onConfirm: () => {
-        storeDeleteGroup(group);
-        setConfirmState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '删除分组', message: `确定要删除「${group.name}」吗？`,
+      onConfirm: () => { storeDeleteGroup(group); setConfirmState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleDeleteNotebook = (notebook: Notebook) => {
     setConfirmState({
-      open: true,
-      title: '删除笔记本',
-      message: `确定要删除「${notebook.name}」吗？`,
-      onConfirm: () => {
-        storeDeleteNotebook(notebook);
-        setConfirmState((prev) => ({ ...prev, open: false }));
-      },
+      open: true, title: '删除笔记本', message: `确定要删除「${notebook.name}」吗？`,
+      onConfirm: () => { storeDeleteNotebook(notebook); setConfirmState((p) => ({ ...p, open: false })); },
     });
   };
 
@@ -143,9 +237,7 @@ const DirectoryPanel: React.FC = () => {
     const q = searchQuery.toLowerCase();
     return items.filter((item) => {
       if (item.name.toLowerCase().includes(q)) return true;
-      if (isGroup(item)) {
-        return filterItems(item.children).length > 0;
-      }
+      if (isGroup(item)) return filterItems(item.children).length > 0;
       return false;
     });
   };
@@ -156,12 +248,15 @@ const DirectoryPanel: React.FC = () => {
       if (isGroup(item)) {
         const group = item as Group;
         const isExpanded = expandedGroupPaths.includes(group.path);
+        const isDragOver = dropTarget === group.path;
+        const isDragging = dragItem?.path === group.path;
         return (
-          <div key={group.id}>
+          <div key={group.id} data-drop-path={group.path}>
             <div
-              className={`tree-item ${currentGroup?.path === group.path ? 'active' : ''}`}
+              className={`tree-item ${currentGroup?.path === group.path ? 'active' : ''} ${isDragOver ? 'drag-over' : ''} ${isDragging ? 'dragging' : ''}`}
               style={{ paddingLeft: `${depth * 16 + 8}px` }}
-              onClick={() => { toggleExpandedGroupPath(group.path); selectGroup(group); }}
+              onPointerDown={(e) => handlePointerDown(e, group)}
+              onClick={() => handleClick(() => { toggleExpandedGroupPath(group.path); selectGroup(group); })}
               onContextMenu={(e) => handleContextMenu(e, group)}
             >
               <span className="tree-icon">
@@ -172,7 +267,7 @@ const DirectoryPanel: React.FC = () => {
               <button
                 className="tree-item-action"
                 onClick={(e) => { e.stopPropagation(); handleAddNotebook(group.path); }}
-title="新建笔记本"
+                title="新建笔记本"
               >
                 <Plus size={12} />
               </button>
@@ -184,12 +279,14 @@ title="新建笔记本"
       }
 
       const notebook = item as Notebook;
+      const isDragging = dragItem?.path === notebook.path;
       return (
         <div
           key={notebook.id}
-          className={`tree-item notebook ${currentNotebook?.path === notebook.path ? 'active' : ''}`}
+          className={`tree-item notebook ${currentNotebook?.path === notebook.path ? 'active' : ''} ${isDragging ? 'dragging' : ''}`}
           style={{ paddingLeft: `${depth * 16 + 8}px` }}
-          onClick={() => selectNotebook(notebook)}
+          onPointerDown={(e) => handlePointerDown(e, notebook)}
+          onClick={() => handleClick(() => selectNotebook(notebook))}
           onContextMenu={(e) => handleContextMenu(e, notebook)}
         >
           <span className="tree-icon" style={{ visibility: 'hidden' }}>
@@ -201,6 +298,8 @@ title="新建笔记本"
       );
     });
   };
+
+  const isRootDragOver = dropTarget === currentSpace?.path;
 
   return (
     <div className="directory-panel">
@@ -216,7 +315,11 @@ title="新建笔记本"
         </div>
       </div>
 
-      <div className="directory-tree" onContextMenu={handleBlankContextMenu}>
+      <div
+        className={`directory-tree ${isRootDragOver ? 'drag-over-root' : ''}`}
+        data-drop-path={currentSpace?.path || ''}
+        onContextMenu={handleBlankContextMenu}
+      >
         {currentSpace ? renderTree(currentSpace.groups) : (
           <div className="directory-empty">选择一个空间以浏览</div>
         )}
@@ -225,34 +328,20 @@ title="新建笔记本"
       {contextMenu && (
         <>
           <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div
-            className="context-menu"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
-          >
+          <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
             {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
-              <button className="context-menu-item" onClick={() => {
-                toggleSourceMode();
-                closeContextMenu();
-              }}>
+              <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
                 {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
                 {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
               </button>
             )}
             {isGroup(contextMenu.item) && (
               <>
-                <button className="context-menu-item" onClick={() => {
-                  handleAddGroup((contextMenu.item as Group).path);
-                  closeContextMenu();
-                }}>
-                  <FolderPlus size={14} />
-                  新建子分组
+                <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
+                  <FolderPlus size={14} />新建子分组
                 </button>
-                <button className="context-menu-item" onClick={() => {
-                  handleAddNotebook((contextMenu.item as Group).path);
-                  closeContextMenu();
-                }}>
-                  <FilePlus size={14} />
-                  新建笔记本
+                <button className="context-menu-item" onClick={() => { handleAddNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
+                  <FilePlus size={14} />新建笔记本
                 </button>
               </>
             )}
@@ -262,16 +351,14 @@ title="新建笔记本"
               else handleRenameNotebook(contextMenu!.item as Notebook);
               closeContextMenu();
             }}>
-              <Edit3 size={14} />
-              重命名
+              <Edit3 size={14} />重命名
             </button>
             <button className="context-menu-item danger" onClick={() => {
               if (isGroup(contextMenu!.item)) handleDeleteGroup(contextMenu!.item as Group);
               else handleDeleteNotebook(contextMenu!.item as Notebook);
               closeContextMenu();
             }}>
-              <Trash2 size={14} />
-              删除
+              <Trash2 size={14} />删除
             </button>
           </div>
         </>
@@ -280,23 +367,22 @@ title="新建笔记本"
       {blankContextMenu && currentSpace && (
         <>
           <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div
-            className="context-menu"
-            style={{ top: blankContextMenu.y, left: blankContextMenu.x }}
-          >
-            <button className="context-menu-item" onClick={() => {
-              handleAddGroup(currentSpace.path);
-              closeContextMenu();
-            }}>
-              <FolderPlus size={14} />
-              新增分组
+          <div className="context-menu" style={{ top: blankContextMenu.y, left: blankContextMenu.x }}>
+            <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
+              <FolderPlus size={14} />新增分组
             </button>
-            <button className="context-menu-item" onClick={() => {
-              handleAddNotebook(currentSpace.path);
-              closeContextMenu();
-            }}>
-              <FilePlus size={14} />
-              新建笔记本
+            <button className="context-menu-item" onClick={() => { handleAddNotebook(currentSpace.path); closeContextMenu(); }}>
+              <FilePlus size={14} />新建笔记本
+            </button>
+            <div className="context-menu-divider" />
+            <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
+              <RefreshCw size={14} />刷新缓存
+            </button>
+            <button className="context-menu-item" onClick={() => { expandAllGroups(); closeContextMenu(); }}>
+              <ChevronsDown size={14} />展开全部
+            </button>
+            <button className="context-menu-item" onClick={() => { collapseAllGroups(); closeContextMenu(); }}>
+              <ChevronsUp size={14} />收起全部
             </button>
           </div>
         </>
@@ -304,7 +390,7 @@ title="新建笔记本"
 
       <InputModal
         open={modalState.open}
-        onClose={() => setModalState((prev) => ({ ...prev, open: false }))}
+        onClose={() => setModalState((p) => ({ ...p, open: false }))}
         onSubmit={modalState.onSubmit}
         title={modalState.title}
         placeholder={modalState.placeholder}
@@ -314,7 +400,7 @@ title="新建笔记本"
 
       <ConfirmModal
         open={confirmState.open}
-        onClose={() => setConfirmState((prev) => ({ ...prev, open: false }))}
+        onClose={() => setConfirmState((p) => ({ ...p, open: false }))}
         onConfirm={confirmState.onConfirm}
         title={confirmState.title}
         message={confirmState.message}

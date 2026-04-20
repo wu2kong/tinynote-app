@@ -21,17 +21,50 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
     if (entry.isDirectory && entry.name?.endsWith('.tinynotes')) {
       const spacePath = `${storagePath}/${entry.name}`;
       const name = entry.name.replace('.tinynotes', '');
-      const groups = await loadGroups(spacePath);
+      const children = await loadSpaceChildren(spacePath);
       spaces.push({
         id: crypto.randomUUID(),
         name,
         path: spacePath,
-        groups,
+        groups: children,
       });
     }
   }
 
   return spaces;
+}
+
+export async function loadSpaceChildren(spacePath: string): Promise<(Group | Notebook)[]> {
+  const children: (Group | Notebook)[] = [];
+  let entries;
+  try {
+    entries = await readDir(spacePath);
+  } catch {
+    return children;
+  }
+
+  for (const entry of entries) {
+    if (entry.isDirectory) {
+      const groupPath = `${spacePath}/${entry.name}`;
+      const subChildren = await loadGroupChildren(groupPath);
+      const notebookCount = countNotebooks(subChildren);
+      children.push({
+        id: crypto.randomUUID(),
+        name: entry.name,
+        path: groupPath,
+        children: subChildren,
+        notebookCount,
+      });
+    } else if (entry.isFile && entry.name?.endsWith('.md')) {
+      const filePath = `${spacePath}/${entry.name}`;
+      const notebook = await loadNotebook(filePath);
+      if (notebook) {
+        children.push(notebook);
+      }
+    }
+  }
+
+  return children;
 }
 
 export async function loadGroups(spacePath: string): Promise<Group[]> {
@@ -197,6 +230,13 @@ export async function renameNotebook(oldPath: string, newName: string): Promise<
   const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
   const newFileName = newName.endsWith('.md') ? newName : `${newName}.md`;
   const newPath = `${parentPath}/${newFileName}`;
+  await rename(oldPath, newPath);
+  return newPath;
+}
+
+export async function moveItem(oldPath: string, newParentPath: string): Promise<string> {
+  const itemName = oldPath.split('/').pop()!;
+  const newPath = `${newParentPath}/${itemName}`;
   await rename(oldPath, newPath);
   return newPath;
 }

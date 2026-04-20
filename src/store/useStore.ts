@@ -20,6 +20,8 @@ interface AppActions {
   selectGroup: (group: Group) => Promise<void>;
   selectNotebook: (notebook: Notebook) => Promise<void>;
   toggleExpandedGroupPath: (path: string) => void;
+  expandAllGroups: () => void;
+  collapseAllGroups: () => void;
   addSpace: (name: string) => Promise<void>;
   deleteSpace: (space: Space) => Promise<void>;
   renameSpace: (space: Space, newName: string) => Promise<void>;
@@ -39,6 +41,7 @@ interface AppActions {
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
   toggleSourceMode: () => void;
   reloadSpaces: () => Promise<void>;
+  moveItem: (itemPath: string, itemKind: 'group' | 'notebook', newParentPath: string) => Promise<void>;
 }
 
 type AppStore = AppState & AppActions;
@@ -96,12 +99,12 @@ function sortSpacesByOrder(spaces: Space[], order: string[]): Space[] {
   return [...ordered, ...remaining];
 }
 
-function sortGroupsByOrder(groups: Group[], order: string[]): Group[] {
-  if (order.length === 0) return groups;
-  const ordered: Group[] = [];
-  const remaining = [...groups];
+function sortChildrenByOrder(children: (Group | Notebook)[], order: string[]): (Group | Notebook)[] {
+  if (order.length === 0) return children;
+  const ordered: (Group | Notebook)[] = [];
+  const remaining = [...children];
   for (const path of order) {
-    const idx = remaining.findIndex((g) => g.path === path);
+    const idx = remaining.findIndex((item) => item.path === path);
     if (idx !== -1) {
       ordered.push(remaining.splice(idx, 1)[0]);
     }
@@ -190,19 +193,19 @@ export const useStore = create<AppStore>((set, get) => ({
       }
 
       if (currentSpace) {
-        let groups = await fs.loadGroups(currentSpace.path);
+        let children = await fs.loadSpaceChildren(currentSpace.path);
         const groupOrder = cfg.groupOrder[currentSpace.path];
         if (groupOrder) {
-          groups = sortGroupsByOrder(groups, groupOrder);
+          children = sortChildrenByOrder(children, groupOrder);
         }
-        const updatedSpace = { ...currentSpace, groups };
+        const updatedSpace = { ...currentSpace, groups: children };
         currentSpace = updatedSpace;
 
         if (cfg.currentGroupPath) {
-          currentGroup = findGroupByPath(groups, cfg.currentGroupPath);
+          currentGroup = findGroupByPath(children, cfg.currentGroupPath);
         }
         if (cfg.currentNotebookPath) {
-          const found = findNotebookByPath(groups, cfg.currentNotebookPath);
+          const found = findNotebookByPath(children, cfg.currentNotebookPath);
           if (found) {
             const loaded = await fs.loadNotebook(found.path);
             if (loaded) currentNotebook = loaded;
@@ -212,7 +215,7 @@ export const useStore = create<AppStore>((set, get) => ({
         const expandedPaths = [...cfg.expandedGroupPaths];
         const targetPath = cfg.currentNotebookPath || cfg.currentGroupPath;
         if (targetPath) {
-          const ancestors = getAncestorPaths(groups, targetPath);
+          const ancestors = getAncestorPaths(children, targetPath);
           for (const p of ancestors) {
             if (!expandedPaths.includes(p)) expandedPaths.push(p);
           }
@@ -247,14 +250,14 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   selectSpace: async (space) => {
-    const groups = await fs.loadGroups(space.path);
+    const children = await fs.loadSpaceChildren(space.path);
     const cfg = config.getConfig();
-    let sortedGroups = groups;
+    let sortedChildren = children;
     const groupOrder = cfg.groupOrder[space.path];
     if (groupOrder) {
-      sortedGroups = sortGroupsByOrder(groups, groupOrder);
+      sortedChildren = sortChildrenByOrder(children, groupOrder);
     }
-    const updatedSpace = { ...space, groups: sortedGroups };
+    const updatedSpace = { ...space, groups: sortedChildren };
     set((state) => ({
       currentSpace: updatedSpace,
       currentGroup: null,
@@ -291,6 +294,28 @@ selectNotebook: async (notebook: Notebook) => {
     });
     const { expandedGroupPaths } = get();
     config.saveConfig({ expandedGroupPaths });
+  },
+
+  expandAllGroups: () => {
+    const { currentSpace } = get();
+    if (!currentSpace) return;
+    const allGroupPaths: string[] = [];
+    const collect = (items: (Group | Notebook)[]) => {
+      for (const item of items) {
+        if ('children' in item) {
+          allGroupPaths.push(item.path);
+          collect(item.children);
+        }
+      }
+    };
+    collect(currentSpace.groups);
+    set({ expandedGroupPaths: allGroupPaths });
+    config.saveConfig({ expandedGroupPaths: allGroupPaths });
+  },
+
+  collapseAllGroups: () => {
+    set({ expandedGroupPaths: [] });
+    config.saveConfig({ expandedGroupPaths: [] });
   },
 
   addSpace: async (name) => {
@@ -384,14 +409,14 @@ selectNotebook: async (notebook: Notebook) => {
         });
       };
       const updatedGroups = isDirectChild
-        ? [...currentSpace.groups, group] as Group[]
-        : addGroupToChildren(currentSpace.groups) as Group[];
+        ? [...currentSpace.groups, group]
+        : addGroupToChildren(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       set((state) => ({
         currentSpace: updatedSpace,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
-      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
+      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.filter((item): item is Group => 'children' in item).map((g) => g.path) } });
     }
   },
 
@@ -409,11 +434,11 @@ selectNotebook: async (notebook: Notebook) => {
             return child;
           });
       };
-      const updatedGroups = removeGroup(currentSpace.groups) as Group[];
+      const updatedGroups = removeGroup(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       set((state) => ({
         currentSpace: updatedSpace,
-        currentGroup: currentSpace.groups.find((g) => g.id === group.id) ? null : get().currentGroup,
+        currentGroup: currentSpace.groups.some((item) => 'children' in item && item.id === group.id) ? null : get().currentGroup,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
     }
@@ -434,10 +459,10 @@ selectNotebook: async (notebook: Notebook) => {
           return child;
         });
       };
-      const isDirectChild = currentSpace.groups.some((g) => g.id === group.id);
+      const isDirectChild = currentSpace.groups.some((g) => 'children' in g && g.id === group.id);
       const updatedGroups = isDirectChild
-        ? currentSpace.groups.map((g) => g.id === group.id ? { ...g, name: newName, path: newPath } : g) as Group[]
-        : renameInTree(currentSpace.groups) as Group[];
+        ? currentSpace.groups.map((item) => 'children' in item && item.id === group.id ? { ...item, name: newName, path: newPath } : item)
+        : renameInTree(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       const updatedCurrentGroup = get().currentGroup?.id === group.id
         ? { ...get().currentGroup!, name: newName, path: newPath }
@@ -483,14 +508,17 @@ selectNotebook: async (notebook: Notebook) => {
         });
       };
       const isDirectChild = parentPath === currentSpace.path;
-      const updatedGroups = (isDirectChild
+      const updatedGroups = isDirectChild
         ? [...currentSpace.groups, notebook]
-        : currentSpace.groups.map((g) => {
-            if (g.path === parentPath) {
-              return { ...g, children: [...g.children, notebook], notebookCount: g.notebookCount + 1 };
+        : currentSpace.groups.map((item) => {
+            if ('children' in item && item.path === parentPath) {
+              return { ...item, children: [...item.children, notebook], notebookCount: item.notebookCount + 1 };
             }
-            return { ...g, children: addNotebookToTree(g.children) };
-          })) as Group[];
+            if ('children' in item) {
+              return { ...item, children: addNotebookToTree(item.children) };
+            }
+            return item;
+          });
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       set((state) => ({
         currentSpace: updatedSpace,
@@ -517,7 +545,7 @@ selectNotebook: async (notebook: Notebook) => {
             return child;
           });
       };
-      const updatedGroups = removeNotebook(currentSpace.groups) as Group[];
+      const updatedGroups = removeNotebook(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       set((state) => ({
         currentSpace: updatedSpace,
@@ -543,7 +571,7 @@ selectNotebook: async (notebook: Notebook) => {
           return child;
         });
       };
-      const updatedGroups = renameInTree(currentSpace.groups) as Group[];
+      const updatedGroups = renameInTree(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       const updatedCurrentNotebook = get().currentNotebook?.id === notebook.id
         ? { ...get().currentNotebook!, name: newName, path: newPath }
@@ -647,13 +675,132 @@ selectNotebook: async (notebook: Notebook) => {
     set({ currentNotebook: { ...currentNotebook, isSourceMode: !currentNotebook.isSourceMode } });
   },
 
+  moveItem: async (itemPath, itemKind, newParentPath) => {
+    const { currentSpace, currentGroup, currentNotebook, expandedGroupPaths } = get();
+    if (!currentSpace) return;
+
+    if (itemKind === 'group') {
+      const isDescendant = (parentPath: string, childPath: string): boolean => {
+        return childPath === parentPath || childPath.startsWith(parentPath + '/');
+      };
+      if (isDescendant(itemPath, newParentPath)) return;
+    }
+
+    const oldParentPath = itemPath.substring(0, itemPath.lastIndexOf('/'));
+    if (oldParentPath === newParentPath) return;
+
+    let newPath: string;
+    try {
+      newPath = await fs.moveItem(itemPath, newParentPath);
+    } catch (e) {
+      console.error('[tinynote] Failed to move item:', e);
+      return;
+    }
+
+    const children = await fs.loadSpaceChildren(currentSpace.path);
+    const cfg = config.getConfig();
+    let sortedChildren = children;
+    const groupOrder = cfg.groupOrder[currentSpace.path];
+    if (groupOrder) {
+      sortedChildren = sortChildrenByOrder(children, groupOrder);
+    }
+    const updatedSpace = { ...currentSpace, groups: sortedChildren };
+
+    const updatePath = (oldBase: string, newBase: string, path: string): string => {
+      if (path === oldBase) return newBase;
+      if (path.startsWith(oldBase + '/')) return newBase + path.substring(oldBase.length);
+      return path;
+    };
+
+    let updatedCurrentGroup = currentGroup;
+    if (updatedCurrentGroup) {
+      const updatedPath = updatePath(itemPath, newPath, updatedCurrentGroup.path);
+      const found = findGroupByPath(sortedChildren, updatedPath);
+      updatedCurrentGroup = found || null;
+    }
+
+    let updatedCurrentNotebook = currentNotebook;
+    if (updatedCurrentNotebook) {
+      const updatedPath = updatePath(itemPath, newPath, updatedCurrentNotebook.path);
+      const found = findNotebookByPath(sortedChildren, updatedPath);
+      if (found) {
+        const loaded = await fs.loadNotebook(found.path);
+        updatedCurrentNotebook = loaded || null;
+      } else {
+        updatedCurrentNotebook = null;
+      }
+    }
+
+    const newExpandedPaths = expandedGroupPaths.map((p) => updatePath(itemPath, newPath, p));
+    if (!newExpandedPaths.includes(newParentPath)) {
+      newExpandedPaths.push(newParentPath);
+    }
+
+    set((state) => ({
+      currentSpace: updatedSpace,
+      currentGroup: updatedCurrentGroup,
+      currentNotebook: updatedCurrentNotebook,
+      currentNoteBlock: updatedCurrentNotebook ? state.currentNoteBlock : null,
+      expandedGroupPaths: newExpandedPaths,
+      spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
+    }));
+
+    const updatedGroupPaths = sortedChildren.filter((item): item is Group => 'children' in item).map((g) => g.path);
+    config.saveConfig({
+      groupOrder: { ...cfg.groupOrder, [currentSpace.path]: updatedGroupPaths },
+      expandedGroupPaths: newExpandedPaths,
+      currentGroupPath: updatedCurrentGroup?.path || cfg.currentGroupPath,
+      currentNotebookPath: updatedCurrentNotebook?.path || cfg.currentNotebookPath,
+    });
+  },
+
   reloadSpaces: async () => {
-    const { storagePath } = get();
+    const { storagePath, currentSpace } = get();
     if (!storagePath) return;
     const cfg = config.getConfig();
     let spaces = await fs.loadSpaces(storagePath);
     spaces = applyIconsToSpaces(spaces, cfg.spaceIcons);
     spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
-    set({ spaces });
+
+    if (currentSpace) {
+      const freshSpace = spaces.find((s) => s.path === currentSpace.path) || null;
+      if (freshSpace) {
+        let children = await fs.loadSpaceChildren(freshSpace.path);
+        const groupOrder = cfg.groupOrder[freshSpace.path];
+        if (groupOrder) {
+          children = sortChildrenByOrder(children, groupOrder);
+        }
+        const updatedSpace = { ...freshSpace, groups: children };
+
+        let currentGroup = get().currentGroup;
+        if (currentGroup) {
+          const found = findGroupByPath(children, currentGroup.path);
+          currentGroup = found || null;
+        }
+
+        let currentNotebook = get().currentNotebook;
+        if (currentNotebook) {
+          const found = findNotebookByPath(children, currentNotebook.path);
+          if (found) {
+            const loaded = await fs.loadNotebook(found.path);
+            currentNotebook = loaded || null;
+          } else {
+            currentNotebook = null;
+          }
+        }
+
+        set({
+          spaces,
+          currentSpace: updatedSpace,
+          currentGroup,
+          currentNotebook,
+          currentNoteBlock: currentNotebook ? get().currentNoteBlock : null,
+        });
+      } else {
+        set({ spaces, currentSpace: null, currentGroup: null, currentNotebook: null, currentNoteBlock: null });
+      }
+    } else {
+      set({ spaces });
+    }
   },
 }));

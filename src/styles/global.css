@@ -460,6 +460,25 @@ input:focus, textarea:focus {
   background: var(--bg-hover);
 }
 
+.tree-item.dragging {
+  opacity: 0.4;
+  touch-action: none;
+}
+
+.tree-item.drag-over {
+  background: var(--accent-light);
+  outline: 1.5px dashed var(--accent);
+  outline-offset: -1.5px;
+  border-radius: var(--radius-sm);
+}
+
+.directory-tree.drag-over-root {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  outline: 1.5px dashed var(--accent);
+  outline-offset: -1.5px;
+  border-radius: var(--radius-sm);
+}
+
 
 .tree-item.notebook.active {
   background: var(--accent-light);
@@ -1342,4 +1361,38 @@ input:focus, textarea:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-tertiary);
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.toast-item {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  box-shadow: var(--shadow-md);
+  animation: toast-in 200ms ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

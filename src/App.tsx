@@ -5,6 +5,7 @@ import DirectoryPanel from '@/components/DirectoryPanel';
 import NotePanel from '@/components/NotePanel';
 import PropertyPanel from '@/components/PropertyPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
+import Toast from '@/components/Toast';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { Code } from 'lucide-react';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
@@ -103,6 +104,7 @@ const App: React.FC = () => {
           <PropertyPanel />
         </>
       )}
+      <Toast />
     </div>
   );
 };

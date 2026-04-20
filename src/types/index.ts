@@ -31,7 +31,7 @@ export interface Space {
   name: string;
   path: string;
   icon?: string;
-  groups: Group[];
+  groups: (Group | Notebook)[];
 }
 
 export type ViewMode = 'list' | 'card' | 'compact';
