@@ -171,7 +171,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           </button>
           <button className="context-menu-item" onClick={handleCopyNote}>
             <CopyPlus size={14} />
-            复制笔记
+            复制笔记块
           </button>
           {clipboardHasNote && (
             <button className="context-menu-item" onClick={handlePasteNote}>

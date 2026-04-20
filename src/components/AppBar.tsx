@@ -171,9 +171,9 @@ const AppBar: React.FC = () => {
       </div>
 
       <div className="app-bar-footer">
-        <button className="app-bar-btn" onClick={toggleSidebar} title={isSidebarCollapsed ? '展开' : '收起'}>
+        <button className="app-bar-btn" onClick={toggleSidebar} title={isSidebarCollapsed ? '展开/收起' : '收起/展开'}>
           {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          {!isSidebarCollapsed && <span className="app-bar-btn-label">{isSidebarCollapsed ? '展开' : '收起'}</span>}
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">{isSidebarCollapsed ? '展开/收起' : '收起/展开'}</span>}
         </button>
         <button className="app-bar-btn" onClick={toggleTheme} title="切换主题">
           {isDarkTheme ? <Sun size={18} /> : <Moon size={18} />}
@@ -189,13 +189,13 @@ const AppBar: React.FC = () => {
         <>
           <div className="context-menu-overlay" onClick={closeContextMenu} />
           <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
-            <button className="context-menu-item" onClick={() => handleChangeIcon(contextMenu.space)}>
-              <Smile size={14} />
-              更改图标
-            </button>
             <button className="context-menu-item" onClick={() => handleRename(contextMenu.space)}>
               <Edit3 size={14} />
               重命名
+            </button>
+            <button className="context-menu-item" onClick={() => handleChangeIcon(contextMenu.space)}>
+              <Smile size={14} />
+              更改图标
             </button>
             <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.space)}>
               <FolderOpen size={14} />

@@ -357,11 +357,11 @@ const DirectoryPanel: React.FC = () => {
             )}
             {isGroup(contextMenu.item) && (
               <>
-                <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
-                  <FolderPlus size={14} />新建子分组
-                </button>
                 <button className="context-menu-item" onClick={() => { handleAddNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FilePlus size={14} />新建笔记本
+                </button>
+                <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
+                  <FolderPlus size={14} />新建子分组
                 </button>
                 <div className="context-menu-divider" />
                 <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.item as Group)}>
@@ -419,11 +419,11 @@ const DirectoryPanel: React.FC = () => {
         <>
           <div className="context-menu-overlay" onClick={closeContextMenu} />
           <div className="context-menu" style={{ top: blankContextMenu.y, left: blankContextMenu.x }}>
-            <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
-              <FolderPlus size={14} />新增分组
-            </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebook(currentSpace.path); closeContextMenu(); }}>
               <FilePlus size={14} />新建笔记本
+            </button>
+            <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
+              <FolderPlus size={14} />新增分组
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
