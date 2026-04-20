@@ -5,8 +5,9 @@ import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
-  ChevronsDown, ChevronsUp, ArrowRight
+  ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink
 } from 'lucide-react';
+import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
@@ -233,6 +234,24 @@ const DirectoryPanel: React.FC = () => {
     });
   };
 
+  const handleOpenDirectory = async (group: Group) => {
+    try {
+      await revealItemInDir(group.path);
+    } catch (e) {
+      console.error('Failed to reveal directory:', e);
+    }
+    closeContextMenu();
+  };
+
+  const handleOpenInEditor = async (notebook: Notebook) => {
+    try {
+      await openPath(notebook.path);
+    } catch (e) {
+      console.error('Failed to open in editor:', e);
+    }
+    closeContextMenu();
+  };
+
   const filterItems = (items: (Group | Notebook)[]): (Group | Notebook)[] => {
     if (!searchQuery) return items;
     const q = searchQuery.toLowerCase();
@@ -344,7 +363,18 @@ const DirectoryPanel: React.FC = () => {
                 <button className="context-menu-item" onClick={() => { handleAddNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FilePlus size={14} />新建笔记本
                 </button>
+                <div className="context-menu-divider" />
+                <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.item as Group)}>
+                  <FolderOpen size={14} />
+                  打开目录位置
+                </button>
               </>
+            )}
+            {isNotebook(contextMenu.item) && (
+              <button className="context-menu-item" onClick={() => handleOpenInEditor(contextMenu.item as Notebook)}>
+                <ExternalLink size={14} />
+                用编辑器打开
+              </button>
             )}
             <div className="context-menu-divider" />
             <div className="context-menu-submenu">

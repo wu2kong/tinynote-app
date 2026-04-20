@@ -43,7 +43,6 @@ const PropertyPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
   const currentNoteBlock = useStore((s) => s.currentNoteBlock);
   const updateNoteBlock = useStore((s) => s.updateNoteBlock);
-  const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
   const [tagInput, setTagInput] = useState('');
   const [contentExpanded, setContentExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
@@ -193,10 +192,6 @@ const PropertyPanel: React.FC = () => {
     });
   };
 
-  const handleDelete = () => {
-    deleteNoteBlock(currentNoteBlock.id);
-  };
-
   return (
     <div className="property-panel">
       <div className="property-panel-header">
@@ -324,11 +319,6 @@ const PropertyPanel: React.FC = () => {
           {new Date(currentNoteBlock.updatedAt).toLocaleString()}
         </span>
       </div>
-
-      {/* <button className="btn btn-danger property-delete-btn" onClick={handleDelete}>
-        <Trash2 size={14} />
-        删除笔记块
-      </button> */}
     </div>
   );
 };

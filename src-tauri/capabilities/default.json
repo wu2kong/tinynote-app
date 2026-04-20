@@ -36,10 +36,14 @@
     "clipboard-manager:default",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-text",
-    "shell:allow-open",
     "shell:default",
-    "shell:allow-execute",
-    "opener:allow-open-path",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$HOME" }
+      ]
+    },
     "opener:allow-reveal-item-in-dir"
   ]
 }
