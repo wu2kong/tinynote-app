@@ -5,7 +5,8 @@ import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
-  ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink
+  ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink,
+  PanelLeftOpen, PanelLeftClose
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
 import InputModal from './InputModal';
@@ -41,6 +42,8 @@ const DirectoryPanel: React.FC = () => {
   const expandAllGroups = useStore((s) => s.expandAllGroups);
   const collapseAllGroups = useStore((s) => s.collapseAllGroups);
   const spaces = useStore((s) => s.spaces);
+  const showAppBar = useStore((s) => s.showAppBar);
+  const toggleAppBar = useStore((s) => s.toggleAppBar);
 
   const [dragItem, setDragItem] = useState<DragItemInfo | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
@@ -324,6 +327,9 @@ const DirectoryPanel: React.FC = () => {
   return (
     <div className="directory-panel">
       <div className="directory-header">
+        <button className="directory-sidebar-toggle" onClick={toggleAppBar} title={showAppBar ? '隐藏侧边栏' : '显示侧边栏'}>
+          {showAppBar ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+        </button>
         <div className="directory-search">
           <Search size={14} />
           <input

@@ -12,6 +12,7 @@ interface AppActions {
   setNoteBlock: (block: NoteBlock | null) => void;
   toggleTheme: () => void;
   toggleSidebar: () => void;
+  toggleAppBar: () => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
   setStoragePath: (path: string | null) => Promise<void>;
@@ -129,6 +130,7 @@ export const useStore = create<AppStore>((set, get) => ({
   currentNoteBlock: null,
   isDarkTheme: false,
   isSidebarCollapsed: false,
+  showAppBar: true,
   viewMode: 'list' as ViewMode,
   searchQuery: '',
   storagePath: null,
@@ -166,6 +168,12 @@ export const useStore = create<AppStore>((set, get) => ({
     const next = !get().isSidebarCollapsed;
     set({ isSidebarCollapsed: next });
     config.saveConfig({ isSidebarCollapsed: next });
+  },
+
+  toggleAppBar: () => {
+    const next = !get().showAppBar;
+    set({ showAppBar: next });
+    config.saveConfig({ showAppBar: next });
   },
 
   initApp: async () => {
@@ -232,6 +240,7 @@ export const useStore = create<AppStore>((set, get) => ({
           expandedGroupPaths: expandedPaths,
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
+          showAppBar: cfg.showAppBar ?? true,
           viewMode: cfg.viewMode as ViewMode,
         });
       } else {
@@ -239,6 +248,7 @@ export const useStore = create<AppStore>((set, get) => ({
           spaces,
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
+          showAppBar: cfg.showAppBar ?? true,
           viewMode: cfg.viewMode as ViewMode,
         });
       }
@@ -246,6 +256,7 @@ export const useStore = create<AppStore>((set, get) => ({
       set({
         isDarkTheme: cfg.isDarkTheme,
         isSidebarCollapsed: cfg.isSidebarCollapsed,
+        showAppBar: cfg.showAppBar ?? true,
         viewMode: cfg.viewMode as ViewMode,
       });
     }

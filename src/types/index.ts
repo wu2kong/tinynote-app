@@ -44,6 +44,7 @@ export interface AppState {
   currentNoteBlock: NoteBlock | null;
   isDarkTheme: boolean;
   isSidebarCollapsed: boolean;
+  showAppBar: boolean;
   viewMode: ViewMode;
   searchQuery: string;
   storagePath: string | null;

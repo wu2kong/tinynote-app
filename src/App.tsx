@@ -59,6 +59,7 @@ const App: React.FC = () => {
   const initApp = useStore((s) => s.initApp);
   const setStoragePath = useStore((s) => s.setStoragePath);
   const currentNotebook = useStore((s) => s.currentNotebook);
+  const showAppBar = useStore((s) => s.showAppBar);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,7 +95,7 @@ const App: React.FC = () => {
 
   return (
     <div className="app-layout">
-      <AppBar />
+      {showAppBar && <AppBar />}
       <DirectoryPanel />
       {isSourceMode ? (
         <SourceEditorPanel />

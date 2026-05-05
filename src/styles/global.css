@@ -408,8 +408,9 @@ input:focus, textarea:focus {
 .directory-header {
   padding: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 }
 
 .directory-search {
@@ -437,6 +438,27 @@ input:focus, textarea:focus {
 .directory-search svg {
   color: var(--text-tertiary);
   flex-shrink: 0;
+}
+
+.directory-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: background var(--transition), color var(--transition);
+  flex-shrink: 0;
+  height: 32px;
+  width: 32px;
+}
+
+.directory-sidebar-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .directory-actions {
