@@ -148,17 +148,17 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           className="context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <button className="context-menu-item" onClick={handleAddAbove}>
-            <Plus size={14} />
-            在上方增加笔记块
-          </button>
           <button className="context-menu-item" onClick={handleAddBelow}>
             <Plus size={14} />
-            在下方增加笔记块
+            添加笔记块
           </button>
           <button className="context-menu-item" onClick={handleDuplicate}>
             <CopyPlus size={14} />
-            在下方创建副本
+            创建副本
+          </button>
+          <button className="context-menu-item" onClick={handleAddAbove}>
+            <Plus size={14} />
+            在上方增加笔记块
           </button>
           <div className="context-menu-divider" />
           <button className="context-menu-item" onClick={handleCopyContent}>
@@ -169,6 +169,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
             <Copy size={14} />
             复制标题和正文
           </button>
+          <div className="context-menu-divider" />
           <button className="context-menu-item" onClick={handleCopyNote}>
             <CopyPlus size={14} />
             复制笔记块

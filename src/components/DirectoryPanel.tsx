@@ -361,6 +361,13 @@ const DirectoryPanel: React.FC = () => {
                 {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
               </button>
             )}
+            <button className="context-menu-item" onClick={() => {
+              if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);
+              else handleRenameNotebook(contextMenu!.item as Notebook);
+              closeContextMenu();
+            }}>
+              <Edit3 size={14} />重命名
+            </button>
             {isGroup(contextMenu.item) && (
               <>
                 <button className="context-menu-item" onClick={() => { handleAddNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
@@ -403,13 +410,6 @@ const DirectoryPanel: React.FC = () => {
               </div>
             </div>
             <div className="context-menu-divider" />
-            <button className="context-menu-item" onClick={() => {
-              if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);
-              else handleRenameNotebook(contextMenu!.item as Notebook);
-              closeContextMenu();
-            }}>
-              <Edit3 size={14} />重命名
-            </button>
             <button className="context-menu-item danger" onClick={() => {
               if (isGroup(contextMenu!.item)) handleDeleteGroup(contextMenu!.item as Group);
               else handleDeleteNotebook(contextMenu!.item as Notebook);
@@ -432,14 +432,14 @@ const DirectoryPanel: React.FC = () => {
               <FolderPlus size={14} />新增分组
             </button>
             <div className="context-menu-divider" />
-            <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
-              <RefreshCw size={14} />刷新缓存
-            </button>
             <button className="context-menu-item" onClick={() => { expandAllGroups(); closeContextMenu(); }}>
               <ChevronsDown size={14} />展开全部
             </button>
             <button className="context-menu-item" onClick={() => { collapseAllGroups(); closeContextMenu(); }}>
               <ChevronsUp size={14} />收起全部
+            </button>
+            <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
+              <RefreshCw size={14} />刷新缓存
             </button>
           </div>
         </>

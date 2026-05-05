@@ -53,6 +53,13 @@ const SourceEditorPanel: React.FC = () => {
       />
       <div className="source-editor-panel-footer">
         <button
+          className="btn"
+          onClick={() => { toggleSourceMode(); setSourceContent(''); }}
+          title="退出源码模式"
+        >
+          取消
+        </button>
+        <button
           className="btn btn-primary"
           onClick={() => {
             const blocks = parseNoteBlocks(sourceContent);
