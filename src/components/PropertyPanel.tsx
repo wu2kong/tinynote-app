@@ -50,6 +50,7 @@ const PropertyPanel: React.FC = () => {
   const contentExpandedRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
 
   const [localTitle, setLocalTitle] = useState('');
   const [localContent, setLocalContent] = useState('');
@@ -62,6 +63,9 @@ const PropertyPanel: React.FC = () => {
       prevBlockIdRef.current = currentNoteBlock.id;
       if (!composingRef.current.title) setLocalTitle(currentNoteBlock.title);
       if (!composingRef.current.content) setLocalContent(currentNoteBlock.content);
+      requestAnimationFrame(() => {
+        titleRef.current?.focus();
+      });
     }
   }, [currentNoteBlock]);
 
@@ -201,10 +205,24 @@ const PropertyPanel: React.FC = () => {
       <div className="property-field">
         <label>标题</label>
         <input
+          ref={titleRef}
           type="text"
           className="property-input"
           value={localTitle}
           onChange={(e) => handleTitleChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              if (isEditing) {
+                textareaRef.current?.focus();
+              } else {
+                setIsEditing(true);
+                requestAnimationFrame(() => {
+                  textareaRef.current?.focus();
+                });
+              }
+            }
+          }}
           onCompositionStart={() => { composingRef.current.title = true; }}
           onCompositionEnd={() => handleCompositionEnd('title')}
           placeholder="笔记标题"
@@ -217,6 +235,7 @@ const PropertyPanel: React.FC = () => {
             <label>正文</label>
             <select
               className="property-select-inline"
+              tabIndex={-1}
               value={currentNoteBlock.contentType || 'text'}
               onChange={(e) => updateNoteBlock(currentNoteBlock.id, { contentType: e.target.value as ContentType })}
             >
@@ -228,22 +247,25 @@ const PropertyPanel: React.FC = () => {
             </select>
           </div>
           <div className="property-field-actions">
-            <button 
-              className="content-action-btn" 
+            <button
+              className="content-action-btn"
+              tabIndex={-1}
               onClick={handleCopyContent}
               title="复制内容"
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
             </button>
-            <button 
-              className="content-action-btn" 
+            <button
+              className="content-action-btn"
+              tabIndex={-1}
               onClick={() => setIsEditing(!isEditing)}
               title={isEditing ? '预览' : '编辑'}
             >
               {isEditing ? <Eye size={14} /> : <Edit3 size={14} />}
             </button>
-            <button 
-              className="content-action-btn" 
+            <button
+              className="content-action-btn"
+              tabIndex={-1}
               onClick={toggleContentExpanded}
               title={contentExpanded ? '收起' : '展开'}
             >
@@ -285,7 +307,7 @@ const PropertyPanel: React.FC = () => {
           {currentNoteBlock.tags.map((tag) => (
             <span key={tag} className="property-tag">
               {tag}
-              <button className="property-tag-remove" onClick={() => handleRemoveTag(tag)}>
+              <button className="property-tag-remove" tabIndex={-1} onClick={() => handleRemoveTag(tag)}>
                 <X size={12} />
               </button>
             </span>
