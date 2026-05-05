@@ -408,12 +408,29 @@ input:focus, textarea:focus {
 .directory-header {
   padding: 12px;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.directory-sidebar-toggle {
+  /* width: 36px; */
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: color var(--transition);
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+
+.directory-sidebar-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .directory-search {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -438,27 +455,6 @@ input:focus, textarea:focus {
 .directory-search svg {
   color: var(--text-tertiary);
   flex-shrink: 0;
-}
-
-.directory-sidebar-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 6px;
-  cursor: pointer;
-  color: var(--text-tertiary);
-  transition: background var(--transition), color var(--transition);
-  flex-shrink: 0;
-  height: 32px;
-  width: 32px;
-}
-
-.directory-sidebar-toggle:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
 }
 
 .directory-actions {
@@ -693,6 +689,25 @@ input:focus, textarea:focus {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.left-panel-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: color var(--transition);
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+}
+
+.left-panel-toggle:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
 .note-panel-view-toggle {
@@ -1191,6 +1206,12 @@ input:focus, textarea:focus {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.source-editor-panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .source-editor-panel-textarea {

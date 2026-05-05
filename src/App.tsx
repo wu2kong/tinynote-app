@@ -7,12 +7,16 @@ import PropertyPanel from '@/components/PropertyPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import Toast from '@/components/Toast';
 import { selectStoragePath } from '@/utils/fileSystem';
-import { Code } from 'lucide-react';
+import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
+import { listen } from '@tauri-apps/api/event';
 
 const SourceEditorPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
+  const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
+  const showAppBar = useStore((s) => s.showAppBar);
+  const toggleDirectoryPanel = useStore((s) => s.toggleDirectoryPanel);
   const [sourceContent, setSourceContent] = useState('');
 
   if (!currentNotebook || !currentNotebook.isSourceMode) return null;
@@ -22,10 +26,21 @@ const SourceEditorPanel: React.FC = () => {
     setSourceContent(source);
   }
 
+  const leftPanelVisible = showDirectoryPanel || showAppBar;
+
   return (
     <div className="source-editor-panel">
       <div className="source-editor-panel-header">
-        <h3>{currentNotebook.name} — 源码模式</h3>
+        <div className="source-editor-panel-header-left">
+          <button
+            className="left-panel-toggle"
+            onClick={toggleDirectoryPanel}
+            title={leftPanelVisible ? '隐藏侧边栏' : '显示侧边栏'}
+          >
+            {leftPanelVisible ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+          </button>
+          <h3>{currentNotebook.name} — 源码模式</h3>
+        </div>
         <button className="icon-btn" onClick={() => { toggleSourceMode(); setSourceContent(''); }} title="退出源码模式">
           <Code size={16} />
         </button>
@@ -60,10 +75,27 @@ const App: React.FC = () => {
   const setStoragePath = useStore((s) => s.setStoragePath);
   const currentNotebook = useStore((s) => s.currentNotebook);
   const showAppBar = useStore((s) => s.showAppBar);
+  const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     initApp().finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const unlistenFns: (() => void)[] = [];
+    const setup = async () => {
+      const un1 = await listen<string>('toggle_app_bar', () => {
+        useStore.getState().toggleAppBar();
+      });
+      unlistenFns.push(un1);
+      const un2 = await listen<string>('toggle_directory', () => {
+        useStore.getState().toggleDirectoryPanel();
+      });
+      unlistenFns.push(un2);
+    };
+    setup();
+    return () => { unlistenFns.forEach(fn => fn()); };
   }, []);
 
   const handleSelectStorage = async () => {
@@ -96,7 +128,7 @@ const App: React.FC = () => {
   return (
     <div className="app-layout">
       {showAppBar && <AppBar />}
-      <DirectoryPanel />
+      {showDirectoryPanel && <DirectoryPanel />}
       {isSourceMode ? (
         <SourceEditorPanel />
       ) : (

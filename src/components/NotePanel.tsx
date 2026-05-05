@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import NoteBlockItem from './NoteBlock';
-import { List, LayoutGrid, AlignJustify, Plus, Search, ClipboardPaste } from 'lucide-react';
+import { List, LayoutGrid, AlignJustify, Plus, Search, ClipboardPaste, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -24,6 +24,9 @@ const NotePanel: React.FC = () => {
   const addNoteBlock = useStore((s) => s.addNoteBlock);
   const reorderNoteBlocks = useStore((s) => s.reorderNoteBlocks);
   const pasteNoteBlockAtEnd = useStore((s) => s.pasteNoteBlockAtEnd);
+  const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
+  const showAppBar = useStore((s) => s.showAppBar);
+  const toggleDirectoryPanel = useStore((s) => s.toggleDirectoryPanel);
 
   const [searchText, setSearchText] = useState('');
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -113,9 +116,18 @@ const NotePanel: React.FC = () => {
     );
   }
 
+  const leftPanelVisible = showDirectoryPanel || showAppBar;
+
   return (
     <div className="note-panel">
       <div className="note-panel-header">
+        <button
+          className="left-panel-toggle"
+          onClick={toggleDirectoryPanel}
+          title={leftPanelVisible ? '隐藏侧边栏' : '显示侧边栏'}
+        >
+          {leftPanelVisible ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+        </button>
         <div className="note-panel-view-toggle">
           <button
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}

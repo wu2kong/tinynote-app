@@ -13,6 +13,7 @@ interface AppActions {
   toggleTheme: () => void;
   toggleSidebar: () => void;
   toggleAppBar: () => void;
+  toggleDirectoryPanel: () => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
   setStoragePath: (path: string | null) => Promise<void>;
@@ -131,6 +132,7 @@ export const useStore = create<AppStore>((set, get) => ({
   isDarkTheme: false,
   isSidebarCollapsed: false,
   showAppBar: true,
+  showDirectoryPanel: true,
   viewMode: 'list' as ViewMode,
   searchQuery: '',
   storagePath: null,
@@ -174,6 +176,12 @@ export const useStore = create<AppStore>((set, get) => ({
     const next = !get().showAppBar;
     set({ showAppBar: next });
     config.saveConfig({ showAppBar: next });
+  },
+
+  toggleDirectoryPanel: () => {
+    const next = !get().showDirectoryPanel;
+    set({ showDirectoryPanel: next, showAppBar: next ? get().showAppBar : false });
+    config.saveConfig({ showDirectoryPanel: next, showAppBar: next ? get().showAppBar : false });
   },
 
   initApp: async () => {
@@ -241,6 +249,7 @@ export const useStore = create<AppStore>((set, get) => ({
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
+          showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           viewMode: cfg.viewMode as ViewMode,
         });
       } else {
@@ -249,6 +258,7 @@ export const useStore = create<AppStore>((set, get) => ({
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
+          showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           viewMode: cfg.viewMode as ViewMode,
         });
       }
@@ -257,6 +267,7 @@ export const useStore = create<AppStore>((set, get) => ({
         isDarkTheme: cfg.isDarkTheme,
         isSidebarCollapsed: cfg.isSidebarCollapsed,
         showAppBar: cfg.showAppBar ?? true,
+          showDirectoryPanel: cfg.showDirectoryPanel ?? true,
         viewMode: cfg.viewMode as ViewMode,
       });
     }

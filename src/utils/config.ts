@@ -4,6 +4,7 @@ export interface AppConfig {
   isDarkTheme: boolean;
   isSidebarCollapsed: boolean;
   showAppBar: boolean;
+  showDirectoryPanel: boolean;
   viewMode: string;
   storagePath: string | null;
   spaceOrder: string[];
@@ -19,6 +20,7 @@ const DEFAULT_CONFIG: AppConfig = {
   isDarkTheme: false,
   isSidebarCollapsed: false,
   showAppBar: true,
+  showDirectoryPanel: true,
   viewMode: 'list',
   storagePath: null,
   spaceOrder: [],

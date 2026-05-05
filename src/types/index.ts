@@ -45,6 +45,7 @@ export interface AppState {
   isDarkTheme: boolean;
   isSidebarCollapsed: boolean;
   showAppBar: boolean;
+  showDirectoryPanel: boolean;
   viewMode: ViewMode;
   searchQuery: string;
   storagePath: string | null;
