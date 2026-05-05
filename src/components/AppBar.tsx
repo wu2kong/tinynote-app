@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '@/store/useStore';
 import { Space } from '@/types';
 import {
@@ -38,6 +39,7 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: space.id });
   const icon = space.icon || space.name.charAt(0).toUpperCase();
+  const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -45,22 +47,47 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleMouseEnter = useCallback((e: React.MouseEvent) => {
+    if (isCollapsed) {
+      setTooltipRect(e.currentTarget.getBoundingClientRect());
+    }
+  }, [isCollapsed]);
+
+  const handleMouseLeave = useCallback(() => {
+    setTooltipRect(null);
+  }, []);
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`app-bar-space ${isActive ? 'active' : ''}`}
-      onClick={() => onSelect(space)}
-      onContextMenu={(e) => onContextMenu(e, space)}
-    >
-      <div className="app-bar-space-icon-row">
-        <span className="app-bar-drag-handle" {...attributes} {...listeners}>
-          <GripVertical size={12} />
-        </span>
-        <span className="app-bar-space-icon">{icon}</span>
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`app-bar-space ${isActive ? 'active' : ''}`}
+        onClick={() => onSelect(space)}
+        onContextMenu={(e) => onContextMenu(e, space)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="app-bar-space-icon-row">
+          <span className="app-bar-drag-handle" {...attributes} {...listeners}>
+            <GripVertical size={12} />
+          </span>
+          <span className="app-bar-space-icon">{icon}</span>
+        </div>
+        {!isCollapsed && <span className="app-bar-space-name">{space.name}</span>}
       </div>
-      {!isCollapsed && <span className="app-bar-space-name">{space.name}</span>}
-    </div>
+      {tooltipRect && createPortal(
+        <div className="app-bar-tooltip" style={{
+          position: 'fixed',
+          left: tooltipRect.right + 8,
+          top: tooltipRect.top + tooltipRect.height / 2,
+          transform: 'translateY(-50%)',
+        }}>
+          {space.name}
+        </div>,
+        document.body
+      )}
+    </>
   );
 };
 
