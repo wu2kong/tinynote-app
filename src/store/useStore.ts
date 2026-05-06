@@ -43,6 +43,7 @@ interface AppActions {
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
+  reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
   toggleSourceMode: () => void;
   reloadSpaces: () => Promise<void>;
   moveItem: (itemPath: string, itemKind: 'group' | 'notebook', newParentPath: string) => Promise<void>;
@@ -114,6 +115,20 @@ function sortChildrenByOrder(children: (Group | Notebook)[], order: string[]): (
     }
   }
   return [...ordered, ...remaining];
+}
+
+function sortTreeRecursively(children: (Group | Notebook)[], groupOrder: Record<string, string[]>, parentPath: string): (Group | Notebook)[] {
+  const order = groupOrder[parentPath] || [];
+  const sorted = sortChildrenByOrder([...children], order);
+  return sorted.map((item) => {
+    if ('children' in item) {
+      return {
+        ...item,
+        children: sortTreeRecursively(item.children, groupOrder, item.path),
+      };
+    }
+    return item;
+  });
 }
 
 function applyIconsToSpaces(spaces: Space[], icons: Record<string, string>): Space[] {
@@ -212,10 +227,7 @@ export const useStore = create<AppStore>((set, get) => ({
 
       if (currentSpace) {
         let children = await fs.loadSpaceChildren(currentSpace.path);
-        const groupOrder = cfg.groupOrder[currentSpace.path];
-        if (groupOrder) {
-          children = sortChildrenByOrder(children, groupOrder);
-        }
+        children = sortTreeRecursively(children, cfg.groupOrder, currentSpace.path);
         const updatedSpace = { ...currentSpace, groups: children };
         currentSpace = updatedSpace;
 
@@ -276,11 +288,7 @@ export const useStore = create<AppStore>((set, get) => ({
   selectSpace: async (space) => {
     const children = await fs.loadSpaceChildren(space.path);
     const cfg = config.getConfig();
-    let sortedChildren = children;
-    const groupOrder = cfg.groupOrder[space.path];
-    if (groupOrder) {
-      sortedChildren = sortChildrenByOrder(children, groupOrder);
-    }
+    const sortedChildren = sortTreeRecursively(children, cfg.groupOrder, space.path);
     const updatedSpace = { ...space, groups: sortedChildren };
     set((state) => ({
       currentSpace: updatedSpace,
@@ -440,7 +448,7 @@ selectNotebook: async (notebook: Notebook) => {
         currentSpace: updatedSpace,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
-      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.filter((item): item is Group => 'children' in item).map((g) => g.path) } });
+      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
     }
   },
 
@@ -548,6 +556,7 @@ selectNotebook: async (notebook: Notebook) => {
         currentSpace: updatedSpace,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
+      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
     }
   },
 
@@ -726,6 +735,53 @@ selectNotebook: async (notebook: Notebook) => {
     set({ currentNotebook: updated });
   },
 
+  reorderChildren: async (parentPath, fromIndex, toIndex) => {
+    const { currentSpace } = get();
+    if (!currentSpace) return;
+    if (fromIndex === toIndex) return;
+
+    const reorderInTree = (items: (Group | Notebook)[]): (Group | Notebook)[] => {
+      if (parentPath === currentSpace.path) {
+        const result = [...items];
+        const [moved] = result.splice(fromIndex, 1);
+        result.splice(toIndex, 0, moved);
+        return result;
+      }
+      return items.map((item) => {
+        if ('children' in item && item.path === parentPath) {
+          const childResult = [...item.children];
+          const [moved] = childResult.splice(fromIndex, 1);
+          childResult.splice(toIndex, 0, moved);
+          return { ...item, children: childResult } as Group;
+        }
+        if ('children' in item) {
+          return { ...item, children: reorderInTree(item.children) } as Group;
+        }
+        return item;
+      });
+    };
+
+    const newGroups = reorderInTree(currentSpace.groups);
+    const updatedSpace = { ...currentSpace, groups: newGroups };
+
+    set((state) => ({
+      currentSpace: updatedSpace,
+      spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
+    }));
+
+    const cfg = config.getConfig();
+    const newGroupOrder = { ...cfg.groupOrder };
+    if (parentPath === currentSpace.path) {
+      newGroupOrder[parentPath] = newGroups.map((c) => c.path);
+    } else {
+      const parentGroup = findGroupByPath(newGroups, parentPath);
+      if (parentGroup) {
+        newGroupOrder[parentPath] = parentGroup.children.map((c) => c.path);
+      }
+    }
+    config.saveConfig({ groupOrder: newGroupOrder });
+  },
+
   toggleSourceMode: () => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
@@ -756,11 +812,7 @@ selectNotebook: async (notebook: Notebook) => {
 
     const children = await fs.loadSpaceChildren(currentSpace.path);
     const cfg = config.getConfig();
-    let sortedChildren = children;
-    const groupOrder = cfg.groupOrder[currentSpace.path];
-    if (groupOrder) {
-      sortedChildren = sortChildrenByOrder(children, groupOrder);
-    }
+    const sortedChildren = sortTreeRecursively(children, cfg.groupOrder, currentSpace.path);
     const updatedSpace = { ...currentSpace, groups: sortedChildren };
 
     const updatePath = (oldBase: string, newBase: string, path: string): string => {
@@ -802,9 +854,8 @@ selectNotebook: async (notebook: Notebook) => {
       spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
     }));
 
-    const updatedGroupPaths = sortedChildren.filter((item): item is Group => 'children' in item).map((g) => g.path);
     config.saveConfig({
-      groupOrder: { ...cfg.groupOrder, [currentSpace.path]: updatedGroupPaths },
+      groupOrder: { ...cfg.groupOrder, [currentSpace.path]: sortedChildren.map((c) => c.path) },
       expandedGroupPaths: newExpandedPaths,
       currentGroupPath: updatedCurrentGroup?.path || cfg.currentGroupPath,
       currentNotebookPath: updatedCurrentNotebook?.path || cfg.currentNotebookPath,
@@ -823,10 +874,7 @@ selectNotebook: async (notebook: Notebook) => {
       const freshSpace = spaces.find((s) => s.path === currentSpace.path) || null;
       if (freshSpace) {
         let children = await fs.loadSpaceChildren(freshSpace.path);
-        const groupOrder = cfg.groupOrder[freshSpace.path];
-        if (groupOrder) {
-          children = sortChildrenByOrder(children, groupOrder);
-        }
+        children = sortTreeRecursively(children, cfg.groupOrder, freshSpace.path);
         const updatedSpace = { ...freshSpace, groups: children };
 
         let currentGroup = get().currentGroup;

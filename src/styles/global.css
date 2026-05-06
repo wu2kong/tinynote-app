@@ -541,10 +541,37 @@ input:focus, textarea:focus {
 .tree-badge {
   background: var(--bg-active);
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 10px;
   padding: 0 6px;
   border-radius: 10px;
   flex-shrink: 0;
+}
+
+.tree-grip-handle {
+  width: 10px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  cursor: grab;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--transition), background var(--transition);
+}
+
+.tree-item:hover .tree-grip-handle {
+  opacity: 1;
+}
+
+.tree-grip-handle:active {
+  cursor: grabbing;
+}
+
+.tree-grip-handle:hover {
+  background: var(--bg-active);
+  color: var(--text-secondary);
 }
 
 .tree-item-action {

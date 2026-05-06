@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook } from '@/types';
@@ -6,9 +6,23 @@ import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink,
-  PanelLeftOpen, PanelLeftClose
+  PanelLeftOpen, PanelLeftClose, GripVertical
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
@@ -18,14 +32,165 @@ interface DragItemInfo {
   kind: 'group' | 'notebook';
 }
 
+interface SortableTreeItemProps {
+  item: Group | Notebook;
+  depth: number;
+  onPointerDown: (e: React.PointerEvent, item: Group | Notebook) => void;
+  onClick: (fn: () => void) => void;
+  onContextMenu: (e: React.MouseEvent, item: Group | Notebook) => void;
+  onAddNotebook: (parentPath: string) => void;
+  isDragOverMove: boolean;
+  isDraggingMove: boolean;
+  currentGroupPath: string | null;
+  currentNotebookPath: string | null;
+}
+
 const DRAG_THRESHOLD = 64;
+
+function findParentAndIndices(
+  items: (Group | Notebook)[],
+  activeId: string,
+  overId: string,
+  parentPath: string
+): { parentPath: string; oldIndex: number; newIndex: number } | null {
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].id === activeId) {
+      const overIdx = items.findIndex((item) => item.id === overId);
+      if (overIdx !== -1) return { parentPath, oldIndex: i, newIndex: overIdx };
+      return null;
+    }
+    if (isGroup(items[i])) {
+      const found = findParentAndIndices((items[i] as Group).children, activeId, overId, items[i].path);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
+  item, depth, onPointerDown, onClick, onContextMenu, onAddNotebook,
+  isDragOverMove, isDraggingMove,
+  currentGroupPath, currentNotebookPath,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const toggleExpandedGroupPath = useStore((s) => s.toggleExpandedGroupPath);
+  const selectGroup = useStore((s) => s.selectGroup);
+  const selectNotebook = useStore((s) => s.selectNotebook);
+  const expandedGroupPaths = useStore((s) => s.expandedGroupPaths);
+
+  const sortableStyle: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : undefined,
+    paddingLeft: `${depth * 16 + 8}px`,
+  };
+
+  if (isGroup(item)) {
+    const group = item as Group;
+    const groupExpanded = expandedGroupPaths.includes(group.path);
+
+    return (
+      <div data-drop-path={group.path}>
+        <div
+          ref={setNodeRef}
+          className={`tree-item ${currentGroupPath === group.path ? 'active' : ''} ${isDragOverMove ? 'drag-over' : ''} ${isDragging || isDraggingMove ? 'dragging' : ''}`}
+          style={sortableStyle}
+          onPointerDown={(e) => onPointerDown(e, group)}
+          onClick={() => onClick(() => { toggleExpandedGroupPath(group.path); selectGroup(group); })}
+          onContextMenu={(e) => onContextMenu(e, group)}
+        >
+          <button
+            type="button"
+            className="tree-grip-handle"
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            tabIndex={-1}
+          >
+            <GripVertical size={12} />
+          </button>
+          <span className="tree-icon">
+            {groupExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </span>
+          <Folder size={14} className="tree-folder-icon" />
+          <span className="tree-name">{group.name}</span>
+          <button
+            className="tree-item-action"
+            onClick={(e) => { e.stopPropagation(); onAddNotebook(group.path); }}
+            title="新建笔记本"
+          >
+            <Plus size={12} />
+          </button>
+          <span className="tree-badge">{group.notebookCount}</span>
+        </div>
+        {groupExpanded && (
+          <SortableContext
+            items={group.children.map((c) => c.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {group.children.map((child) => (
+              <SortableTreeItem
+                key={child.id}
+                item={child}
+                depth={depth + 1}
+                onPointerDown={onPointerDown}
+                onClick={onClick}
+                onContextMenu={onContextMenu}
+                onAddNotebook={onAddNotebook}
+                isDragOverMove={false}
+                isDraggingMove={false}
+                currentGroupPath={currentGroupPath}
+                currentNotebookPath={currentNotebookPath}
+              />
+            ))}
+          </SortableContext>
+        )}
+      </div>
+    );
+  }
+
+  const notebook = item as Notebook;
+  return (
+    <div
+      ref={setNodeRef}
+      className={`tree-item notebook ${currentNotebookPath === notebook.path ? 'active' : ''} ${isDragging || isDraggingMove ? 'dragging' : ''}`}
+      style={sortableStyle}
+      onPointerDown={(e) => onPointerDown(e, notebook)}
+      onClick={() => onClick(() => selectNotebook(notebook))}
+      onContextMenu={(e) => onContextMenu(e, notebook)}
+    >
+      <button
+        type="button"
+        className="tree-grip-handle"
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
+      >
+        <GripVertical size={12} />
+      </button>
+      <span className="tree-icon" style={{ visibility: 'hidden' } as React.CSSProperties}>
+        <ChevronRight size={14} />
+      </span>
+      <FileText size={14} className="tree-file-icon" />
+      <span className="tree-name">{notebook.name}</span>
+    </div>
+  );
+};
 
 const DirectoryPanel: React.FC = () => {
   const currentSpace = useStore((s) => s.currentSpace);
   const currentGroup = useStore((s) => s.currentGroup);
   const currentNotebook = useStore((s) => s.currentNotebook);
   const searchQuery = useStore((s) => s.searchQuery);
-  const expandedGroupPaths = useStore((s) => s.expandedGroupPaths);
   const selectGroup = useStore((s) => s.selectGroup);
   const selectNotebook = useStore((s) => s.selectNotebook);
   const toggleExpandedGroupPath = useStore((s) => s.toggleExpandedGroupPath);
@@ -39,8 +204,10 @@ const DirectoryPanel: React.FC = () => {
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
   const moveItem = useStore((s) => s.moveItem);
   const reloadSpaces = useStore((s) => s.reloadSpaces);
+  const reorderChildren = useStore((s) => s.reorderChildren);
   const expandAllGroups = useStore((s) => s.expandAllGroups);
   const collapseAllGroups = useStore((s) => s.collapseAllGroups);
+  const expandedGroupPaths = useStore((s) => s.expandedGroupPaths);
   const spaces = useStore((s) => s.spaces);
   const showAppBar = useStore((s) => s.showAppBar);
   const toggleAppBar = useStore((s) => s.toggleAppBar);
@@ -57,6 +224,10 @@ const DirectoryPanel: React.FC = () => {
   const moveItemRef = useRef(moveItem);
   moveItemRef.current = moveItem;
   const isMountedRef = useRef(true);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   const updateDropTarget = useCallback((path: string | null) => {
     dropTargetRef.current = path;
@@ -164,6 +335,22 @@ const DirectoryPanel: React.FC = () => {
     fn();
   }, []);
 
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    if (!currentSpace) return;
+
+    const result = findParentAndIndices(
+      currentSpace.groups,
+      String(active.id),
+      String(over.id),
+      currentSpace.path
+    );
+    if (result) {
+      reorderChildren(result.parentPath, result.oldIndex, result.newIndex);
+    }
+  }, [currentSpace, reorderChildren]);
+
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: Group | Notebook } | null>(null);
   const [blankContextMenu, setBlankContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [modalState, setModalState] = useState<{
@@ -181,31 +368,31 @@ const DirectoryPanel: React.FC = () => {
     onConfirm: () => void;
   }>({ open: false, title: '', message: '', onConfirm: () => {} });
 
-  const handleContextMenu = (e: React.MouseEvent, item: Group | Notebook) => {
+  const handleContextMenu = useCallback((e: React.MouseEvent, item: Group | Notebook) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, item });
-  };
+  }, []);
 
-  const closeContextMenu = () => { setContextMenu(null); setBlankContextMenu(null); };
+  const closeContextMenu = useCallback(() => { setContextMenu(null); setBlankContextMenu(null); }, []);
 
-  const handleBlankContextMenu = (e: React.MouseEvent) => {
+  const handleBlankContextMenu = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.tree-item')) return;
     e.preventDefault();
     closeContextMenu();
     setBlankContextMenu({ x: e.clientX, y: e.clientY });
-  };
+  }, [closeContextMenu]);
+
+  const handleAddNotebookModal = useCallback((parentPath: string) => {
+    setModalState({
+      open: true, title: '新建笔记本', placeholder: '笔记本名称', defaultValue: '', confirmLabel: '新建',
+      onSubmit: (name) => { addNotebook(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
+    });
+  }, [addNotebook]);
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
       open: true, title: '新建分组', placeholder: '分组名称', defaultValue: '', confirmLabel: '新建',
       onSubmit: (name) => { addGroup(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
-    });
-  };
-
-  const handleAddNotebook = (parentPath: string) => {
-    setModalState({
-      open: true, title: '新建笔记本', placeholder: '笔记本名称', defaultValue: '', confirmLabel: '新建',
-      onSubmit: (name) => { addNotebook(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
@@ -277,7 +464,7 @@ const DirectoryPanel: React.FC = () => {
           <div key={group.id} data-drop-path={group.path}>
             <div
               className={`tree-item ${currentGroup?.path === group.path ? 'active' : ''} ${isDragOver ? 'drag-over' : ''} ${isDragging ? 'dragging' : ''}`}
-              style={{ paddingLeft: `${depth * 16 + 8}px` }}
+              style={{ paddingLeft: `${depth * 16 + 8}px` } as React.CSSProperties}
               onPointerDown={(e) => handlePointerDown(e, group)}
               onClick={() => handleClick(() => { toggleExpandedGroupPath(group.path); selectGroup(group); })}
               onContextMenu={(e) => handleContextMenu(e, group)}
@@ -289,7 +476,7 @@ const DirectoryPanel: React.FC = () => {
               <span className="tree-name">{group.name}</span>
               <button
                 className="tree-item-action"
-                onClick={(e) => { e.stopPropagation(); handleAddNotebook(group.path); }}
+                onClick={(e) => { e.stopPropagation(); handleAddNotebookModal(group.path); }}
                 title="新建笔记本"
               >
                 <Plus size={12} />
@@ -307,12 +494,12 @@ const DirectoryPanel: React.FC = () => {
         <div
           key={notebook.id}
           className={`tree-item notebook ${currentNotebook?.path === notebook.path ? 'active' : ''} ${isDragging ? 'dragging' : ''}`}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
+          style={{ paddingLeft: `${depth * 16 + 8}px` } as React.CSSProperties}
           onPointerDown={(e) => handlePointerDown(e, notebook)}
           onClick={() => handleClick(() => selectNotebook(notebook))}
           onContextMenu={(e) => handleContextMenu(e, notebook)}
         >
-          <span className="tree-icon" style={{ visibility: 'hidden' }}>
+          <span className="tree-icon" style={{ visibility: 'hidden' } as React.CSSProperties}>
             <ChevronRight size={14} />
           </span>
           <FileText size={14} className="tree-file-icon" />
@@ -323,6 +510,11 @@ const DirectoryPanel: React.FC = () => {
   };
 
   const isRootDragOver = dropTarget === currentSpace?.path;
+
+  const sortableChildrenIds = useMemo(
+    () => currentSpace ? currentSpace.groups.map((g) => g.id) : [],
+    [currentSpace]
+  );
 
   return (
     <div className="directory-panel">
@@ -346,7 +538,38 @@ const DirectoryPanel: React.FC = () => {
         data-drop-path={currentSpace?.path || ''}
         onContextMenu={handleBlankContextMenu}
       >
-        {currentSpace ? renderTree(currentSpace.groups) : (
+        {currentSpace ? (
+          searchQuery ? (
+            renderTree(currentSpace.groups)
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sortableChildrenIds}
+                strategy={verticalListSortingStrategy}
+              >
+                {currentSpace.groups.map((item) => (
+                  <SortableTreeItem
+                    key={item.id}
+                    item={item}
+                    depth={0}
+                    onPointerDown={handlePointerDown}
+                    onClick={handleClick}
+                    onContextMenu={handleContextMenu}
+                    onAddNotebook={handleAddNotebookModal}
+                    isDragOverMove={dropTarget === item.path}
+                    isDraggingMove={dragItem?.path === item.path}
+                    currentGroupPath={currentGroup?.path ?? null}
+                    currentNotebookPath={currentNotebook?.path ?? null}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )
+        ) : (
           <div className="directory-empty">选择一个空间以浏览</div>
         )}
       </div>
@@ -370,7 +593,7 @@ const DirectoryPanel: React.FC = () => {
             </button>
             {isGroup(contextMenu.item) && (
               <>
-                <button className="context-menu-item" onClick={() => { handleAddNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
+                <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FilePlus size={14} />新建笔记本
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
@@ -425,7 +648,7 @@ const DirectoryPanel: React.FC = () => {
         <>
           <div className="context-menu-overlay" onClick={closeContextMenu} />
           <div className="context-menu" style={{ top: blankContextMenu.y, left: blankContextMenu.x }}>
-            <button className="context-menu-item" onClick={() => { handleAddNotebook(currentSpace.path); closeContextMenu(); }}>
+            <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path); closeContextMenu(); }}>
               <FilePlus size={14} />新建笔记本
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
