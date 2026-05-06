@@ -83,6 +83,7 @@ const App: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
   const showAppBar = useStore((s) => s.showAppBar);
   const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
+  const zoomLevel = useStore((s) => s.zoomLevel);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -105,6 +106,24 @@ const App: React.FC = () => {
     return () => { unlistenFns.forEach(fn => fn()); };
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!e.metaKey) return;
+      if (e.key === '=') {
+        e.preventDefault();
+        useStore.getState().zoomIn();
+      } else if (e.key === '-') {
+        e.preventDefault();
+        useStore.getState().zoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        useStore.getState().resetZoom();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSelectStorage = async () => {
     const path = await selectStoragePath();
     if (path) {
@@ -117,7 +136,7 @@ const App: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="app-layout">
+      <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
         <div className="loading-screen">
           <div className="loading-icon">📝</div>
           <div className="loading-text">正在加载...</div>
@@ -133,7 +152,7 @@ const App: React.FC = () => {
   const isSourceMode = currentNotebook?.isSourceMode;
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
       {showAppBar && <AppBar />}
       {showDirectoryPanel && <DirectoryPanel />}
       {isSourceMode ? (

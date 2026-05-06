@@ -47,6 +47,7 @@ export interface AppState {
   showAppBar: boolean;
   showDirectoryPanel: boolean;
   viewMode: ViewMode;
+  zoomLevel: number;
   searchQuery: string;
   storagePath: string | null;
   expandedGroupPaths: string[];

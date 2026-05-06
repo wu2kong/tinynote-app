@@ -18,6 +18,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
+import ContextMenuPortal from './ContextMenuPortal';
 
 const EMOJI_OPTIONS = [
   '📝', '📒', '📓', '📔', '📕', '📗', '📘', '📙', '📚', '📖',
@@ -213,10 +214,8 @@ const AppBar: React.FC = () => {
       </div>
 
       {contextMenu && (
-        <>
-          <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
-            <button className="context-menu-item" onClick={() => handleRename(contextMenu.space)}>
+        <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+          <button className="context-menu-item" onClick={() => handleRename(contextMenu.space)}>
               <Edit3 size={14} />
               重命名
             </button>
@@ -233,8 +232,7 @@ const AppBar: React.FC = () => {
               <Trash2 size={14} />
               删除
             </button>
-          </div>
-        </>
+        </ContextMenuPortal>
       )}
 
       {showEmojiPicker && emojiPickerSpace && (

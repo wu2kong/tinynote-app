@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import NoteBlockItem from './NoteBlock';
+import ContextMenuPortal from './ContextMenuPortal';
 import { List, LayoutGrid, AlignJustify, Plus, Search, ClipboardPaste, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import {
   DndContext,
@@ -193,13 +194,8 @@ const NotePanel: React.FC = () => {
       </button>
 
       {contextMenu && (
-        <>
-          <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div
-            className="context-menu"
-            style={{ top: contextMenu.y, left: contextMenu.x }}
-          >
-            <button className="context-menu-item" onClick={handleAddNoteBlock}>
+        <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+          <button className="context-menu-item" onClick={handleAddNoteBlock}>
               <Plus size={14} />
               添加笔记块
             </button>
@@ -209,8 +205,7 @@ const NotePanel: React.FC = () => {
                 粘贴笔记
               </button>
             )}
-          </div>
-        </>
+        </ContextMenuPortal>
       )}
     </div>
   );

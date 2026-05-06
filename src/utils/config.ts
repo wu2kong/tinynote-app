@@ -3,6 +3,7 @@ import { readTextFile, writeTextFile, mkdir, exists, BaseDirectory } from '@taur
 export interface AppConfig {
   isDarkTheme: boolean;
   isSidebarCollapsed: boolean;
+  zoomLevel: number;
   showAppBar: boolean;
   showDirectoryPanel: boolean;
   viewMode: string;
@@ -19,6 +20,7 @@ export interface AppConfig {
 const DEFAULT_CONFIG: AppConfig = {
   isDarkTheme: false,
   isSidebarCollapsed: false,
+  zoomLevel: 1,
   showAppBar: true,
   showDirectoryPanel: true,
   viewMode: 'list',

@@ -9,6 +9,7 @@
 }
 
 :root {
+  --zoom: 1;
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-tertiary: #f1f3f5;
@@ -54,6 +55,9 @@
 html, body, #root {
   height: 100%;
   width: 100%;
+}
+
+html {
   overflow: hidden;
 }
 

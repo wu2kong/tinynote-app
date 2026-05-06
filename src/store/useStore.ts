@@ -46,6 +46,9 @@ interface AppActions {
   reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
   toggleSourceMode: () => void;
   reloadSpaces: () => Promise<void>;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
   moveItem: (itemPath: string, itemKind: 'group' | 'notebook', newParentPath: string) => Promise<void>;
 }
 
@@ -149,6 +152,7 @@ export const useStore = create<AppStore>((set, get) => ({
   showAppBar: true,
   showDirectoryPanel: true,
   viewMode: 'list' as ViewMode,
+  zoomLevel: 1,
   searchQuery: '',
   storagePath: null,
   expandedGroupPaths: [],
@@ -202,6 +206,8 @@ export const useStore = create<AppStore>((set, get) => ({
   initApp: async () => {
     const cfg = await config.loadConfig();
     applyTheme(cfg.isDarkTheme);
+    document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();
+    document.documentElement.style.setProperty('--zoom', (cfg.zoomLevel ?? 1).toString());
 
     const storagePath = cfg.storagePath || localStorage.getItem('tinynote-storagePath');
     if (storagePath) {
@@ -258,6 +264,7 @@ export const useStore = create<AppStore>((set, get) => ({
           currentNotebook,
           currentNoteBlock: null,
           expandedGroupPaths: expandedPaths,
+          zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
@@ -267,6 +274,7 @@ export const useStore = create<AppStore>((set, get) => ({
       } else {
         set({
           spaces,
+          zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
@@ -276,6 +284,7 @@ export const useStore = create<AppStore>((set, get) => ({
       }
     } else {
       set({
+        zoomLevel: cfg.zoomLevel ?? 1,
         isDarkTheme: cfg.isDarkTheme,
         isSidebarCollapsed: cfg.isSidebarCollapsed,
         showAppBar: cfg.showAppBar ?? true,
@@ -786,6 +795,38 @@ selectNotebook: async (notebook: Notebook) => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
     set({ currentNotebook: { ...currentNotebook, isSourceMode: !currentNotebook.isSourceMode } });
+  },
+
+  zoomIn: () => {
+    const { zoomLevel } = get();
+    const next = Math.min(2, Math.round((zoomLevel + 0.1) * 10) / 10);
+    if (next !== zoomLevel) {
+      set({ zoomLevel: next });
+      document.documentElement.style.zoom = next.toString();
+      document.documentElement.style.setProperty('--zoom', next.toString());
+      config.saveConfig({ zoomLevel: next });
+    }
+  },
+
+  zoomOut: () => {
+    const { zoomLevel } = get();
+    const next = Math.max(0.5, Math.round((zoomLevel - 0.1) * 10) / 10);
+    if (next !== zoomLevel) {
+      set({ zoomLevel: next });
+      document.documentElement.style.zoom = next.toString();
+      document.documentElement.style.setProperty('--zoom', next.toString());
+      config.saveConfig({ zoomLevel: next });
+    }
+  },
+
+  resetZoom: () => {
+    const { zoomLevel } = get();
+    if (zoomLevel !== 1) {
+      set({ zoomLevel: 1 });
+      document.documentElement.style.zoom = '1';
+      document.documentElement.style.setProperty('--zoom', '1');
+      config.saveConfig({ zoomLevel: 1 });
+    }
   },
 
   moveItem: async (itemPath, itemKind, newParentPath) => {

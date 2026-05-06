@@ -25,6 +25,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
+import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
 
 interface DragItemInfo {
@@ -575,10 +576,8 @@ const DirectoryPanel: React.FC = () => {
       </div>
 
       {contextMenu && (
-        <>
-          <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div className="context-menu" style={{ top: contextMenu.y, left: contextMenu.x }}>
-            {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
+        <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+          {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
               <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
                 {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
                 {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
@@ -640,15 +639,12 @@ const DirectoryPanel: React.FC = () => {
             }}>
               <Trash2 size={14} />删除
             </button>
-          </div>
-        </>
+        </ContextMenuPortal>
       )}
 
       {blankContextMenu && currentSpace && (
-        <>
-          <div className="context-menu-overlay" onClick={closeContextMenu} />
-          <div className="context-menu" style={{ top: blankContextMenu.y, left: blankContextMenu.x }}>
-            <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path); closeContextMenu(); }}>
+        <ContextMenuPortal x={blankContextMenu.x} y={blankContextMenu.y} onClose={closeContextMenu}>
+          <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path); closeContextMenu(); }}>
               <FilePlus size={14} />新建笔记本
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
@@ -664,8 +660,7 @@ const DirectoryPanel: React.FC = () => {
             <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
               <RefreshCw size={14} />刷新缓存
             </button>
-          </div>
-        </>
+        </ContextMenuPortal>
       )}
 
       <InputModal

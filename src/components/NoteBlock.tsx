@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
+import ContextMenuPortal from './ContextMenuPortal';
 
 interface NoteBlockProps {
   block: NoteBlockType;
@@ -142,13 +143,8 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
   const renderContextMenu = () => {
     if (!contextMenu) return null;
     return (
-      <>
-        <div className="context-menu-overlay" onClick={closeContextMenu} />
-        <div
-          className="context-menu"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button className="context-menu-item" onClick={handleAddBelow}>
+      <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+        <button className="context-menu-item" onClick={handleAddBelow}>
             <Plus size={14} />
             添加笔记块
           </button>
@@ -185,8 +181,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
             <Trash2 size={14} />
             删除笔记块
           </button>
-        </div>
-      </>
+      </ContextMenuPortal>
     );
   };
 
