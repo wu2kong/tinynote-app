@@ -36,7 +36,7 @@
 ### 克隆仓库
 
 ```bash
-git clone https://github.com/your-username/tinynote-app.git
+git clone https://github.com/wu2kong/tinynote-app.git
 cd tinynote-app
 ```
 
@@ -108,9 +108,9 @@ npm run tauri build
 
 如有问题或建议，欢迎通过以下方式联系：
 
-- 提交 [Issue](https://github.com/your-username/tinynote-app/issues)
-- 发送邮件至：your-email@example.com
+- 提交 [Issue](https://github.com/wu2kong/tinynote-app/issues)
+- 发送邮件至：lihao317@foxmail.com
 
 ---
 
-Made with ❤️ by [Your Name](https://github.com/your-username)
+Made with ❤️ by [Wu2kong](https://github.com/wu2kong)
