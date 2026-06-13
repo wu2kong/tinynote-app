@@ -1,9 +1,26 @@
 /** Normalize separators so path comparisons work across macOS and Windows. */
 export function normalizePath(p: string): string {
-  return p.replace(/\\/g, '/').replace(/\/+/g, '/');
+  let normalized = p.replace(/\\/g, '/').replace(/\/+/g, '/');
+  // Repair macOS legacy paths where joinPath dropped the leading slash (/Users/... → Users/...).
+  // Windows absolute paths always include a drive letter (C:/...) and are excluded by the check below.
+  if (
+    normalized.length > 0 &&
+    !normalized.startsWith('/') &&
+    !/^[A-Za-z]:/.test(normalized) &&
+    (/^Users\//.test(normalized) || /^private\//.test(normalized))
+  ) {
+    normalized = `/${normalized}`;
+  }
+  return normalized;
 }
 
 export function joinPath(...segments: string[]): string {
+  if (segments.length === 0) return '';
+
+  const first = segments[0].replace(/\\/g, '/');
+  // macOS/Linux absolute paths start with /. Windows uses C:/ (handled below) or UNC // (not prefixed).
+  const isUnixAbsolute = first.startsWith('/') && !first.startsWith('//');
+
   const parts = segments
     .filter(Boolean)
     .flatMap((segment, index) => {
@@ -16,11 +33,13 @@ export function joinPath(...segments: string[]): string {
 
   if (parts.length === 0) return '';
 
+  // Windows: C:/Users/... — drive letter must stay on the first segment.
   if (/^[A-Za-z]:$/.test(parts[0]) && parts.length > 1) {
     return `${parts[0]}/${parts.slice(1).join('/')}`;
   }
 
-  return parts.join('/');
+  const joined = parts.join('/');
+  return isUnixAbsolute ? `/${joined}` : joined;
 }
 
 export function basename(filePath: string): string {
