@@ -245,7 +245,7 @@ async function main() {
 
   console.log('\n✅ 发布完成！');
   console.log(`   Release: https://github.com/wu2kong/tinynote-app/releases/tag/${tag}`);
-  console.log('   GitHub Actions 将自动构建 Windows / macOS / Linux 安装包。\n');
+  console.log('   GitHub Actions 将自动构建 Windows / macOS 安装包。\n');
 }
 
 main().catch((error) => {
