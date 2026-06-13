@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-backup"
+description = "Enables backup commands."
+commands.allow = ["create_backup", "get_backup_stats"]

@@ -8,6 +8,7 @@ export interface AppConfig {
   showDirectoryPanel: boolean;
   viewMode: string;
   storagePath: string | null;
+  backupDir: string | null;
   spaceOrder: string[];
   spaceIcons: Record<string, string>;
   groupOrder: Record<string, string[]>;
@@ -25,6 +26,7 @@ const DEFAULT_CONFIG: AppConfig = {
   showDirectoryPanel: true,
   viewMode: 'list',
   storagePath: null,
+  backupDir: null,
   spaceOrder: [],
   spaceIcons: {},
   groupOrder: {},

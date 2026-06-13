@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
@@ -7,9 +7,10 @@ import { ViewMode } from '@/types';
 import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, getAppVersion, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
+import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import { showToast } from './Toast';
 
-type SettingsModule = 'general' | 'data' | 'about';
+type SettingsModule = 'general' | 'data' | 'backup' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface SettingsModalProps {
 const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: '通用', icon: <Settings size={16} /> },
   { id: 'data', label: '数据', icon: <Database size={16} /> },
+  { id: 'backup', label: '备份', icon: <Archive size={16} /> },
   { id: 'about', label: '关于', icon: <Info size={16} /> },
 ];
 
@@ -107,7 +109,10 @@ const GeneralSettings: React.FC = () => {
 const PathItem: React.FC<{
   label: string;
   path: string | null;
-}> = ({ label, path }) => {
+  onSelect?: () => void;
+  selectLabel?: string;
+  compact?: boolean;
+}> = ({ label, path, onSelect, selectLabel = '选择目录', compact = false }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -140,7 +145,7 @@ const PathItem: React.FC<{
   }, [path]);
 
   return (
-    <div className="settings-path-item">
+    <div className={`settings-path-item${compact ? ' compact' : ''}`}>
       <div className="settings-path-header">
         <span className="settings-path-label">{label}</span>
         <div className="settings-path-actions">
@@ -166,6 +171,150 @@ const PathItem: React.FC<{
       </div>
       <div className={`settings-path-value ${!path ? 'empty' : ''}`}>
         {path || '未设置'}
+      </div>
+      {!path && onSelect && (
+        <button type="button" className="btn btn-secondary settings-path-select-btn" onClick={onSelect}>
+          <HardDrive size={14} />
+          {selectLabel}
+        </button>
+      )}
+      {path && onSelect && (
+        <button type="button" className="settings-path-change-btn" onClick={onSelect}>
+          更改目录
+        </button>
+      )}
+    </div>
+  );
+};
+
+const BackupSettings: React.FC = () => {
+  const storagePath = useStore((s) => s.storagePath);
+  const [backupDir, setBackupDir] = useState<string | null>(null);
+  const [configPath, setConfigPath] = useState<string | null>(null);
+  const [stats, setStats] = useState<BackupStats | null>(null);
+  const [backingUp, setBackingUp] = useState(false);
+
+  const refreshStats = useCallback(async (dir: string | null) => {
+    if (!dir) {
+      setStats({ count: 0, latestFilename: null, latestTimeDisplay: null, files: [] });
+      return;
+    }
+    try {
+      const result = await getBackupStats(dir);
+      setStats(result);
+    } catch (e) {
+      console.error('Failed to load backup stats:', e);
+      setStats({ count: 0, latestFilename: null, latestTimeDisplay: null, files: [] });
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBackupDir().then((dir) => {
+      setBackupDir(dir);
+      refreshStats(dir);
+    }).catch((e) => {
+      console.error('Failed to load backup dir:', e);
+    });
+    getConfigFilePath().then(setConfigPath).catch((e) => {
+      console.error('Failed to get config path:', e);
+    });
+  }, [refreshStats]);
+
+  const handleSelectBackupDir = useCallback(async () => {
+    const selected = await selectBackupDir();
+    if (!selected) return;
+    try {
+      await saveBackupDir(selected);
+      setBackupDir(selected);
+      await refreshStats(selected);
+      showToast('备份目录已更新');
+    } catch (e) {
+      console.error('Failed to save backup dir:', e);
+      showToast('保存备份目录失败');
+    }
+  }, [refreshStats]);
+
+  const handleBackup = useCallback(async () => {
+    if (!backupDir || !configPath || backingUp) return;
+    setBackingUp(true);
+    try {
+      const filename = await createBackup(backupDir, storagePath, configPath);
+      await refreshStats(backupDir);
+      showToast(`备份完成：${filename}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '备份失败';
+      console.error('Backup failed:', e);
+      showToast(msg);
+    } finally {
+      setBackingUp(false);
+    }
+  }, [backupDir, configPath, storagePath, backingUp, refreshStats]);
+
+  return (
+    <div className="settings-panel settings-panel--compact">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">数据备份</h4>
+        <p className="settings-panel-desc">将笔记库与配置文件打包为 zip</p>
+      </div>
+
+      <PathItem
+        label="备份目录"
+        path={backupDir}
+        onSelect={handleSelectBackupDir}
+        compact
+      />
+
+      <div className="settings-backup-summary">
+        <span>共 <strong>{stats?.count ?? 0}</strong> 个备份</span>
+        <span className="settings-backup-summary-sep">·</span>
+        <span>
+          最近 {stats?.latestTimeDisplay ?? '暂无'}
+        </span>
+      </div>
+
+      <div className="settings-backup-actions">
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={handleBackup}
+          disabled={!backupDir || backingUp}
+        >
+          {backingUp ? <Loader2 size={13} className="settings-spin" /> : <Archive size={13} />}
+          {backingUp ? '备份中...' : '立即备份'}
+        </button>
+        {!backupDir && (
+          <span className="settings-backup-hint">请先选择备份目录</span>
+        )}
+      </div>
+
+      <div className="settings-backup-list">
+        <div className="settings-backup-list-header">
+          <span>备份文件</span>
+          {(stats?.files.length ?? 0) > 0 && (
+            <span className="settings-backup-list-count">{stats?.files.length}</span>
+          )}
+        </div>
+        {!backupDir ? (
+          <div className="settings-backup-list-empty">选择备份目录后显示文件列表</div>
+        ) : (stats?.files.length ?? 0) === 0 ? (
+          <div className="settings-backup-list-empty">暂无备份文件</div>
+        ) : (
+          <ul className="settings-backup-list-items">
+            {stats!.files.map((file) => (
+              <li key={file.filename} className="settings-backup-list-item">
+                <span className="settings-backup-list-name" title={file.filename}>
+                  {file.filename}
+                </span>
+                <span className="settings-backup-list-meta">
+                  {file.timeDisplay && (
+                    <span className="settings-backup-list-time">{file.timeDisplay}</span>
+                  )}
+                  <span className="settings-backup-list-size">{formatBackupSize(file.sizeBytes)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
@@ -366,6 +515,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
           <div className="settings-content">
             {activeModule === 'general' && <GeneralSettings />}
             {activeModule === 'data' && <DataSettings />}
+            {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>
         </div>
