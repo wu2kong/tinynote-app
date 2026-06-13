@@ -18,6 +18,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
+import SettingsModal from './SettingsModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 
@@ -106,6 +107,7 @@ const AppBar: React.FC = () => {
   const [emojiPickerSpace, setEmojiPickerSpace] = useState<Space | null>(null);
   const [renameModal, setRenameModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
+  const [showSettings, setShowSettings] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -201,7 +203,7 @@ const AppBar: React.FC = () => {
           {isDarkTheme ? <Sun size={18} /> : <Moon size={18} />}
           {!isSidebarCollapsed && <span className="app-bar-btn-label">切换主题</span>}
         </button>
-        <button className="app-bar-btn" title="设置中心">
+        <button className="app-bar-btn" onClick={() => setShowSettings(true)} title="设置中心">
           <Settings size={18} />
           {!isSidebarCollapsed && <span className="app-bar-btn-label">设置中心</span>}
         </button>
@@ -284,6 +286,8 @@ const AppBar: React.FC = () => {
         title="新建空间"
         placeholder="空间名称"
       />
+
+      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 };
