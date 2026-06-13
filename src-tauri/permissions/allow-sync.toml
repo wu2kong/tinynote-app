@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-sync"
+description = "Enables git sync commands."
+commands.allow = ["get_git_status", "git_pull", "git_sync_push", "get_file_diff", "revert_file_change"]

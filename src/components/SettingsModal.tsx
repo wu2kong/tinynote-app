@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive } from 'lucide-react';
+import { flushSync } from 'react-dom';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
@@ -8,9 +9,17 @@ import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL } from '@/consta
 import { checkForUpdate, downloadAndInstall, getAppVersion, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
+import {
+  getGitStatus, gitPull, gitSyncPush, getFileDiff, revertFileChange,
+  formatSyncCommitMessage, getChangeBadge, getChangeTooltip, getDisplayDiffLines,
+  GitSyncStatus, GitChangedFile, FileDiff,
+} from '@/utils/sync';
+import { joinPath, normalizePath } from '@/utils/path';
+import * as fs from '@/utils/fileSystem';
+import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
 
-type SettingsModule = 'general' | 'data' | 'backup' | 'about';
+type SettingsModule = 'general' | 'data' | 'backup' | 'sync' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -20,6 +29,7 @@ interface SettingsModalProps {
 const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: '通用', icon: <Settings size={16} /> },
   { id: 'data', label: '数据', icon: <Database size={16} /> },
+  { id: 'sync', label: '同步', icon: <GitBranch size={16} /> },
   { id: 'backup', label: '备份', icon: <Archive size={16} /> },
   { id: 'about', label: '关于', icon: <Info size={16} /> },
 ];
@@ -320,6 +330,459 @@ const BackupSettings: React.FC = () => {
   );
 };
 
+const DiffLine: React.FC<{ line: string }> = ({ line }) => {
+  let className = 'settings-sync-diff-line';
+  if (line.startsWith('+')) className += ' diff-add';
+  else if (line.startsWith('-')) className += ' diff-del';
+  return <div className={className}>{line || ' '}</div>;
+};
+
+const SyncDiffModal: React.FC<{
+  open: boolean;
+  filePath: string | null;
+  diff: FileDiff | null;
+  loading: boolean;
+  onClose: () => void;
+}> = ({ open, filePath, diff, loading, onClose }) => {
+  if (!open || !filePath) return null;
+
+  const displayLines = diff?.diff ? getDisplayDiffLines(diff.diff) : [];
+
+  return (
+    <div className="modal-overlay settings-sync-diff-overlay" onClick={onClose}>
+      <div className="settings-sync-diff-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="settings-sync-diff-header">
+          <div>
+            <h3 className="modal-title">查看变更</h3>
+            <p className="settings-sync-diff-path" title={filePath}>{filePath}</p>
+          </div>
+          <button type="button" className="icon-btn" onClick={onClose} title="关闭">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="settings-sync-diff-body">
+          {loading ? (
+            <div className="settings-sync-diff-loading">
+              <Loader2 size={18} className="settings-spin" />
+              加载中...
+            </div>
+          ) : displayLines.length > 0 ? (
+            displayLines.map((line, index) => (
+              <DiffLine key={`${index}-${line.slice(0, 8)}`} line={line} />
+            ))
+          ) : (
+            <div className="settings-sync-diff-empty">没有可显示的变更内容</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SyncSettings: React.FC = () => {
+  const storagePath = useStore((s) => s.storagePath);
+  const [status, setStatus] = useState<GitSyncStatus | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [pulling, setPulling] = useState(false);
+  const [pushing, setPushing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [copiedRemote, setCopiedRemote] = useState(false);
+  const [copiedStoragePath, setCopiedStoragePath] = useState(false);
+  const [diffModal, setDiffModal] = useState<{ open: boolean; file: GitChangedFile | null; data: FileDiff | null; loading: boolean }>({
+    open: false,
+    file: null,
+    data: null,
+    loading: false,
+  });
+  const [revertTarget, setRevertTarget] = useState<GitChangedFile | null>(null);
+  const [revertingPath, setRevertingPath] = useState<string | null>(null);
+
+  const refreshStatus = useCallback(async (options?: { toastOnSuccess?: boolean }) => {
+    if (!storagePath) {
+      setStatus(null);
+      return;
+    }
+    setLoading(true);
+    setSyncError(null);
+    try {
+      const result = await getGitStatus(storagePath);
+      setStatus(result);
+      if (result.statusError) {
+        setSyncError(`读取 Git 状态失败：${result.statusError}`);
+      } else if (options?.toastOnSuccess) {
+        showToast('同步状态已刷新');
+      }
+    } catch (e) {
+      console.error('Failed to load git status:', e);
+      const msg = e instanceof Error ? e.message : '读取 Git 状态失败';
+      setStatus(null);
+      setSyncError(msg);
+      showToast(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [storagePath]);
+
+  useEffect(() => {
+    refreshStatus();
+  }, [refreshStatus]);
+
+  const handleCopyRemote = useCallback(async () => {
+    const url = status?.remoteUrl;
+    if (!url) return;
+    try {
+      await writeText(url);
+      setCopiedRemote(true);
+      showToast('仓库地址已复制');
+      setTimeout(() => setCopiedRemote(false), 2000);
+    } catch {
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopiedRemote(true);
+        showToast('仓库地址已复制');
+        setTimeout(() => setCopiedRemote(false), 2000);
+      } catch {
+        showToast('复制失败');
+      }
+    }
+  }, [status?.remoteUrl]);
+
+  const handleCopyStoragePath = useCallback(async () => {
+    if (!storagePath) return;
+    try {
+      await writeText(storagePath);
+      setCopiedStoragePath(true);
+      showToast('笔记库路径已复制');
+      setTimeout(() => setCopiedStoragePath(false), 2000);
+    } catch {
+      try {
+        await navigator.clipboard.writeText(storagePath);
+        setCopiedStoragePath(true);
+        showToast('笔记库路径已复制');
+        setTimeout(() => setCopiedStoragePath(false), 2000);
+      } catch {
+        showToast('复制失败');
+      }
+    }
+  }, [storagePath]);
+
+  const handleOpenRepo = useCallback(async () => {
+    if (!storagePath) return;
+    try {
+      await revealItemInDir(storagePath);
+    } catch (e) {
+      console.error('Failed to open repo path:', e);
+      showToast('无法打开目录');
+    }
+  }, [storagePath]);
+
+  const handlePull = useCallback(async () => {
+    if (!storagePath || pulling) return;
+    flushSync(() => {
+      setPulling(true);
+      setSyncError(null);
+    });
+    try {
+      await gitPull(storagePath);
+      showToast('拉取完成');
+      await refreshStatus();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '拉取失败';
+      setSyncError(`拉取失败：${msg}\n\n请在终端进入笔记库目录，手动执行 git pull 解决冲突或认证问题。`);
+      showToast('拉取失败，请手动处理');
+    } finally {
+      setPulling(false);
+    }
+  }, [storagePath, pulling, refreshStatus]);
+
+  const handlePush = useCallback(async () => {
+    if (!storagePath || pushing) return;
+    if ((status?.changedMdCount ?? 0) === 0) {
+      showToast('没有需要提交的内容');
+      return;
+    }
+    flushSync(() => {
+      setPushing(true);
+      setSyncError(null);
+    });
+    try {
+      const message = await gitSyncPush(storagePath);
+      showToast(`已推送：${message}`);
+      await refreshStatus();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '推送失败';
+      if (msg === '没有需要提交的内容') {
+        showToast(msg);
+        return;
+      }
+      setSyncError(`提交/推送失败：${msg}\n\n请在终端进入笔记库目录，手动执行 git status 查看状态并解决冲突或认证问题。`);
+      showToast('推送失败，请手动处理');
+    } finally {
+      setPushing(false);
+    }
+  }, [storagePath, pushing, refreshStatus, status?.changedMdCount]);
+
+  const reloadOpenNotebookIfNeeded = useCallback(async (relativePath: string, deleted: boolean) => {
+    if (!storagePath) return;
+    const absPath = normalizePath(joinPath(storagePath, relativePath));
+    const { currentNotebook } = useStore.getState();
+    if (!currentNotebook || normalizePath(currentNotebook.path) !== absPath) return;
+
+    if (deleted) {
+      useStore.setState({ currentNotebook: null, currentNoteBlock: null });
+      return;
+    }
+
+    const loaded = await fs.loadNotebook(absPath);
+    if (loaded) {
+      useStore.setState({ currentNotebook: loaded, currentNoteBlock: null });
+    }
+  }, [storagePath]);
+
+  const handleViewDiff = useCallback(async (file: GitChangedFile) => {
+    if (!storagePath) return;
+    setDiffModal({ open: true, file, data: null, loading: true });
+    try {
+      const data = await getFileDiff(storagePath, file.path);
+      setDiffModal({ open: true, file, data, loading: false });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '读取变更失败';
+      showToast(msg);
+      setDiffModal({ open: false, file: null, data: null, loading: false });
+    }
+  }, [storagePath]);
+
+  const handleRevert = useCallback(async (file: GitChangedFile) => {
+    if (!storagePath || revertingPath) return;
+    setRevertingPath(file.path);
+    setSyncError(null);
+    try {
+      await revertFileChange(storagePath, file.path);
+      await reloadOpenNotebookIfNeeded(file.path, file.changeType === 'added');
+      if (file.changeType === 'deleted') {
+        await reloadOpenNotebookIfNeeded(file.path, false);
+      }
+      showToast(`已撤销：${file.path}`);
+      await refreshStatus();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '撤销失败';
+      setSyncError(`撤销失败：${msg}\n\n请在终端进入笔记库目录，手动处理该文件。`);
+      showToast(msg);
+    } finally {
+      setRevertingPath(null);
+      setRevertTarget(null);
+    }
+  }, [storagePath, revertingPath, refreshStatus, reloadOpenNotebookIfNeeded]);
+
+  const commitPreview = status ? formatSyncCommitMessage(status.hostname) : '';
+  const busy = pulling || pushing;
+
+  return (
+    <div className="settings-panel settings-panel--compact">
+      <div className="settings-panel-head">
+        <div className="settings-panel-head-row">
+          <div>
+            <h4 className="settings-panel-title">Git 同步</h4>
+            <p className="settings-panel-desc">通过 Git 在多设备间同步 Markdown 笔记</p>
+          </div>
+          <button
+            type="button"
+            className="settings-path-btn"
+            onClick={() => refreshStatus({ toastOnSuccess: true })}
+            disabled={!storagePath || loading || busy}
+            title="刷新状态"
+          >
+            {loading ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
+          </button>
+        </div>
+      </div>
+
+      {!storagePath ? (
+        <div className="settings-sync-empty">请先在「数据」中设置笔记库目录</div>
+      ) : !status?.isRepo ? (
+        <div className="settings-sync-empty">
+          <p>当前笔记库目录尚未初始化为 Git 仓库。</p>
+          <p className="settings-sync-empty-hint">
+            在终端进入该目录，执行 <code>git init</code> 并配置 remote 后即可使用同步功能。
+          </p>
+          <button type="button" className="btn btn-secondary btn-sm settings-sync-open-btn" onClick={handleOpenRepo}>
+            <FolderOpen size={13} />
+            打开笔记库目录
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="settings-sync-info">
+            <div className="settings-sync-info-row">
+              <span className="settings-sync-info-label">远程仓库</span>
+              <div className="settings-sync-info-value-row">
+                <span className="settings-sync-remote" title={status.remoteUrl ?? undefined}>
+                  {status.remoteUrl ?? '未配置 origin 远程'}
+                </span>
+                {status.remoteUrl && (
+                  <button
+                    type="button"
+                    className="settings-path-btn"
+                    onClick={handleCopyRemote}
+                    title="复制仓库地址"
+                  >
+                    {copiedRemote ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="settings-sync-info-row">
+              <span className="settings-sync-info-label">笔记库目录</span>
+              <div className="settings-sync-info-value-row">
+                <span className="settings-sync-remote" title={storagePath ?? undefined}>
+                  {storagePath}
+                </span>
+                <button
+                  type="button"
+                  className="settings-path-btn"
+                  onClick={handleCopyStoragePath}
+                  title="复制笔记库路径"
+                >
+                  {copiedStoragePath ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+                <button
+                  type="button"
+                  className="settings-path-btn"
+                  onClick={handleOpenRepo}
+                  title="在文件管理器中打开"
+                >
+                  <FolderOpen size={14} />
+                </button>
+              </div>
+            </div>
+            {status.branch && (
+              <div className="settings-sync-info-row">
+                <span className="settings-sync-info-label">当前分支</span>
+                <span className="settings-sync-branch">{status.branch}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="settings-backup-summary settings-sync-summary">
+            <span>待同步 <strong>{status.changedMdCount}</strong> 个 .md 文件</span>
+            {(status.ahead > 0 || status.behind > 0) && (
+              <>
+                <span className="settings-backup-summary-sep">·</span>
+                {status.behind > 0 && <span>落后远程 {status.behind} 提交</span>}
+                {status.behind > 0 && status.ahead > 0 && <span className="settings-backup-summary-sep">·</span>}
+                {status.ahead > 0 && <span>领先远程 {status.ahead} 提交</span>}
+              </>
+            )}
+          </div>
+
+          <div className="settings-sync-commit-preview">
+            提交信息：<code>{commitPreview}</code>
+          </div>
+
+          <div className="settings-backup-actions settings-sync-actions">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handlePull}
+              disabled={!status.hasRemote || busy}
+              title={!status.hasRemote ? '请先配置 origin 远程' : undefined}
+            >
+              {pulling ? <Loader2 size={13} className="settings-spin" /> : <ArrowDownToLine size={13} />}
+              {pulling ? '拉取中...' : '拉取最新'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handlePush}
+              disabled={!status.hasRemote || busy}
+              title={!status.hasRemote ? '请先配置 origin 远程' : undefined}
+            >
+              {pushing ? <Loader2 size={13} className="settings-spin" /> : <Upload size={13} />}
+              {pushing ? '推送中...' : '提交并推送'}
+            </button>
+          </div>
+
+          {syncError && (
+            <div className="settings-sync-error">
+              <pre>{syncError}</pre>
+            </div>
+          )}
+
+          <div className="settings-backup-list">
+            <div className="settings-backup-list-header">
+              <span>变更的 Markdown 文件</span>
+              {status.changedFiles.length > 0 && (
+                <span className="settings-backup-list-count">{status.changedFiles.length}</span>
+              )}
+            </div>
+            {status.changedFiles.length === 0 ? (
+              <div className="settings-backup-list-empty">没有待提交的 .md 变更</div>
+            ) : (
+              <ul className="settings-backup-list-items settings-sync-file-list">
+                {status.changedFiles.map((file) => (
+                  <li
+                    key={file.path}
+                    className="settings-sync-file-item"
+                    title={getChangeTooltip(file.changeType, file.path)}
+                  >
+                    <span className={`settings-sync-file-badge is-${file.changeType}`}>
+                      {getChangeBadge(file.changeType)}
+                    </span>
+                    <div className="settings-sync-file-path-wrap">
+                      <span className="settings-sync-file-path">{file.path}</span>
+                    </div>
+                    <div className="settings-sync-file-actions">
+                      <button
+                        type="button"
+                        className="settings-sync-file-link"
+                        onClick={() => handleViewDiff(file)}
+                        disabled={busy || revertingPath === file.path}
+                      >
+                        查看变更
+                      </button>
+                      <button
+                        type="button"
+                        className="settings-sync-file-link settings-sync-file-link-muted"
+                        onClick={() => setRevertTarget(file)}
+                        disabled={busy || revertingPath === file.path}
+                      >
+                        {revertingPath === file.path ? '撤销中...' : '撤销变更'}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <SyncDiffModal
+            open={diffModal.open}
+            filePath={diffModal.file?.path ?? null}
+            diff={diffModal.data}
+            loading={diffModal.loading}
+            onClose={() => setDiffModal({ open: false, file: null, data: null, loading: false })}
+          />
+
+          <ConfirmModal
+            open={!!revertTarget}
+            onClose={() => setRevertTarget(null)}
+            onConfirm={() => { if (revertTarget) handleRevert(revertTarget); }}
+            title="撤销变更"
+            message={
+              revertTarget?.changeType === 'added'
+                ? `确定删除新文件「${revertTarget.path}」吗？此操作不可恢复。`
+                : revertTarget?.changeType === 'deleted'
+                  ? `确定恢复已删除的文件「${revertTarget.path}」吗？`
+                  : `确定将「${revertTarget?.path ?? ''}」恢复到最后一次提交的版本吗？当前未提交的修改将丢失。`
+            }
+            confirmLabel="撤销"
+          />
+        </>
+      )}
+    </div>
+  );
+};
+
 const DataSettings: React.FC = () => {
   const storagePath = useStore((s) => s.storagePath);
   const [configPath, setConfigPath] = useState<string | null>(null);
@@ -515,6 +978,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
           <div className="settings-content">
             {activeModule === 'general' && <GeneralSettings />}
             {activeModule === 'data' && <DataSettings />}
+            {activeModule === 'sync' && <SyncSettings />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>

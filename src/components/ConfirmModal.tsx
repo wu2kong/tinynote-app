@@ -6,9 +6,17 @@ interface ConfirmModalProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmLabel?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, onClose, onConfirm, title, message }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmLabel = '删除',
+}) => {
   if (!open) return null;
 
   return (
@@ -18,7 +26,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ open, onClose, onConfirm, t
         <p className="modal-message">{message}</p>
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={onClose}>取消</button>
-          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>删除</button>
+          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
         </div>
       </div>
     </div>

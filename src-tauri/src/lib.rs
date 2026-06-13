@@ -1,6 +1,12 @@
 mod backup;
+mod sync;
 
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
+use sync::{
+    get_file_diff as run_get_file_diff, get_git_status as run_get_git_status,
+    git_pull as run_git_pull, git_sync_push as run_git_sync_push,
+    revert_file_change as run_revert_file_change, FileDiff, GitSyncStatus,
+};
 
 #[tauri::command]
 fn get_app_dir() -> Result<String, String> {
@@ -29,6 +35,31 @@ fn create_backup(
     )
 }
 
+#[tauri::command]
+fn get_git_status(storage_path: String) -> Result<GitSyncStatus, String> {
+    run_get_git_status(&storage_path)
+}
+
+#[tauri::command]
+fn git_pull(storage_path: String) -> Result<(), String> {
+    run_git_pull(&storage_path)
+}
+
+#[tauri::command]
+fn git_sync_push(storage_path: String) -> Result<String, String> {
+    run_git_sync_push(&storage_path)
+}
+
+#[tauri::command]
+fn get_file_diff(storage_path: String, file_path: String) -> Result<FileDiff, String> {
+    run_get_file_diff(&storage_path, &file_path)
+}
+
+#[tauri::command]
+fn revert_file_change(storage_path: String, file_path: String) -> Result<(), String> {
+    run_revert_file_change(&storage_path, &file_path)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -47,7 +78,16 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_app_dir, get_backup_stats, create_backup])
+        .invoke_handler(tauri::generate_handler![
+            get_app_dir,
+            get_backup_stats,
+            create_backup,
+            get_git_status,
+            git_pull,
+            git_sync_push,
+            get_file_diff,
+            revert_file_change,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
