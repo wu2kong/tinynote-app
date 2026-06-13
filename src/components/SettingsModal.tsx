@@ -6,7 +6,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { ViewMode } from '@/types';
 import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL } from '@/constants/app';
-import { checkForUpdate, downloadAndInstall, getAppVersion, UpdateInfo } from '@/utils/updater';
+import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import {
@@ -833,7 +833,7 @@ const AboutSettings: React.FC = () => {
         setCheckMessage('当前已是最新版本');
       }
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '检查更新失败';
+      const msg = formatUpdateError(e, '检查更新失败');
       setCheckMessage(msg);
       showToast(msg);
     } finally {
@@ -848,11 +848,21 @@ const AboutSettings: React.FC = () => {
       await downloadAndInstall(updateInfo.asset);
       showToast('安装程序已启动，请按提示完成更新');
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '下载更新失败';
+      const msg = formatUpdateError(e, '下载更新失败，请检查网络连接是否正常');
       showToast(msg);
       setCheckMessage(msg);
     } finally {
       setDownloading(false);
+    }
+  }, [updateInfo]);
+
+  const handleManualDownload = useCallback(async () => {
+    if (!updateInfo) return;
+    try {
+      await openReleasePage(updateInfo.releaseUrl);
+    } catch (e) {
+      console.error('Failed to open release page:', e);
+      showToast('无法打开 Release 页面');
     }
   }, [updateInfo]);
 
@@ -924,15 +934,26 @@ const AboutSettings: React.FC = () => {
             检查更新
           </button>
           {updateInfo && (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleDownloadUpdate}
-              disabled={downloading}
-            >
-              {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
-              下载并更新
-            </button>
+            <>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleDownloadUpdate}
+                disabled={downloading}
+              >
+                {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
+                下载并更新
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleManualDownload}
+                disabled={downloading}
+              >
+                <ExternalLink size={14} />
+                去手动下载
+              </button>
+            </>
           )}
         </div>
         {checkMessage && (

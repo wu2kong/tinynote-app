@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-updater"
+description = "Enables release download command."
+commands.allow = ["download_release_asset"]

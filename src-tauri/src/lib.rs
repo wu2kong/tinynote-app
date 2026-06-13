@@ -1,5 +1,6 @@
 mod backup;
 mod sync;
+mod updater;
 
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
 use sync::{
@@ -60,6 +61,11 @@ fn revert_file_change(storage_path: String, file_path: String) -> Result<(), Str
     run_revert_file_change(&storage_path, &file_path)
 }
 
+#[tauri::command]
+fn download_release_asset(url: String, filename: String) -> Result<String, String> {
+    updater::download_release_asset(&url, &filename)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -87,6 +93,7 @@ pub fn run() {
             git_sync_push,
             get_file_diff,
             revert_file_change,
+            download_release_asset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

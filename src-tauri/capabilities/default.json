@@ -51,6 +51,7 @@
     "opener:allow-default-urls",
     "allow-get-app-dir",
     "allow-backup",
-    "allow-sync"
+    "allow-sync",
+    "allow-updater"
   ]
 }

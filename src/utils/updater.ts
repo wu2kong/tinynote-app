@@ -1,6 +1,5 @@
-import { writeFile } from '@tauri-apps/plugin-fs';
-import { tempDir, join } from '@tauri-apps/api/path';
-import { openPath } from '@tauri-apps/plugin-opener';
+import { invoke } from '@tauri-apps/api/core';
+import { openPath, openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
 import { GITHUB_RELEASES_API } from '@/constants/app';
 
@@ -60,6 +59,16 @@ function pickAsset(assets: GitHubReleaseAsset[], platform: Platform): GitHubRele
   );
 }
 
+function formatNetworkError(message: string): string {
+  if (
+    message === 'Load failed' ||
+    /failed to fetch|networkerror|network error|无法连接|连接失败/i.test(message)
+  ) {
+    return '网络请求失败，请检查网络连接是否正常';
+  }
+  return message;
+}
+
 export async function getAppVersion(): Promise<string> {
   try {
     return await getVersion();
@@ -70,9 +79,15 @@ export async function getAppVersion(): Promise<string> {
 
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
   const currentVersion = await getAppVersion();
-  const response = await fetch(GITHUB_RELEASES_API, {
-    headers: { Accept: 'application/vnd.github+json' },
-  });
+  let response: Response;
+  try {
+    response = await fetch(GITHUB_RELEASES_API, {
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '检查更新失败';
+    throw new Error(formatNetworkError(msg));
+  }
 
   if (!response.ok) {
     throw new Error(`检查更新失败 (${response.status})`);
@@ -103,14 +118,23 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
 }
 
 export async function downloadAndInstall(asset: GitHubReleaseAsset): Promise<void> {
-  const response = await fetch(asset.browser_download_url);
-  if (!response.ok) {
-    throw new Error(`下载失败 (${response.status})`);
-  }
-
-  const data = new Uint8Array(await response.arrayBuffer());
-  const dir = await tempDir();
-  const filePath = await join(dir, asset.name);
-  await writeFile(filePath, data);
+  const filePath = await invoke<string>('download_release_asset', {
+    url: asset.browser_download_url,
+    filename: asset.name,
+  });
   await openPath(filePath);
+}
+
+export async function openReleasePage(releaseUrl: string): Promise<void> {
+  await openUrl(releaseUrl);
+}
+
+export function formatUpdateError(error: unknown, fallback: string): string {
+  if (typeof error === 'string') {
+    return formatNetworkError(error);
+  }
+  if (error instanceof Error) {
+    return formatNetworkError(error.message);
+  }
+  return fallback;
 }
