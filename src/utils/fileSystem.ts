@@ -2,24 +2,30 @@ import { readDir, readTextFile, writeTextFile, mkdir, remove, rename } from '@ta
 import { open } from '@tauri-apps/plugin-dialog';
 import { Space, Group, Notebook } from '@/types';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
+import { basename, dirname, joinPath, normalizePath } from './path';
 
 export async function selectStoragePath(): Promise<string | null> {
-  const selected = await open({ directory: true, multiple: false });
-  return selected as string | null;
+  const selected = await open({
+    directory: true,
+    multiple: false,
+    recursive: true,
+  });
+  return selected ? normalizePath(selected as string) : null;
 }
 
 export async function loadSpaces(storagePath: string): Promise<Space[]> {
+  const rootPath = normalizePath(storagePath);
   const spaces: Space[] = [];
   let entries;
   try {
-    entries = await readDir(storagePath);
+    entries = await readDir(rootPath);
   } catch {
     return spaces;
   }
 
   for (const entry of entries) {
     if (entry.isDirectory && entry.name?.endsWith('.tinynotes')) {
-      const spacePath = `${storagePath}/${entry.name}`;
+      const spacePath = joinPath(rootPath, entry.name);
       const name = entry.name.replace('.tinynotes', '');
       const children = await loadSpaceChildren(spacePath);
       spaces.push({
@@ -35,17 +41,18 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
 }
 
 export async function loadSpaceChildren(spacePath: string): Promise<(Group | Notebook)[]> {
+  const parentPath = normalizePath(spacePath);
   const children: (Group | Notebook)[] = [];
   let entries;
   try {
-    entries = await readDir(spacePath);
+    entries = await readDir(parentPath);
   } catch {
     return children;
   }
 
   for (const entry of entries) {
     if (entry.isDirectory) {
-      const groupPath = `${spacePath}/${entry.name}`;
+      const groupPath = joinPath(parentPath, entry.name);
       const subChildren = await loadGroupChildren(groupPath);
       const notebookCount = countNotebooks(subChildren);
       children.push({
@@ -56,7 +63,7 @@ export async function loadSpaceChildren(spacePath: string): Promise<(Group | Not
         notebookCount,
       });
     } else if (entry.isFile && entry.name?.endsWith('.md')) {
-      const filePath = `${spacePath}/${entry.name}`;
+      const filePath = joinPath(parentPath, entry.name);
       const notebook = await loadNotebook(filePath);
       if (notebook) {
         children.push(notebook);
@@ -68,17 +75,18 @@ export async function loadSpaceChildren(spacePath: string): Promise<(Group | Not
 }
 
 export async function loadGroups(spacePath: string): Promise<Group[]> {
+  const parentPath = normalizePath(spacePath);
   const groups: Group[] = [];
   let entries;
   try {
-    entries = await readDir(spacePath);
+    entries = await readDir(parentPath);
   } catch {
     return groups;
   }
 
   for (const entry of entries) {
     if (entry.isDirectory) {
-      const groupPath = `${spacePath}/${entry.name}`;
+      const groupPath = joinPath(parentPath, entry.name);
       const children = await loadGroupChildren(groupPath);
       const notebookCount = countNotebooks(children);
       groups.push({
@@ -95,17 +103,18 @@ export async function loadGroups(spacePath: string): Promise<Group[]> {
 }
 
 async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[]> {
+  const parentPath = normalizePath(groupPath);
   const children: (Group | Notebook)[] = [];
   let entries;
   try {
-    entries = await readDir(groupPath);
+    entries = await readDir(parentPath);
   } catch {
     return children;
   }
 
   for (const entry of entries) {
     if (entry.isDirectory) {
-      const subGroupPath = `${groupPath}/${entry.name}`;
+      const subGroupPath = joinPath(parentPath, entry.name);
       const subChildren = await loadGroupChildren(subGroupPath);
       const notebookCount = countNotebooks(subChildren);
       children.push({
@@ -116,7 +125,7 @@ async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[
         notebookCount,
       });
     } else if (entry.isFile && entry.name?.endsWith('.md')) {
-      const filePath = `${groupPath}/${entry.name}`;
+      const filePath = joinPath(parentPath, entry.name);
       const notebook = await loadNotebook(filePath);
       if (notebook) {
         children.push(notebook);
@@ -140,14 +149,15 @@ function countNotebooks(children: (Group | Notebook)[]): number {
 }
 
 export async function loadNotebook(filePath: string): Promise<Notebook | null> {
+  const normalizedPath = normalizePath(filePath);
   try {
-    const content = await readTextFile(filePath);
+    const content = await readTextFile(normalizedPath);
     const noteBlocks = parseNoteBlocks(content);
-    const name = filePath.split('/').pop()!.replace('.md', '');
+    const name = basename(normalizedPath).replace('.md', '');
     return {
       id: crypto.randomUUID(),
       name,
-      path: filePath,
+      path: normalizedPath,
       noteBlocks,
       isSourceMode: false,
     };
@@ -163,7 +173,7 @@ export async function saveNotebook(notebook: Notebook): Promise<void> {
 
 export async function createSpace(storagePath: string, name: string): Promise<Space> {
   const dirName = `${name}.tinynotes`;
-  const spacePath = `${storagePath}/${dirName}`;
+  const spacePath = joinPath(storagePath, dirName);
   await mkdir(spacePath, { recursive: true });
   return {
     id: crypto.randomUUID(),
@@ -174,7 +184,7 @@ export async function createSpace(storagePath: string, name: string): Promise<Sp
 }
 
 export async function createGroup(parentPath: string, name: string): Promise<Group> {
-  const groupPath = `${parentPath}/${name}`;
+  const groupPath = joinPath(parentPath, name);
   await mkdir(groupPath, { recursive: true });
   return {
     id: crypto.randomUUID(),
@@ -187,7 +197,7 @@ export async function createGroup(parentPath: string, name: string): Promise<Gro
 
 export async function createNotebook(parentPath: string, name: string): Promise<Notebook> {
   const fileName = name.endsWith('.md') ? name : `${name}.md`;
-  const filePath = `${parentPath}/${fileName}`;
+  const filePath = joinPath(parentPath, fileName);
   const now = new Date().toISOString();
   const initialContent = `---\ntitle: ${name}\ntags: []\ncreatedAt: ${now}\nupdatedAt: ${now}\n---\n\n`;
   await writeTextFile(filePath, initialContent);
@@ -201,8 +211,8 @@ export async function createNotebook(parentPath: string, name: string): Promise<
 }
 
 export async function renameSpace(oldPath: string, newName: string): Promise<string> {
-  const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-  const newPath = `${parentPath}/${newName}.tinynotes`;
+  const parentPath = dirname(oldPath);
+  const newPath = joinPath(parentPath, `${newName}.tinynotes`);
   await rename(oldPath, newPath);
   return newPath;
 }
@@ -220,23 +230,23 @@ export async function deleteNotebook(filePath: string): Promise<void> {
 }
 
 export async function renameGroup(oldPath: string, newName: string): Promise<string> {
-  const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
-  const newPath = `${parentPath}/${newName}`;
+  const parentPath = dirname(oldPath);
+  const newPath = joinPath(parentPath, newName);
   await rename(oldPath, newPath);
   return newPath;
 }
 
 export async function renameNotebook(oldPath: string, newName: string): Promise<string> {
-  const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/'));
+  const parentPath = dirname(oldPath);
   const newFileName = newName.endsWith('.md') ? newName : `${newName}.md`;
-  const newPath = `${parentPath}/${newFileName}`;
+  const newPath = joinPath(parentPath, newFileName);
   await rename(oldPath, newPath);
   return newPath;
 }
 
 export async function moveItem(oldPath: string, newParentPath: string): Promise<string> {
-  const itemName = oldPath.split('/').pop()!;
-  const newPath = `${newParentPath}/${itemName}`;
+  const itemName = basename(oldPath);
+  const newPath = joinPath(newParentPath, itemName);
   await rename(oldPath, newPath);
   return newPath;
 }

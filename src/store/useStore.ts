@@ -4,6 +4,7 @@ import { applyTheme } from '@/utils/theme';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { createNoteBlock } from '@/utils/noteParser';
+import { isSubPath, normalizePath, dirname } from '@/utils/path';
 
 interface AppActions {
   setSpace: (space: Space | null) => void;
@@ -55,10 +56,11 @@ interface AppActions {
 type AppStore = AppState & AppActions;
 
 function findGroupByPath(items: (Group | Notebook)[], path: string): Group | null {
+  const targetPath = normalizePath(path);
   for (const item of items) {
     if ('children' in item) {
-      if (item.path === path) return item;
-      const found = findGroupByPath(item.children, path);
+      if (normalizePath(item.path) === targetPath) return item;
+      const found = findGroupByPath(item.children, targetPath);
       if (found) return found;
     }
   }
@@ -66,10 +68,11 @@ function findGroupByPath(items: (Group | Notebook)[], path: string): Group | nul
 }
 
 function findNotebookByPath(items: (Group | Notebook)[], path: string): Notebook | null {
+  const targetPath = normalizePath(path);
   for (const item of items) {
-    if ('noteBlocks' in item && item.path === path) return item;
+    if ('noteBlocks' in item && normalizePath(item.path) === targetPath) return item;
     if ('children' in item) {
-      const found = findNotebookByPath(item.children, path);
+      const found = findNotebookByPath(item.children, targetPath);
       if (found) return found;
     }
   }
@@ -77,10 +80,11 @@ function findNotebookByPath(items: (Group | Notebook)[], path: string): Notebook
 }
 
 function getAncestorPaths(items: (Group | Notebook)[], targetPath: string): string[] {
+  const normalizedTarget = normalizePath(targetPath);
   const ancestors: string[] = [];
   function search(list: (Group | Notebook)[]): boolean {
     for (const item of list) {
-      if (item.path === targetPath) return true;
+      if (normalizePath(item.path) === normalizedTarget) return true;
       if ('children' in item) {
         if (search(item.children)) {
           ancestors.push(item.path);
@@ -99,7 +103,8 @@ function sortSpacesByOrder(spaces: Space[], order: string[]): Space[] {
   const ordered: Space[] = [];
   const remaining = [...spaces];
   for (const path of order) {
-    const idx = remaining.findIndex((s) => s.path === path);
+    const normalizedPath = normalizePath(path);
+    const idx = remaining.findIndex((s) => normalizePath(s.path) === normalizedPath);
     if (idx !== -1) {
       ordered.push(remaining.splice(idx, 1)[0]);
     }
@@ -112,7 +117,8 @@ function sortChildrenByOrder(children: (Group | Notebook)[], order: string[]): (
   const ordered: (Group | Notebook)[] = [];
   const remaining = [...children];
   for (const path of order) {
-    const idx = remaining.findIndex((item) => item.path === path);
+    const normalizedPath = normalizePath(path);
+    const idx = remaining.findIndex((item) => normalizePath(item.path) === normalizedPath);
     if (idx !== -1) {
       ordered.push(remaining.splice(idx, 1)[0]);
     }
@@ -170,9 +176,10 @@ export const useStore = create<AppStore>((set, get) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
 
   setStoragePath: async (path) => {
-    set({ storagePath: path });
-    if (path) {
-      await config.saveConfig({ storagePath: path });
+    const normalizedPath = path ? normalizePath(path) : null;
+    set({ storagePath: normalizedPath });
+    if (normalizedPath) {
+      await config.saveConfig({ storagePath: normalizedPath });
     } else {
       await config.saveConfig({ storagePath: null });
     }
@@ -211,12 +218,13 @@ export const useStore = create<AppStore>((set, get) => ({
 
     const storagePath = cfg.storagePath || localStorage.getItem('tinynote-storagePath');
     if (storagePath) {
+      const normalizedStoragePath = normalizePath(storagePath);
       if (!cfg.storagePath && storagePath) {
-        await config.saveConfig({ storagePath });
+        await config.saveConfig({ storagePath: normalizedStoragePath });
       }
       localStorage.removeItem('tinynote-storagePath');
-      set({ storagePath });
-      let spaces = await fs.loadSpaces(storagePath);
+      set({ storagePath: normalizedStoragePath });
+      let spaces = await fs.loadSpaces(normalizedStoragePath);
       spaces = applyIconsToSpaces(spaces, cfg.spaceIcons);
       spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
 
@@ -225,7 +233,7 @@ export const useStore = create<AppStore>((set, get) => ({
       let currentNotebook: Notebook | null = null;
 
       if (cfg.currentSpacePath) {
-        currentSpace = spaces.find((s) => s.path === cfg.currentSpacePath) || null;
+        currentSpace = spaces.find((s) => normalizePath(s.path) === normalizePath(cfg.currentSpacePath!)) || null;
       }
       if (!currentSpace && spaces.length > 0) {
         currentSpace = spaces[0];
@@ -248,12 +256,13 @@ export const useStore = create<AppStore>((set, get) => ({
           }
         }
 
-        const expandedPaths = [...cfg.expandedGroupPaths];
+        const expandedPaths = cfg.expandedGroupPaths.map(normalizePath);
         const targetPath = cfg.currentNotebookPath || cfg.currentGroupPath;
         if (targetPath) {
           const ancestors = getAncestorPaths(children, targetPath);
           for (const p of ancestors) {
-            if (!expandedPaths.includes(p)) expandedPaths.push(p);
+            const normalizedAncestor = normalizePath(p);
+            if (!expandedPaths.includes(normalizedAncestor)) expandedPaths.push(normalizedAncestor);
           }
         }
 
@@ -328,10 +337,13 @@ selectNotebook: async (notebook: Notebook) => {
 
   toggleExpandedGroupPath: (path: string) => {
     set((state) => {
-      const paths = state.expandedGroupPaths.includes(path)
-        ? state.expandedGroupPaths.filter((p) => p !== path)
-        : [...state.expandedGroupPaths, path];
-      return { expandedGroupPaths: paths };
+      const normalizedPath = normalizePath(path);
+      const paths = state.expandedGroupPaths;
+      const isExpanded = paths.some((p) => normalizePath(p) === normalizedPath);
+      const nextPaths = isExpanded
+        ? paths.filter((p) => normalizePath(p) !== normalizedPath)
+        : [...paths, normalizedPath];
+      return { expandedGroupPaths: nextPaths };
     });
     const { expandedGroupPaths } = get();
     config.saveConfig({ expandedGroupPaths });
@@ -835,12 +847,12 @@ selectNotebook: async (notebook: Notebook) => {
 
     if (itemKind === 'group') {
       const isDescendant = (parentPath: string, childPath: string): boolean => {
-        return childPath === parentPath || childPath.startsWith(parentPath + '/');
+        return isSubPath(parentPath, childPath);
       };
       if (isDescendant(itemPath, newParentPath)) return;
     }
 
-    const oldParentPath = itemPath.substring(0, itemPath.lastIndexOf('/'));
+    const oldParentPath = dirname(itemPath);
     if (oldParentPath === newParentPath) return;
 
     let newPath: string;
@@ -857,8 +869,13 @@ selectNotebook: async (notebook: Notebook) => {
     const updatedSpace = { ...currentSpace, groups: sortedChildren };
 
     const updatePath = (oldBase: string, newBase: string, path: string): string => {
-      if (path === oldBase) return newBase;
-      if (path.startsWith(oldBase + '/')) return newBase + path.substring(oldBase.length);
+      const normalizedOldBase = normalizePath(oldBase);
+      const normalizedNewBase = normalizePath(newBase);
+      const normalizedPath = normalizePath(path);
+      if (normalizedPath === normalizedOldBase) return normalizedNewBase;
+      if (normalizedPath.startsWith(`${normalizedOldBase}/`)) {
+        return normalizedNewBase + normalizedPath.substring(normalizedOldBase.length);
+      }
       return path;
     };
 
@@ -912,7 +929,7 @@ selectNotebook: async (notebook: Notebook) => {
     spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
 
     if (currentSpace) {
-      const freshSpace = spaces.find((s) => s.path === currentSpace.path) || null;
+      const freshSpace = spaces.find((s) => normalizePath(s.path) === normalizePath(currentSpace.path)) || null;
       if (freshSpace) {
         let children = await fs.loadSpaceChildren(freshSpace.path);
         children = sortTreeRecursively(children, cfg.groupOrder, freshSpace.path);

@@ -27,6 +27,7 @@ import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
+import { isSubPath, normalizePath, dirname } from '@/utils/path';
 
 interface DragItemInfo {
   path: string;
@@ -96,7 +97,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
 
   if (isGroup(item)) {
     const group = item as Group;
-    const groupExpanded = expandedGroupPaths.includes(group.path);
+    const groupExpanded = expandedGroupPaths.some((p) => normalizePath(p) === normalizePath(group.path));
 
     return (
       <div data-drop-path={group.path}>
@@ -236,12 +237,12 @@ const DirectoryPanel: React.FC = () => {
   }, []);
 
   const isDropValid = useCallback((dragPath: string, dragKind: 'group' | 'notebook', targetPath: string) => {
-    if (dragPath === targetPath) return false;
+    if (normalizePath(dragPath) === normalizePath(targetPath)) return false;
     if (dragKind === 'group') {
-      if (targetPath.startsWith(dragPath + '/')) return false;
+      if (isSubPath(dragPath, targetPath)) return false;
     }
-    const parentPath = dragPath.substring(0, dragPath.lastIndexOf('/'));
-    if (parentPath === targetPath) return false;
+    const parentPath = dirname(dragPath);
+    if (normalizePath(parentPath) === normalizePath(targetPath)) return false;
     return true;
   }, []);
 
@@ -458,7 +459,7 @@ const DirectoryPanel: React.FC = () => {
     return filtered.map((item) => {
       if (isGroup(item)) {
         const group = item as Group;
-        const isExpanded = expandedGroupPaths.includes(group.path);
+        const isExpanded = expandedGroupPaths.some((p) => normalizePath(p) === normalizePath(group.path));
         const isDragOver = dropTarget === group.path;
         const isDragging = dragItem?.path === group.path;
         return (

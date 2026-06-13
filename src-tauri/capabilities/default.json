@@ -27,7 +27,8 @@
           "path": "$HOME/.tinynotes"
         },
         { "path": "$HOME/**" },
-        { "path": "$HOME" }
+        { "path": "$HOME" },
+        { "path": "**" }
       ]
     },
     "dialog:default",
@@ -41,7 +42,8 @@
       "identifier": "opener:allow-open-path",
       "allow": [
         { "path": "$HOME/**" },
-        { "path": "$HOME" }
+        { "path": "$HOME" },
+        { "path": "**" }
       ]
     },
     "opener:allow-reveal-item-in-dir"
