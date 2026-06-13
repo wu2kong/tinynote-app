@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Settings, Info, ExternalLink, RefreshCw, Download, Loader2 } from 'lucide-react';
-import { openUrl } from '@tauri-apps/plugin-opener';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check } from 'lucide-react';
+import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { ViewMode } from '@/types';
 import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, getAppVersion, UpdateInfo } from '@/utils/updater';
+import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
 import { showToast } from './Toast';
 
-type SettingsModule = 'general' | 'about';
+type SettingsModule = 'general' | 'data' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -16,6 +18,7 @@ interface SettingsModalProps {
 
 const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: '通用', icon: <Settings size={16} /> },
+  { id: 'data', label: '数据', icon: <Database size={16} /> },
   { id: 'about', label: '关于', icon: <Info size={16} /> },
 ];
 
@@ -97,6 +100,99 @@ const GeneralSettings: React.FC = () => {
           <button type="button" className="btn btn-secondary settings-zoom-reset" onClick={resetZoom}>重置</button>
         </div>
       </div>
+    </div>
+  );
+};
+
+const PathItem: React.FC<{
+  label: string;
+  path: string | null;
+}> = ({ label, path }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    if (!path) return;
+    try {
+      await writeText(path);
+      setCopied(true);
+      showToast('路径已复制');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      try {
+        await navigator.clipboard.writeText(path);
+        setCopied(true);
+        showToast('路径已复制');
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        showToast('复制失败');
+      }
+    }
+  }, [path]);
+
+  const handleOpen = useCallback(async () => {
+    if (!path) return;
+    try {
+      await revealItemInDir(path);
+    } catch (e) {
+      console.error('Failed to open path:', e);
+      showToast('无法打开路径');
+    }
+  }, [path]);
+
+  return (
+    <div className="settings-path-item">
+      <div className="settings-path-header">
+        <span className="settings-path-label">{label}</span>
+        <div className="settings-path-actions">
+          <button
+            type="button"
+            className="settings-path-btn"
+            onClick={handleCopy}
+            disabled={!path}
+            title="复制路径"
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+          </button>
+          <button
+            type="button"
+            className="settings-path-btn"
+            onClick={handleOpen}
+            disabled={!path}
+            title="在文件管理器中打开"
+          >
+            <FolderOpen size={14} />
+          </button>
+        </div>
+      </div>
+      <div className={`settings-path-value ${!path ? 'empty' : ''}`}>
+        {path || '未设置'}
+      </div>
+    </div>
+  );
+};
+
+const DataSettings: React.FC = () => {
+  const storagePath = useStore((s) => s.storagePath);
+  const [configPath, setConfigPath] = useState<string | null>(null);
+  const [appDir, setAppDir] = useState<string | null>(null);
+
+  useEffect(() => {
+    getConfigFilePath().then(setConfigPath).catch((e) => {
+      console.error('Failed to get config path:', e);
+    });
+    getAppDirectory().then(setAppDir).catch((e) => {
+      console.error('Failed to get app directory:', e);
+    });
+  }, []);
+
+  return (
+    <div className="settings-panel">
+      <h4 className="settings-panel-title">数据路径</h4>
+      <p className="settings-panel-desc">查看应用相关的配置文件与数据目录位置</p>
+
+      <PathItem label="配置文件路径" path={configPath} />
+      <PathItem label="笔记库目录" path={storagePath} />
+      <PathItem label="程序所在目录" path={appDir} />
     </div>
   );
 };
@@ -269,6 +365,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
 
           <div className="settings-content">
             {activeModule === 'general' && <GeneralSettings />}
+            {activeModule === 'data' && <DataSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>
         </div>

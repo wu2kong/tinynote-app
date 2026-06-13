@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-get-app-dir"
+description = "Enables the get_app_dir command."
+commands.allow = ["get_app_dir"]

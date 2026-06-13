@@ -1,3 +1,12 @@
+#[tauri::command]
+fn get_app_dir() -> Result<String, String> {
+    std::env::current_exe()
+        .map_err(|e| e.to_string())?
+        .parent()
+        .map(|p| p.to_string_lossy().into_owned())
+        .ok_or_else(|| "无法获取程序目录".to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -16,6 +25,7 @@ pub fn run() {
             }
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![get_app_dir])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
