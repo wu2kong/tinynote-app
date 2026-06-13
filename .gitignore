@@ -41,3 +41,4 @@ lerna-debug.log*
 Thumbs.db
 bun.lock
 package-lock.json
+.release-notes.tmp
