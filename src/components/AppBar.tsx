@@ -19,13 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import ContextMenuPortal from './ContextMenuPortal';
-
-const EMOJI_OPTIONS = [
-  '📝', '📒', '📓', '📔', '📕', '📗', '📘', '📙', '📚', '📖',
-  '💡', '🎯', '🚀', '⭐', '🔥', '💎', '🌈', '🏠', '💼', '🎓',
-  '🎵', '🎨', '🔬', '🌍', '❤️', '🧠', '🏗️', '📱', '☕', '🌟',
-  '🗂️', '📁', '🗂', '📊', '📈', '🗓️', '✅', '🔒', '🧩', '💬',
-];
+import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 
 interface SortableSpaceItemProps {
   space: Space;
@@ -241,7 +235,7 @@ const AppBar: React.FC = () => {
           <div className="emoji-picker" onClick={(e) => e.stopPropagation()}>
             <div className="emoji-picker-title">选择图标</div>
             <div className="emoji-picker-grid">
-              {EMOJI_OPTIONS.map((emoji) => (
+              {SPACE_EMOJI_OPTIONS.map((emoji) => (
                 <button
                   key={emoji}
                   className="emoji-picker-item"

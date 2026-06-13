@@ -5,6 +5,7 @@ import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { createNoteBlock } from '@/utils/noteParser';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
+import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
 
 interface AppActions {
   setSpace: (space: Space | null) => void;
@@ -147,6 +148,33 @@ function applyIconsToSpaces(spaces: Space[], icons: Record<string, string>): Spa
   }));
 }
 
+function needsSpaceConfigInit(spaces: Space[], spaceOrder: string[]): boolean {
+  if (spaces.length === 0) return false;
+  const spacePaths = new Set(spaces.map((s) => normalizePath(s.path)));
+  if (spaceOrder.length === 0) return true;
+  return !spaceOrder.some((p) => spacePaths.has(normalizePath(p)));
+}
+
+function initializeSpaceConfig(
+  spaces: Space[],
+  existingIcons: Record<string, string>,
+): { spaceOrder: string[]; spaceIcons: Record<string, string> } {
+  const sorted = [...spaces].sort(
+    (a, b) => fs.countSpaceNotebooks(b) - fs.countSpaceNotebooks(a),
+  );
+  const spaceOrder = sorted.map((s) => s.path);
+  const spaceIcons = { ...existingIcons };
+  const usedIcons = new Set(Object.values(spaceIcons));
+  for (const space of spaces) {
+    if (!spaceIcons[space.path]) {
+      const icon = pickRandomSpaceIcon(usedIcons);
+      spaceIcons[space.path] = icon;
+      usedIcons.add(icon);
+    }
+  }
+  return { spaceOrder, spaceIcons };
+}
+
 export const useStore = create<AppStore>((set, get) => ({
   spaces: [],
   currentSpace: null,
@@ -225,8 +253,13 @@ export const useStore = create<AppStore>((set, get) => ({
       localStorage.removeItem('tinynote-storagePath');
       set({ storagePath: normalizedStoragePath });
       let spaces = await fs.loadSpaces(normalizedStoragePath);
-      spaces = applyIconsToSpaces(spaces, cfg.spaceIcons);
-      spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
+      let activeCfg = cfg;
+      if (needsSpaceConfigInit(spaces, activeCfg.spaceOrder)) {
+        const { spaceOrder, spaceIcons } = initializeSpaceConfig(spaces, activeCfg.spaceIcons);
+        activeCfg = await config.saveConfig({ spaceOrder, spaceIcons });
+      }
+      spaces = applyIconsToSpaces(spaces, activeCfg.spaceIcons);
+      spaces = sortSpacesByOrder(spaces, activeCfg.spaceOrder);
 
       let currentSpace: Space | null = null;
       let currentGroup: Group | null = null;

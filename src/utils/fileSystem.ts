@@ -136,6 +136,10 @@ async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[
   return children;
 }
 
+export function countSpaceNotebooks(space: Space): number {
+  return countNotebooks(space.groups);
+}
+
 function countNotebooks(children: (Group | Notebook)[]): number {
   let count = 0;
   for (const child of children) {
