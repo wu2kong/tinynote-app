@@ -4,7 +4,7 @@ import { useStore } from '@/store/useStore';
 import { Space } from '@/types';
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
-  Edit3, Trash2, Smile, GripVertical, FolderOpen
+  Edit3, Trash2, Smile, GripVertical, FolderOpen, Search
 } from 'lucide-react';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import {
@@ -19,6 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import SettingsModal from './SettingsModal';
+import GlobalSearchModal from './GlobalSearchModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 
@@ -108,6 +109,7 @@ const AppBar: React.FC = () => {
   const [renameModal, setRenameModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [showSettings, setShowSettings] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -195,6 +197,10 @@ const AppBar: React.FC = () => {
       </div>
 
       <div className="app-bar-footer">
+        <button className="app-bar-btn" onClick={() => setShowGlobalSearch(true)} title="全局搜索">
+          <Search size={18} />
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">全局搜索</span>}
+        </button>
         <button className="app-bar-btn" onClick={toggleSidebar} title={isSidebarCollapsed ? '展开/收起' : '收起/展开'}>
           {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
           {!isSidebarCollapsed && <span className="app-bar-btn-label">{isSidebarCollapsed ? '展开/收起' : '收起/展开'}</span>}
@@ -288,6 +294,8 @@ const AppBar: React.FC = () => {
       />
 
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
+
+      <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import * as config from '@/utils/config';
 import { createNoteBlock } from '@/utils/noteParser';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
+import { GlobalSearchResult } from '@/utils/globalSearch';
 
 interface AppActions {
   setSpace: (space: Space | null) => void;
@@ -53,6 +54,7 @@ interface AppActions {
   zoomOut: () => void;
   resetZoom: () => void;
   moveItem: (itemPath: string, itemKind: 'group' | 'notebook', newParentPath: string) => Promise<void>;
+  navigateToGlobalSearchResult: (result: GlobalSearchResult) => Promise<void>;
 }
 
 type AppStore = AppState & AppActions;
@@ -366,6 +368,44 @@ selectNotebook: async (notebook: Notebook) => {
     if (loaded) {
       set({ currentNotebook: loaded, currentNoteBlock: null });
       config.saveConfig({ currentNotebookPath: notebook.path });
+    }
+  },
+
+  navigateToGlobalSearchResult: async (result) => {
+    const state = get();
+    const space = state.spaces.find((s) => normalizePath(s.path) === normalizePath(result.spacePath));
+    if (!space) return;
+
+    if (!state.currentSpace || normalizePath(state.currentSpace.path) !== normalizePath(result.spacePath)) {
+      await get().selectSpace(space);
+    }
+
+    if (result.type === 'space') return;
+
+    const currentSpace = get().currentSpace;
+    if (!currentSpace || !result.notebookPath) return;
+
+    const notebookInTree = findNotebookByPath(currentSpace.groups, result.notebookPath);
+    if (!notebookInTree) return;
+
+    const ancestors = getAncestorPaths(currentSpace.groups, result.notebookPath);
+    const expandedGroupPaths = [...get().expandedGroupPaths];
+    for (const p of ancestors) {
+      if (!expandedGroupPaths.some((ep) => normalizePath(ep) === normalizePath(p))) {
+        expandedGroupPaths.push(p);
+      }
+    }
+    set({ expandedGroupPaths });
+    config.saveConfig({ expandedGroupPaths });
+
+    await get().selectNotebook(notebookInTree);
+
+    if (result.type === 'noteBlock' && result.blockTitleKey) {
+      const loaded = get().currentNotebook;
+      const block = loaded?.noteBlocks.find((b) => b.title === result.blockTitleKey);
+      if (block) {
+        set({ currentNoteBlock: block });
+      }
     }
   },
 
