@@ -578,12 +578,6 @@ const DirectoryPanel: React.FC = () => {
 
       {contextMenu && (
         <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
-          {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
-              <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
-                {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
-                {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
-              </button>
-            )}
             <button className="context-menu-item" onClick={() => {
               if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);
               else handleRenameNotebook(contextMenu!.item as Notebook);
@@ -591,6 +585,12 @@ const DirectoryPanel: React.FC = () => {
             }}>
               <Edit3 size={14} />重命名
             </button>
+            {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
+              <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
+                {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
+                {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
+              </button>
+            )}
             {isGroup(contextMenu.item) && (
               <>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path); closeContextMenu(); }}>
@@ -605,12 +605,6 @@ const DirectoryPanel: React.FC = () => {
                   打开目录位置
                 </button>
               </>
-            )}
-            {isNotebook(contextMenu.item) && (
-              <button className="context-menu-item" onClick={() => handleOpenInEditor(contextMenu.item as Notebook)}>
-                <ExternalLink size={14} />
-                用编辑器打开
-              </button>
             )}
             <div className="context-menu-divider" />
             <div className="context-menu-submenu">
@@ -632,6 +626,12 @@ const DirectoryPanel: React.FC = () => {
                 ))}
               </div>
             </div>
+            {isNotebook(contextMenu.item) && (
+              <button className="context-menu-item" onClick={() => handleOpenInEditor(contextMenu.item as Notebook)}>
+                <ExternalLink size={14} />
+                用编辑器打开
+              </button>
+            )}
             <div className="context-menu-divider" />
             <button className="context-menu-item danger" onClick={() => {
               if (isGroup(contextMenu!.item)) handleDeleteGroup(contextMenu!.item as Group);
