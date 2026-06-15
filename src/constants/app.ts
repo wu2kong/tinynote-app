@@ -4,3 +4,5 @@ export const APP_DESCRIPTION = '轻记——零碎笔记管理';
 export const AUTHOR_NAME = '悟二空';
 export const AUTHOR_URL = 'https://wu2kong.com';
 export const GITHUB_RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+/** 国内镜像下载页，供无法访问 GitHub 的用户手动下载 */
+export const MIRROR_DOWNLOAD_URL = 'https://www.ilanzou.com/s/B6uXlvhu';

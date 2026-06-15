@@ -5,7 +5,7 @@ import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { ViewMode } from '@/types';
-import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL } from '@/constants/app';
+import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
@@ -862,9 +862,18 @@ const AboutSettings: React.FC = () => {
       await openReleasePage(updateInfo.releaseUrl);
     } catch (e) {
       console.error('Failed to open release page:', e);
-      showToast('无法打开 Release 页面');
+      showToast('无法打开 GitHub Release 页面');
     }
   }, [updateInfo]);
+
+  const handleMirrorDownload = useCallback(async () => {
+    try {
+      await openUrl(MIRROR_DOWNLOAD_URL);
+    } catch (e) {
+      console.error('Failed to open mirror download page:', e);
+      showToast('无法打开蓝奏云下载页面');
+    }
+  }, []);
 
   const handleOpenHomepage = useCallback(async () => {
     try {
@@ -921,7 +930,7 @@ const AboutSettings: React.FC = () => {
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">软件更新</span>
-          <span className="settings-row-desc">从 GitHub Releases 检查并下载最新版本</span>
+          <span className="settings-row-desc">从 GitHub Releases 检查并下载最新版本；无法访问 GitHub 时可使用蓝奏云镜像</span>
         </div>
         <div className="settings-update-actions">
           <button
@@ -951,7 +960,16 @@ const AboutSettings: React.FC = () => {
                 disabled={downloading}
               >
                 <ExternalLink size={14} />
-                去手动下载
+                GitHub 下载
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleMirrorDownload}
+                disabled={downloading}
+              >
+                <ExternalLink size={14} />
+                蓝奏云下载
               </button>
             </>
           )}
