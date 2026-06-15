@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var theme = localStorage.getItem('tinynote-landing-theme');
+      if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TinyNote 轻记 — 安装包仅 5~10MB，极速启动、快速检索、一键复制。告别鼠标框选，高效管理命令与代码片段。" />
+  <meta name="keywords" content="TinyNote, 笔记, 代码片段, 快捷复制, Tauri, 开发者工具" />
+  <meta property="og:title" content="TinyNote 轻记 — 零碎笔记，一键复制" />
+  <meta property="og:description" content="专为开发者与效率用户打造的轻量级笔记管理工具" />
+  <meta property="og:type" content="website" />
+  <title>TinyNote 轻记 — 零碎笔记，一键复制</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="bg-atmosphere" aria-hidden="true">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="#" class="nav-brand">
+        <span class="nav-logo">TN</span>
+        <span>TinyNote 轻记</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features">功能</a></li>
+          <li><a href="#showcase">界面</a></li>
+          <li><a href="#sync">同步&备份</a></li>
+          <li><a href="#compare">模式对比</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="切换到亮色模式" title="切换主题">
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <a href="https://github.com/wu2kong/tinynote-app" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.085 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.107-.775.418-1.305.762-1.604-2.665-.305-5.466-1.334-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.52.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3-.404c1.02.005 2.045.138 3 .404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.656.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.807 5.665-5.476 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.694.825.576C20.565 21.795 24 17.297 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下载
+        </a>
+        <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <a href="#features">功能</a>
+    <a href="#showcase">界面</a>
+    <a href="#sync">同步备份</a>
+    <a href="#compare">模式对比</a>
+    <a href="https://github.com/wu2kong/tinynote-app/releases/latest" target="_blank" rel="noopener noreferrer">下载应用</a>
+  </div>
+
+  <main class="page-content">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge reveal">
+        <span class="hero-badge-dot"></span>
+        安装包仅 5~10MB · 秒开即用 · 快速检索
+      </div>
+      <h1 class="hero-title reveal">
+        零碎笔记，<span class="gradient-text">一键复制</span>
+      </h1>
+      <p class="hero-subtitle reveal">
+        专为开发者与效率用户打造。常用命令、代码片段与零碎知识整理得井井有条——需要时随手复制，告别鼠标点选和框选，开启效率办公。
+      </p>
+
+      <div class="hero-highlights reveal">
+        <div class="hero-highlight-card">
+          <div class="hero-highlight-value">5~10 MB</div>
+          <div class="hero-highlight-label">轻量安装包</div>
+          <div class="hero-highlight-desc">对比动辄上百 MB 的笔记应用，下载快、不占空间</div>
+        </div>
+        <div class="hero-highlight-card">
+          <div class="hero-highlight-value">极速启动</div>
+          <div class="hero-highlight-label">Tauri 原生体验</div>
+          <div class="hero-highlight-desc">双击即开，无漫长加载，随时待命</div>
+        </div>
+        <div class="hero-highlight-card">
+          <div class="hero-highlight-value">快速检索</div>
+          <div class="hero-highlight-label">目录 + 笔记双搜索</div>
+          <div class="hero-highlight-desc">海量片段中秒级定位，找到即复制</div>
+        </div>
+      </div>
+      <div class="hero-cta reveal">
+        <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          免费下载
+        </a>
+        <a href="https://github.com/wu2kong/tinynote-app" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">
+          查看源码
+        </a>
+      </div>
+      <div class="hero-meta reveal">
+        <span class="hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          数据本地存储
+        </span>
+        <span class="hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          macOS / Windows / Linux
+        </span>
+        <span class="hero-meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Markdown 文件格式
+        </span>
+      </div>
+
+      <div class="hero-visual reveal">
+        <div class="hero-visual-frame">
+          <img class="screenshot-img" src="images/1.iShot_亮色模式.png" alt="TinyNote 亮色模式主界面 — 四栏布局展示空间、目录、笔记与编辑面板" loading="eager" />
+        </div>
+        <div class="hero-visual-glow" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="container">
+      <header class="section-header reveal">
+        <span class="section-label">核心功能</span>
+        <h2 class="section-title">轻量极速，为高频复制而生</h2>
+        <p class="section-desc">小体积、快启动、快检索——再叠加一键复制，让知识取用回归「点一下」的简单</p>
+      </header>
+
+      <div class="copy-banner reveal" style="margin-bottom: 48px;">
+        <div>
+          <h3 class="copy-banner-title">需要时随手复制，告别框选与点选</h3>
+          <p class="copy-banner-desc">传统笔记里复制一段命令，往往要：打开应用 → 找到笔记 → 滚动定位 → 鼠标拖选 → 复制。TinyNote 把「复制」做成每个笔记块上的第一操作——搜索到位，一键进剪贴板，回到终端或编辑器继续工作。</p>
+        </div>
+        <div class="copy-compare">
+          <div class="copy-compare-item">
+            <div class="copy-compare-label">传统方式</div>
+            <p class="copy-compare-text">打开 → 翻找 → 滚动 → 框选 → 复制<br>步骤多、易出错、打断心流</p>
+          </div>
+          <div class="copy-compare-item is-good">
+            <div class="copy-compare-label">TinyNote</div>
+            <p class="copy-compare-text">搜索 → 点击复制按钮<br>全程无需鼠标框选，效率办公从此开启</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="features-grid">
+        <article class="feature-card span-4 is-priority reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
+          <h3 class="feature-title">5~10MB 轻量安装</h3>
+          <p class="feature-desc">基于 Tauri 构建，安装包仅约 5~10MB。无需忍受臃肿客户端，下载安装几乎无感，磁盘与内存占用极低。</p>
+        </article>
+
+        <article class="feature-card span-4 is-priority reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3 class="feature-title">极速启动</h3>
+          <p class="feature-desc">原生桌面性能，启动几乎没有等待。需要查命令或贴片段时，应用始终能跟得上你的节奏。</p>
+        </article>
+
+        <article class="feature-card span-4 is-priority reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3 class="feature-title">快速检索</h3>
+          <p class="feature-desc">目录栏与笔记栏均内置搜索，在海量笔记块中迅速定位。找到目标后立刻复制，检索与取用一气呵成。</p>
+        </article>
+
+        <article class="feature-card span-8 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </div>
+          <h3 class="feature-title">一键快捷复制</h3>
+          <p class="feature-desc">每个笔记块都配有复制按钮，点击即可将内容送入剪贴板。支持复制标题、内容或完整笔记，配合 Toast 提示，操作反馈清晰。专为 Shell 命令、JSON 配置、Prompt 模板等高频复制场景优化。</p>
+        </article>
+
+        <article class="feature-card span-4 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="feature-title">无限层级组织</h3>
+          <p class="feature-desc">空间 → 分组 → 笔记本 → 笔记块，四层结构映射真实文件目录，支持无限嵌套分组。</p>
+        </article>
+
+        <article class="feature-card span-4 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <h3 class="feature-title">三种视图模式</h3>
+          <p class="feature-desc">列表、卡片、紧凑三种视图随心切换，适配不同内容密度与个人偏好。</p>
+        </article>
+
+        <article class="feature-card span-4 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M8 8l8 8"/><path d="M16 8l-8 8"/></svg>
+          </div>
+          <h3 class="feature-title">拖拽排序</h3>
+          <p class="feature-desc">笔记块、空间、分组与笔记本均支持拖拽重排，结构调整直观自然。</p>
+        </article>
+
+        <article class="feature-card span-6 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3 class="feature-title">Markdown 源码模式</h3>
+          <p class="feature-desc">笔记以 Markdown 扩展格式存储，可直接编辑源码。与文件系统一一对应，可用任意编辑器打开，也可以用 Git 管理版本。</p>
+        </article>
+
+        <article class="feature-card span-6 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
+          </div>
+          <h3 class="feature-title">标签与属性编辑</h3>
+          <p class="feature-desc">右侧属性面板支持编辑标题、正文与标签，创建与更新时间一目了然，方便追踪笔记生命周期。</p>
+        </article>
+
+        <article class="feature-card span-12 reveal">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3 class="feature-title">四栏工具型布局，低打扰</h3>
+          <p class="feature-desc">应用栏、目录栏、笔记栏与属性编辑栏分工明确，专为桌面端高频管理优化。浅色与深色主题随心切换，长时间使用也不累眼。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Theme showcase -->
+  <section class="section" id="showcase">
+    <div class="container">
+      <header class="section-header reveal">
+        <span class="section-label">界面预览</span>
+        <h2 class="section-title">简洁现代，深浅自如</h2>
+        <p class="section-desc">四栏布局清晰分区：应用栏、目录栏、笔记栏与属性编辑栏，信息层级一目了然</p>
+      </header>
+
+      <div class="theme-showcase reveal">
+        <div class="theme-card">
+          <div class="theme-card-label">
+            <span class="dot light"></span>
+            浅色模式
+          </div>
+          <div class="screenshot-frame">
+            <img class="screenshot-img" src="images/1.iShot_亮色模式.png" alt="TinyNote 浅色模式界面" loading="lazy" />
+          </div>
+        </div>
+        <div class="theme-card">
+          <div class="theme-card-label">
+            <span class="dot dark"></span>
+            深色模式
+          </div>
+          <div class="screenshot-frame">
+            <img class="screenshot-img" src="images/2.iShot_暗色模式.png" alt="TinyNote 深色模式界面" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sync & Backup -->
+  <section class="section" id="sync">
+    <div class="container">
+      <header class="section-header reveal">
+        <span class="section-label">数据安全</span>
+        <h2 class="section-title">同步与备份，双重保障</h2>
+        <p class="section-desc">笔记库即 Git 仓库，支持远程同步；本地备份一键打包，数据安全无忧</p>
+      </header>
+
+      <div class="deep-feature reveal">
+        <div class="deep-feature-content">
+          <span class="section-label">Git 同步</span>
+          <h3 class="deep-feature-title">笔记库就是 Git 仓库</h3>
+          <p class="deep-feature-desc">将笔记库存储目录初始化为 Git 仓库后，即可在应用内完成拉取、提交与推送。变更文件列表、Diff 预览、单文件撤销一应俱全，多设备协作或云端备份触手可及。</p>
+          <ul class="deep-feature-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              查看远程仓库与分支信息
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              一键 Pull / Push，自动生成提交信息
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              变更文件 Diff 预览与单文件撤销
+            </li>
+          </ul>
+        </div>
+        <div class="deep-feature-visual">
+          <div class="screenshot-frame">
+            <img class="screenshot-img" src="images/3.iShot_同步配置.png" alt="TinyNote Git 同步配置界面" loading="lazy" />
+          </div>
+        </div>
+      </div>
+
+      <div class="deep-feature reverse reveal">
+        <div class="deep-feature-content">
+          <span class="section-label">本地备份</span>
+          <h3 class="deep-feature-title">一键打包，随时恢复</h3>
+          <p class="deep-feature-desc">指定备份目录后，一键将笔记库与配置打包归档。备份历史清晰列出文件名、时间与大小，重要数据多一份本地保障。</p>
+          <ul class="deep-feature-list">
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              自定义备份存储位置
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              笔记库 + 配置文件一并打包
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              备份列表与文件大小统计
+            </li>
+          </ul>
+        </div>
+        <div class="deep-feature-visual">
+          <div class="screenshot-frame">
+            <img class="screenshot-img" src="images/4.iShot_备份配置.png" alt="TinyNote 本地备份配置界面" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="section" id="compare">
+    <div class="container">
+      <header class="section-header reveal">
+        <span class="section-label">模式对比</span>
+        <h2 class="section-title">不是另一种 Notion，而是不同的效率路径</h2>
+        <p class="section-desc">TinyNote 专注「零碎片段的高频取用」，与传统长文笔记、云端文档是互补关系，而非替代关系</p>
+      </header>
+
+      <div class="compare-table-wrap reveal">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>传统笔记管理模式</th>
+              <th>TinyNote 轻记</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>产品定位</td>
+              <td>长文撰写、知识库搭建、团队协作文档（如 Notion、印象笔记、OneNote、语雀）</td>
+              <td>命令、代码片段、配置模板等零碎知识的管理与快捷复制</td>
+            </tr>
+            <tr>
+              <td>内容形态</td>
+              <td>以「篇」为单位的长文档、富文本页面，强调排版与叙述</td>
+              <td>以「块」为单位的短片段，每条笔记块独立可复制</td>
+            </tr>
+            <tr>
+              <td>取用方式</td>
+              <td>打开笔记 → 滚动定位 → 鼠标框选 → 复制，步骤多、易打断心流</td>
+              <td>搜索定位 → 一键复制，无需框选，专为「拿来就用」设计</td>
+            </tr>
+            <tr>
+              <td>安装与启动</td>
+              <td>安装包通常 100MB+，启动与同步有一定等待</td>
+              <td>安装包约 5~10MB，极速启动，本地优先、响应即时</td>
+            </tr>
+            <tr>
+              <td>数据存储</td>
+              <td>多依赖云端账号与专有格式，离线能力因产品而异</td>
+              <td>纯本地 Markdown 文件，目录即结构，可用 Git 管理、任意编辑器打开</td>
+            </tr>
+            <tr>
+              <td>组织结构</td>
+              <td>笔记本 / 标签 / 双向链接等，侧重知识网络与关联</td>
+              <td>空间 → 分组 → 笔记本 → 笔记块，映射文件目录，侧重分类与快速定位</td>
+            </tr>
+            <tr>
+              <td>典型场景</td>
+              <td>会议纪要、项目文档、学习笔记、团队 wiki</td>
+              <td>Shell 命令手册、API 片段库、Prompt 模板、账号备忘、运维脚本</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="compare-scenarios reveal">
+        <div class="compare-scenario">
+          <h4>更适合传统笔记的场景</h4>
+          <p>需要写长文、插入图片表格、多人协作批注、或构建复杂的知识图谱时，Notion、飞书文档、Obsidian 等仍是更合适的选择。TinyNote 并不试图覆盖这些需求。</p>
+        </div>
+        <div class="compare-scenario is-tinynote">
+          <h4>更适合 TinyNote 的场景</h4>
+          <p>每天反复复制同一段命令、同一份 JSON 配置、同一个 API 地址；需要把零碎信息分类归档，但又不想每次翻长文档框选。这正是 TinyNote 要解决的高频痛点。</p>
+        </div>
+      </div>
+
+      <div class="iteration-card reveal">
+        <div class="iteration-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </div>
+        <div class="iteration-content">
+          <h4>围绕日常高频管理需求，快速迭代</h4>
+          <p>TinyNote 由真实工作流驱动演进——Git 同步、本地备份、多视图切换、源码模式等功能，都来自日常管理命令片段时的切身需求。项目持续开源维护，欢迎通过 GitHub Issue 提出场景与建议，让工具跟着你的效率习惯一起成长。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-card reveal">
+        <h2>开始整理你的零碎知识</h2>
+        <p>免费开源，支持 macOS、Windows 与 Linux。下载即用，无需注册。</p>
+        <div class="cta-buttons">
+          <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            下载最新版
+          </a>
+          <a href="https://github.com/wu2kong/tinynote-app/issues" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">
+            反馈建议
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="#" class="nav-brand">
+            <span class="nav-logo">TN</span>
+            <span>TinyNote 轻记</span>
+          </a>
+          <p>轻量级快捷笔记管理 + 快捷复制工具。Made with care by 悟二空。</p>
+        </div>
+        <div class="footer-col">
+          <h5>项目</h5>
+          <ul class="footer-links">
+            <li><a href="https://github.com/wu2kong/tinynote-app" target="_blank" rel="noopener noreferrer">GitHub 仓库</a></li>
+            <li><a href="https://github.com/wu2kong/tinynote-app/releases" target="_blank" rel="noopener noreferrer">版本发布</a></li>
+            <li><a href="https://github.com/wu2kong/tinynote-app/issues" target="_blank" rel="noopener noreferrer">Issue 反馈</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>作者</h5>
+          <ul class="footer-links">
+            <li><a href="https://wu2kong.com" target="_blank" rel="noopener noreferrer">个人站点 wu2kong.com</a></li>
+            <li><a href="https://wu2kong.com" target="_blank" rel="noopener noreferrer">更多开源项目</a></li>
+            <li><a href="https://github.com/wu2kong" target="_blank" rel="noopener noreferrer">GitHub @wu2kong</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 TinyNote. MIT License.</span>
+        <span>
+          <a href="https://wu2kong.com" target="_blank" rel="noopener noreferrer">wu2kong.com</a>
+          ·
+          <a href="https://github.com/wu2kong/tinynote-app" target="_blank" rel="noopener noreferrer">GitHub</a>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const nav = document.getElementById('nav');
+      const navToggle = document.getElementById('navToggle');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const themeToggle = document.getElementById('themeToggle');
+      const THEME_KEY = 'tinynote-landing-theme';
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
+        themeToggle.setAttribute('aria-label', theme === 'light' ? '切换到深色模式' : '切换到亮色模式');
+        themeToggle.setAttribute('title', theme === 'light' ? '切换为深色模式' : '切换为亮色模式');
+      }
+
+      themeToggle.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme') || 'dark';
+        applyTheme(current === 'light' ? 'dark' : 'light');
+      });
+
+      applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+
+      window.addEventListener('scroll', function () {
+        nav.classList.toggle('scrolled', window.scrollY > 20);
+      }, { passive: true });
+
+      navToggle.addEventListener('click', function () {
+        const open = mobileMenu.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', open);
+        mobileMenu.setAttribute('aria-hidden', !open);
+      });
+
+      mobileMenu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          mobileMenu.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+          mobileMenu.setAttribute('aria-hidden', 'true');
+        });
+      });
+
+      var reveals = document.querySelectorAll('.reveal');
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+      reveals.forEach(function (el) { observer.observe(el); });
+    })();
+  </script>
+</body>
+</html>
