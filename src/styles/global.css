@@ -512,12 +512,16 @@ input:focus, textarea:focus {
 }
 
 .tree-badge {
-  background: var(--bg-active);
-  color: var(--text-tertiary);
+  background: var(--accent-light);
+  color: var(--text-secondary);
   font-size: 10px;
-  padding: 0 6px;
+  font-weight: 500;
+  padding: 1px 6px;
   border-radius: 10px;
   flex-shrink: 0;
+  line-height: 16px;
+  min-width: 18px;
+  text-align: center;
 }
 
 .tree-grip-handle {
