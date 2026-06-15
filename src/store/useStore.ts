@@ -35,6 +35,7 @@ interface AppActions {
   deleteGroup: (group: Group) => Promise<void>;
   renameGroup: (group: Group, newName: string) => Promise<void>;
   addNotebook: (parentPath: string, name: string) => Promise<void>;
+  duplicateNotebook: (notebook: Notebook) => Promise<Notebook | null>;
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
   addNoteBlock: () => Promise<void>;
@@ -612,6 +613,60 @@ selectNotebook: async (notebook: Notebook) => {
       }));
       config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
     }
+  },
+
+  duplicateNotebook: async (notebook) => {
+    const duplicated = await fs.duplicateNotebook(notebook.path);
+    const parentPath = dirname(notebook.path);
+    const { currentSpace } = get();
+    if (currentSpace) {
+      const insertAfterNotebook = (
+        children: (Group | Notebook)[]
+      ): { children: (Group | Notebook)[]; inserted: boolean } => {
+        let inserted = false;
+        const result: (Group | Notebook)[] = [];
+        for (const child of children) {
+          if (child.id === notebook.id) {
+            result.push(child, duplicated);
+            inserted = true;
+          } else if ('children' in child) {
+            const nested = insertAfterNotebook(child.children);
+            if (nested.inserted) {
+              result.push({ ...child, children: nested.children, notebookCount: child.notebookCount + 1 });
+              inserted = true;
+            } else {
+              result.push(child);
+            }
+          } else {
+            result.push(child);
+          }
+        }
+        return { children: result, inserted };
+      };
+      const isDirectChild = normalizePath(parentPath) === normalizePath(currentSpace.path);
+      let updatedGroups: (Group | Notebook)[];
+      if (isDirectChild) {
+        updatedGroups = insertAfterNotebook(currentSpace.groups).children;
+      } else {
+        updatedGroups = currentSpace.groups.map((item) => {
+          if ('children' in item) {
+            const nested = insertAfterNotebook(item.children);
+            if (nested.inserted) {
+              return { ...item, children: nested.children, notebookCount: item.notebookCount + 1 };
+            }
+          }
+          return item;
+        });
+      }
+      const updatedSpace = { ...currentSpace, groups: updatedGroups };
+      set((state) => ({
+        currentSpace: updatedSpace,
+        spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
+      }));
+      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
+    }
+    await get().selectNotebook(duplicated);
+    return duplicated;
   },
 
   deleteNotebook: async (notebook) => {

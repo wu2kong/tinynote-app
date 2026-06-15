@@ -5,7 +5,7 @@ import { Group, Notebook } from '@/types';
 import {
   Search, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
-  ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink,
+  ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
@@ -198,6 +198,7 @@ const DirectoryPanel: React.FC = () => {
   const toggleExpandedGroupPath = useStore((s) => s.toggleExpandedGroupPath);
   const addGroup = useStore((s) => s.addGroup);
   const addNotebook = useStore((s) => s.addNotebook);
+  const duplicateNotebook = useStore((s) => s.duplicateNotebook);
   const storeDeleteGroup = useStore((s) => s.deleteGroup);
   const storeDeleteNotebook = useStore((s) => s.deleteNotebook);
   const storeRenameGroup = useStore((s) => s.renameGroup);
@@ -585,6 +586,23 @@ const DirectoryPanel: React.FC = () => {
             }}>
               <Edit3 size={14} />重命名
             </button>
+            {isNotebook(contextMenu.item) && (
+              <button className="context-menu-item" onClick={async () => {
+                const notebook = contextMenu!.item as Notebook;
+                closeContextMenu();
+                try {
+                  const duplicated = await duplicateNotebook(notebook);
+                  if (duplicated) {
+                    showToast(`已创建「${duplicated.name}」`);
+                  }
+                } catch (e) {
+                  console.error('Failed to duplicate notebook:', e);
+                  showToast('创建副本失败');
+                }
+              }}>
+                <Copy size={14} />创建副本
+              </button>
+            )}
             {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
               <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
                 {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}

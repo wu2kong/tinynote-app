@@ -1,4 +1,4 @@
-import { readDir, readTextFile, writeTextFile, mkdir, remove, rename } from '@tauri-apps/plugin-fs';
+import { readDir, readTextFile, writeTextFile, mkdir, remove, rename, exists } from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Space, Group, Notebook } from '@/types';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
@@ -212,6 +212,29 @@ export async function createNotebook(parentPath: string, name: string): Promise<
     noteBlocks: [],
     isSourceMode: false,
   };
+}
+
+export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
+  const normalizedSource = normalizePath(sourcePath);
+  const parentPath = dirname(normalizedSource);
+  const sourceName = basename(normalizedSource).replace(/\.md$/, '');
+  const content = await readTextFile(normalizedSource);
+
+  let copyName = `${sourceName} 副本`;
+  let copyPath = joinPath(parentPath, `${copyName}.md`);
+  let counter = 2;
+  while (await exists(copyPath)) {
+    copyName = `${sourceName} 副本 ${counter}`;
+    copyPath = joinPath(parentPath, `${copyName}.md`);
+    counter++;
+  }
+
+  await writeTextFile(copyPath, content);
+  const notebook = await loadNotebook(copyPath);
+  if (!notebook) {
+    throw new Error('Failed to load duplicated notebook');
+  }
+  return notebook;
 }
 
 export async function renameSpace(oldPath: string, newName: string): Promise<string> {
