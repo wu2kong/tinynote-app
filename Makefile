@@ -2,6 +2,7 @@
 
 # 本地开发启动
 local-rundev:
+	codegraph sync
 	bun run tauri dev
 
 # 修复本地依赖

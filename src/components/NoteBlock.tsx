@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NoteBlock as NoteBlockType, ViewMode } from '@/types';
-import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus, ClipboardPaste } from 'lucide-react';
+import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus, ClipboardPaste, Globe } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { useStore } from '@/store/useStore';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
+import { extractHttpLinks } from '@/utils/extractLinks';
 import ContextMenuPortal from './ContextMenuPortal';
+import LinksModal from './LinksModal';
+import { showToast } from './Toast';
 
 interface NoteBlockProps {
   block: NoteBlockType;
@@ -20,6 +24,8 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
   const [copied, setCopied] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [clipboardHasNote, setClipboardHasNote] = useState(false);
+  const [linksModalOpen, setLinksModalOpen] = useState(false);
+  const [extractedLinks, setExtractedLinks] = useState<string[]>([]);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: block.id });
 
   const addNoteBlockAtIndex = useStore((s) => s.addNoteBlockAtIndex);
@@ -54,6 +60,47 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
       setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  const getBlockLinks = () => {
+    const text = block.title ? `${block.title}\n${block.content}` : block.content;
+    return extractHttpLinks(text);
+  };
+
+  const hasLinks = getBlockLinks().length > 0;
+
+  const handleExtractLinks = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const links = getBlockLinks();
+
+    if (links.length === 1) {
+      try {
+        await openUrl(links[0]);
+      } catch {
+        showToast('无法打开链接');
+      }
+      return;
+    }
+
+    setExtractedLinks(links);
+    setLinksModalOpen(true);
+  };
+
+  const renderActionButtons = (iconSize: number) => (
+    <div className="note-block-actions">
+      {hasLinks && (
+        <button
+          className="note-block-copy-btn"
+          onClick={handleExtractLinks}
+          title="提取链接"
+        >
+          <Globe size={iconSize} />
+        </button>
+      )}
+      <button className="note-block-copy-btn" onClick={handleCopy} title="复制正文">
+        {copied ? <Check size={iconSize} /> : <Copy size={iconSize} />}
+      </button>
+    </div>
+  );
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -200,11 +247,10 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           </span>
           <span className="note-block-compact-title">{block.title || 'Untitled'}</span>
           <span className="note-block-compact-meta">{lines}L</span>
-          <button className="note-block-copy-btn" onClick={handleCopy}>
-            {copied ? <Check size={12} /> : <Copy size={12} />}
-          </button>
+          {renderActionButtons(12)}
         </div>
         {renderContextMenu()}
+        <LinksModal open={linksModalOpen} onClose={() => setLinksModalOpen(false)} links={extractedLinks} />
       </>
     );
   }
@@ -224,9 +270,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
               <GripVertical size={14} />
             </span>
             <span className="note-block-card-title">{block.title || 'Untitled'}</span>
-            <button className="note-block-copy-btn" onClick={handleCopy}>
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-            </button>
+            {renderActionButtons(14)}
           </div>
           <div className="note-block-card-content">{contentPreview}</div>
           {block.tags.length > 0 && (
@@ -238,6 +282,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           )}
         </div>
         {renderContextMenu()}
+        <LinksModal open={linksModalOpen} onClose={() => setLinksModalOpen(false)} links={extractedLinks} />
       </>
     );
   }
@@ -258,11 +303,10 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           <div className="note-block-list-title">{block.title || 'Untitled'}</div>
           <div className="note-block-list-preview">{contentPreview}</div>
         </div>
-        <button className="note-block-copy-btn" onClick={handleCopy}>
-          {copied ? <Check size={14} /> : <Copy size={14} />}
-        </button>
+        {renderActionButtons(14)}
       </div>
       {renderContextMenu()}
+      <LinksModal open={linksModalOpen} onClose={() => setLinksModalOpen(false)} links={extractedLinks} />
     </>
   );
 };
