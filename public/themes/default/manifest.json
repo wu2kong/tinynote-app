@@ -1,0 +1,11 @@
+{
+  "id": "default",
+  "label": "极光蓝",
+  "description": "当前默认的玻璃拟态文档主题。",
+  "defaultMode": "light",
+  "stylesheet": "theme.css",
+  "highlight": {
+    "light": "highlight-light.css",
+    "dark": "highlight-dark.css"
+  }
+}

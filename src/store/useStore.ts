@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { AppState, Space, Group, Notebook, NoteBlock, ViewMode } from '@/types';
+import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId } from '@/types';
 import { applyTheme } from '@/utils/theme';
+import { isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { createNoteBlock } from '@/utils/noteParser';
@@ -14,6 +15,7 @@ interface AppActions {
   setNotebook: (notebook: Notebook | null) => void;
   setNoteBlock: (block: NoteBlock | null) => void;
   toggleTheme: () => void;
+  setColorTheme: (themeId: ColorThemeId) => void;
   toggleSidebar: () => void;
   toggleAppBar: () => void;
   toggleDirectoryPanel: () => void;
@@ -185,6 +187,7 @@ export const useStore = create<AppStore>((set, get) => ({
   currentNotebook: null,
   currentNoteBlock: null,
   isDarkTheme: false,
+  colorThemeId: 'default' as ColorThemeId,
   isSidebarCollapsed: false,
   showAppBar: true,
   showDirectoryPanel: true,
@@ -217,10 +220,18 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   toggleTheme: () => {
-    const next = !get().isDarkTheme;
-    applyTheme(next);
+    const { isDarkTheme, colorThemeId } = get();
+    const next = !isDarkTheme;
+    applyTheme(colorThemeId, next);
     set({ isDarkTheme: next });
     config.saveConfig({ isDarkTheme: next });
+  },
+
+  setColorTheme: (themeId) => {
+    const { isDarkTheme } = get();
+    applyTheme(themeId, isDarkTheme);
+    set({ colorThemeId: themeId });
+    config.saveConfig({ colorThemeId: themeId });
   },
 
   toggleSidebar: () => {
@@ -243,7 +254,8 @@ export const useStore = create<AppStore>((set, get) => ({
 
   initApp: async () => {
     const cfg = await config.loadConfig();
-    applyTheme(cfg.isDarkTheme);
+    const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'default';
+    applyTheme(colorThemeId, cfg.isDarkTheme);
     document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();
     document.documentElement.style.setProperty('--zoom', (cfg.zoomLevel ?? 1).toString());
 
@@ -311,6 +323,7 @@ export const useStore = create<AppStore>((set, get) => ({
           expandedGroupPaths: expandedPaths,
           zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
+          colorThemeId,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
@@ -321,6 +334,7 @@ export const useStore = create<AppStore>((set, get) => ({
           spaces,
           zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
+          colorThemeId,
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
@@ -331,6 +345,7 @@ export const useStore = create<AppStore>((set, get) => ({
       set({
         zoomLevel: cfg.zoomLevel ?? 1,
         isDarkTheme: cfg.isDarkTheme,
+        colorThemeId,
         isSidebarCollapsed: cfg.isSidebarCollapsed,
         showAppBar: cfg.showAppBar ?? true,
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,

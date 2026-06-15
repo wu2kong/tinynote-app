@@ -1,0 +1,11 @@
+{
+  "id": "qinglan",
+  "label": "青灰蓝",
+  "description": "沉静克制的青灰蓝主题，主色为 #1D4C50。",
+  "defaultMode": "light",
+  "stylesheet": "theme.css",
+  "highlight": {
+    "light": "highlight-light.css",
+    "dark": "highlight-dark.css"
+  }
+}

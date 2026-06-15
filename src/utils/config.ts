@@ -2,6 +2,7 @@ import { readTextFile, writeTextFile, mkdir, exists, BaseDirectory } from '@taur
 
 export interface AppConfig {
   isDarkTheme: boolean;
+  colorThemeId: string;
   isSidebarCollapsed: boolean;
   zoomLevel: number;
   showAppBar: boolean;
@@ -20,6 +21,7 @@ export interface AppConfig {
 
 const DEFAULT_CONFIG: AppConfig = {
   isDarkTheme: false,
+  colorThemeId: 'default',
   isSidebarCollapsed: false,
   zoomLevel: 1,
   showAppBar: true,

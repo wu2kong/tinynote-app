@@ -1,0 +1,67 @@
+html[data-theme-id="qinglan"][data-color-mode="light"] {
+  --bg: #edf4f4;
+  --bg-elevated: rgba(247, 251, 251, 0.9);
+  --bg-panel: #f9fcfc;
+  --bg-soft: #dde8e8;
+  --bg-hover: #d1dede;
+  --text: #203437;
+  --text-muted: #607b7e;
+  --text-soft: #8ca2a5;
+  --border: rgba(29, 76, 80, 0.18);
+  --border-strong: rgba(29, 76, 80, 0.28);
+  --brand: #1d4c50;
+  --brand-strong: #14393d;
+  --brand-soft: rgba(29, 76, 80, 0.12);
+  --code-bg: #f2f8f8;
+  --code-fg: #1f3638;
+  --code-toolbar-bg: #dfeaea;
+  --code-panel-border: rgba(29, 76, 80, 0.18);
+  --code-panel-shadow: 0 18px 40px rgba(56, 88, 91, 0.12);
+  --code-line-number: #8ea4a7;
+  --shadow-lg: 0 22px 48px rgba(31, 54, 56, 0.1);
+  --shadow-md: 0 12px 28px rgba(31, 54, 56, 0.08);
+  --shadow-sm: 0 4px 14px rgba(31, 54, 56, 0.06);
+  --body-bg:
+    radial-gradient(circle at top left, rgba(29, 76, 80, 0.14), transparent 28%),
+    radial-gradient(circle at top right, rgba(108, 138, 142, 0.14), transparent 24%),
+    linear-gradient(180deg, #f8fbfb 0%, #edf4f4 100%);
+  --brand-mark-bg: linear-gradient(135deg, #1d4c50, #5f7f82);
+  --active-file-bg: linear-gradient(180deg, rgba(29, 76, 80, 0.14), rgba(29, 76, 80, 0.08));
+  --active-file-border: rgba(29, 76, 80, 0.2);
+  --active-file-shadow: 0 8px 18px rgba(31, 54, 56, 0.08);
+  --loading-bar-bg: linear-gradient(90deg, #1d4c50, #5f7f82);
+}
+
+html[data-theme-id="qinglan"][data-color-mode="dark"] {
+  --bg: #0d1718;
+  --bg-elevated: rgba(16, 27, 28, 0.88);
+  --bg-panel: #132022;
+  --bg-soft: #18282a;
+  --bg-hover: #1e3133;
+  --text: #e3efef;
+  --text-muted: #a8bec0;
+  --text-soft: #6f8b8d;
+  --border: rgba(130, 171, 175, 0.14);
+  --border-strong: rgba(130, 171, 175, 0.22);
+  --brand: #5f9aa0;
+  --brand-strong: #7bb7bd;
+  --brand-soft: rgba(95, 154, 160, 0.14);
+  --code-bg: #0f1b1d;
+  --code-fg: #e5f3f3;
+  --code-toolbar-bg: #1a2b2d;
+  --code-panel-border: rgba(130, 171, 175, 0.14);
+  --code-panel-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+  --code-line-number: #6c8789;
+  --shadow-lg: 0 24px 62px rgba(0, 0, 0, 0.34);
+  --shadow-md: 0 14px 30px rgba(0, 0, 0, 0.26);
+  --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.18);
+  --body-bg:
+    radial-gradient(circle at top left, rgba(95, 154, 160, 0.16), transparent 30%),
+    radial-gradient(circle at top right, rgba(29, 76, 80, 0.18), transparent 24%),
+    linear-gradient(180deg, #122022 0%, #0a1112 100%);
+  --brand-mark-bg: linear-gradient(135deg, #5f9aa0, #1d4c50);
+  --active-file-bg: linear-gradient(180deg, rgba(95, 154, 160, 0.18), rgba(95, 154, 160, 0.08));
+  --active-file-border: rgba(95, 154, 160, 0.24);
+  --active-file-shadow: 0 12px 20px rgba(0, 0, 0, 0.22);
+  --loading-bar-bg: linear-gradient(90deg, #5f9aa0, #1d4c50);
+}

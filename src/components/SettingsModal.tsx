@@ -4,7 +4,8 @@ import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
-import { ViewMode } from '@/types';
+import { ColorThemeId, ViewMode } from '@/types';
+import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
@@ -54,19 +55,39 @@ const SettingsToggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ 
 
 const GeneralSettings: React.FC = () => {
   const isDarkTheme = useStore((s) => s.isDarkTheme);
+  const colorThemeId = useStore((s) => s.colorThemeId);
   const showAppBar = useStore((s) => s.showAppBar);
   const viewMode = useStore((s) => s.viewMode);
   const zoomLevel = useStore((s) => s.zoomLevel);
   const toggleTheme = useStore((s) => s.toggleTheme);
+  const setColorTheme = useStore((s) => s.setColorTheme);
   const toggleAppBar = useStore((s) => s.toggleAppBar);
   const setViewMode = useStore((s) => s.setViewMode);
   const zoomIn = useStore((s) => s.zoomIn);
   const zoomOut = useStore((s) => s.zoomOut);
   const resetZoom = useStore((s) => s.resetZoom);
 
+  const currentTheme = COLOR_THEMES.find((theme) => theme.id === colorThemeId) ?? COLOR_THEMES[0];
+
   return (
     <div className="settings-panel">
       <h4 className="settings-panel-title">通用设置</h4>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">颜色主题</span>
+          <span className="settings-row-desc">{currentTheme.description}</span>
+        </div>
+        <select
+          className="settings-select"
+          value={colorThemeId}
+          onChange={(e) => setColorTheme(e.target.value as ColorThemeId)}
+        >
+          {COLOR_THEMES.map((theme) => (
+            <option key={theme.id} value={theme.id}>{theme.label}</option>
+          ))}
+        </select>
+      </div>
 
       <div className="settings-row">
         <div className="settings-row-info">

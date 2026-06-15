@@ -1,0 +1,11 @@
+{
+  "id": "sunset",
+  "label": "樱花粉",
+  "description": "偏少女粉的杂志感主题，柔和又醒目。",
+  "defaultMode": "light",
+  "stylesheet": "theme.css",
+  "highlight": {
+    "light": "highlight-light.css",
+    "dark": "highlight-dark.css"
+  }
+}

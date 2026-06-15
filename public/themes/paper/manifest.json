@@ -1,0 +1,11 @@
+{
+  "id": "paper",
+  "label": "纸墨灰",
+  "description": "偏纸质阅读感的暖色主题。",
+  "defaultMode": "light",
+  "stylesheet": "theme.css",
+  "highlight": {
+    "light": "highlight-light.css",
+    "dark": "highlight-dark.css"
+  }
+}

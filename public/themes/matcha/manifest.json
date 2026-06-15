@@ -1,0 +1,11 @@
+{
+  "id": "matcha",
+  "label": "抹茶绿",
+  "description": "清爽偏自然的抹茶系主题，适合长时间阅读。",
+  "defaultMode": "light",
+  "stylesheet": "theme.css",
+  "highlight": {
+    "light": "highlight-light.css",
+    "dark": "highlight-dark.css"
+  }
+}

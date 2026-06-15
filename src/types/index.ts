@@ -36,6 +36,8 @@ export interface Space {
 
 export type ViewMode = 'list' | 'card' | 'compact';
 
+export type ColorThemeId = 'default' | 'qinglan' | 'sunset' | 'paper' | 'matcha';
+
 export interface AppState {
   spaces: Space[];
   currentSpace: Space | null;
@@ -43,6 +45,7 @@ export interface AppState {
   currentNotebook: Notebook | null;
   currentNoteBlock: NoteBlock | null;
   isDarkTheme: boolean;
+  colorThemeId: ColorThemeId;
   isSidebarCollapsed: boolean;
   showAppBar: boolean;
   showDirectoryPanel: boolean;
