@@ -57,11 +57,13 @@ const GeneralSettings: React.FC = () => {
   const isDarkTheme = useStore((s) => s.isDarkTheme);
   const colorThemeId = useStore((s) => s.colorThemeId);
   const showAppBar = useStore((s) => s.showAppBar);
+  const hideElementBorders = useStore((s) => s.hideElementBorders);
   const viewMode = useStore((s) => s.viewMode);
   const zoomLevel = useStore((s) => s.zoomLevel);
   const toggleTheme = useStore((s) => s.toggleTheme);
   const setColorTheme = useStore((s) => s.setColorTheme);
   const toggleAppBar = useStore((s) => s.toggleAppBar);
+  const toggleHideElementBorders = useStore((s) => s.toggleHideElementBorders);
   const setViewMode = useStore((s) => s.setViewMode);
   const zoomIn = useStore((s) => s.zoomIn);
   const zoomOut = useStore((s) => s.zoomOut);
@@ -103,6 +105,14 @@ const GeneralSettings: React.FC = () => {
           <span className="settings-row-desc">显示左侧空间导航栏</span>
         </div>
         <SettingsToggle checked={showAppBar} onChange={toggleAppBar} />
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">隐藏元素边框</span>
+          <span className="settings-row-desc">开启极简风格，去除界面上不必要的边框</span>
+        </div>
+        <SettingsToggle checked={hideElementBorders} onChange={toggleHideElementBorders} />
       </div>
 
       <div className="settings-row">

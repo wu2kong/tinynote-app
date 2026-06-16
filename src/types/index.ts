@@ -49,6 +49,7 @@ export interface AppState {
   isSidebarCollapsed: boolean;
   showAppBar: boolean;
   showDirectoryPanel: boolean;
+  hideElementBorders: boolean;
   viewMode: ViewMode;
   zoomLevel: number;
   searchQuery: string;

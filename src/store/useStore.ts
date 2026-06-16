@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId } from '@/types';
-import { applyTheme } from '@/utils/theme';
+import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
@@ -19,6 +19,7 @@ interface AppActions {
   toggleSidebar: () => void;
   toggleAppBar: () => void;
   toggleDirectoryPanel: () => void;
+  toggleHideElementBorders: () => void;
   setViewMode: (mode: ViewMode) => void;
   setSearchQuery: (query: string) => void;
   setStoragePath: (path: string | null) => Promise<void>;
@@ -191,6 +192,7 @@ export const useStore = create<AppStore>((set, get) => ({
   isSidebarCollapsed: false,
   showAppBar: true,
   showDirectoryPanel: true,
+  hideElementBorders: false,
   viewMode: 'list' as ViewMode,
   zoomLevel: 1,
   searchQuery: '',
@@ -252,10 +254,18 @@ export const useStore = create<AppStore>((set, get) => ({
     config.saveConfig({ showDirectoryPanel: next, showAppBar: next ? get().showAppBar : false });
   },
 
+  toggleHideElementBorders: () => {
+    const next = !get().hideElementBorders;
+    applyMinimalStyle(next);
+    set({ hideElementBorders: next });
+    config.saveConfig({ hideElementBorders: next });
+  },
+
   initApp: async () => {
     const cfg = await config.loadConfig();
     const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'default';
     applyTheme(colorThemeId, cfg.isDarkTheme);
+    applyMinimalStyle(cfg.hideElementBorders ?? false);
     document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();
     document.documentElement.style.setProperty('--zoom', (cfg.zoomLevel ?? 1).toString());
 
@@ -327,6 +337,7 @@ export const useStore = create<AppStore>((set, get) => ({
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
+          hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
         });
       } else {
@@ -338,6 +349,7 @@ export const useStore = create<AppStore>((set, get) => ({
           isSidebarCollapsed: cfg.isSidebarCollapsed,
           showAppBar: cfg.showAppBar ?? true,
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
+          hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
         });
       }
@@ -348,7 +360,8 @@ export const useStore = create<AppStore>((set, get) => ({
         colorThemeId,
         isSidebarCollapsed: cfg.isSidebarCollapsed,
         showAppBar: cfg.showAppBar ?? true,
-          showDirectoryPanel: cfg.showDirectoryPanel ?? true,
+        showDirectoryPanel: cfg.showDirectoryPanel ?? true,
+        hideElementBorders: cfg.hideElementBorders ?? false,
         viewMode: cfg.viewMode as ViewMode,
       });
     }

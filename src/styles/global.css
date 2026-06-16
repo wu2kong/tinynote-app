@@ -2587,3 +2587,26 @@ input:focus, textarea:focus {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Minimal style — hide decorative borders */
+html[data-minimal-style="true"][data-theme-id][data-theme] {
+  --border-color: transparent;
+  --border-strong: transparent;
+  --code-panel-border: transparent;
+  --active-file-border: transparent;
+}
+
+html[data-minimal-style="true"][data-theme-id][data-theme] .settings-toggle:not(.active) {
+  background: var(--bg-tertiary);
+}
+
+html[data-minimal-style="true"][data-theme-id][data-theme] .note-block-list.selected,
+html[data-minimal-style="true"][data-theme-id][data-theme] .note-block-card.selected,
+html[data-minimal-style="true"][data-theme-id][data-theme] .note-block-compact.selected {
+  border-color: transparent;
+}
+
+html[data-minimal-style="true"][data-theme-id][data-theme] input:focus,
+html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
+  border-color: var(--accent);
+}

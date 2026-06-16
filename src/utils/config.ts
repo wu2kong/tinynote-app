@@ -7,6 +7,7 @@ export interface AppConfig {
   zoomLevel: number;
   showAppBar: boolean;
   showDirectoryPanel: boolean;
+  hideElementBorders: boolean;
   viewMode: string;
   storagePath: string | null;
   backupDir: string | null;
@@ -26,6 +27,7 @@ const DEFAULT_CONFIG: AppConfig = {
   zoomLevel: 1,
   showAppBar: true,
   showDirectoryPanel: true,
+  hideElementBorders: false,
   viewMode: 'list',
   storagePath: null,
   backupDir: null,

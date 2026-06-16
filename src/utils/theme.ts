@@ -23,3 +23,11 @@ export function applyTheme(colorThemeId: ColorThemeId, isDark: boolean): void {
   const highlightLink = ensureHighlightLink();
   highlightLink.href = isDark ? theme.highlight.dark : theme.highlight.light;
 }
+
+export function applyMinimalStyle(hideBorders: boolean): void {
+  if (hideBorders) {
+    document.documentElement.setAttribute('data-minimal-style', 'true');
+  } else {
+    document.documentElement.removeAttribute('data-minimal-style');
+  }
+}
