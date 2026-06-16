@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:web": "vite --mode web index-web.html",
     "build": "tsc && vite build",
+    "build:web": "tsc && vite build --mode web",
     "preview": "vite preview",
+    "preview:web": "vite preview --outDir dist-web",
     "tauri": "tauri",
     "release": "node scripts/release.mjs"
   },
@@ -15,6 +18,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^8",
     "@dnd-kit/utilities": "^3",
+    "@isomorphic-git/lightning-fs": "^4.6.2",
     "@tailwindcss/vite": "^4.2.2",
     "@tauri-apps/api": "^2.11.0",
     "@tauri-apps/plugin-clipboard-manager": "^2",
@@ -23,6 +27,7 @@
     "@tauri-apps/plugin-opener": "^2.5.3",
     "@tauri-apps/plugin-shell": "^2.3.5",
     "highlight.js": "^11.11.1",
+    "isomorphic-git": "^1.38.4",
     "lucide-react": "^1.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -31,6 +36,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.2",
+    "@types/node": "^25.9.3",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

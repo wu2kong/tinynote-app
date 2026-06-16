@@ -5,6 +5,7 @@ node_modules
 
 # Build outputs
 dist
+dist-web
 dist-ssr
 *.local
 
@@ -42,3 +43,5 @@ Thumbs.db
 bun.lock
 package-lock.json
 .release-notes.tmp
+.cursor
+.codegraph

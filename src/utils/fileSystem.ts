@@ -1,16 +1,15 @@
-import { readDir, readTextFile, writeTextFile, mkdir, remove, rename, exists } from '@tauri-apps/plugin-fs';
-import { open } from '@tauri-apps/plugin-dialog';
+import { getStorageAdapter } from '@/adapters/storage';
 import { Space, Group, Notebook } from '@/types';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
+import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 
+function storage() {
+  return getStorageAdapter();
+}
+
 export async function selectStoragePath(): Promise<string | null> {
-  const selected = await open({
-    directory: true,
-    multiple: false,
-    recursive: true,
-  });
-  return selected ? normalizePath(selected as string) : null;
+  return storage().selectStoragePath();
 }
 
 export async function loadSpaces(storagePath: string): Promise<Space[]> {
@@ -18,7 +17,7 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
   const spaces: Space[] = [];
   let entries;
   try {
-    entries = await readDir(rootPath);
+    entries = await storage().readDir(rootPath);
   } catch {
     return spaces;
   }
@@ -29,7 +28,7 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
       const name = entry.name.replace('.tinynotes', '');
       const children = await loadSpaceChildren(spacePath);
       spaces.push({
-        id: crypto.randomUUID(),
+        id: stableIdFromPath(spacePath),
         name,
         path: spacePath,
         groups: children,
@@ -45,7 +44,7 @@ export async function loadSpaceChildren(spacePath: string): Promise<(Group | Not
   const children: (Group | Notebook)[] = [];
   let entries;
   try {
-    entries = await readDir(parentPath);
+    entries = await storage().readDir(parentPath);
   } catch {
     return children;
   }
@@ -56,7 +55,7 @@ export async function loadSpaceChildren(spacePath: string): Promise<(Group | Not
       const subChildren = await loadGroupChildren(groupPath);
       const notebookCount = countNotebooks(subChildren);
       children.push({
-        id: crypto.randomUUID(),
+        id: stableIdFromPath(groupPath),
         name: entry.name,
         path: groupPath,
         children: subChildren,
@@ -79,7 +78,7 @@ export async function loadGroups(spacePath: string): Promise<Group[]> {
   const groups: Group[] = [];
   let entries;
   try {
-    entries = await readDir(parentPath);
+    entries = await storage().readDir(parentPath);
   } catch {
     return groups;
   }
@@ -90,7 +89,7 @@ export async function loadGroups(spacePath: string): Promise<Group[]> {
       const children = await loadGroupChildren(groupPath);
       const notebookCount = countNotebooks(children);
       groups.push({
-        id: crypto.randomUUID(),
+        id: stableIdFromPath(groupPath),
         name: entry.name,
         path: groupPath,
         children,
@@ -107,7 +106,7 @@ async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[
   const children: (Group | Notebook)[] = [];
   let entries;
   try {
-    entries = await readDir(parentPath);
+    entries = await storage().readDir(parentPath);
   } catch {
     return children;
   }
@@ -118,7 +117,7 @@ async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[
       const subChildren = await loadGroupChildren(subGroupPath);
       const notebookCount = countNotebooks(subChildren);
       children.push({
-        id: crypto.randomUUID(),
+        id: stableIdFromPath(subGroupPath),
         name: entry.name,
         path: subGroupPath,
         children: subChildren,
@@ -155,11 +154,11 @@ function countNotebooks(children: (Group | Notebook)[]): number {
 export async function loadNotebook(filePath: string): Promise<Notebook | null> {
   const normalizedPath = normalizePath(filePath);
   try {
-    const content = await readTextFile(normalizedPath);
-    const noteBlocks = parseNoteBlocks(content);
+    const content = await storage().readTextFile(normalizedPath);
+    const noteBlocks = parseNoteBlocks(content, normalizedPath);
     const name = basename(normalizedPath).replace('.md', '');
     return {
-      id: crypto.randomUUID(),
+      id: stableIdFromPath(normalizedPath),
       name,
       path: normalizedPath,
       noteBlocks,
@@ -172,15 +171,15 @@ export async function loadNotebook(filePath: string): Promise<Notebook | null> {
 
 export async function saveNotebook(notebook: Notebook): Promise<void> {
   const content = serializeNoteBlocks(notebook.noteBlocks);
-  await writeTextFile(notebook.path, content);
+  await storage().writeTextFile(notebook.path, content);
 }
 
 export async function createSpace(storagePath: string, name: string): Promise<Space> {
   const dirName = `${name}.tinynotes`;
   const spacePath = joinPath(storagePath, dirName);
-  await mkdir(spacePath, { recursive: true });
+  await storage().mkdir(spacePath, true);
   return {
-    id: crypto.randomUUID(),
+    id: stableIdFromPath(spacePath),
     name,
     path: spacePath,
     groups: [],
@@ -189,9 +188,9 @@ export async function createSpace(storagePath: string, name: string): Promise<Sp
 
 export async function createGroup(parentPath: string, name: string): Promise<Group> {
   const groupPath = joinPath(parentPath, name);
-  await mkdir(groupPath, { recursive: true });
+  await storage().mkdir(groupPath, true);
   return {
-    id: crypto.randomUUID(),
+    id: stableIdFromPath(groupPath),
     name,
     path: groupPath,
     children: [],
@@ -204,32 +203,30 @@ export async function createNotebook(parentPath: string, name: string): Promise<
   const filePath = joinPath(parentPath, fileName);
   const now = new Date().toISOString();
   const initialContent = `---\ntitle: ${name}\ntags: []\ncreatedAt: ${now}\nupdatedAt: ${now}\n---\n\n`;
-  await writeTextFile(filePath, initialContent);
-  return {
-    id: crypto.randomUUID(),
-    name: name.replace('.md', ''),
-    path: filePath,
-    noteBlocks: [],
-    isSourceMode: false,
-  };
+  await storage().writeTextFile(filePath, initialContent);
+  const notebook = await loadNotebook(filePath);
+  if (!notebook) {
+    throw new Error('Failed to load created notebook');
+  }
+  return notebook;
 }
 
 export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
   const normalizedSource = normalizePath(sourcePath);
   const parentPath = dirname(normalizedSource);
   const sourceName = basename(normalizedSource).replace(/\.md$/, '');
-  const content = await readTextFile(normalizedSource);
+  const content = await storage().readTextFile(normalizedSource);
 
   let copyName = `${sourceName} 副本`;
   let copyPath = joinPath(parentPath, `${copyName}.md`);
   let counter = 2;
-  while (await exists(copyPath)) {
+  while (await storage().exists(copyPath)) {
     copyName = `${sourceName} 副本 ${counter}`;
     copyPath = joinPath(parentPath, `${copyName}.md`);
     counter++;
   }
 
-  await writeTextFile(copyPath, content);
+  await storage().writeTextFile(copyPath, content);
   const notebook = await loadNotebook(copyPath);
   if (!notebook) {
     throw new Error('Failed to load duplicated notebook');
@@ -240,26 +237,26 @@ export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
 export async function renameSpace(oldPath: string, newName: string): Promise<string> {
   const parentPath = dirname(oldPath);
   const newPath = joinPath(parentPath, `${newName}.tinynotes`);
-  await rename(oldPath, newPath);
+  await storage().rename(oldPath, newPath);
   return newPath;
 }
 
 export async function deleteSpace(spacePath: string): Promise<void> {
-  await remove(spacePath, { recursive: true });
+  await storage().remove(spacePath, true);
 }
 
 export async function deleteGroup(groupPath: string): Promise<void> {
-  await remove(groupPath, { recursive: true });
+  await storage().remove(groupPath, true);
 }
 
 export async function deleteNotebook(filePath: string): Promise<void> {
-  await remove(filePath);
+  await storage().remove(filePath, false);
 }
 
 export async function renameGroup(oldPath: string, newName: string): Promise<string> {
   const parentPath = dirname(oldPath);
   const newPath = joinPath(parentPath, newName);
-  await rename(oldPath, newPath);
+  await storage().rename(oldPath, newPath);
   return newPath;
 }
 
@@ -267,13 +264,17 @@ export async function renameNotebook(oldPath: string, newName: string): Promise<
   const parentPath = dirname(oldPath);
   const newFileName = newName.endsWith('.md') ? newName : `${newName}.md`;
   const newPath = joinPath(parentPath, newFileName);
-  await rename(oldPath, newPath);
+  await storage().rename(oldPath, newPath);
   return newPath;
 }
 
 export async function moveItem(oldPath: string, newParentPath: string): Promise<string> {
   const itemName = basename(oldPath);
   const newPath = joinPath(newParentPath, itemName);
-  await rename(oldPath, newPath);
+  await storage().rename(oldPath, newPath);
   return newPath;
+}
+
+export function getDefaultStoragePath(): string {
+  return storage().defaultStoragePath;
 }

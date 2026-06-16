@@ -1,30 +1,12 @@
-import { invoke } from '@tauri-apps/api/core';
+import { getSyncAdapter } from '@/adapters/sync';
+import type {
+  FileDiff,
+  GitChangedFile,
+  GitChangeType,
+  GitSyncStatus,
+} from '@/adapters/sync';
 
-export type GitChangeType = 'added' | 'modified' | 'deleted';
-
-export interface GitChangedFile {
-  path: string;
-  changeType: GitChangeType;
-}
-
-export interface GitSyncStatus {
-  isRepo: boolean;
-  remoteUrl: string | null;
-  branch: string | null;
-  changedMdCount: number;
-  changedFiles: GitChangedFile[];
-  ahead: number;
-  behind: number;
-  hasRemote: boolean;
-  hostname: string;
-  statusError: string | null;
-}
-
-export interface FileDiff {
-  diff: string;
-  changeType: string;
-  isNewFile: boolean;
-}
+export type { FileDiff, GitChangedFile, GitChangeType, GitSyncStatus };
 
 const DIFF_META_PREFIXES = ['+++', '---', '@@', 'diff ', 'index ', 'new file', 'deleted file'];
 
@@ -37,23 +19,23 @@ export function getDisplayDiffLines(raw: string): string[] {
 }
 
 export async function getGitStatus(storagePath: string): Promise<GitSyncStatus> {
-  return invoke<GitSyncStatus>('get_git_status', { storagePath });
+  return getSyncAdapter().getGitStatus(storagePath);
 }
 
 export async function gitPull(storagePath: string): Promise<void> {
-  return invoke<void>('git_pull', { storagePath });
+  return getSyncAdapter().gitPull(storagePath);
 }
 
 export async function gitSyncPush(storagePath: string): Promise<string> {
-  return invoke<string>('git_sync_push', { storagePath });
+  return getSyncAdapter().gitSyncPush(storagePath);
 }
 
 export async function getFileDiff(storagePath: string, filePath: string): Promise<FileDiff> {
-  return invoke<FileDiff>('get_file_diff', { storagePath, filePath });
+  return getSyncAdapter().getFileDiff(storagePath, filePath);
 }
 
 export async function revertFileChange(storagePath: string, filePath: string): Promise<void> {
-  return invoke<void>('revert_file_change', { storagePath, filePath });
+  return getSyncAdapter().revertFileChange(storagePath, filePath);
 }
 
 export function formatSyncCommitMessage(hostname: string): string {

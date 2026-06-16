@@ -1,6 +1,7 @@
 import { NoteBlock, ContentType } from '@/types';
+import { stableIdFromParts, stableNoteBlockId } from './stableId';
 
-export function parseNoteBlocks(content: string): NoteBlock[] {
+export function parseNoteBlocks(content: string, notebookPath?: string): NoteBlock[] {
   const blocks: NoteBlock[] = [];
   const lines = content.split('\n');
   let pos = 0;
@@ -53,7 +54,9 @@ export function parseNoteBlocks(content: string): NoteBlock[] {
     bodyContent = bodyContent.replace(/\n+$/, '');
 
     blocks.push({
-      id: crypto.randomUUID(),
+      id: notebookPath
+        ? stableNoteBlockId(notebookPath, blocks.length, createdAt)
+        : stableIdFromParts('block', String(blocks.length), createdAt, title),
       title,
       content: bodyContent,
       contentType,
@@ -108,9 +111,10 @@ export function serializeNoteBlocks(blocks: NoteBlock[]): string {
 
 export function createNoteBlock(partial?: Partial<NoteBlock>): NoteBlock {
   const now = new Date().toISOString();
+  const title = partial?.title ?? 'Untitled';
   return {
-    id: crypto.randomUUID(),
-    title: partial?.title ?? 'Untitled',
+    id: stableIdFromParts('draft', now, title),
+    title,
     content: partial?.content ?? '',
     contentType: partial?.contentType ?? 'text',
     tags: partial?.tags ?? [],

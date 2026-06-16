@@ -17,6 +17,9 @@ import {
 } from '@/utils/sync';
 import { joinPath, normalizePath } from '@/utils/path';
 import * as fs from '@/utils/fileSystem';
+import { loadConfig, saveConfig } from '@/utils/config';
+import { resetSyncAdapterForTests } from '@/adapters/sync';
+import { getSyncBackend, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
 
@@ -427,6 +430,24 @@ const SyncSettings: React.FC = () => {
   });
   const [revertTarget, setRevertTarget] = useState<GitChangedFile | null>(null);
   const [revertingPath, setRevertingPath] = useState<string | null>(null);
+  const [gitCorsProxy, setGitCorsProxy] = useState('https://cors.isomorphic-git.org');
+  const [syncAuthToken, setSyncAuthToken] = useState('');
+
+  useEffect(() => {
+    loadConfig().then((cfg) => {
+      setGitCorsProxy(cfg.gitCorsProxy || 'https://cors.isomorphic-git.org');
+      setSyncAuthToken(cfg.syncAuthToken ?? '');
+    });
+  }, []);
+
+  const handleSaveSyncConfig = useCallback(async () => {
+    await saveConfig({
+      gitCorsProxy: gitCorsProxy.trim() || 'https://cors.isomorphic-git.org',
+      syncAuthToken: syncAuthToken.trim() || null,
+    });
+    resetSyncAdapterForTests();
+    showToast('同步配置已保存');
+  }, [gitCorsProxy, syncAuthToken]);
 
   const refreshStatus = useCallback(async (options?: { toastOnSuccess?: boolean }) => {
     if (!storagePath) {
@@ -607,6 +628,8 @@ const SyncSettings: React.FC = () => {
 
   const commitPreview = status ? formatSyncCommitMessage(status.hostname) : '';
   const busy = pulling || pushing;
+  const syncBackend = getSyncBackend();
+  const usesSystemGit = syncBackend === 'tauri-rust';
 
   return (
     <div className="settings-panel settings-panel--compact">
@@ -614,7 +637,11 @@ const SyncSettings: React.FC = () => {
         <div className="settings-panel-head-row">
           <div>
             <h4 className="settings-panel-title">Git 同步</h4>
-            <p className="settings-panel-desc">通过 Git 在多设备间同步 Markdown 笔记</p>
+            <p className="settings-panel-desc">
+              {usesSystemGit
+                ? '桌面端使用系统 Git，支持 SSH / HTTPS 远程（如 Gitea）'
+                : 'Web 端使用 isomorphic-git + CORS 代理（仅 HTTPS Token）'}
+            </p>
           </div>
           <button
             type="button"
@@ -632,9 +659,9 @@ const SyncSettings: React.FC = () => {
         <div className="settings-sync-empty">请先在「数据」中设置笔记库目录</div>
       ) : !status?.isRepo ? (
         <div className="settings-sync-empty">
-          <p>当前笔记库目录尚未初始化为 Git 仓库。</p>
+          <p>当前笔记库目录尚未识别为 Git 仓库（与是否配置 origin 无关）。</p>
           <p className="settings-sync-empty-hint">
-            在终端进入该目录，执行 <code>git init</code> 并配置 remote 后即可使用同步功能。
+            请在终端进入该目录或其父目录，确认存在 <code>.git</code> 文件夹；若尚未初始化，执行 <code>git init</code> 并配置 remote。
           </p>
           <button type="button" className="btn btn-secondary btn-sm settings-sync-open-btn" onClick={handleOpenRepo}>
             <FolderOpen size={13} />
@@ -708,6 +735,45 @@ const SyncSettings: React.FC = () => {
 
           <div className="settings-sync-commit-preview">
             提交信息：<code>{commitPreview}</code>
+          </div>
+
+          <div className="settings-sync-info" style={{ marginTop: '12px' }}>
+            {!usesSystemGit && (
+              <>
+                <div className="settings-sync-info-row">
+                  <span className="settings-sync-info-label">CORS 代理</span>
+                  <input
+                    className="settings-input"
+                    value={gitCorsProxy}
+                    onChange={(e) => setGitCorsProxy(e.target.value)}
+                    placeholder="https://cors.isomorphic-git.org"
+                  />
+                </div>
+                <div className="settings-sync-info-row">
+                  <span className="settings-sync-info-label">Git Token</span>
+                  <input
+                    className="settings-input"
+                    type="password"
+                    value={syncAuthToken}
+                    onChange={(e) => setSyncAuthToken(e.target.value)}
+                    placeholder="HTTPS Personal Access Token"
+                  />
+                </div>
+                {isWeb() && (
+                  <p className="settings-sync-empty-hint">
+                    Web 端不支持 SSH 远程，请为 Gitea/GitHub 使用 HTTPS 地址与 Token。
+                  </p>
+                )}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSyncConfig} disabled={busy}>
+                  保存同步配置
+                </button>
+              </>
+            )}
+            {usesSystemGit && (
+              <p className="settings-sync-empty-hint">
+                SSH 远程（如 <code>git@gitea.example.com:user/repo.git</code>）由系统 Git 与本地凭据处理，无需在此填写 Token。
+              </p>
+            )}
           </div>
 
           <div className="settings-backup-actions settings-sync-actions">

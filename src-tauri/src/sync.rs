@@ -1,7 +1,13 @@
 use serde::Serialize;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Output};
+
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -33,14 +39,43 @@ pub struct FileDiff {
     pub is_new_file: bool,
 }
 
+fn configure_hidden_process(cmd: &mut Command) {
+    #[cfg(windows)]
+    {
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = cmd;
+    }
+}
+
 fn get_hostname() -> String {
-    if let Ok(output) = Command::new("hostname").output() {
-        let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        if !name.is_empty() {
-            return name;
+    #[cfg(windows)]
+    {
+        if let Ok(name) = std::env::var("COMPUTERNAME") {
+            let trimmed = name.trim();
+            if !trimmed.is_empty() {
+                return trimmed.to_string();
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        if let Ok(name) = std::env::var("HOSTNAME") {
+            let trimmed = name.trim();
+            if !trimmed.is_empty() {
+                return trimmed.to_string();
+            }
         }
     }
     "unknown".to_string()
+}
+
+fn git_command() -> Command {
+    let mut cmd = Command::new(resolve_git_binary());
+    configure_hidden_process(&mut cmd);
+    cmd
 }
 
 fn resolve_git_binary() -> PathBuf {
@@ -54,7 +89,7 @@ fn resolve_git_binary() -> PathBuf {
 }
 
 fn find_git_root(start: &Path) -> Option<PathBuf> {
-    let output = Command::new(resolve_git_binary())
+    let output = git_command()
         .args(["-C", &start.to_string_lossy(), "rev-parse", "--show-toplevel"])
         .output()
         .ok()?;
@@ -80,8 +115,8 @@ fn run_git(repo_path: &str, args: &[&str]) -> Result<String, String> {
     }
 }
 
-fn run_git_output(repo_path: &str, args: &[&str]) -> Result<std::process::Output, String> {
-    Command::new(resolve_git_binary())
+fn run_git_output(repo_path: &str, args: &[&str]) -> Result<Output, String> {
+    git_command()
         .arg("-c")
         .arg("core.quotepath=false")
         .args(args)
@@ -230,11 +265,7 @@ fn is_untracked_file(repo_path: &str, file_path: &str) -> Result<bool, String> {
     Ok(untracked.iter().any(|p| p == file_path))
 }
 
-fn parse_ahead_behind(repo_path: &str) -> (u32, u32) {
-    let Ok(output) = run_git(repo_path, &["status", "-sb"]) else {
-        return (0, 0);
-    };
-    let first_line = output.lines().next().unwrap_or("");
+fn parse_ahead_behind_from_header(first_line: &str) -> (u32, u32) {
     let mut ahead = 0u32;
     let mut behind = 0u32;
     if let Some(rest) = first_line.find('[').map(|i| &first_line[i + 1..]) {
@@ -249,6 +280,83 @@ fn parse_ahead_behind(repo_path: &str) -> (u32, u32) {
         }
     }
     (ahead, behind)
+}
+
+fn parse_branch_from_header(first_line: &str) -> Option<String> {
+    if !first_line.starts_with("## ") {
+        return None;
+    }
+    let rest = first_line[3..].trim();
+    if rest.is_empty() || rest == "HEAD (no branch)" {
+        return None;
+    }
+    let branch = rest
+        .split("...")
+        .next()
+        .unwrap_or(rest)
+        .split_whitespace()
+        .next()
+        .unwrap_or(rest)
+        .trim();
+    if branch.is_empty() {
+        None
+    } else {
+        Some(branch.to_string())
+    }
+}
+
+fn porcelain_change_type(index_status: char, worktree_status: char) -> Option<&'static str> {
+    if index_status == '?' && worktree_status == '?' {
+        return Some("added");
+    }
+    if index_status == 'D' || worktree_status == 'D' {
+        return Some("deleted");
+    }
+    if index_status != ' ' || worktree_status != ' ' {
+        return Some("modified");
+    }
+    None
+}
+
+fn parse_status_snapshot(output: &str) -> (Option<String>, u32, u32, Vec<GitChangedFile>) {
+    let mut lines = output.lines();
+    let header = lines.next().unwrap_or("");
+    let branch = parse_branch_from_header(header);
+    let (ahead, behind) = parse_ahead_behind_from_header(header);
+
+    let mut files = Vec::new();
+    for line in lines {
+        if line.len() < 4 {
+            continue;
+        }
+        let statuses: Vec<char> = line.chars().take(2).collect();
+        if statuses.len() < 2 {
+            continue;
+        }
+        let path = strip_git_quotes(line[3..].trim());
+        if path.is_empty() || !is_md_file(&path) {
+            continue;
+        }
+        let Some(change_type) = porcelain_change_type(statuses[0], statuses[1]) else {
+            continue;
+        };
+        files.push(GitChangedFile {
+            path,
+            change_type: change_type.to_string(),
+        });
+    }
+
+    files.sort_by(|a, b| a.path.cmp(&b.path));
+    files.dedup_by(|a, b| a.path == b.path);
+    (branch, ahead, behind, files)
+}
+
+fn collect_status_snapshot(repo_path: &str) -> Result<(Option<String>, u32, u32, Vec<GitChangedFile>), String> {
+    let output = run_git(
+        repo_path,
+        &["status", "-sb", "--porcelain", "-u", "--no-renames"],
+    )?;
+    Ok(parse_status_snapshot(&output))
 }
 
 pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
@@ -291,13 +399,17 @@ pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
         .ok()
         .filter(|s| !s.is_empty());
     let has_remote = remote_url.is_some();
-    let branch = run_git(&repo_path, &["rev-parse", "--abbrev-ref", "HEAD"]).ok();
 
-    let (changed_files, status_error) = match collect_changed_md_files(&repo_path) {
-        Ok(files) => (files, None),
-        Err(err) => (Vec::new(), Some(err)),
-    };
-    let (ahead, behind) = parse_ahead_behind(&repo_path);
+    let (branch, ahead, behind, changed_files, status_error) =
+        match collect_status_snapshot(&repo_path) {
+            Ok((status_branch, ahead, behind, files)) => {
+                let branch = status_branch.or_else(|| {
+                    run_git(&repo_path, &["rev-parse", "--abbrev-ref", "HEAD"]).ok()
+                });
+                (branch, ahead, behind, files, None)
+            }
+            Err(err) => (None, 0, 0, Vec::new(), Some(err)),
+        };
 
     Ok(GitSyncStatus {
         is_repo: true,
@@ -460,5 +572,25 @@ mod tests {
     fn detects_plain_md_path() {
         assert!(is_md_file("notes/foo.md"));
         assert!(!is_md_file("notes/foo.txt"));
+    }
+
+    #[test]
+    fn parses_status_snapshot_with_branch_and_changes() {
+        let output = "## main...origin/main [ahead 1, behind 2]\n M notes/a.md\n?? notes/b.md\n";
+        let (branch, ahead, behind, files) = parse_status_snapshot(output);
+        assert_eq!(branch.as_deref(), Some("main"));
+        assert_eq!(ahead, 1);
+        assert_eq!(behind, 2);
+        assert_eq!(files.len(), 2);
+        assert_eq!(files[0].path, "notes/a.md");
+        assert_eq!(files[0].change_type, "modified");
+        assert_eq!(files[1].path, "notes/b.md");
+        assert_eq!(files[1].change_type, "added");
+    }
+
+    #[test]
+    fn hostname_does_not_use_shell_command() {
+        let name = get_hostname();
+        assert!(!name.is_empty());
     }
 }
