@@ -50,25 +50,56 @@ fn configure_hidden_process(cmd: &mut Command) {
     }
 }
 
+fn trim_hostname(name: String) -> Option<String> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed.to_string())
+    }
+}
+
+fn read_command_hostname(program: &str, args: &[&str]) -> Option<String> {
+    let mut cmd = Command::new(program);
+    cmd.args(args);
+    configure_hidden_process(&mut cmd);
+    let output = cmd.output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    trim_hostname(String::from_utf8_lossy(&output.stdout).into_owned())
+}
+
 fn get_hostname() -> String {
     #[cfg(windows)]
     {
         if let Ok(name) = std::env::var("COMPUTERNAME") {
-            let trimmed = name.trim();
-            if !trimmed.is_empty() {
-                return trimmed.to_string();
+            if let Some(trimmed) = trim_hostname(name) {
+                return trimmed;
             }
         }
     }
-    #[cfg(not(windows))]
+
+    if let Ok(name) = std::env::var("HOSTNAME") {
+        if let Some(trimmed) = trim_hostname(name) {
+            return trimmed;
+        }
+    }
+
+    #[cfg(target_os = "macos")]
     {
-        if let Ok(name) = std::env::var("HOSTNAME") {
-            let trimmed = name.trim();
-            if !trimmed.is_empty() {
-                return trimmed.to_string();
-            }
+        if let Some(name) = read_command_hostname("scutil", &["--get", "LocalHostName"]) {
+            return name;
+        }
+        if let Some(name) = read_command_hostname("scutil", &["--get", "ComputerName"]) {
+            return name;
         }
     }
+
+    if let Some(name) = read_command_hostname("hostname", &[]) {
+        return name;
+    }
+
     "unknown".to_string()
 }
 
@@ -589,8 +620,9 @@ mod tests {
     }
 
     #[test]
-    fn hostname_does_not_use_shell_command() {
+    fn hostname_is_not_unknown() {
         let name = get_hostname();
         assert!(!name.is_empty());
+        assert_ne!(name, "unknown");
     }
 }

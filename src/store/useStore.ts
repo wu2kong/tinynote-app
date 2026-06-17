@@ -213,12 +213,12 @@ export const useStore = create<AppStore>((set, get) => ({
 
   setStoragePath: async (path) => {
     const normalizedPath = path ? normalizePath(path) : null;
-    set({ storagePath: normalizedPath });
     if (normalizedPath) {
-      await config.saveConfig({ storagePath: normalizedPath });
+      await config.prepareWorkspace(normalizedPath);
     } else {
-      await config.saveConfig({ storagePath: null });
+      config.bindWorkspace(null);
     }
+    set({ storagePath: normalizedPath });
   },
 
   toggleTheme: () => {
@@ -262,20 +262,29 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   initApp: async () => {
+    let workspacePath = config.getBootstrappedWorkspacePath();
+    if (workspacePath === undefined) {
+      workspacePath = await config.bootstrapApplication();
+    }
+
+    if (workspacePath) {
+      await config.prepareWorkspace(normalizePath(workspacePath));
+    }
+
     const cfg = await config.loadConfig();
+
     const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'default';
     applyTheme(colorThemeId, cfg.isDarkTheme);
     applyMinimalStyle(cfg.hideElementBorders ?? false);
     document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();
     document.documentElement.style.setProperty('--zoom', (cfg.zoomLevel ?? 1).toString());
 
-    const storagePath = cfg.storagePath || localStorage.getItem('tinynote-storagePath');
-    if (storagePath) {
-      const normalizedStoragePath = normalizePath(storagePath);
-      if (!cfg.storagePath && storagePath) {
-        await config.saveConfig({ storagePath: normalizedStoragePath });
-      }
+    if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('tinynote-storagePath');
+    }
+
+    if (workspacePath) {
+      const normalizedStoragePath = normalizePath(workspacePath);
       set({ storagePath: normalizedStoragePath });
       let spaces = await fs.loadSpaces(normalizedStoragePath);
       let activeCfg = cfg;

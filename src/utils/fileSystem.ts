@@ -3,6 +3,7 @@ import { Space, Group, Notebook } from '@/types';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
+import { isNoteSpaceDirectoryName } from './workspaceConfig';
 
 function storage() {
   return getStorageAdapter();
@@ -23,7 +24,7 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
   }
 
   for (const entry of entries) {
-    if (entry.isDirectory && entry.name?.endsWith('.tinynotes')) {
+    if (entry.isDirectory && entry.name && isNoteSpaceDirectoryName(entry.name)) {
       const spacePath = joinPath(rootPath, entry.name);
       const name = entry.name.replace('.tinynotes', '');
       const children = await loadSpaceChildren(spacePath);

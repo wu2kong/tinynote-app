@@ -8,7 +8,7 @@ import { ColorThemeId, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
-import { getConfigFilePath, getAppDirectory } from '@/utils/appPaths';
+import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import {
   getGitStatus, gitPull, gitSyncPush, getFileDiff, revertFileChange,
@@ -259,10 +259,10 @@ const BackupSettings: React.FC = () => {
     }).catch((e) => {
       console.error('Failed to load backup dir:', e);
     });
-    getConfigFilePath().then(setConfigPath).catch((e) => {
+    getConfigFilePath(storagePath).then(setConfigPath).catch((e) => {
       console.error('Failed to get config path:', e);
     });
-  }, [refreshStats]);
+  }, [refreshStats, storagePath]);
 
   const handleSelectBackupDir = useCallback(async () => {
     const selected = await selectBackupDir();
@@ -639,7 +639,7 @@ const SyncSettings: React.FC = () => {
             <h4 className="settings-panel-title">Git 同步</h4>
             <p className="settings-panel-desc">
               {usesSystemGit
-                ? '桌面端使用系统 Git，支持 SSH / HTTPS 远程（如 Gitea）'
+                ? '桌面端使用系统 Git，支持 SSH / HTTPS 远程（如 Gitea、GitHub、Gitee）'
                 : 'Web 端使用 isomorphic-git + CORS 代理（仅 HTTPS Token）'}
             </p>
           </div>
@@ -672,25 +672,7 @@ const SyncSettings: React.FC = () => {
         <>
           <div className="settings-sync-info">
             <div className="settings-sync-info-row">
-              <span className="settings-sync-info-label">远程仓库</span>
-              <div className="settings-sync-info-value-row">
-                <span className="settings-sync-remote" title={status.remoteUrl ?? undefined}>
-                  {status.remoteUrl ?? '未配置 origin 远程'}
-                </span>
-                {status.remoteUrl && (
-                  <button
-                    type="button"
-                    className="settings-path-btn"
-                    onClick={handleCopyRemote}
-                    title="复制仓库地址"
-                  >
-                    {copiedRemote ? <Check size={14} /> : <Copy size={14} />}
-                  </button>
-                )}
-              </div>
-            </div>
-            <div className="settings-sync-info-row">
-              <span className="settings-sync-info-label">笔记库目录</span>
+              <span className="settings-sync-info-label">当前笔记库</span>
               <div className="settings-sync-info-value-row">
                 <span className="settings-sync-remote" title={storagePath ?? undefined}>
                   {storagePath}
@@ -713,10 +695,27 @@ const SyncSettings: React.FC = () => {
                 </button>
               </div>
             </div>
+            <div className="settings-sync-info-row">
+              <span className="settings-sync-info-label">远程仓库</span>
+              <div className="settings-sync-info-value-row">
+                <span className="settings-sync-remote" title={status.remoteUrl ?? undefined}>
+                  {status.remoteUrl ?? '未配置 origin 远程'}
+                </span>
+                {status.remoteUrl && (
+                  <button
+                    type="button"
+                    className="settings-path-btn"
+                    onClick={handleCopyRemote}
+                    title="复制仓库地址"
+                  >
+                    {copiedRemote ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                )}
+              </div>
+            </div>
             {status.branch && (
               <div className="settings-sync-info-row">
-                <span className="settings-sync-info-label">当前分支</span>
-                <span className="settings-sync-branch">{status.branch}</span>
+                <span className="settings-sync-info-label">当前分支：<span className="settings-sync-branch">{status.branch}</span></span>
               </div>
             )}
           </div>
@@ -734,7 +733,7 @@ const SyncSettings: React.FC = () => {
           </div>
 
           <div className="settings-sync-commit-preview">
-            提交信息：<code>{commitPreview}</code>
+            自动生成的提交信息：<code>{commitPreview}</code>
           </div>
 
           <div className="settings-sync-info" style={{ marginTop: '12px' }}>
@@ -769,11 +768,11 @@ const SyncSettings: React.FC = () => {
                 </button>
               </>
             )}
-            {usesSystemGit && (
+            {/* {usesSystemGit && (
               <p className="settings-sync-empty-hint">
                 SSH 远程（如 <code>git@gitea.example.com:user/repo.git</code>）由系统 Git 与本地凭据处理，无需在此填写 Token。
               </p>
-            )}
+            )} */}
           </div>
 
           <div className="settings-backup-actions settings-sync-actions">
@@ -883,25 +882,30 @@ const SyncSettings: React.FC = () => {
 const DataSettings: React.FC = () => {
   const storagePath = useStore((s) => s.storagePath);
   const [configPath, setConfigPath] = useState<string | null>(null);
+  const [workspacesPath, setWorkspacesPath] = useState<string | null>(null);
   const [appDir, setAppDir] = useState<string | null>(null);
 
   useEffect(() => {
-    getConfigFilePath().then(setConfigPath).catch((e) => {
+    getConfigFilePath(storagePath).then(setConfigPath).catch((e) => {
       console.error('Failed to get config path:', e);
+    });
+    getWorkspacesFilePath().then(setWorkspacesPath).catch((e) => {
+      console.error('Failed to get workspaces path:', e);
     });
     getAppDirectory().then(setAppDir).catch((e) => {
       console.error('Failed to get app directory:', e);
     });
-  }, []);
+  }, [storagePath]);
 
   return (
     <div className="settings-panel">
-      <h4 className="settings-panel-title">数据路径</h4>
-      <p className="settings-panel-desc">查看应用相关的配置文件与数据目录位置</p>
+      <h4 className="settings-panel-title">存储路径</h4>
+      <p className="settings-panel-desc">工作区配置位于笔记库内（可 Git 同步）；本机多工作区注册表位于用户Home目录</p>
 
-      <PathItem label="配置文件路径" path={configPath} />
-      <PathItem label="笔记库目录" path={storagePath} />
-      <PathItem label="程序所在目录" path={appDir} />
+      <PathItem label="多工作区注册表" path={workspacesPath} />
+      <PathItem label="当前工作区配置" path={configPath} />
+      <PathItem label="当前笔记库目录" path={storagePath} />
+      <PathItem label="当前程序所在目录" path={appDir} />
     </div>
   );
 };

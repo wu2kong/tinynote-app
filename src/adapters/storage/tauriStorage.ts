@@ -31,7 +31,7 @@ export function createTauriStorageAdapter(): StorageAdapter {
     },
 
     writeTextFile(path, content) {
-      return writeTextFile(normalizePath(path), content);
+      return writeTextFile(normalizePath(path), content, { create: true });
     },
 
     mkdir(path, recursive = false) {

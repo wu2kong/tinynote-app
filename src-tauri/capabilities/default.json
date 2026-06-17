@@ -15,19 +15,37 @@
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-rename",
-    "fs:allow-exists",
     "fs:allow-stat",
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        { "path": "$HOME/.tinynotes" },
+        { "path": "$HOME/.tinynotes/**" },
+        { "path": "$HOME/**/.tinynotes" },
+        { "path": "$HOME/**/.tinynotes/**" },
+        { "path": "$HOME/**/.tinynotes/*" },
+        { "path": "$HOME" },
+        { "path": "$HOME/**" },
+        { "path": "$HOME/**/*" },
+        { "path": "**/.tinynotes" },
+        { "path": "**/.tinynotes/**" },
+        { "path": "**/.tinynotes/*" }
+      ]
+    },
     {
       "identifier": "fs:scope",
       "allow": [
-        {
-          "path": "$HOME/.tinynotes/**"
-        },
-        {
-          "path": "$HOME/.tinynotes"
-        },
-        { "path": "$HOME/**" },
+        { "path": "$HOME/.tinynotes" },
+        { "path": "$HOME/.tinynotes/**" },
+        { "path": "$HOME/**/.tinynotes" },
+        { "path": "$HOME/**/.tinynotes/**" },
+        { "path": "$HOME/**/.tinynotes/*" },
         { "path": "$HOME" },
+        { "path": "$HOME/**" },
+        { "path": "$HOME/**/*" },
+        { "path": "**/.tinynotes" },
+        { "path": "**/.tinynotes/**" },
+        { "path": "**/.tinynotes/*" },
         { "path": "**" }
       ]
     },
