@@ -1,7 +1,10 @@
 use serde::Serialize;
 use std::collections::HashSet;
+use std::io::Read;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -154,6 +157,58 @@ fn run_git_output(repo_path: &str, args: &[&str]) -> Result<Output, String> {
         .current_dir(repo_path)
         .output()
         .map_err(|e| format!("无法执行 git：{e}"))
+}
+
+const GIT_NETWORK_TIMEOUT_SECS: u64 = 60;
+
+fn run_git_with_timeout(repo_path: &str, args: &[&str]) -> Result<String, String> {
+    let mut child = git_command()
+        .arg("-c")
+        .arg("core.quotepath=false")
+        .args(args)
+        .current_dir(repo_path)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| format!("无法执行 git：{e}"))?;
+
+    let timeout = Duration::from_secs(GIT_NETWORK_TIMEOUT_SECS);
+    let start = Instant::now();
+
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                let mut stdout = Vec::new();
+                let mut stderr = Vec::new();
+                if let Some(mut out) = child.stdout.take() {
+                    out.read_to_end(&mut stdout).ok();
+                }
+                if let Some(mut err) = child.stderr.take() {
+                    err.read_to_end(&mut stderr).ok();
+                }
+                let output = Output {
+                    status,
+                    stdout,
+                    stderr,
+                };
+                if output.status.success() {
+                    return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
+                }
+                return git_error_message(&output);
+            }
+            Ok(None) => {
+                if start.elapsed() >= timeout {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return Err(format!(
+                        "Git 操作超时（{GIT_NETWORK_TIMEOUT_SECS} 秒），请检查网络连接是否正常"
+                    ));
+                }
+                thread::sleep(Duration::from_millis(100));
+            }
+            Err(e) => return Err(format!("无法执行 git：{e}")),
+        }
+    }
 }
 
 fn git_error_message(output: &std::process::Output) -> Result<String, String> {
@@ -459,7 +514,7 @@ pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
 pub fn git_pull(storage_path: &str) -> Result<(), String> {
     let repo_path = find_git_root(Path::new(storage_path))
         .ok_or_else(|| "当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。".to_string())?;
-    run_git(&repo_path.to_string_lossy(), &["pull"]).map(|_| ())
+    run_git_with_timeout(&repo_path.to_string_lossy(), &["pull"]).map(|_| ())
 }
 
 pub fn git_sync_push(storage_path: &str) -> Result<String, String> {
@@ -484,7 +539,7 @@ pub fn git_sync_push(storage_path: &str) -> Result<String, String> {
         run_git(&repo_path, &["commit", "-m", &message])?;
     }
 
-    run_git(&repo_path, &["push"])?;
+    run_git_with_timeout(&repo_path, &["push"])?;
     Ok(message)
 }
 

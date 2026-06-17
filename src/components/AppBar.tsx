@@ -1,7 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '@/store/useStore';
 import { Space } from '@/types';
+import * as config from '@/utils/config';
+
+const DEFAULT_APP_BAR_WIDTH = 200;
+const MIN_APP_BAR_WIDTH = 120;
+const MAX_APP_BAR_WIDTH = 400;
+const COLLAPSED_APP_BAR_WIDTH = 52;
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
   Edit3, Trash2, Smile, GripVertical, FolderOpen, Search
@@ -110,6 +116,40 @@ const AppBar: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [showSettings, setShowSettings] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(
+    () => config.getConfig().appBarWidth ?? DEFAULT_APP_BAR_WIDTH
+  );
+  const [isResizingPanel, setIsResizingPanel] = useState(false);
+  const panelWidthRef = useRef(panelWidth);
+  panelWidthRef.current = panelWidth;
+
+  const handlePanelResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = panelWidthRef.current;
+    setIsResizingPanel(true);
+    document.body.classList.add('app-bar-resizing');
+
+    const onPointerMove = (ev: PointerEvent) => {
+      const nextWidth = Math.min(
+        MAX_APP_BAR_WIDTH,
+        Math.max(MIN_APP_BAR_WIDTH, startWidth + ev.clientX - startX)
+      );
+      setPanelWidth(nextWidth);
+    };
+
+    const onPointerUp = () => {
+      setIsResizingPanel(false);
+      document.body.classList.remove('app-bar-resizing');
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      config.saveConfig({ appBarWidth: panelWidthRef.current });
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -158,7 +198,12 @@ const AppBar: React.FC = () => {
   };
 
   return (
-    <div className={`app-bar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
+    <div
+      className={`app-bar ${isSidebarCollapsed ? 'collapsed' : 'expanded'}${isResizingPanel ? ' app-bar-resizing' : ''}`}
+      style={isSidebarCollapsed
+        ? { width: COLLAPSED_APP_BAR_WIDTH, minWidth: COLLAPSED_APP_BAR_WIDTH }
+        : { width: panelWidth, minWidth: panelWidth }}
+    >
       <div className="app-bar-header">
         <div className="app-bar-logo">📝</div>
         {!isSidebarCollapsed && <span className="app-bar-app-name">TinyNote</span>}
@@ -187,7 +232,7 @@ const AppBar: React.FC = () => {
           </SortableContext>
         </DndContext>
         <button
-          className="app-bar-space-add justify-start"
+          className="app-bar-space-add"
           onClick={() => setShowAddSpace(true)}
           title="新建空间"
         >
@@ -296,6 +341,14 @@ const AppBar: React.FC = () => {
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
+
+      {!isSidebarCollapsed && (
+        <div
+          className="app-bar-resize-handle"
+          onPointerDown={handlePanelResizeStart}
+          title="拖拽调整宽度"
+        />
+      )}
     </div>
   );
 };

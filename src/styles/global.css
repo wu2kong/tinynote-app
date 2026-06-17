@@ -73,7 +73,8 @@ input:focus, textarea:focus {
 }
 
 .app-bar {
-  width: 200px;
+  position: relative;
+  flex-shrink: 0;
   min-width: 52px;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
@@ -85,12 +86,34 @@ input:focus, textarea:focus {
   overflow: hidden;
 }
 
-.app-bar.collapsed {
-  width: 52px;
+.app-bar.app-bar-resizing {
+  transition: background var(--transition), border-color var(--transition);
 }
 
-.app-bar.expanded {
-  width: 200px;
+.app-bar.collapsed {
+  width: 52px;
+  min-width: 52px;
+}
+
+.app-bar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+  touch-action: none;
+}
+
+.app-bar-resize-handle:hover,
+.app-bar-resizing .app-bar-resize-handle {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+body.app-bar-resizing {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .app-bar-header {
@@ -119,6 +142,8 @@ input:focus, textarea:focus {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -234,6 +259,8 @@ input:focus, textarea:focus {
 }
 
 .app-bar-space-name {
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 13px;
@@ -265,7 +292,10 @@ input:focus, textarea:focus {
 
 .app-bar.expanded .app-bar-space-add {
   height: 36px;
+  width: 100%;
   padding: 0 12px;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .app-bar-space-add:hover {
@@ -369,8 +399,10 @@ input:focus, textarea:focus {
 }
 
 .directory-panel {
-  width: 300px;
-  min-width: 300px;
+  position: relative;
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
@@ -378,11 +410,33 @@ input:focus, textarea:focus {
   transition: background var(--transition), border-color var(--transition);
 }
 
+.directory-panel-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 2;
+  touch-action: none;
+}
+
+.directory-panel-resize-handle:hover,
+.directory-panel-resizing .directory-panel-resize-handle {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+body.directory-panel-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+
 .directory-header {
-  padding: 12px;
+  padding: 8px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 6px;
+  min-width: 0;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -404,19 +458,23 @@ input:focus, textarea:focus {
 
 .directory-search {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 6px 10px;
+  padding: 6px 8px;
+  overflow: hidden;
 }
 
 .directory-search input {
   border: none;
   background: none;
   flex: 1;
+  min-width: 0;
+  width: 0;
   padding: 0;
   font-size: 13px;
 }
@@ -506,6 +564,7 @@ input:focus, textarea:focus {
 
 .tree-name {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

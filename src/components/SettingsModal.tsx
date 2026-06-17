@@ -12,7 +12,7 @@ import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/uti
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import {
   getGitStatus, gitPull, gitSyncPush, getFileDiff, revertFileChange,
-  formatSyncCommitMessage, getChangeBadge, getChangeTooltip, getDisplayDiffLines,
+  formatSyncCommitMessage, formatSyncError, getChangeBadge, getChangeTooltip, getDisplayDiffLines,
   GitSyncStatus, GitChangedFile, FileDiff,
 } from '@/utils/sync';
 import { joinPath, normalizePath } from '@/utils/path';
@@ -539,9 +539,9 @@ const SyncSettings: React.FC = () => {
       showToast('拉取完成');
       await refreshStatus();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '拉取失败';
-      setSyncError(`拉取失败：${msg}\n\n请在终端进入笔记库目录，手动执行 git pull 解决冲突或认证问题。`);
-      showToast('拉取失败，请手动处理');
+      const msg = formatSyncError(e, '拉取失败');
+      setSyncError(`${msg}\n\n请在终端进入笔记库目录，手动执行 git pull 解决冲突或认证问题。`);
+      showToast(msg);
     } finally {
       setPulling(false);
     }
@@ -567,8 +567,9 @@ const SyncSettings: React.FC = () => {
         showToast(msg);
         return;
       }
-      setSyncError(`提交/推送失败：${msg}\n\n请在终端进入笔记库目录，手动执行 git status 查看状态并解决冲突或认证问题。`);
-      showToast('推送失败，请手动处理');
+      const friendlyMsg = formatSyncError(e, '推送失败');
+      setSyncError(`${friendlyMsg}\n\n请在终端进入笔记库目录，手动执行 git status 查看状态并解决冲突或认证问题。`);
+      showToast(friendlyMsg);
     } finally {
       setPushing(false);
     }

@@ -5,8 +5,41 @@ import type {
   GitChangeType,
   GitSyncStatus,
 } from '@/adapters/sync';
+import { assertNetworkAvailable, TimeoutError, withTimeout } from '@/utils/async';
 
 export type { FileDiff, GitChangedFile, GitChangeType, GitSyncStatus };
+
+const SYNC_NETWORK_TIMEOUT_MS = 60_000;
+const SYNC_TIMEOUT_MESSAGE = '同步操作超时（60 秒），请检查网络连接后重试';
+
+export function formatSyncError(error: unknown, fallback: string): string {
+  if (error instanceof TimeoutError) {
+    return error.message;
+  }
+
+  const message = error instanceof Error
+    ? error.message
+    : typeof error === 'string'
+      ? error
+      : fallback;
+
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return '当前处于离线状态，请检查网络连接';
+  }
+
+  if (
+    /timeout|timed out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|Could not resolve|Could not connect|Failed to connect|network|fetch failed|Load failed|unable to access/i.test(message)
+  ) {
+    return '网络连接失败或响应超时，请检查网络后重试';
+  }
+
+  return message || fallback;
+}
+
+async function runSyncNetworkOperation<T>(operation: () => Promise<T>): Promise<T> {
+  assertNetworkAvailable();
+  return withTimeout(operation(), SYNC_NETWORK_TIMEOUT_MS, SYNC_TIMEOUT_MESSAGE);
+}
 
 const DIFF_META_PREFIXES = ['+++', '---', '@@', 'diff ', 'index ', 'new file', 'deleted file'];
 
@@ -23,11 +56,11 @@ export async function getGitStatus(storagePath: string): Promise<GitSyncStatus> 
 }
 
 export async function gitPull(storagePath: string): Promise<void> {
-  return getSyncAdapter().gitPull(storagePath);
+  return runSyncNetworkOperation(() => getSyncAdapter().gitPull(storagePath));
 }
 
 export async function gitSyncPush(storagePath: string): Promise<string> {
-  return getSyncAdapter().gitSyncPush(storagePath);
+  return runSyncNetworkOperation(() => getSyncAdapter().gitSyncPush(storagePath));
 }
 
 export async function getFileDiff(storagePath: string, filePath: string): Promise<FileDiff> {

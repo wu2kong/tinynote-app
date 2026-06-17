@@ -28,6 +28,11 @@ import ConfirmModal from './ConfirmModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
+import * as config from '@/utils/config';
+
+const DEFAULT_PANEL_WIDTH = 300;
+const MIN_PANEL_WIDTH = 200;
+const MAX_PANEL_WIDTH = 600;
 
 interface DragItemInfo {
   path: string;
@@ -123,7 +128,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
             {groupExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </span>
           <Folder size={14} className="tree-folder-icon" />
-          <span className="tree-name">{group.name}</span>
+          <span className="tree-name" title={group.name}>{group.name}</span>
           <button
             className="tree-item-action"
             onClick={(e) => { e.stopPropagation(); onAddNotebook(group.path); }}
@@ -183,7 +188,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
         <ChevronRight size={14} />
       </span>
       <FileText size={14} className="tree-file-icon" />
-      <span className="tree-name">{notebook.name}</span>
+      <span className="tree-name" title={notebook.name}>{notebook.name}</span>
     </div>
   );
 };
@@ -217,6 +222,12 @@ const DirectoryPanel: React.FC = () => {
 
   const [dragItem, setDragItem] = useState<DragItemInfo | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const [panelWidth, setPanelWidth] = useState(
+    () => config.getConfig().directoryPanelWidth ?? DEFAULT_PANEL_WIDTH
+  );
+  const [isResizingPanel, setIsResizingPanel] = useState(false);
+  const panelWidthRef = useRef(panelWidth);
+  panelWidthRef.current = panelWidth;
 
   const dragStartRef = useRef<{ x: number; y: number; item: DragItemInfo } | null>(null);
   const isDraggingRef = useRef(false);
@@ -336,6 +347,34 @@ const DirectoryPanel: React.FC = () => {
   const handleClick = useCallback((fn: () => void) => {
     if (justDraggedRef.current) return;
     fn();
+  }, []);
+
+  const handlePanelResizeStart = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = panelWidthRef.current;
+    setIsResizingPanel(true);
+    document.body.classList.add('directory-panel-resizing');
+
+    const onPointerMove = (ev: PointerEvent) => {
+      const nextWidth = Math.min(
+        MAX_PANEL_WIDTH,
+        Math.max(MIN_PANEL_WIDTH, startWidth + ev.clientX - startX)
+      );
+      setPanelWidth(nextWidth);
+    };
+
+    const onPointerUp = () => {
+      setIsResizingPanel(false);
+      document.body.classList.remove('directory-panel-resizing');
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      config.saveConfig({ directoryPanelWidth: panelWidthRef.current });
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -476,7 +515,7 @@ const DirectoryPanel: React.FC = () => {
                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </span>
               <Folder size={14} className="tree-folder-icon" />
-              <span className="tree-name">{group.name}</span>
+              <span className="tree-name" title={group.name}>{group.name}</span>
               <button
                 className="tree-item-action"
                 onClick={(e) => { e.stopPropagation(); handleAddNotebookModal(group.path); }}
@@ -506,7 +545,7 @@ const DirectoryPanel: React.FC = () => {
             <ChevronRight size={14} />
           </span>
           <FileText size={14} className="tree-file-icon" />
-          <span className="tree-name">{notebook.name}</span>
+          <span className="tree-name" title={notebook.name}>{notebook.name}</span>
         </div>
       );
     });
@@ -520,7 +559,10 @@ const DirectoryPanel: React.FC = () => {
   );
 
   return (
-    <div className="directory-panel">
+    <div
+      className={`directory-panel${isResizingPanel ? ' directory-panel-resizing' : ''}`}
+      style={{ width: panelWidth, minWidth: panelWidth }}
+    >
       <div className="directory-header">
         <button className="directory-sidebar-toggle" onClick={toggleAppBar} title={showAppBar ? '隐藏侧边栏' : '显示侧边栏'}>
           {showAppBar ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
@@ -698,6 +740,12 @@ const DirectoryPanel: React.FC = () => {
         onConfirm={confirmState.onConfirm}
         title={confirmState.title}
         message={confirmState.message}
+      />
+
+      <div
+        className="directory-panel-resize-handle"
+        onPointerDown={handlePanelResizeStart}
+        title="拖拽调整宽度"
       />
     </div>
   );
