@@ -483,17 +483,28 @@ selectNotebook: async (notebook: Notebook) => {
   },
 
   addSpace: async (name) => {
-    const { storagePath } = get();
+    const { storagePath, spaces } = get();
     if (!storagePath) return;
     const space = await fs.createSpace(storagePath, name);
-    set((state) => ({
-      spaces: [...state.spaces, space],
-      currentSpace: space,
+    const cfg = config.getConfig();
+    const usedIcons = new Set(Object.values(cfg.spaceIcons));
+    const icon = pickRandomSpaceIcon(usedIcons);
+    const spaceWithIcon = { ...space, icon };
+    const newSpaces = [...spaces, spaceWithIcon];
+    set({
+      spaces: newSpaces,
+      currentSpace: spaceWithIcon,
       currentGroup: null,
       currentNotebook: null,
       currentNoteBlock: null,
-    }));
-    config.saveConfig({ currentSpacePath: space.path, currentGroupPath: null, currentNotebookPath: null });
+    });
+    config.saveConfig({
+      currentSpacePath: space.path,
+      currentGroupPath: null,
+      currentNotebookPath: null,
+      spaceIcons: { ...cfg.spaceIcons, [space.path]: icon },
+      spaceOrder: newSpaces.map((s) => s.path),
+    });
   },
 
   deleteSpace: async (space) => {

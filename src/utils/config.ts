@@ -8,6 +8,7 @@ import {
 } from '@/utils/workspaceConfig';
 import {
   getSessionWorkspaceOverride,
+  getWorkspacePathFromLaunchUrl,
   loadWorkspacesRegistry,
   loadWorkspaceLocalSettings,
   registerWorkspace,
@@ -49,6 +50,12 @@ function normalizeCandidate(raw: string | null | undefined): string | null {
  * Configured paths are trusted without a pre-flight exists() check (Windows path checks can fail spuriously).
  */
 export async function resolveInitialWorkspacePath(): Promise<string | null> {
+  const launchPath = normalizeCandidate(getWorkspacePathFromLaunchUrl());
+  if (launchPath) {
+    console.info('[tinynote] Resolved workspace from launch URL:', launchPath);
+    return launchPath;
+  }
+
   const legacy = await loadLegacyHomeConfig();
   const legacyPath = normalizeCandidate(legacy?.storagePath);
   if (legacyPath) {

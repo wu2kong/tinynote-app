@@ -24,7 +24,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
-import SettingsModal from './SettingsModal';
+import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
 import GlobalSearchModal from './GlobalSearchModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
@@ -114,7 +114,6 @@ const AppBar: React.FC = () => {
   const [emojiPickerSpace, setEmojiPickerSpace] = useState<Space | null>(null);
   const [renameModal, setRenameModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
-  const [showSettings, setShowSettings] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [panelWidth, setPanelWidth] = useState(
     () => config.getConfig().appBarWidth ?? DEFAULT_APP_BAR_WIDTH
@@ -254,7 +253,11 @@ const AppBar: React.FC = () => {
           {isDarkTheme ? <Sun size={18} /> : <Moon size={18} />}
           {!isSidebarCollapsed && <span className="app-bar-btn-label">切换主题</span>}
         </button>
-        <button className="app-bar-btn" onClick={() => setShowSettings(true)} title="设置中心">
+        <button
+          className="app-bar-btn"
+          onClick={() => window.dispatchEvent(new Event(OPEN_SETTINGS_EVENT))}
+          title="设置中心"
+        >
           <Settings size={18} />
           {!isSidebarCollapsed && <span className="app-bar-btn-label">设置中心</span>}
         </button>
@@ -338,7 +341,6 @@ const AppBar: React.FC = () => {
         placeholder="空间名称"
       />
 
-      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
 

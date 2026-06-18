@@ -117,7 +117,19 @@ export async function registerWorkspace(path: string, label?: string): Promise<W
   return registry;
 }
 
+/** Workspace path passed via `?workspace=` when opening a new window. */
+export function getWorkspacePathFromLaunchUrl(): string | null {
+  if (typeof window === 'undefined') return null;
+  const raw = new URLSearchParams(window.location.search).get('workspace');
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  return trimmed ? normalizePath(trimmed) : null;
+}
+
 export async function resolveStartupWorkspacePath(): Promise<string | null> {
+  const launchPath = getWorkspacePathFromLaunchUrl();
+  if (launchPath) return launchPath;
+
   const sessionPath = getSessionWorkspaceOverride();
   if (sessionPath) return sessionPath;
 
