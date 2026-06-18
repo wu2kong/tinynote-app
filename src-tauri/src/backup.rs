@@ -1,5 +1,6 @@
 use chrono::Local;
 use serde::Serialize;
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
@@ -151,7 +152,12 @@ pub fn create_backup(
 
     let config = Path::new(config_path);
     if config.is_file() {
-        add_file_to_zip(&mut zip, config, "configs.json", options)?;
+        let config_name = config
+            .file_name()
+            .unwrap_or_else(|| OsStr::new("configs.json"))
+            .to_string_lossy()
+            .into_owned();
+        add_file_to_zip(&mut zip, config, &config_name, options)?;
     }
 
     if let Some(storage) = storage_path {
