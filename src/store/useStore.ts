@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId } from '@/types';
+import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId, RecentNotebookHistoryItem } from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
@@ -27,6 +27,7 @@ interface AppActions {
   selectSpace: (space: Space) => Promise<void>;
   selectGroup: (group: Group) => Promise<void>;
   selectNotebook: (notebook: Notebook) => Promise<void>;
+  selectRecentNotebook: (historyItem: RecentNotebookHistoryItem) => Promise<void>;
   toggleExpandedGroupPath: (path: string) => void;
   expandAllGroups: () => void;
   collapseAllGroups: () => void;
@@ -188,6 +189,7 @@ export const useStore = create<AppStore>((set, get) => ({
   currentNotebook: null,
   currentNoteBlock: null,
   noteBlockFocusKey: 0,
+  recentNotebookHistory: [],
   isDarkTheme: false,
   colorThemeId: 'default' as ColorThemeId,
   isSidebarCollapsed: false,
@@ -344,6 +346,7 @@ export const useStore = create<AppStore>((set, get) => ({
           currentNotebook,
           currentNoteBlock: null,
           expandedGroupPaths: expandedPaths,
+          recentNotebookHistory: cfg.recentNotebookHistory ?? [],
           zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
           colorThemeId,
@@ -356,6 +359,7 @@ export const useStore = create<AppStore>((set, get) => ({
       } else {
         set({
           spaces,
+          recentNotebookHistory: cfg.recentNotebookHistory ?? [],
           zoomLevel: cfg.zoomLevel ?? 1,
           isDarkTheme: cfg.isDarkTheme,
           colorThemeId,
@@ -368,6 +372,7 @@ export const useStore = create<AppStore>((set, get) => ({
       }
     } else {
       set({
+        recentNotebookHistory: cfg.recentNotebookHistory ?? [],
         zoomLevel: cfg.zoomLevel ?? 1,
         isDarkTheme: cfg.isDarkTheme,
         colorThemeId,
@@ -404,12 +409,41 @@ export const useStore = create<AppStore>((set, get) => ({
     config.saveConfig({ currentGroupPath: group.path, currentNotebookPath: null });
   },
 
-selectNotebook: async (notebook: Notebook) => {
+  selectNotebook: async (notebook: Notebook) => {
     const loaded = await fs.loadNotebook(notebook.path);
     if (loaded) {
-      set({ currentNotebook: loaded, currentNoteBlock: null });
-      config.saveConfig({ currentNotebookPath: notebook.path });
+      const spacePath = get().currentSpace?.path;
+      const nextHistory = spacePath ? [
+        { path: notebook.path, name: loaded.name, spacePath, openedAt: new Date().toISOString() },
+        ...get().recentNotebookHistory.filter((item) => normalizePath(item.path) !== normalizePath(notebook.path)),
+      ].slice(0, 100) : get().recentNotebookHistory;
+      set({ currentNotebook: loaded, currentNoteBlock: null, recentNotebookHistory: nextHistory });
+      config.saveConfig({ currentNotebookPath: notebook.path, recentNotebookHistory: nextHistory });
     }
+  },
+
+  selectRecentNotebook: async (historyItem) => {
+    let currentSpace = get().currentSpace;
+    if (!currentSpace || normalizePath(currentSpace.path) !== normalizePath(historyItem.spacePath)) {
+      const targetSpace = get().spaces.find((space) => normalizePath(space.path) === normalizePath(historyItem.spacePath));
+      if (!targetSpace) return;
+      await get().selectSpace(targetSpace);
+      currentSpace = get().currentSpace;
+    }
+    if (!currentSpace) return;
+
+    const notebook = findNotebookByPath(currentSpace.groups, historyItem.path);
+    if (!notebook) return;
+
+    const expandedGroupPaths = [...get().expandedGroupPaths];
+    for (const path of getAncestorPaths(currentSpace.groups, historyItem.path)) {
+      if (!expandedGroupPaths.some((item) => normalizePath(item) === normalizePath(path))) {
+        expandedGroupPaths.push(path);
+      }
+    }
+    set({ expandedGroupPaths });
+    config.saveConfig({ expandedGroupPaths });
+    await get().selectNotebook(notebook);
   },
 
   navigateToGlobalSearchResult: async (result) => {

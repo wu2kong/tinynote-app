@@ -18,6 +18,13 @@ export interface Notebook {
   isSourceMode: boolean;
 }
 
+export interface RecentNotebookHistoryItem {
+  path: string;
+  name: string;
+  spacePath: string;
+  openedAt: string;
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -45,6 +52,7 @@ export interface AppState {
   currentNotebook: Notebook | null;
   currentNoteBlock: NoteBlock | null;
   noteBlockFocusKey: number;
+  recentNotebookHistory: RecentNotebookHistoryItem[];
   isDarkTheme: boolean;
   colorThemeId: ColorThemeId;
   isSidebarCollapsed: boolean;

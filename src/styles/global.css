@@ -142,11 +142,24 @@ body.app-bar-resizing {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.app-bar-brand {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+}
+
+.app-bar-slogan {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .app-bar-spaces {
@@ -1081,6 +1094,101 @@ body.directory-panel-resizing {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.recent-notebooks-modal {
+  min-width: 520px;
+  max-width: 680px;
+  width: 90vw;
+  padding: 0;
+  overflow: hidden;
+}
+
+.recent-notebooks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.recent-notebooks-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.recent-notebooks-header span,
+.recent-notebooks-shortcut {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.recent-notebooks-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+}
+
+.recent-notebooks-close:hover,
+.recent-notebooks-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.recent-notebooks-list {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.recent-notebooks-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.recent-notebooks-item > svg {
+  grid-row: span 2;
+  color: var(--text-tertiary);
+}
+
+.recent-notebooks-item-name,
+.recent-notebooks-item-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-notebooks-item-name {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.recent-notebooks-item-path {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.recent-notebooks-empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.recent-notebooks-shortcut {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-color);
 }
 
 .global-search-input-wrap {

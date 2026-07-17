@@ -1,3 +1,5 @@
+import type { RecentNotebookHistoryItem } from '@/types';
+
 export interface AppConfig {
   isDarkTheme: boolean;
   colorThemeId: string;
@@ -23,6 +25,7 @@ export interface AppConfig {
   gitCorsProxy: string;
   syncAuthToken: string | null;
   lastSyncAt: string | null;
+  recentNotebookHistory: RecentNotebookHistoryItem[];
 }
 
 export const DEFAULT_CONFIG: AppConfig = {
@@ -50,4 +53,5 @@ export const DEFAULT_CONFIG: AppConfig = {
   gitCorsProxy: 'https://cors.isomorphic-git.org',
   syncAuthToken: null,
   lastSyncAt: null,
+  recentNotebookHistory: [],
 };

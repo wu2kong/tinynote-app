@@ -224,7 +224,12 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     >
       <div className="app-bar-header">
         <div className="app-bar-logo">📝</div>
-        {!isSidebarCollapsed && <span className="app-bar-app-name">TinyNote</span>}
+        {!isSidebarCollapsed && (
+          <div className="app-bar-brand">
+            <span className="app-bar-app-name">TinyNote</span>
+            <span className="app-bar-slogan">零碎笔记整理</span>
+          </div>
+        )}
       </div>
 
       <div className="app-bar-spaces">

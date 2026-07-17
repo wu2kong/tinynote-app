@@ -7,6 +7,7 @@ import PropertyPanel from '@/components/PropertyPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
+import RecentNotebooksModal from '@/components/RecentNotebooksModal';
 import Toast from '@/components/Toast';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
@@ -92,6 +93,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showRecentNotebooks, setShowRecentNotebooks] = useState(false);
 
   const switchWorkspace = useCallback(async (path: string) => {
     setLoading(true);
@@ -149,7 +151,10 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
-      if (e.key.toLowerCase() === 'f') {
+      if (e.key.toLowerCase() === 'p' && !e.shiftKey) {
+        e.preventDefault();
+        setShowRecentNotebooks(true);
+      } else if (e.key.toLowerCase() === 'f') {
         e.preventDefault();
         if (e.shiftKey) {
           setShowGlobalSearch(true);
@@ -225,6 +230,7 @@ const App: React.FC = () => {
       <Toast />
       {settingsModal}
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
+      <RecentNotebooksModal open={showRecentNotebooks} onClose={() => setShowRecentNotebooks(false)} />
     </div>
   );
 };
