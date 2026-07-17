@@ -1,5 +1,5 @@
 import { loadLegacyHomeConfig } from '@/adapters/config/legacyHomeConfig';
-import { AppConfig, DEFAULT_CONFIG } from '@/utils/configTypes';
+import { AppConfig, DEFAULT_CONFIG, DEFAULT_LLM_PROVIDERS, LLMProviderConfig } from '@/utils/configTypes';
 import { normalizePath } from '@/utils/path';
 import {
   ensureWorkspaceConfigMigrated,
@@ -139,6 +139,7 @@ async function applyLocalSettings(config: AppConfig, workspacePath: string): Pro
     ...config,
     backupDir: local.backupDir ?? null,
     syncAuthToken: local.syncAuthToken ?? null,
+    llmProviders: local.llmProviders ?? DEFAULT_LLM_PROVIDERS.map((provider) => ({ ...provider })),
   };
 }
 
@@ -175,12 +176,19 @@ export async function saveConfig(partial?: Partial<AppConfig>): Promise<AppConfi
   configCache = merged;
 
   if (currentWorkspacePath) {
-    const localPatch: Partial<{ backupDir: string | null; syncAuthToken: string | null }> = {};
+    const localPatch: Partial<{
+      backupDir: string | null;
+      syncAuthToken: string | null;
+      llmProviders: LLMProviderConfig[];
+    }> = {};
     if (partial && 'backupDir' in partial) {
       localPatch.backupDir = merged.backupDir;
     }
     if (partial && 'syncAuthToken' in partial) {
       localPatch.syncAuthToken = merged.syncAuthToken;
+    }
+    if (partial && 'llmProviders' in partial) {
+      localPatch.llmProviders = merged.llmProviders;
     }
     if (Object.keys(localPatch).length > 0) {
       try {

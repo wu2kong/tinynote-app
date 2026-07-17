@@ -1,6 +1,7 @@
 import { readTextFile, writeTextFile, mkdir, exists, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { isWeb } from '@/platform/detect';
 import { basename, normalizePath } from '@/utils/path';
+import type { LLMProviderConfig } from '@/utils/configTypes';
 
 const HOME_CONFIG_DIR = '.tinynotes';
 const WORKSPACES_FILE = '.tinynotes/work-spaces.json';
@@ -10,6 +11,7 @@ const WEB_REGISTRY_KEY = 'tinynote.work-spaces.v1';
 export interface WorkspaceLocalSettings {
   backupDir?: string | null;
   syncAuthToken?: string | null;
+  llmProviders?: LLMProviderConfig[];
 }
 
 export interface WorkspaceEntry {
