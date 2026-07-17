@@ -488,6 +488,26 @@ body.directory-panel-resizing {
   flex-shrink: 0;
 }
 
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.search-clear-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
 .directory-actions {
   display: flex;
   gap: 4px;
@@ -729,7 +749,22 @@ body.directory-panel-resizing {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
   padding: 4px;
-  min-width: 150px;
+  min-width: 180px;
+  max-width: 260px;
+  max-height: min(320px, calc(100vh / var(--zoom) - 16px));
+  overflow-y: auto;
+}
+
+.context-menu-sub .context-menu-item {
+  padding: 5px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-menu-opens-upward .context-menu-sub {
+  top: auto;
+  bottom: 0;
 }
 
 .context-menu-submenu:hover > .context-menu-sub {

@@ -6,6 +6,7 @@ import NotePanel from '@/components/NotePanel';
 import PropertyPanel from '@/components/PropertyPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
+import GlobalSearchModal from '@/components/GlobalSearchModal';
 import Toast from '@/components/Toast';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
@@ -13,6 +14,7 @@ import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT } from '@/utils/workspaceAc
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
+import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 
 const SourceEditorPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -89,6 +91,7 @@ const App: React.FC = () => {
   const zoomLevel = useStore((s) => s.zoomLevel);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
 
   const switchWorkspace = useCallback(async (path: string) => {
     setLoading(true);
@@ -145,8 +148,18 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!e.metaKey) return;
-      if (e.key === '=') {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          setShowGlobalSearch(true);
+          return;
+        }
+        if (!useStore.getState().showDirectoryPanel) {
+          useStore.getState().toggleDirectoryPanel();
+        }
+        requestAnimationFrame(() => window.dispatchEvent(new Event(FOCUS_DIRECTORY_SEARCH_EVENT)));
+      } else if (e.key === '=') {
         e.preventDefault();
         useStore.getState().zoomIn();
       } else if (e.key === '-') {
@@ -199,7 +212,7 @@ const App: React.FC = () => {
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
-      {showAppBar && <AppBar />}
+      {showAppBar && <AppBar onOpenGlobalSearch={() => setShowGlobalSearch(true)} />}
       {showDirectoryPanel && <DirectoryPanel />}
       {isSourceMode ? (
         <SourceEditorPanel />
@@ -211,6 +224,7 @@ const App: React.FC = () => {
       )}
       <Toast />
       {settingsModal}
+      <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
     </div>
   );
 };

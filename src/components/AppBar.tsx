@@ -25,7 +25,6 @@ import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
-import GlobalSearchModal from './GlobalSearchModal';
 import ContextMenuPortal from './ContextMenuPortal';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 
@@ -94,7 +93,11 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
   );
 };
 
-const AppBar: React.FC = () => {
+interface AppBarProps {
+  onOpenGlobalSearch: () => void;
+}
+
+const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const spaces = useStore((s) => s.spaces);
   const currentSpace = useStore((s) => s.currentSpace);
   const isDarkTheme = useStore((s) => s.isDarkTheme);
@@ -114,7 +117,6 @@ const AppBar: React.FC = () => {
   const [emojiPickerSpace, setEmojiPickerSpace] = useState<Space | null>(null);
   const [renameModal, setRenameModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
-  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [panelWidth, setPanelWidth] = useState(
     () => config.getConfig().appBarWidth ?? DEFAULT_APP_BAR_WIDTH
   );
@@ -241,7 +243,7 @@ const AppBar: React.FC = () => {
       </div>
 
       <div className="app-bar-footer">
-        <button className="app-bar-btn" onClick={() => setShowGlobalSearch(true)} title="全局搜索">
+        <button className="app-bar-btn" onClick={onOpenGlobalSearch} title="全局搜索 (⌘⇧F / Ctrl+Shift+F)">
           <Search size={18} />
           {!isSidebarCollapsed && <span className="app-bar-btn-label">全局搜索</span>}
         </button>
@@ -342,7 +344,6 @@ const AppBar: React.FC = () => {
       />
 
 
-      <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
 
       {!isSidebarCollapsed && (
         <div

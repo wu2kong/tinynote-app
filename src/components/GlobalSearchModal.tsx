@@ -61,6 +61,17 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
   }, [inputValue]);
 
   useEffect(() => {
+    if (!open) return;
+    const query = inputValue.trim();
+    if (!query) {
+      setActiveQuery('');
+      return;
+    }
+    const timer = window.setTimeout(() => setActiveQuery(query), 200);
+    return () => window.clearTimeout(timer);
+  }, [inputValue, open]);
+
+  useEffect(() => {
     if (open) {
       requestAnimationFrame(() => inputRef.current?.focus());
     }
@@ -106,6 +117,9 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
             placeholder="全局搜索..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -163,7 +177,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
         </div>
 
         <div className="global-search-shortcuts">
-          <span>按 <kbd>Enter</kbd> 搜索、</span>
+          <span>输入后自动搜索、</span>
           <span><kbd>Esc</kbd> 关闭弹窗</span>
         </div>
       </div>

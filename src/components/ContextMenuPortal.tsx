@@ -9,7 +9,8 @@ interface ContextMenuPortalProps {
 
 const ContextMenuPortal: React.FC<ContextMenuPortalProps> = ({ x, y, onClose, children }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ top: `calc(${y}px / var(--zoom))`, left: `calc(${x}px / var(--zoom))` });
+  const [pos, setPos] = useState({ top: y, left: x });
+  const [opensUpward, setOpensUpward] = useState(false);
 
   useLayoutEffect(() => {
     const menu = menuRef.current;
@@ -19,27 +20,32 @@ const ContextMenuPortal: React.FC<ContextMenuPortalProps> = ({ x, y, onClose, ch
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
 
-    let top = `calc(${y}px / var(--zoom))`;
-    let left = `calc(${x}px / var(--zoom))`;
+    let top = y;
+    let left = x;
 
-    if (rect.bottom > viewportH) {
-      const adjTop = Math.max(8, viewportH - rect.height - 8);
-      top = `${adjTop}px`;
+    const shouldOpenUpward = rect.bottom > viewportH;
+    if (shouldOpenUpward) {
+      top = Math.max(8, viewportH - rect.height - 8);
     }
     if (rect.right > viewportW) {
-      const adjLeft = Math.max(8, viewportW - rect.width - 8);
-      left = `${adjLeft}px`;
+      left = Math.max(8, viewportW - rect.width - 8);
     }
 
-    if (top !== pos.top || left !== pos.left) {
-      setPos({ top, left });
-    }
+    setPos((previous) => previous.top === top && previous.left === left ? previous : { top, left });
+    setOpensUpward((previous) => previous === shouldOpenUpward ? previous : shouldOpenUpward);
   }, [x, y]);
 
   return (
     <>
       <div className="context-menu-overlay" onClick={onClose} />
-      <div ref={menuRef} className="context-menu" style={{ top: pos.top, left: pos.left }}>
+      <div
+        ref={menuRef}
+        className={`context-menu${opensUpward ? ' context-menu-opens-upward' : ''}`}
+        style={{
+          top: `calc(${pos.top}px / var(--zoom))`,
+          left: `calc(${pos.left}px / var(--zoom))`,
+        }}
+      >
         {children}
       </div>
     </>

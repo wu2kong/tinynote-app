@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook } from '@/types';
 import {
-  Search, Folder, FileText, ChevronRight, ChevronDown,
+  Search, X, Folder, FileText, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical
@@ -29,6 +29,7 @@ import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import * as config from '@/utils/config';
+import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 
 const DEFAULT_PANEL_WIDTH = 300;
 const MIN_PANEL_WIDTH = 200;
@@ -226,6 +227,7 @@ const DirectoryPanel: React.FC = () => {
     () => config.getConfig().directoryPanelWidth ?? DEFAULT_PANEL_WIDTH
   );
   const [isResizingPanel, setIsResizingPanel] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const panelWidthRef = useRef(panelWidth);
   panelWidthRef.current = panelWidth;
 
@@ -261,6 +263,12 @@ const DirectoryPanel: React.FC = () => {
   useEffect(() => {
     isMountedRef.current = true;
     return () => { isMountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const focusSearch = () => searchInputRef.current?.focus();
+    window.addEventListener(FOCUS_DIRECTORY_SEARCH_EVENT, focusSearch);
+    return () => window.removeEventListener(FOCUS_DIRECTORY_SEARCH_EVENT, focusSearch);
   }, []);
 
   useEffect(() => {
@@ -570,11 +578,27 @@ const DirectoryPanel: React.FC = () => {
         <div className="directory-search">
           <Search size={14} />
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="搜索笔记本..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              className="search-clear-btn"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setSearchQuery('')}
+              title="清空搜索"
+              aria-label="清空搜索"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 

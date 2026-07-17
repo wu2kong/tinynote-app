@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 import NoteBlockItem from './NoteBlock';
 import ContextMenuPortal from './ContextMenuPortal';
-import { List, LayoutGrid, AlignJustify, Plus, Search, ClipboardPaste, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
+import { List, LayoutGrid, AlignJustify, Plus, Search, X, ClipboardPaste, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -159,7 +159,22 @@ const NotePanel: React.FC = () => {
             placeholder="搜索笔记..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
           />
+          {searchText && (
+            <button
+              type="button"
+              className="search-clear-btn"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setSearchText('')}
+              title="清空搜索"
+              aria-label="清空搜索"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 

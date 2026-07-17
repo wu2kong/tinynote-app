@@ -27,10 +27,10 @@ export interface TextSegment {
 }
 
 export const DEFAULT_SEARCH_FILTERS: SearchFilters = {
-  spaceName: true,
+  spaceName: false,
   notebookName: true,
   blockTitle: true,
-  blockContent: true,
+  blockContent: false,
 };
 
 export const FILTER_OPTIONS: { key: keyof SearchFilters; label: string }[] = [
