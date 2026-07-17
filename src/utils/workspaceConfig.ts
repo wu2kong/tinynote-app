@@ -7,7 +7,7 @@ import { joinPath, normalizePath } from '@/utils/path';
 import { saveWorkspaceLocalSettings } from '@/utils/workspaces';
 
 /** Synced workspace config — paths are relative to the library root; no machine-local fields. */
-export type WorkspaceConfigFile = Omit<AppConfig, 'storagePath' | 'backupDir' | 'syncAuthToken'>;
+export type WorkspaceConfigFile = Omit<AppConfig, 'storagePath' | 'backupDir' | 'syncAuthToken' | 'llmProviders'>;
 
 const CONFIG_DIR = '.tinynotes';
 export const WORKSPACE_CONFIG_DIR = CONFIG_DIR;
@@ -27,6 +27,7 @@ function toWorkspaceFile(workspaceRoot: string, config: AppConfig): WorkspaceCon
     storagePath: _storagePath,
     backupDir: _backupDir,
     syncAuthToken: _syncAuthToken,
+    llmProviders: _llmProviders,
     ...rest
   } = config;
   return configPathsToRelative(workspaceRoot, rest) as WorkspaceConfigFile;
@@ -40,6 +41,7 @@ function fromWorkspaceFile(workspacePath: string, partial: Partial<WorkspaceConf
     storagePath: root,
     backupDir: null,
     syncAuthToken: null,
+    llmProviders: DEFAULT_CONFIG.llmProviders.map((provider) => ({ ...provider })),
   };
   return {
     ...merged,
@@ -47,6 +49,7 @@ function fromWorkspaceFile(workspacePath: string, partial: Partial<WorkspaceConf
     storagePath: root,
     backupDir: null,
     syncAuthToken: null,
+    llmProviders: DEFAULT_CONFIG.llmProviders.map((provider) => ({ ...provider })),
   };
 }
 
@@ -80,7 +83,7 @@ function workspaceFileNeedsRelativization(partial: Partial<WorkspaceConfigFile>)
       if (hasAbsolute(parent) || children.some(hasAbsolute)) return true;
     }
   }
-  if ('backupDir' in partial || 'syncAuthToken' in partial) return true;
+  if ('backupDir' in partial || 'syncAuthToken' in partial || 'llmProviders' in partial) return true;
   return false;
 }
 
@@ -93,11 +96,13 @@ async function loadWorkspaceConfigContent(
     const legacyPartial = partial as Partial<WorkspaceConfigFile> & {
       backupDir?: string | null;
       syncAuthToken?: string | null;
+      llmProviders?: AppConfig['llmProviders'];
     };
-    if (legacyPartial.backupDir != null || legacyPartial.syncAuthToken != null) {
+    if (legacyPartial.backupDir != null || legacyPartial.syncAuthToken != null || legacyPartial.llmProviders != null) {
       await saveWorkspaceLocalSettings(root, {
         backupDir: legacyPartial.backupDir ?? null,
         syncAuthToken: legacyPartial.syncAuthToken ?? null,
+        llmProviders: legacyPartial.llmProviders,
       });
     }
     await saveWorkspaceConfigFile(root, config);
@@ -156,10 +161,11 @@ export async function ensureWorkspaceConfigMigrated(workspacePath: string): Prom
 
   await saveWorkspaceConfigFile(root, base);
 
-  if (legacyHome && (legacyHome.backupDir != null || legacyHome.syncAuthToken != null)) {
+  if (legacyHome && (legacyHome.backupDir != null || legacyHome.syncAuthToken != null || legacyHome.llmProviders != null)) {
     await saveWorkspaceLocalSettings(root, {
       backupDir: legacyHome.backupDir ?? null,
       syncAuthToken: legacyHome.syncAuthToken ?? null,
+      llmProviders: legacyHome.llmProviders,
     });
   }
 

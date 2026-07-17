@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
@@ -18,12 +18,13 @@ import {
 import { joinPath, normalizePath } from '@/utils/path';
 import * as fs from '@/utils/fileSystem';
 import { loadConfig, saveConfig } from '@/utils/config';
+import { DEFAULT_LLM_PROVIDERS, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
 import { resetSyncAdapterForTests } from '@/adapters/sync';
 import { getSyncBackend, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
 
-type SettingsModule = 'general' | 'data' | 'backup' | 'sync' | 'about';
+type SettingsModule = 'general' | 'ai' | 'data' | 'backup' | 'sync' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ interface SettingsModalProps {
 
 const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: '通用', icon: <Settings size={16} /> },
+  { id: 'ai', label: '大模型', icon: <Bot size={16} /> },
   { id: 'data', label: '数据', icon: <Database size={16} /> },
   { id: 'sync', label: '同步', icon: <GitBranch size={16} /> },
   { id: 'backup', label: '备份', icon: <Archive size={16} /> },
@@ -146,6 +148,147 @@ const GeneralSettings: React.FC = () => {
           <button type="button" className="btn btn-secondary settings-zoom-reset" onClick={resetZoom}>重置</button>
         </div>
       </div>
+    </div>
+  );
+};
+
+const PROVIDER_DETAILS: Record<LLMProviderId, { label: string; description: string; keyPlaceholder: string }> = {
+  openai: {
+    label: 'OpenAI',
+    description: '使用 OpenAI API，例如 GPT-4.1 和 GPT-5 系列模型',
+    keyPlaceholder: 'sk-...',
+  },
+  'opencode-go': {
+    label: 'OpenCode Go',
+    description: 'OpenAI 兼容接口，可使用 OpenCode Go 订阅提供的模型',
+    keyPlaceholder: 'OpenCode Go API Key',
+  },
+  custom: {
+    label: '自定义',
+    description: '接入任意 OpenAI 兼容的大模型服务或本地模型',
+    keyPlaceholder: 'API Key（如不需要可留空）',
+  },
+};
+
+function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProviderConfig[] {
+  return DEFAULT_LLM_PROVIDERS.map((fallback) => ({
+    ...fallback,
+    ...providers?.find((provider) => provider.id === fallback.id),
+  }));
+}
+
+const AISettings: React.FC = () => {
+  const [providers, setProviders] = useState<LLMProviderConfig[]>(() => normalizeProviders(undefined));
+  const [selectedId, setSelectedId] = useState<LLMProviderId>('openai');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadConfig().then((config) => setProviders(normalizeProviders(config.llmProviders)));
+  }, []);
+
+  const selected = providers.find((provider) => provider.id === selectedId) ?? providers[0];
+  const details = PROVIDER_DETAILS[selected.id];
+
+  const updateProvider = (patch: Partial<LLMProviderConfig>) => {
+    setProviders((current) => current.map((provider) => (
+      provider.id === selectedId ? { ...provider, ...patch } : provider
+    )));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveConfig({
+        llmProviders: providers.map((provider) => ({
+          ...provider,
+          apiKey: provider.apiKey?.trim() || null,
+          baseUrl: provider.baseUrl.trim().replace(/\/$/, ''),
+          model: provider.model.trim(),
+        })),
+      });
+      showToast('大模型配置已保存');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="settings-panel ai-settings">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">大模型接入</h4>
+        <p className="settings-panel-desc">配置会保存在本机，不会写入或同步到笔记库。</p>
+      </div>
+
+      <div className="ai-provider-tabs" role="tablist" aria-label="大模型服务商">
+        {providers.map((provider) => (
+          <button
+            key={provider.id}
+            type="button"
+            role="tab"
+            aria-selected={selectedId === provider.id}
+            className={`ai-provider-tab ${selectedId === provider.id ? 'active' : ''}`}
+            onClick={() => setSelectedId(provider.id)}
+          >
+            {PROVIDER_DETAILS[provider.id].label}
+            {provider.enabled && <span className="ai-provider-status">已启用</span>}
+          </button>
+        ))}
+      </div>
+
+      <div className="ai-provider-head">
+        <div>
+          <div className="settings-row-label">{details.label}</div>
+          <p className="settings-panel-desc">{details.description}</p>
+        </div>
+        <SettingsToggle checked={selected.enabled} onChange={() => updateProvider({ enabled: !selected.enabled })} />
+      </div>
+
+      <label className="ai-settings-field">
+        <span>API 地址</span>
+        <input
+          className="settings-input"
+          type="url"
+          value={selected.baseUrl}
+          onChange={(event) => updateProvider({ baseUrl: event.target.value })}
+          placeholder="https://api.example.com/v1"
+        />
+      </label>
+
+      <label className="ai-settings-field">
+        <span>API Key</span>
+        <div className="ai-key-input-wrap">
+          <KeyRound size={14} />
+          <input
+            className="settings-input"
+            type="password"
+            value={selected.apiKey ?? ''}
+            onChange={(event) => updateProvider({ apiKey: event.target.value })}
+            placeholder={details.keyPlaceholder}
+            autoComplete="off"
+          />
+        </div>
+      </label>
+
+      <label className="ai-settings-field">
+        <span>模型名称</span>
+        <input
+          className="settings-input"
+          value={selected.model}
+          onChange={(event) => updateProvider({ model: event.target.value })}
+          placeholder={selected.id === 'custom' ? '例如：qwen-plus' : undefined}
+        />
+      </label>
+
+      <p className="ai-settings-hint">
+        {selected.id === 'opencode-go'
+          ? '默认地址为 OpenCode Go 的 OpenAI 兼容接口；请填写订阅后获得的 API Key。'
+          : '需要使用该服务时请开启开关，并填写可用的模型名称。'}
+      </p>
+
+      <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
+        <Save size={14} />
+        {saving ? '保存中...' : '保存配置'}
+      </button>
     </div>
   );
 };
@@ -1118,6 +1261,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
 
           <div className="settings-content">
             {activeModule === 'general' && <GeneralSettings />}
+            {activeModule === 'ai' && <AISettings />}
             {activeModule === 'data' && <DataSettings />}
             {activeModule === 'sync' && <SyncSettings />}
             {activeModule === 'backup' && <BackupSettings />}
