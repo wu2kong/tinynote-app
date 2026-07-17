@@ -44,6 +44,7 @@ export interface AppState {
   currentGroup: Group | null;
   currentNotebook: Notebook | null;
   currentNoteBlock: NoteBlock | null;
+  noteBlockFocusKey: number;
   isDarkTheme: boolean;
   colorThemeId: ColorThemeId;
   isSidebarCollapsed: boolean;

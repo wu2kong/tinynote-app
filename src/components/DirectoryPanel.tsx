@@ -9,6 +9,7 @@ import {
   PanelLeftOpen, PanelLeftClose, GripVertical
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
   DndContext,
   closestCenter,
@@ -483,6 +484,21 @@ const DirectoryPanel: React.FC = () => {
     closeContextMenu();
   };
 
+  const handleCopyDirectory = async (group: Group) => {
+    try {
+      await writeText(group.path);
+      showToast('目录位置已复制');
+    } catch {
+      try {
+        await navigator.clipboard.writeText(group.path);
+        showToast('目录位置已复制');
+      } catch {
+        showToast('复制目录位置失败');
+      }
+    }
+    closeContextMenu();
+  };
+
   const handleOpenInEditor = async (notebook: Notebook) => {
     try {
       await openPath(notebook.path);
@@ -687,6 +703,10 @@ const DirectoryPanel: React.FC = () => {
                 <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.item as Group)}>
                   <FolderOpen size={14} />
                   打开目录位置
+                </button>
+                <button className="context-menu-item" onClick={() => handleCopyDirectory(contextMenu.item as Group)}>
+                  <Copy size={14} />
+                  复制目录位置
                 </button>
               </>
             )}

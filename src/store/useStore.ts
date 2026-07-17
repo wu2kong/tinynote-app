@@ -187,6 +187,7 @@ export const useStore = create<AppStore>((set, get) => ({
   currentGroup: null,
   currentNotebook: null,
   currentNoteBlock: null,
+  noteBlockFocusKey: 0,
   isDarkTheme: false,
   colorThemeId: 'default' as ColorThemeId,
   isSidebarCollapsed: false,
@@ -202,7 +203,10 @@ export const useStore = create<AppStore>((set, get) => ({
   setSpace: (space) => set({ currentSpace: space, currentGroup: null, currentNotebook: null, currentNoteBlock: null }),
   setGroup: (group) => set({ currentGroup: group, currentNotebook: null, currentNoteBlock: null }),
   setNotebook: (notebook) => set({ currentNotebook: notebook, currentNoteBlock: null }),
-  setNoteBlock: (block) => set({ currentNoteBlock: block }),
+  setNoteBlock: (block) => set((state) => ({
+    currentNoteBlock: block,
+    noteBlockFocusKey: block ? state.noteBlockFocusKey + 1 : state.noteBlockFocusKey,
+  })),
 
   setViewMode: (mode) => {
     set({ viewMode: mode });

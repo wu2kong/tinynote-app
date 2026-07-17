@@ -10,9 +10,10 @@ const MAX_APP_BAR_WIDTH = 400;
 const COLLAPSED_APP_BAR_WIDTH = 52;
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
-  Edit3, Trash2, Smile, GripVertical, FolderOpen, Search
+  Edit3, Trash2, Smile, GripVertical, FolderOpen, Search, Copy
 } from 'lucide-react';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
   DndContext,
   closestCenter,
@@ -26,6 +27,7 @@ import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
 import ContextMenuPortal from './ContextMenuPortal';
+import { showToast } from './Toast';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 
 interface SortableSpaceItemProps {
@@ -188,6 +190,21 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     closeContextMenu();
   };
 
+  const handleCopyDirectory = async (space: Space) => {
+    try {
+      await writeText(space.path);
+      showToast('目录位置已复制');
+    } catch {
+      try {
+        await navigator.clipboard.writeText(space.path);
+        showToast('目录位置已复制');
+      } catch {
+        showToast('复制目录位置失败');
+      }
+    }
+    closeContextMenu();
+  };
+
   const handleDragEnd = (event: import('@dnd-kit/core').DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -278,6 +295,10 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
             <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.space)}>
               <FolderOpen size={14} />
               打开目录位置
+            </button>
+            <button className="context-menu-item" onClick={() => handleCopyDirectory(contextMenu.space)}>
+              <Copy size={14} />
+              复制目录位置
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item danger" onClick={() => handleDelete(contextMenu.space)}>

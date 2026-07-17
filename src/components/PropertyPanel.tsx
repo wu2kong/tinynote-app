@@ -42,6 +42,7 @@ const CONTENT_TYPE_MAP: Record<ContentType, string> = {
 const PropertyPanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
   const currentNoteBlock = useStore((s) => s.currentNoteBlock);
+  const noteBlockFocusKey = useStore((s) => s.noteBlockFocusKey);
   const updateNoteBlock = useStore((s) => s.updateNoteBlock);
   const [tagInput, setTagInput] = useState('');
   const [contentExpanded, setContentExpanded] = useState(true);
@@ -63,11 +64,21 @@ const PropertyPanel: React.FC = () => {
       prevBlockIdRef.current = currentNoteBlock.id;
       if (!composingRef.current.title) setLocalTitle(currentNoteBlock.title);
       if (!composingRef.current.content) setLocalContent(currentNoteBlock.content);
-      requestAnimationFrame(() => {
-        titleRef.current?.focus();
-      });
     }
-  }, [currentNoteBlock]);
+    const hasContent = currentNoteBlock.content.trim().length > 0;
+    if (hasContent) setIsEditing(true);
+    requestAnimationFrame(() => {
+      if (hasContent) {
+        const textarea = textareaRef.current;
+        textarea?.focus();
+        if (textarea) {
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+      } else {
+        titleRef.current?.focus();
+      }
+    });
+  }, [currentNoteBlock?.id, noteBlockFocusKey]);
 
   useEffect(() => {
     if (!currentNoteBlock) return;
