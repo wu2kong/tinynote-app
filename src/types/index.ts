@@ -1,4 +1,4 @@
-export type ContentType = 'text' | 'json' | 'xml' | 'bash' | 'shell' | 'sql' | 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'yaml' | 'markdown';
+export type ContentType = 'text' | 'json' | 'xml' | 'ini' | 'yaml' | 'css' | 'html' | 'bash' | 'shell' | 'sql' | 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'markdown';
 
 export interface NoteBlock {
   id: string;

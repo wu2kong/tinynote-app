@@ -15,6 +15,21 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { readText } from '@tauri-apps/plugin-clipboard-manager';
 import { parseNoteBlocks } from '@/utils/noteParser';
+import { ContentType } from '@/types';
+
+const NOTE_TYPES: { contentType: ContentType; label: string }[] = [
+  { contentType: 'text', label: '新增纯文本笔记' },
+  { contentType: 'markdown', label: '新增Markdown笔记' },
+  { contentType: 'json', label: '新增JSON笔记' },
+  { contentType: 'ini', label: '新增INI笔记' },
+  { contentType: 'yaml', label: '新增YAML笔记' },
+  { contentType: 'xml', label: '新增XML笔记' },
+  { contentType: 'css', label: '新增CSS笔记' },
+  { contentType: 'bash', label: '新增Bash笔记' },
+  { contentType: 'sql', label: '新增SQL笔记' },
+  { contentType: 'python', label: '新增Python笔记' },
+  { contentType: 'go', label: '新增Golang笔记' }
+];
 
 const NotePanel: React.FC = () => {
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -89,9 +104,14 @@ const NotePanel: React.FC = () => {
     setContextMenu(null);
   };
 
-  const handleAddNoteBlock = () => {
-    addNoteBlock();
+  const handleAddNoteBlock = (contentType: ContentType) => {
+    addNoteBlock(contentType);
     closeContextMenu();
+  };
+
+  const openAddMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setContextMenu({ x: rect.left + rect.width / 2, y: rect.top });
   };
 
   const handlePasteNote = async () => {
@@ -203,17 +223,19 @@ const NotePanel: React.FC = () => {
         </DndContext>
       </div>
 
-      <button className="note-panel-add" onClick={() => addNoteBlock()}>
+      <button className="note-panel-add" onClick={openAddMenu}>
         <Plus size={16} />
         添加笔记
       </button>
 
       {contextMenu && (
         <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
-          <button className="context-menu-item" onClick={handleAddNoteBlock}>
+          {NOTE_TYPES.map(({ contentType, label }) => (
+            <button key={contentType} className="context-menu-item" onClick={() => handleAddNoteBlock(contentType)}>
               <Plus size={14} />
-              添加笔记块
+              {label}
             </button>
+          ))}
             {clipboardHasNote && (
               <button className="context-menu-item" onClick={handlePasteNote}>
                 <ClipboardPaste size={14} />

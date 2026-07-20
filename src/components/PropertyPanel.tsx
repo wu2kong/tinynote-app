@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStore } from '@/store/useStore';
-import { Tag, X, Calendar, Maximize2, Minimize2, Edit3, Eye, Copy, Check } from 'lucide-react';
+import { Tag, X, Calendar, Maximize, Maximize2, Minimize2, Edit3, Eye, Copy, Check } from 'lucide-react';
 import { ContentType } from '@/types';
 import hljs from 'highlight.js';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import ProfessionalEditorModal from './ProfessionalEditorModal';
 
 const CONTENT_TYPES: { value: ContentType; label: string }[] = [
   { value: 'text', label: '纯文本' },
+  { value: 'markdown', label: 'Markdown' },
   { value: 'json', label: 'JSON' },
+  { value: 'ini', label: 'INI' },
+  { value: 'yaml', label: 'YAML' },
   { value: 'xml', label: 'XML' },
   { value: 'bash', label: 'Bash' },
   { value: 'shell', label: 'Shell' },
@@ -15,16 +19,19 @@ const CONTENT_TYPES: { value: ContentType; label: string }[] = [
   { value: 'javascript', label: 'JavaScript' },
   { value: 'typescript', label: 'TypeScript' },
   { value: 'python', label: 'Python' },
-  { value: 'java', label: 'Java' },
   { value: 'go', label: 'Go' },
+  { value: 'java', label: 'Java' },
   { value: 'rust', label: 'Rust' },
-  { value: 'yaml', label: 'YAML' },
-  { value: 'markdown', label: 'Markdown' },
+  { value: 'css', label: 'CSS' },
+  { value: 'html', label: 'HTML' }
 ];
 
 const CONTENT_TYPE_MAP: Record<ContentType, string> = {
   text: 'plaintext',
+  markdown: 'markdown',
   json: 'json',
+  ini: 'ini',
+  yaml: 'yaml',
   xml: 'xml',
   bash: 'bash',
   shell: 'shell',
@@ -32,11 +39,11 @@ const CONTENT_TYPE_MAP: Record<ContentType, string> = {
   javascript: 'javascript',
   typescript: 'typescript',
   python: 'python',
-  java: 'java',
   go: 'go',
+  java: 'java',
   rust: 'rust',
-  yaml: 'yaml',
-  markdown: 'markdown',
+  css: 'css',
+  html: 'html',
 };
 
 const PropertyPanel: React.FC = () => {
@@ -44,10 +51,12 @@ const PropertyPanel: React.FC = () => {
   const currentNoteBlock = useStore((s) => s.currentNoteBlock);
   const noteBlockFocusKey = useStore((s) => s.noteBlockFocusKey);
   const updateNoteBlock = useStore((s) => s.updateNoteBlock);
+  const isDarkTheme = useStore((s) => s.isDarkTheme);
   const [tagInput, setTagInput] = useState('');
   const [contentExpanded, setContentExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [professionalEditorOpen, setProfessionalEditorOpen] = useState(false);
   const contentExpandedRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
@@ -219,6 +228,7 @@ const PropertyPanel: React.FC = () => {
           ref={titleRef}
           type="text"
           className="property-input"
+          tabIndex={0}
           value={localTitle}
           onChange={(e) => handleTitleChange(e.target.value)}
           onKeyDown={(e) => {
@@ -282,14 +292,65 @@ const PropertyPanel: React.FC = () => {
             >
               {contentExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             </button>
+            <button
+              className="content-action-btn professional-editor-btn"
+              tabIndex={-1}
+              onClick={() => setProfessionalEditorOpen(true)}
+              title="全屏专业编辑"
+              aria-label="全屏专业编辑"
+            >
+              <Maximize size={14} />
+            </button>
           </div>
         </div>
         {isEditing ? (
           <textarea
             ref={textareaRef}
             className={`property-textarea ${contentExpanded ? 'expanded' : 'collapsed'}`}
+            tabIndex={0}
             value={localContent}
             onChange={(e) => handleContentChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Tab') return;
+              e.preventDefault();
+              const textarea = e.currentTarget;
+              const { selectionStart: start, selectionEnd: end } = textarea;
+              let nextContent: string;
+              let nextStart: number;
+              let nextEnd: number;
+
+              if (start === end) {
+                if (e.shiftKey) {
+                  const preceding = localContent.slice(Math.max(0, start - 2), start);
+                  const removeLength = preceding === '  ' ? 2 : localContent[start - 1] === '\t' ? 1 : 0;
+                  nextContent = `${localContent.slice(0, start - removeLength)}${localContent.slice(end)}`;
+                  nextStart = nextEnd = start - removeLength;
+                } else {
+                  nextContent = `${localContent.slice(0, start)}  ${localContent.slice(end)}`;
+                  nextStart = nextEnd = start + 2;
+                }
+              } else {
+                const firstLineStart = localContent.lastIndexOf('\n', start - 1) + 1;
+                const selectedEnd = localContent[end - 1] === '\n' ? end - 1 : end;
+                const selectedLines = localContent.slice(firstLineStart, selectedEnd).split('\n');
+                const removals: number[] = [];
+                const updatedLines = selectedLines.map((line) => {
+                  if (!e.shiftKey) return `  ${line}`;
+                  const removeLength = line.startsWith('  ') ? 2 : line.startsWith('\t') || line.startsWith(' ') ? 1 : 0;
+                  removals.push(removeLength);
+                  return line.slice(removeLength);
+                });
+                const offset = e.shiftKey ? -removals.reduce((sum, length) => sum + length, 0) : selectedLines.length * 2;
+                const firstLineOffset = e.shiftKey ? -(removals[0] || 0) : 2;
+                nextContent = `${localContent.slice(0, firstLineStart)}${updatedLines.join('\n')}${localContent.slice(selectedEnd)}`;
+                nextStart = start + firstLineOffset;
+                nextEnd = end + offset;
+              }
+              handleContentChange(nextContent);
+              requestAnimationFrame(() => {
+                textarea.setSelectionRange(nextStart, nextEnd);
+              });
+            }}
             onInput={autoResizeTextarea}
             onFocus={handleFocusContent}
             onBlur={handleBlurContent}
@@ -327,6 +388,7 @@ const PropertyPanel: React.FC = () => {
             <input
               type="text"
               className="property-tag-input"
+              tabIndex={-1}
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
@@ -352,6 +414,16 @@ const PropertyPanel: React.FC = () => {
           {new Date(currentNoteBlock.updatedAt).toLocaleString()}
         </span>
       </div>
+
+      <ProfessionalEditorModal
+        open={professionalEditorOpen}
+        title={currentNoteBlock.title}
+        content={localContent}
+        contentType={currentNoteBlock.contentType || 'text'}
+        isDarkTheme={isDarkTheme}
+        onChange={handleContentChange}
+        onClose={() => setProfessionalEditorOpen(false)}
+      />
     </div>
   );
 };

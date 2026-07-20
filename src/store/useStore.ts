@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId, RecentNotebookHistoryItem } from '@/types';
+import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId, RecentNotebookHistoryItem, ContentType } from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
@@ -43,8 +43,8 @@ interface AppActions {
   duplicateNotebook: (notebook: Notebook) => Promise<Notebook | null>;
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
-  addNoteBlock: () => Promise<void>;
-  addNoteBlockAtIndex: (index: number) => Promise<void>;
+  addNoteBlock: (contentType?: ContentType) => Promise<void>;
+  addNoteBlockAtIndex: (index: number, contentType?: ContentType) => Promise<void>;
   duplicateNoteBlock: (id: string, index: number) => Promise<void>;
   pasteNoteBlock: (block: NoteBlock, index: number) => Promise<void>;
   pasteNoteBlockAtEnd: (block: NoteBlock) => Promise<void>;
@@ -856,10 +856,10 @@ export const useStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addNoteBlock: async () => {
+  addNoteBlock: async (contentType = 'text') => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
-    const block = createNoteBlock();
+    const block = createNoteBlock({ contentType });
     const updated = {
       ...currentNotebook,
       noteBlocks: [...currentNotebook.noteBlocks, block],
@@ -868,10 +868,10 @@ export const useStore = create<AppStore>((set, get) => ({
     set({ currentNotebook: updated, currentNoteBlock: block });
   },
 
-  addNoteBlockAtIndex: async (index: number) => {
+  addNoteBlockAtIndex: async (index: number, contentType = 'text') => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
-    const block = createNoteBlock();
+    const block = createNoteBlock({ contentType });
     const blocks = [...currentNotebook.noteBlocks];
     blocks.splice(index, 0, block);
     const updated = { ...currentNotebook, noteBlocks: blocks };
