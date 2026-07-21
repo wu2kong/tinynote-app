@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save, ListRestart, Plus, Trash2 } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
@@ -18,9 +19,9 @@ import {
 import { joinPath, normalizePath } from '@/utils/path';
 import * as fs from '@/utils/fileSystem';
 import { loadConfig, saveConfig } from '@/utils/config';
-import { DEFAULT_LLM_PROVIDERS, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
+import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
 import { resetSyncAdapterForTests } from '@/adapters/sync';
-import { getSyncBackend, isWeb } from '@/platform/detect';
+import { getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
 
@@ -163,6 +164,16 @@ const PROVIDER_DETAILS: Record<LLMProviderId, { label: string; description: stri
     description: 'OpenAI 兼容接口，可使用 OpenCode Go 订阅提供的模型',
     keyPlaceholder: 'OpenCode Go API Key',
   },
+  'opencode-zen': {
+    label: 'OpenCode Zen',
+    description: 'OpenCode Zen 提供的 OpenAI 兼容模型服务',
+    keyPlaceholder: 'OpenCode Zen API Key',
+  },
+  deepseek: {
+    label: 'DeepSeek',
+    description: '使用 DeepSeek 官方 API，例如 DeepSeek V4 Flash 和 V4 Pro',
+    keyPlaceholder: 'sk-...',
+  },
   custom: {
     label: '自定义',
     description: '接入任意 OpenAI 兼容的大模型服务或本地模型',
@@ -174,13 +185,43 @@ function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProv
   return DEFAULT_LLM_PROVIDERS.map((fallback) => ({
     ...fallback,
     ...providers?.find((provider) => provider.id === fallback.id),
+    models: providers?.find((provider) => provider.id === fallback.id)?.models?.filter((model) => model.id.trim()),
   }));
+}
+
+function getModelsUrl(baseUrl: string): string {
+  return `${baseUrl.trim().replace(/\/+$/, '')}/models`;
+}
+
+function parseModels(payload: unknown): LLMModelConfig[] {
+  if (!payload || typeof payload !== 'object' || !Array.isArray((payload as { data?: unknown }).data)) {
+    throw new Error('服务返回的模型列表格式不正确');
+  }
+  const ids = (payload as { data: unknown[] }).data
+    .map((item) => typeof item === 'object' && item ? (item as { id?: unknown }).id : undefined)
+    .filter((id): id is string => typeof id === 'string' && id.trim().length > 0);
+  return [...new Set(ids)].sort((a, b) => a.localeCompare(b)).map((id) => ({ id, enabled: false }));
+}
+
+async function requestProviderModels(baseUrl: string, apiKey: string | null): Promise<unknown> {
+  if (isTauri()) {
+    const payload = await invoke<string>('fetch_llm_models', { baseUrl, apiKey });
+    return JSON.parse(payload) as unknown;
+  }
+
+  const response = await fetch(getModelsUrl(baseUrl), {
+    headers: apiKey?.trim() ? { Authorization: `Bearer ${apiKey.trim()}` } : undefined,
+  });
+  if (!response.ok) throw new Error(`请求失败（${response.status}）`);
+  return response.json();
 }
 
 const AISettings: React.FC = () => {
   const [providers, setProviders] = useState<LLMProviderConfig[]>(() => normalizeProviders(undefined));
   const [selectedId, setSelectedId] = useState<LLMProviderId>('openai');
   const [saving, setSaving] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [manualModelId, setManualModelId] = useState('');
 
   useEffect(() => {
     loadConfig().then((config) => setProviders(normalizeProviders(config.llmProviders)));
@@ -195,6 +236,68 @@ const AISettings: React.FC = () => {
     )));
   };
 
+  const handleFetchModels = async () => {
+    const baseUrl = selected.baseUrl.trim().replace(/\/+$/, '');
+    if (!baseUrl) {
+      showToast('请先填写 API 地址');
+      return;
+    }
+
+    setLoadingModels(true);
+    try {
+      const fetchedModels = parseModels(await requestProviderModels(baseUrl, selected.apiKey));
+      const existingModels = selected.models ?? [];
+      const previous = new Map(existingModels.map((model) => [model.id, model.enabled]));
+      const fetchedIds = new Set(fetchedModels.map((model) => model.id));
+      updateProvider({
+        models: [
+          ...fetchedModels.map((model) => ({ ...model, enabled: previous.get(model.id) ?? model.id === selected.model })),
+          ...existingModels.filter((model) => !fetchedIds.has(model.id)),
+        ],
+      });
+      showToast(`已获取 ${fetchedModels.length} 个模型`);
+    } catch (error) {
+      showToast(error instanceof Error ? `获取模型失败：${error.message}` : '获取模型失败');
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  const toggleModel = (modelId: string) => {
+    const models = (selected.models ?? []).map((model) => (
+      model.id === modelId ? { ...model, enabled: !model.enabled } : model
+    ));
+    const enabledModel = models.find((model) => model.enabled);
+    updateProvider({ models, model: enabledModel?.id ?? selected.model });
+  };
+
+  const removeModel = (modelId: string) => {
+    const models = (selected.models ?? []).filter((model) => model.id !== modelId);
+    const nextDefaultModel = selected.model === modelId
+      ? models.find((model) => model.enabled)?.id ?? ''
+      : selected.model;
+    updateProvider({ models, model: nextDefaultModel });
+    showToast(`已删除模型：${modelId}`);
+  };
+
+  const handleAddModel = () => {
+    const modelId = manualModelId.trim();
+    if (!modelId) {
+      showToast('请输入模型名称');
+      return;
+    }
+    if ((selected.models ?? []).some((model) => model.id === modelId)) {
+      showToast('该模型已在列表中');
+      return;
+    }
+    updateProvider({
+      models: [...(selected.models ?? []), { id: modelId, enabled: true }],
+      model: modelId,
+    });
+    setManualModelId('');
+    showToast(`已添加并启用模型：${modelId}`);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -204,6 +307,7 @@ const AISettings: React.FC = () => {
           apiKey: provider.apiKey?.trim() || null,
           baseUrl: provider.baseUrl.trim().replace(/\/$/, ''),
           model: provider.model.trim(),
+          models: provider.models?.filter((model) => model.id.trim()).map((model) => ({ ...model, id: model.id.trim() })),
         })),
       });
       showToast('大模型配置已保存');
@@ -254,6 +358,58 @@ const AISettings: React.FC = () => {
         />
       </label>
 
+      <div className="ai-models-head">
+        <div>
+          <span className="ai-models-title">模型列表</span>
+          <p className="ai-models-desc">可自动获取，或手动添加不提供模型列表接口的服务。</p>
+        </div>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={handleFetchModels} disabled={loadingModels}>
+          {loadingModels ? <Loader2 size={14} className="settings-spin" /> : <ListRestart size={14} />}
+          {loadingModels ? '获取中...' : '获取模型列表'}
+        </button>
+      </div>
+
+      {selected.models && selected.models.length > 0 && (
+        <div className="ai-model-list" aria-label={`${details.label} 模型列表`}>
+          {selected.models.map((model) => (
+            <div className="ai-model-row" key={model.id}>
+              <code>{model.id}</code>
+              <div className="ai-model-actions">
+                <SettingsToggle checked={model.enabled} onChange={() => toggleModel(model.id)} />
+                <button
+                  type="button"
+                  className="ai-model-delete"
+                  onClick={() => removeModel(model.id)}
+                  title={`删除 ${model.id}`}
+                  aria-label={`删除模型 ${model.id}`}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="ai-add-model">
+        <input
+          className="settings-input"
+          value={manualModelId}
+          onChange={(event) => setManualModelId(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              handleAddModel();
+            }
+          }}
+          placeholder="手动输入模型名称，例如：qwen-plus"
+        />
+        <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddModel}>
+          <Plus size={14} />
+          添加模型
+        </button>
+      </div>
+
       <label className="ai-settings-field">
         <span>API Key</span>
         <div className="ai-key-input-wrap">
@@ -280,8 +436,8 @@ const AISettings: React.FC = () => {
       </label>
 
       <p className="ai-settings-hint">
-        {selected.id === 'opencode-go'
-          ? '默认地址为 OpenCode Go 的 OpenAI 兼容接口；请填写订阅后获得的 API Key。'
+        {selected.id === 'opencode-go' || selected.id === 'opencode-zen'
+          ? '请填写订阅后获得的 API Key；模型列表会从 OpenAI 兼容接口获取。'
           : '需要使用该服务时请开启开关，并填写可用的模型名称。'}
       </p>
 

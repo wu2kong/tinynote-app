@@ -1,6 +1,11 @@
 import type { RecentNotebookHistoryItem } from '@/types';
 
-export type LLMProviderId = 'openai' | 'opencode-go' | 'custom';
+export type LLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek' | 'custom';
+
+export interface LLMModelConfig {
+  id: string;
+  enabled: boolean;
+}
 
 export interface LLMProviderConfig {
   id: LLMProviderId;
@@ -8,11 +13,15 @@ export interface LLMProviderConfig {
   apiKey: string | null;
   baseUrl: string;
   model: string;
+  /** Models obtained from the provider's OpenAI-compatible /models endpoint. */
+  models?: LLMModelConfig[];
 }
 
 export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig[] = [
-  { id: 'openai', enabled: false, apiKey: null, baseUrl: 'https://api.openai.com/v1', model: 'gpt-4.1-mini' },
-  { id: 'opencode-go', enabled: false, apiKey: null, baseUrl: 'https://opencode.ai/zen/go/v1', model: 'kimi-k2.7-code' },
+  { id: 'openai', enabled: false, apiKey: null, baseUrl: 'https://api.openai.com/v1', model: 'gpt-5.4-mini' },
+  { id: 'opencode-go', enabled: false, apiKey: null, baseUrl: 'https://opencode.ai/zen/go/v1', model: 'deepseek-v4-flash' },
+  { id: 'opencode-zen', enabled: false, apiKey: null, baseUrl: 'https://opencode.ai/zen/v1', model: 'gpt-5.4' },
+  { id: 'deepseek', enabled: false, apiKey: null, baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-v4-flash' },
   { id: 'custom', enabled: false, apiKey: null, baseUrl: '', model: '' },
 ];
 

@@ -71,6 +71,7 @@
     "allow-backup",
     "allow-sync",
     "allow-updater",
+    "allow-llm",
     "core:menu:default",
     "core:webview:allow-create-webview-window",
     "core:window:allow-create"

@@ -2342,6 +2342,98 @@ body.directory-panel-resizing {
   gap: 5px;
 }
 
+.ai-models-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ai-models-title {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.ai-models-desc {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.ai-model-list {
+  max-height: 196px;
+  margin-top: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.ai-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ai-model-row:last-child {
+  border-bottom: 0;
+}
+
+.ai-model-row code {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-model-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-model-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+
+.ai-model-delete:hover {
+  background: var(--danger-light, rgba(220, 38, 38, 0.1));
+  color: var(--danger, #dc2626);
+}
+
+.ai-add-model {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ai-add-model .settings-input {
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-add-model .btn {
+  flex: none;
+  white-space: nowrap;
+}
+
 .settings-panel--compact .settings-panel-head {
   margin-bottom: 8px;
 }

@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-llm"
+description = "Enables LLM model-list requests."
+commands.allow = ["fetch_llm_models", "chat_with_llm", "chat_with_llm_stream", "stop_llm_generation"]

@@ -218,7 +218,7 @@ const PropertyPanel: React.FC = () => {
 
   return (
     <div className="property-panel">
-      <div className="property-panel-header">
+      <div className="property-panel-header" style={{ display: 'none' }}>
         <h3>编辑笔记</h3>
       </div>
 

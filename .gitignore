@@ -2,6 +2,10 @@
 node_modules
 .pnp
 .pnp.js
+package-lock.json
+yarn.lock
+bun.lock
+pnpm-lock.yaml
 
 # Build outputs
 dist
@@ -40,8 +44,6 @@ lerna-debug.log*
 
 # OS files
 Thumbs.db
-bun.lock
-package-lock.json
 .release-notes.tmp
 .cursor
 .codegraph

@@ -5,6 +5,7 @@ import { initializePlatform } from '@/platform/init';
 import { isTauri } from '@/platform/detect';
 import './styles/themes/index.css';
 import './styles/global.css';
+import './styles/ai-chat.css';
 
 async function bootstrap() {
   await initializePlatform();

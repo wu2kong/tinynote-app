@@ -8,6 +8,7 @@ import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import RecentNotebooksModal from '@/components/RecentNotebooksModal';
+import AIChatModal from '@/components/AIChatModal';
 import Toast from '@/components/Toast';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
@@ -94,6 +95,7 @@ const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showRecentNotebooks, setShowRecentNotebooks] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   const switchWorkspace = useCallback(async (path: string) => {
     setLoading(true);
@@ -173,6 +175,9 @@ const App: React.FC = () => {
       } else if (e.key === '0') {
         e.preventDefault();
         useStore.getState().resetZoom();
+      } else if (e.key.toLowerCase() === 'i' && !e.shiftKey) {
+        e.preventDefault();
+        setShowAIChat((value) => !value);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -189,6 +194,7 @@ const App: React.FC = () => {
   const settingsModal = (
     <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
   );
+  const aiChatModal = <AIChatModal open={showAIChat} onClose={() => setShowAIChat(false)} />;
 
   if (loading) {
     return (
@@ -200,6 +206,7 @@ const App: React.FC = () => {
           </div>
         </div>
         {settingsModal}
+        {aiChatModal}
       </>
     );
   }
@@ -209,6 +216,7 @@ const App: React.FC = () => {
       <>
         <WelcomeScreen onSelectStorage={handleSelectStorage} />
         {settingsModal}
+        {aiChatModal}
       </>
     );
   }
@@ -231,6 +239,7 @@ const App: React.FC = () => {
       {settingsModal}
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
       <RecentNotebooksModal open={showRecentNotebooks} onClose={() => setShowRecentNotebooks(false)} />
+      {aiChatModal}
     </div>
   );
 };
