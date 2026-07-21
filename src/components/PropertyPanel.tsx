@@ -247,6 +247,9 @@ const PropertyPanel: React.FC = () => {
           onCompositionStart={() => { composingRef.current.title = true; }}
           onCompositionEnd={() => handleCompositionEnd('title')}
           placeholder="笔记标题"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
       </div>
 
@@ -357,6 +360,8 @@ const PropertyPanel: React.FC = () => {
             onCompositionStart={() => { composingRef.current.content = true; }}
             onCompositionEnd={() => handleCompositionEnd('content')}
             placeholder="笔记内容..."
+            autoCorrect="off"
+            autoCapitalize="off"
             spellCheck={false}
           />
         ) : (
@@ -393,6 +398,9 @@ const PropertyPanel: React.FC = () => {
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
               placeholder="添加标签..."
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
             />
           </div>
         </div>

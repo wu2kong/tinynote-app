@@ -8,6 +8,12 @@ export interface ChatMessage {
   id: string;
   role: ChatRole;
   content: string;
+  /** 实际使用的模型 id（assistant 消息） */
+  model?: string;
+  /** 请求开始时间戳 ms */
+  startedAt?: number;
+  /** 完成时间戳 ms（含手动停止/中途失败但有内容的情况） */
+  completedAt?: number;
 }
 
 export interface ChatSession {
@@ -60,7 +66,13 @@ function serializeSession(session: ChatSession): string {
     '',
   ];
   for (const message of session.messages) {
-    lines.push(`<!-- message ${JSON.stringify({ role: message.role, id: message.id })} -->`, '', message.content, '');
+    lines.push(`<!-- message ${JSON.stringify({
+      role: message.role,
+      id: message.id,
+      ...(message.model ? { model: message.model } : {}),
+      ...(typeof message.startedAt === 'number' ? { startedAt: message.startedAt } : {}),
+      ...(typeof message.completedAt === 'number' ? { completedAt: message.completedAt } : {}),
+    })} -->`, '', message.content, '');
   }
   return lines.join('\n');
 }
@@ -73,13 +85,25 @@ function parseFrontmatterValue(raw: string): unknown {
   }
 }
 
-function parseMessageMarker(line: string): { role: ChatRole; id: string } | null {
+function parseMessageMarker(line: string): Omit<ChatMessage, 'content'> | null {
   const match = MESSAGE_MARKER_RE.exec(line);
   if (!match) return null;
   try {
-    const data = JSON.parse(match[1]) as { role?: unknown; id?: unknown };
+    const data = JSON.parse(match[1]) as {
+      role?: unknown;
+      id?: unknown;
+      model?: unknown;
+      startedAt?: unknown;
+      completedAt?: unknown;
+    };
     if ((data.role === 'user' || data.role === 'assistant') && typeof data.id === 'string' && data.id) {
-      return { role: data.role, id: data.id };
+      return {
+        role: data.role,
+        id: data.id,
+        ...(typeof data.model === 'string' && data.model ? { model: data.model } : {}),
+        ...(typeof data.startedAt === 'number' ? { startedAt: data.startedAt } : {}),
+        ...(typeof data.completedAt === 'number' ? { completedAt: data.completedAt } : {}),
+      };
     }
   } catch {
     // 正文中恰好形似标记的行按正文处理，保证回读健壮。
@@ -100,12 +124,12 @@ function parseSessionFile(content: string): ChatSession | null {
   }
 
   const messages: ChatMessage[] = [];
-  let current: { role: ChatRole; id: string } | null = null;
+  let current: Omit<ChatMessage, 'content'> | null = null;
   let buffer: string[] = [];
   let skipLeadingBlank = false;
   const flush = () => {
     if (!current) return;
-    messages.push({ id: current.id, role: current.role, content: buffer.join('\n').replace(/\n+$/, '') });
+    messages.push({ ...current, content: buffer.join('\n').replace(/\n+$/, '') });
     buffer = [];
   };
   for (const line of text.slice(frontmatterMatch[0].length).split('\n')) {

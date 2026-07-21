@@ -41,6 +41,9 @@ const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title,
             value={value}
             onChange={(e) => setValue(e.target.value)}
             autoFocus
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
           />
           <div className="modal-actions">
             <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>

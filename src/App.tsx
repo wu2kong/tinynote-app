@@ -56,6 +56,8 @@ const SourceEditorPanel: React.FC = () => {
         className="source-editor-panel-textarea"
         value={sourceContent}
         onChange={(e) => setSourceContent(e.target.value)}
+        autoCorrect="off"
+        autoCapitalize="off"
         spellCheck={false}
       />
       <div className="source-editor-panel-footer">

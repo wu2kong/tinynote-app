@@ -25,7 +25,7 @@ import { getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
 
-type SettingsModule = 'general' | 'ai' | 'data' | 'backup' | 'sync' | 'about';
+type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -34,10 +34,11 @@ interface SettingsModalProps {
 
 const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
   { id: 'general', label: '通用', icon: <Settings size={16} /> },
-  { id: 'ai', label: '大模型', icon: <Bot size={16} /> },
   { id: 'data', label: '数据', icon: <Database size={16} /> },
   { id: 'sync', label: '同步', icon: <GitBranch size={16} /> },
   { id: 'backup', label: '备份', icon: <Archive size={16} /> },
+  { id: 'ai', label: '大模型', icon: <Bot size={16} /> },
+  { id: 'shortcuts', label: '快捷键', icon: <KeyRound size={16} /> },
   { id: 'about', label: '关于', icon: <Info size={16} /> },
 ];
 
@@ -355,6 +356,9 @@ const AISettings: React.FC = () => {
           value={selected.baseUrl}
           onChange={(event) => updateProvider({ baseUrl: event.target.value })}
           placeholder="https://api.example.com/v1"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
       </label>
 
@@ -403,6 +407,9 @@ const AISettings: React.FC = () => {
             }
           }}
           placeholder="手动输入模型名称，例如：qwen-plus"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
         <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddModel}>
           <Plus size={14} />
@@ -432,6 +439,9 @@ const AISettings: React.FC = () => {
           value={selected.model}
           onChange={(event) => updateProvider({ model: event.target.value })}
           placeholder={selected.id === 'custom' ? '例如：qwen-plus' : undefined}
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
       </label>
 
@@ -441,13 +451,54 @@ const AISettings: React.FC = () => {
           : '需要使用该服务时请开启开关，并填写可用的模型名称。'}
       </p>
 
-      <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
-        <Save size={14} />
-        {saving ? '保存中...' : '保存配置'}
-      </button>
+      <div className="ai-settings-actions">
+        <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
+          <Save size={14} />
+          {saving ? '保存中...' : '保存配置'}
+        </button>
+        <span className="ai-settings-shortcut-hint">
+          <kbd>{formatShortcut('I')}</kbd> 唤起 AI 对话
+        </span>
+      </div>
     </div>
   );
 };
+
+function getModifierKeyLabel(): string {
+  if (typeof navigator === 'undefined') return 'Cmd';
+  const platform = navigator.userAgent.toLowerCase();
+  return /mac|darwin|iphone|ipad|ipod/.test(platform) ? 'Cmd' : 'Ctrl';
+}
+
+const SHORTCUT_ITEMS: { key: 'P' | 'I' | 'F' | 'Shift+F'; description: string }[] = [
+  { key: 'P', description: '查看访问历史' },
+  { key: 'I', description: 'AI 对话' },
+  { key: 'F', description: '当前工作区搜索' },
+  { key: 'Shift+F', description: '全局笔记搜索' },
+];
+
+function formatShortcut(key: string): string {
+  const mod = getModifierKeyLabel();
+  return `${mod} + ${key}`;
+}
+
+const ShortcutsSettings: React.FC = () => (
+  <div className="settings-panel">
+    <div className="settings-panel-head">
+      <h4 className="settings-panel-title">快捷键</h4>
+      <p className="settings-panel-desc">以下快捷键可在应用中快速唤起对应功能。</p>
+    </div>
+
+    <div className="settings-shortcuts-list">
+      {SHORTCUT_ITEMS.map((item) => (
+        <div className="settings-shortcut-row" key={item.key}>
+          <span className="settings-shortcut-desc">{item.description}</span>
+          <kbd className="settings-shortcut-key">{formatShortcut(item.key)}</kbd>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 const PathItem: React.FC<{
   label: string;
@@ -1046,6 +1097,9 @@ const SyncSettings: React.FC = () => {
                     value={gitCorsProxy}
                     onChange={(e) => setGitCorsProxy(e.target.value)}
                     placeholder="https://cors.isomorphic-git.org"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
                   />
                 </div>
                 <div className="settings-sync-info-row">
@@ -1421,6 +1475,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'data' && <DataSettings />}
             {activeModule === 'sync' && <SyncSettings />}
             {activeModule === 'backup' && <BackupSettings />}
+            {activeModule === 'shortcuts' && <ShortcutsSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>
         </div>

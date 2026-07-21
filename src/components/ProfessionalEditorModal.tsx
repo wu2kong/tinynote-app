@@ -17,7 +17,7 @@ import { StreamLanguage } from '@codemirror/language';
 import { properties } from '@codemirror/legacy-modes/mode/properties';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { Prec } from '@codemirror/state';
-import { keymap } from '@codemirror/view';
+import { EditorView, keymap } from '@codemirror/view';
 import { format as formatSql } from 'sql-formatter';
 import { X, Braces, Eye, EyeOff } from 'lucide-react';
 import { ContentType } from '@/types';
@@ -44,6 +44,7 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
 }) => {
   const [previewVisible, setPreviewVisible] = useState(true);
   const extensions = useMemo(() => {
+    const inputAttrs = EditorView.contentAttributes.of({ spellcheck: 'false', autocorrect: 'off', autocapitalize: 'off' });
     const tabInput = Prec.highest(keymap.of([
       {
         key: 'Tab',
@@ -95,21 +96,21 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
       },
     ]));
     switch (contentType) {
-      case 'markdown': return [tabInput, markdown()];
-      case 'json': return [tabInput, json()];
-      case 'ini': return [tabInput, StreamLanguage.define(properties)];
-      case 'sql': return [tabInput, sql()];
-      case 'python': return [tabInput, python()];
-      case 'yaml': return [tabInput, yaml()];
-      case 'javascript': return [tabInput, javascript()];
-      case 'typescript': return [tabInput, javascript({ typescript: true })];
-      case 'xml': return [tabInput, html()];
-      case 'java': return [tabInput, java()];
-      case 'go': return [tabInput, go()];
-      case 'rust': return [tabInput, rust()];
-      case 'css': return [tabInput, css()];
-      case 'html': return [tabInput, html()];
-      default: return [tabInput];
+      case 'markdown': return [inputAttrs, tabInput, markdown()];
+      case 'json': return [inputAttrs, tabInput, json()];
+      case 'ini': return [inputAttrs, tabInput, StreamLanguage.define(properties)];
+      case 'sql': return [inputAttrs, tabInput, sql()];
+      case 'python': return [inputAttrs, tabInput, python()];
+      case 'yaml': return [inputAttrs, tabInput, yaml()];
+      case 'javascript': return [inputAttrs, tabInput, javascript()];
+      case 'typescript': return [inputAttrs, tabInput, javascript({ typescript: true })];
+      case 'xml': return [inputAttrs, tabInput, html()];
+      case 'java': return [inputAttrs, tabInput, java()];
+      case 'go': return [inputAttrs, tabInput, go()];
+      case 'rust': return [inputAttrs, tabInput, rust()];
+      case 'css': return [inputAttrs, tabInput, css()];
+      case 'html': return [inputAttrs, tabInput, html()];
+      default: return [inputAttrs, tabInput];
     }
   }, [contentType]);
 

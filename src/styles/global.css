@@ -2342,6 +2342,31 @@ body.directory-panel-resizing {
   gap: 5px;
 }
 
+.ai-settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ai-settings-shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.ai-settings-shortcut-hint kbd {
+  padding: 2px 5px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
 .ai-models-head {
   display: flex;
   align-items: center;
@@ -3042,6 +3067,43 @@ body.directory-panel-resizing {
 .settings-row-desc {
   font-size: 11px;
   color: var(--text-tertiary);
+}
+
+/* ---- 快捷键设置 ---- */
+.settings-shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-shortcut-row:last-child {
+  border-bottom: none;
+}
+
+.settings-shortcut-desc {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.settings-shortcut-key {
+  padding: 4px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .settings-toggle {

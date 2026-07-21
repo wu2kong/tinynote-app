@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertCircle, ArrowDown, Bot, Check, ChevronDown, Copy, MessageSquarePlus, RefreshCw, Search, Send, Square, Trash2, X } from 'lucide-react';
+import { AlertCircle, ArrowDown, Bot, Check, ChevronDown, Copy, Minus, RefreshCw, Search, Send, Square, SquarePen, Trash2, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import hljs from 'highlight.js';
@@ -60,6 +60,23 @@ function formatHistoryTime(ts: number): string {
   yesterday.setDate(now.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) return `昨天 ${time}`;
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** 请求耗时展示：<10s → X.X秒，>=10s → X秒，>=60s → X分Y秒；两端时间戳齐全才返回。 */
+function formatDuration(startedAt?: number, completedAt?: number): string | null {
+  if (typeof startedAt !== 'number' || typeof completedAt !== 'number') return null;
+  const seconds = (completedAt - startedAt) / 1000;
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  if (seconds < 10) return `${seconds.toFixed(1)}秒`;
+  if (seconds < 60) return `${Math.round(seconds)}秒`;
+  return `${Math.floor(seconds / 60)}分${Math.round(seconds % 60)}秒`;
+}
+
+/** `YYYY-MM-DD HH:mm:ss`，用于元数据行的悬浮提示。 */
+function formatDateTime(ts: number): string {
+  const date = new Date(ts);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
 const MarkdownCode: React.FC<React.ComponentPropsWithoutRef<'code'>> = ({ className, children, ...props }) => {
@@ -151,6 +168,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
   const [input, setInput] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [thinkingSeconds, setThinkingSeconds] = useState(0);
   const [providers, setProviders] = useState<LLMProviderConfig[]>([]);
   const [selectedModel, setSelectedModel] = useState<{ providerId: string; model: string } | null>(null);
   const [showModels, setShowModels] = useState(false);
@@ -178,6 +196,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
   const loadedRef = useRef(false);
   const lastStreamSaveRef = useRef(0);
   const streamDirtyRef = useRef(false);
+  const chatActiveRef = useRef(true);
 
   const activeSession = useMemo(
     () => sessions.find((session) => session.id === activeSessionId) ?? sessions[0],
@@ -209,7 +228,35 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (open) requestAnimationFrame(() => inputRef.current?.focus());
+    if (open) {
+      chatActiveRef.current = true;
+      requestAnimationFrame(() => inputRef.current?.focus());
+    }
+  }, [open]);
+
+  // 跟踪最后一次指针交互是否在弹窗内；点击弹窗外部时收起浮层
+  // （capture 阶段监听，不阻断事件，底层笔记 UI 正常响应）
+  // 思考中实时计时
+  useEffect(() => {
+    if (!isSending) {
+      setThinkingSeconds(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setThinkingSeconds(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isSending]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const inside = Boolean((event.target as HTMLElement).closest('.ai-chat-modal, .modal-overlay'));
+      chatActiveRef.current = inside;
+      if (!inside) { setShowHistory(false); setShowModels(false); }
+    };
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
   }, [open]);
 
   useEffect(() => {
@@ -251,6 +298,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
     if (!open) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      if (!chatActiveRef.current) return;
       event.preventDefault();
       if (showModels) { setShowModels(false); return; }
       if (showHistory) { setShowHistory(false); return; }
@@ -416,6 +464,13 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         : selectProvider(config.llmProviders);
       if (!provider) throw new Error('请先在设置中启用一个已填写 API Key 的大模型服务');
       const model = selectedModel?.model ?? getProviderModel(provider);
+      assistantMessage.model = model;
+      assistantMessage.startedAt = Date.now();
+      setSessions((current) => current.map((session) => (session.id === sessionId ? {
+        ...session,
+        messages: session.messages.map((msg) => msg.id === assistantMessage.id ? { ...msg, model, startedAt: assistantMessage.startedAt } : msg),
+        updatedAt: Date.now(),
+      } : session)));
       await requestCompletionStream(requestId, provider, model, baseMessages, (delta) => {
         if (currentRequestRef.current !== requestId) return;
         assistantContent += delta;
@@ -448,6 +503,12 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         setIsSending(false);
       }
       if (assistantContent) {
+        assistantMessage.completedAt = Date.now();
+        setSessions((current) => current.map((session) => (session.id === sessionId ? {
+          ...session,
+          messages: session.messages.map((msg) => msg.id === assistantMessage.id ? { ...msg, completedAt: Date.now() } : msg),
+          updatedAt: Date.now(),
+        } : session)));
         persist(); // 正常结束 / 手动停止 / 失败时把已有内容落盘
       } else {
         // 移除空的 assistant 占位气泡
@@ -536,7 +597,10 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
   };
 
   return (
-    <div className={`ai-chat-overlay ${open ? 'open' : ''}`} aria-hidden={!open}>
+    <div
+      className={`ai-chat-overlay ${open ? 'open' : ''}`}
+      aria-hidden={!open}
+    >
       <section
         ref={panelRef}
         className={`ai-chat-modal ${isDragging ? 'dragging' : ''}`}
@@ -546,6 +610,8 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
       >
         <header className="ai-chat-header" onPointerDown={(event) => {
           if ((event.target as HTMLElement).closest('button, input, textarea')) return;
+          setShowHistory(false);
+          setShowModels(false);
           const bounds = panelRef.current?.getBoundingClientRect();
           if (!bounds) return;
           const left = Math.round(bounds.left);
@@ -553,20 +619,22 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
           dragStartRef.current = { x: event.clientX, y: event.clientY, left, top, activated: false };
           setIsPointerDown(true);
         }}>
-          <button type="button" className="ai-chat-session-trigger" onClick={() => setShowHistory((value) => !value)}>
-            <span>{activeSession?.title || '新对话'}</span><ChevronDown size={16} />
-          </button>
-          <div className="ai-chat-header-actions">
+          <div className="ai-chat-header-leading">
             <button
               type="button"
-              className="ai-chat-new-btn"
+              className="ai-chat-icon-btn"
               onClick={createNewSession}
               disabled={!canCreateSession}
               title={canCreateSession ? '新建对话' : '当前已是空白会话'}
             >
-              <MessageSquarePlus size={17} /> 新建对话
+              <SquarePen size={16} />
             </button>
-            <button type="button" className="ai-chat-icon-btn" onClick={onClose} title="关闭"><X size={18} /></button>
+            <button type="button" className={`ai-chat-session-trigger ${showHistory ? 'open' : ''}`} onClick={() => setShowHistory((value) => !value)}>
+              <span>{activeSession?.title || '新对话'}</span><ChevronDown size={16} />
+            </button>
+          </div>
+          <div className="ai-chat-header-actions">
+            <button type="button" className="ai-chat-icon-btn" onClick={onClose} title="关闭"><Minus size={18} /></button>
           </div>
         </header>
 
@@ -590,7 +658,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
             <div className="ai-chat-messages-wrap">
               <div className="ai-chat-messages" ref={messagesRef} onScroll={handleMessagesScroll}>
                 {activeSession?.messages.length === 0 ? (
-                  <div className="ai-chat-empty"><Bot size={30} /><p>有什么想一起完成？</p><span>从下方输入框开始，AI 会基于已配置的模型回答。</span></div>
+                  <div className="ai-chat-empty"><Bot size={30} /><p>AI问答，探索知识海洋</p><span>从下方输入框开始，AI 会基于已配置的模型回答。</span></div>
                 ) : activeSession?.messages.map((message, index) => {
                   const isLast = index === activeSession.messages.length - 1;
                   const isStreamingThis = isSending && message.role === 'assistant' && isLast;
@@ -600,16 +668,32 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                         {message.role === 'assistant'
                           ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: MarkdownCode }}>{message.content}</ReactMarkdown>
                           : message.content}
-                        {isStreamingThis && <span className="ai-stream-cursor" aria-label="正在生成" />}
+                        {isStreamingThis && (message.content.length === 0 ? (
+                          <span className="ai-thinking" aria-label="正在思考">思考中 {thinkingSeconds}秒</span>
+                        ) : (
+                          <span className="ai-stream-cursor" aria-label="正在生成" />
+                        ))}
                         {message.role === 'assistant' && !isStreamingThis && (
-                          <div className="ai-chat-message-actions">
-                            <button type="button" onClick={() => void copyMessage(message)} title="复制">
-                              {copiedMessageId === message.id ? <Check size={13} className="copied" /> : <Copy size={13} />}
-                            </button>
-                            {isLast && (
-                              <button type="button" onClick={() => regenerateMessage(message.id)} title="重新生成">
-                                <RefreshCw size={13} />
+                          <div className="ai-chat-message-footer">
+                            <div className="ai-chat-message-actions">
+                              <button type="button" onClick={() => void copyMessage(message)} title="复制">
+                                {copiedMessageId === message.id ? <Check size={13} className="copied" /> : <Copy size={13} />}
                               </button>
+                              {isLast && (
+                                <button type="button" onClick={() => regenerateMessage(message.id)} title="重新生成">
+                                  <RefreshCw size={13} />
+                                </button>
+                              )}
+                            </div>
+                            {message.content && (message.model || formatDuration(message.startedAt, message.completedAt)) && (
+                              <div
+                                className="ai-chat-message-meta"
+                                title={message.startedAt && message.completedAt ? `${formatDateTime(message.startedAt)} → ${formatDateTime(message.completedAt)}` : undefined}
+                              >
+                                {message.model && <span className="ai-chat-meta-model">{message.model}</span>}
+                                {message.model && formatDuration(message.startedAt, message.completedAt) && <span className="ai-chat-meta-sep">·</span>}
+                                {formatDuration(message.startedAt, message.completedAt) && <span className="ai-chat-meta-duration">{formatDuration(message.startedAt, message.completedAt)}</span>}
+                              </div>
                             )}
                           </div>
                         )}
@@ -647,6 +731,9 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                     sendMessage();
                   }
                 }}
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
               />
               <div className="ai-chat-composer-footer">
                 <button type="button" className="ai-chat-model-trigger" onClick={(event) => { event.stopPropagation(); setShowModels((value) => !value); }}>
@@ -660,7 +747,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
               </div>
               {showModels && (
                 <div className="ai-chat-model-menu" onClick={(event) => event.stopPropagation()}>
-                  <div className="ai-chat-model-search"><Search size={16} /><input autoFocus value={modelSearch} onChange={(event) => setModelSearch(event.target.value)} placeholder="搜索模型…" /></div>
+                  <div className="ai-chat-model-search"><Search size={16} /><input autoFocus value={modelSearch} onChange={(event) => setModelSearch(event.target.value)} placeholder="搜索模型…" autoCorrect="off" autoCapitalize="off" spellCheck={false} /></div>
                   <div className="ai-chat-model-options">
                     {filteredProviders.length === 0 ? <div className="ai-chat-model-none">未找到可用模型</div> : filteredProviders.map(({ provider, models }) => (
                       <div className="ai-chat-model-group" key={provider.id}>
