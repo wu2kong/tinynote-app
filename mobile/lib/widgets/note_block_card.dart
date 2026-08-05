@@ -1,0 +1,101 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+import '../core/types.dart';
+import '../theme/app_colors.dart';
+
+class NoteBlockCard extends StatelessWidget {
+  const NoteBlockCard({
+    super.key,
+    required this.block,
+    this.selected = false,
+    this.onTap,
+    this.onCopy,
+  });
+
+  final NoteBlock block;
+  final bool selected;
+  final VoidCallback? onTap;
+  final VoidCallback? onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = block.content.trim().replaceAll(RegExp(r'\s+'), ' ');
+    final previewText = preview.isEmpty ? '（空内容）' : preview;
+
+    return Material(
+      color: selected ? AppColors.accentSoft : AppColors.surface,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? AppColors.accent : AppColors.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      block.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.title,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      previewText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.35,
+                        color: AppColors.body,
+                        fontFamily: 'Menlo',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: '复制内容',
+                visualDensity: VisualDensity.compact,
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: block.content));
+                  onCopy?.call();
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('已复制内容'),
+                      duration: Duration(milliseconds: 1200),
+                    ),
+                  );
+                },
+                icon: Icon(
+                  LucideIcons.copy,
+                  size: 16,
+                  color: selected ? AppColors.accent : AppColors.muted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

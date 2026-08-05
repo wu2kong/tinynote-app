@@ -47,3 +47,4 @@ Thumbs.db
 .release-notes.tmp
 .cursor
 .codegraph
+.flutter-sdk
