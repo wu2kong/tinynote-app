@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/types.dart';
 import '../theme/app_colors.dart';
+import 'app_toast.dart';
 
 class NoteBlockCard extends StatelessWidget {
   const NoteBlockCard({
@@ -21,11 +22,12 @@ class NoteBlockCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final preview = block.content.trim().replaceAll(RegExp(r'\s+'), ' ');
     final previewText = preview.isEmpty ? '（空内容）' : preview;
 
     return Material(
-      color: selected ? AppColors.accentSoft : AppColors.surface,
+      color: selected ? colors.accentSoft : colors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -35,7 +37,7 @@ class NoteBlockCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: selected ? AppColors.accent : AppColors.border,
+              color: selected ? colors.accent : colors.border,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -50,10 +52,10 @@ class NoteBlockCard extends StatelessWidget {
                       block.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.title,
+                        color: colors.title,
                         height: 1.3,
                       ),
                     ),
@@ -62,10 +64,10 @@ class NoteBlockCard extends StatelessWidget {
                       previewText,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         height: 1.35,
-                        color: AppColors.body,
+                        color: colors.body,
                         fontFamily: 'Menlo',
                       ),
                     ),
@@ -78,18 +80,12 @@ class NoteBlockCard extends StatelessWidget {
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: block.content));
                   onCopy?.call();
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('已复制内容'),
-                      duration: Duration(milliseconds: 1200),
-                    ),
-                  );
+                  showAppToast(context, '已复制内容');
                 },
                 icon: Icon(
                   LucideIcons.copy,
                   size: 16,
-                  color: selected ? AppColors.accent : AppColors.muted,
+                  color: selected ? colors.accent : colors.muted,
                 ),
               ),
             ],

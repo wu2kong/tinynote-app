@@ -56,7 +56,7 @@ export interface AppConfig {
 
 export const DEFAULT_CONFIG: AppConfig = {
   isDarkTheme: false,
-  colorThemeId: 'default',
+  colorThemeId: 'paper',
   isSidebarCollapsed: false,
   zoomLevel: 1,
   showAppBar: true,

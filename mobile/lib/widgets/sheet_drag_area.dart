@@ -1,5 +1,30 @@
 import 'package:flutter/material.dart';
 
+/// Wraps a bottom [DraggableScrollableSheet] so taps on the dimmed area above
+/// dismiss the modal. Use with `expand: false` on the sheet.
+class DismissibleSheetScaffold extends StatelessWidget {
+  const DismissibleSheetScaffold({super.key, required this.sheet});
+
+  final Widget sheet;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(context).maybePop(),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: sheet,
+        ),
+      ],
+    );
+  }
+}
+
 /// Makes a non-scrollable sheet header (handle / title bar) able to resize a
 /// [DraggableScrollableSheet]. Only the sheet's [ScrollController] list can do
 /// that by default, so headers outside the list feel stuck.

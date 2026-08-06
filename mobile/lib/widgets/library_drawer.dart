@@ -2,21 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/file_system.dart';
+import '../core/global_search.dart';
 import '../core/types.dart';
 import '../screens/settings_screen.dart';
 import '../services/library_service.dart';
+import '../theme/app_colors.dart';
+import 'app_context_menu.dart';
+import 'global_search_sheet.dart';
 import 'name_prompt_dialog.dart';
 
 class LibraryDrawer extends StatelessWidget {
-  const LibraryDrawer({super.key, required this.library});
+  const LibraryDrawer({
+    super.key,
+    required this.library,
+    this.onOpenNoteBlock,
+  });
 
   final LibraryService library;
+  final ValueChanged<NoteBlock>? onOpenNoteBlock;
 
   Future<void> _handleError(BuildContext context, Object error) async {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$error')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$error')));
   }
 
   static const _createSpaceValue = '__create_space__';
@@ -36,7 +45,10 @@ class LibraryDrawer extends StatelessWidget {
     }
   }
 
-  Future<void> _onSpaceDropdownChanged(BuildContext context, String? value) async {
+  Future<void> _onSpaceDropdownChanged(
+    BuildContext context,
+    String? value,
+  ) async {
     if (value == null) return;
     if (value == _createSpaceValue) {
       await _createSpace(context);
@@ -52,83 +64,230 @@ class LibraryDrawer extends StatelessWidget {
 
   Future<void> _showSpacePicker(BuildContext context) async {
     if (library.loading) return;
-    final currentId = library.currentSpace?.id;
+    final colors = context.colors;
     final value = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: colors.surface,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 14, 16, 6),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '切换空间',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                    color: Color(0xFF94A3B8),
-                  ),
+      builder: (sheetContext) {
+        return ListenableBuilder(
+          listenable: library,
+          builder: (context, _) {
+            final colors = context.colors;
+            final currentId = library.currentSpace?.id;
+            final maxHeight = MediaQuery.sizeOf(context).height * 0.7;
+            return SafeArea(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: maxHeight),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '切换空间',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                            color: colors.muted,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: library.spaces.length + 2,
+                        itemBuilder: (itemContext, index) {
+                          if (index < library.spaces.length) {
+                            final space = library.spaces[index];
+                            return GestureDetector(
+                              onLongPressStart: (details) => _showSpaceMenu(
+                                context,
+                                space,
+                                menuContext: itemContext,
+                                sheetContext: sheetContext,
+                                globalPosition: details.globalPosition,
+                              ),
+                              child: ListTile(
+                                dense: true,
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -2,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                leading: Icon(
+                                  LucideIcons.box,
+                                  size: 16,
+                                  color: space.id == currentId
+                                      ? colors.accent
+                                      : colors.body,
+                                ),
+                                title: Text(
+                                  '${space.name} · ${countNotebooks(space.groups)} 本',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: space.id == currentId
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: space.id == currentId
+                                        ? colors.accent
+                                        : colors.title,
+                                  ),
+                                ),
+                                trailing: space.id == currentId
+                                    ? Icon(
+                                        LucideIcons.check,
+                                        size: 16,
+                                        color: colors.accent,
+                                      )
+                                    : null,
+                                onTap: () =>
+                                    Navigator.of(sheetContext).pop(space.id),
+                              ),
+                            );
+                          }
+                          if (index == library.spaces.length) {
+                            return Divider(height: 1, color: colors.border);
+                          }
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                dense: true,
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -2,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                leading: Icon(
+                                  LucideIcons.plus,
+                                  size: 16,
+                                  color: colors.accent,
+                                ),
+                                title: Text(
+                                  '新建空间',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors.accent,
+                                  ),
+                                ),
+                                onTap: () => Navigator.of(
+                                  sheetContext,
+                                ).pop(_createSpaceValue),
+                              ),
+                              const SizedBox(height: 4),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            for (final space in library.spaces)
-              ListTile(
-                dense: true,
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                leading: Icon(
-                  LucideIcons.box,
-                  size: 16,
-                  color: space.id == currentId
-                      ? const Color(0xFF0F766E)
-                      : const Color(0xFF64748B),
-                ),
-                title: Text(
-                  '${space.name} · ${countNotebooks(space.groups)} 本',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: space.id == currentId ? FontWeight.w700 : FontWeight.w500,
-                    color: space.id == currentId
-                        ? const Color(0xFF0F766E)
-                        : const Color(0xFF0F172A),
-                  ),
-                ),
-                trailing: space.id == currentId
-                    ? const Icon(LucideIcons.check, size: 16, color: Color(0xFF0F766E))
-                    : null,
-                onTap: () => Navigator.of(context).pop(space.id),
-              ),
-            const Divider(height: 1, color: Color(0xFFE2E8F0)),
-            ListTile(
-              dense: true,
-              visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-              leading: const Icon(LucideIcons.plus, size: 16, color: Color(0xFF0F766E)),
-              title: const Text(
-                '新建空间',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF0F766E),
-                ),
-              ),
-              onTap: () => Navigator.of(context).pop(_createSpaceValue),
-            ),
-            const SizedBox(height: 4),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
     if (!context.mounted || value == null) return;
     await _onSpaceDropdownChanged(context, value);
+  }
+
+  Future<void> _showSpaceMenu(
+    BuildContext context,
+    Space space, {
+    BuildContext? menuContext,
+    BuildContext? sheetContext,
+    Offset? globalPosition,
+  }) async {
+    final action = await showAppContextMenu<String>(
+      context: menuContext ?? context,
+      globalPosition: globalPosition,
+      items: const [
+        AppContextMenuItem(
+          value: 'rename',
+          label: '修改空间名',
+          icon: LucideIcons.pencil,
+        ),
+        AppContextMenuItem(
+          value: 'delete',
+          label: '删除空间',
+          icon: LucideIcons.trash2,
+          danger: true,
+        ),
+      ],
+    );
+    if (!context.mounted || action == null) return;
+    switch (action) {
+      case 'rename':
+        await _renameSpace(context, space);
+      case 'delete':
+        await _confirmDeleteSpace(context, space, sheetContext: sheetContext);
+    }
+  }
+
+  Future<void> _renameSpace(BuildContext context, Space space) async {
+    final name = await showNamePromptDialog(
+      context,
+      title: '修改空间名',
+      initialValue: space.name,
+      hint: '空间名称',
+      confirmLabel: '保存',
+    );
+    if (name == null || name == space.name || !context.mounted) return;
+    try {
+      await library.renameSpace(space, name);
+    } catch (error) {
+      if (context.mounted) await _handleError(context, error);
+    }
+  }
+
+  Future<void> _confirmDeleteSpace(
+    BuildContext context,
+    Space space, {
+    BuildContext? sheetContext,
+  }) async {
+    final colors = context.colors;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除空间'),
+        content: Text('确定删除空间「${space.name}」及其全部目录与笔记本吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: colors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await library.deleteSpace(space);
+      if (sheetContext != null && sheetContext.mounted) {
+        Navigator.of(sheetContext).pop();
+      }
+    } catch (error) {
+      if (context.mounted) await _handleError(context, error);
+    }
   }
 
   Future<void> _createGroup(BuildContext context, String parentPath) async {
@@ -192,26 +351,102 @@ class LibraryDrawer extends StatelessWidget {
     }
   }
 
-  Future<void> _showCreateMenu(BuildContext context, String parentPath) async {
-    final action = await showModalBottomSheet<String>(
+  Future<void> _confirmDeleteGroup(BuildContext context, Group group) async {
+    final colors = context.colors;
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(LucideIcons.folderPlus, size: 20),
-              title: const Text('新建目录'),
-              onTap: () => Navigator.of(context).pop('group'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.filePlus, size: 20),
-              title: const Text('新建笔记本'),
-              onTap: () => Navigator.of(context).pop('notebook'),
-            ),
-          ],
-        ),
+      builder: (context) => AlertDialog(
+        title: const Text('删除目录'),
+        content: Text('确定删除目录「${group.name}」及其全部子目录与笔记本吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: colors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('删除'),
+          ),
+        ],
       ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await library.deleteGroup(group);
+    } catch (error) {
+      if (context.mounted) await _handleError(context, error);
+    }
+  }
+
+  Future<void> _confirmDeleteNotebook(
+    BuildContext context,
+    Notebook notebook,
+  ) async {
+    final colors = context.colors;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('删除笔记本'),
+        content: Text('确定删除笔记本「${notebook.name}」吗？此操作不可恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: colors.danger),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    try {
+      await library.deleteNotebook(notebook);
+    } catch (error) {
+      if (context.mounted) await _handleError(context, error);
+    }
+  }
+
+  Future<void> _openGlobalSearch(BuildContext context) async {
+    final result = await showGlobalSearchSheet(
+      context: context,
+      library: library,
+    );
+    if (result == null || !context.mounted) return;
+
+    final shouldCloseDrawer = result.type != GlobalSearchResultType.space;
+    final block = await library.navigateToGlobalSearchResult(result);
+    if (!context.mounted) return;
+
+    if (shouldCloseDrawer) {
+      Navigator.of(context).pop();
+    }
+
+    if (block != null && onOpenNoteBlock != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        onOpenNoteBlock!(block);
+      });
+    }
+  }
+
+  Future<void> _showCreateMenu(BuildContext context, String parentPath) async {
+    final action = await showAppContextMenu<String>(
+      context: context,
+      items: const [
+        AppContextMenuItem(
+          value: 'group',
+          label: '新建目录',
+          icon: LucideIcons.folderPlus,
+        ),
+        AppContextMenuItem(
+          value: 'notebook',
+          label: '新建笔记本',
+          icon: LucideIcons.filePlus,
+        ),
+      ],
     );
     if (!context.mounted || action == null) return;
     if (action == 'group') {
@@ -221,36 +456,37 @@ class LibraryDrawer extends StatelessWidget {
     }
   }
 
-  Future<void> _showGroupMenu(BuildContext context, Group group) async {
-    final action = await showModalBottomSheet<String>(
+  Future<void> _showGroupMenu(
+    BuildContext context,
+    Group group, {
+    Offset? globalPosition,
+  }) async {
+    final action = await showAppContextMenu<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(group.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: const Text('目录操作'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(LucideIcons.folderPlus, size: 20),
-              title: const Text('新建子目录'),
-              onTap: () => Navigator.of(context).pop('group'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.filePlus, size: 20),
-              title: const Text('新建笔记本'),
-              onTap: () => Navigator.of(context).pop('notebook'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.pencil, size: 20),
-              title: const Text('重命名'),
-              onTap: () => Navigator.of(context).pop('rename'),
-            ),
-          ],
+      globalPosition: globalPosition,
+      items: const [
+        AppContextMenuItem(
+          value: 'group',
+          label: '新建子目录',
+          icon: LucideIcons.folderPlus,
         ),
-      ),
+        AppContextMenuItem(
+          value: 'notebook',
+          label: '新建笔记本',
+          icon: LucideIcons.filePlus,
+        ),
+        AppContextMenuItem(
+          value: 'rename',
+          label: '重命名',
+          icon: LucideIcons.pencil,
+        ),
+        AppContextMenuItem(
+          value: 'delete',
+          label: '删除目录',
+          icon: LucideIcons.trash2,
+          danger: true,
+        ),
+      ],
     );
     if (!context.mounted || action == null) return;
     switch (action) {
@@ -260,54 +496,61 @@ class LibraryDrawer extends StatelessWidget {
         await _createNotebook(context, group.path);
       case 'rename':
         await _renameGroup(context, group);
+      case 'delete':
+        await _confirmDeleteGroup(context, group);
     }
   }
 
-  Future<void> _showNotebookMenu(BuildContext context, Notebook notebook) async {
-    final action = await showModalBottomSheet<String>(
+  Future<void> _showNotebookMenu(
+    BuildContext context,
+    Notebook notebook, {
+    Offset? globalPosition,
+  }) async {
+    final action = await showAppContextMenu<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(notebook.name, style: const TextStyle(fontWeight: FontWeight.w700)),
-              subtitle: const Text('笔记本操作'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(LucideIcons.pencil, size: 20),
-              title: const Text('重命名'),
-              onTap: () => Navigator.of(context).pop('rename'),
-            ),
-          ],
+      globalPosition: globalPosition,
+      items: const [
+        AppContextMenuItem(
+          value: 'rename',
+          label: '重命名',
+          icon: LucideIcons.pencil,
         ),
-      ),
+        AppContextMenuItem(
+          value: 'delete',
+          label: '删除笔记本',
+          icon: LucideIcons.trash2,
+          danger: true,
+        ),
+      ],
     );
     if (!context.mounted || action == null) return;
-    if (action == 'rename') {
-      await _renameNotebook(context, notebook);
+    switch (action) {
+      case 'rename':
+        await _renameNotebook(context, notebook);
+      case 'delete':
+        await _confirmDeleteNotebook(context, notebook);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final currentSpace = library.currentSpace;
 
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.surface,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+              padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -316,42 +559,71 @@ class LibraryDrawer extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF0F172A),
+                              color: colors.title,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                             '零碎笔记整理',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF0F766E),
+                              color: colors.accent,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  IconButton(
-                    tooltip: '刷新',
-                    onPressed: library.loading ? null : library.refresh,
-                    icon: library.loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(LucideIcons.refreshCw, size: 18, color: Color(0xFF64748B)),
-                  ),
-                  IconButton(
-                    tooltip: '设置中心',
-                    onPressed: () => showSettingsSheet(context: context, library: library),
-                    icon: const Icon(LucideIcons.settings, size: 18, color: Color(0xFF64748B)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _HeaderIconButton(
+                        tooltip: '刷新',
+                        onPressed: library.loading ? null : library.refresh,
+                        icon:
+                            library.loading
+                                ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : Icon(
+                                  LucideIcons.refreshCw,
+                                  size: 18,
+                                  color: colors.body,
+                                ),
+                      ),
+                      _HeaderIconButton(
+                        tooltip: '全局搜索',
+                        onPressed: () => _openGlobalSearch(context),
+                        icon: Icon(
+                          LucideIcons.search,
+                          size: 18,
+                          color: colors.body,
+                        ),
+                      ),
+                      _HeaderIconButton(
+                        tooltip: '设置中心',
+                        onPressed:
+                            () => showSettingsSheet(
+                              context: context,
+                              library: library,
+                            ),
+                        icon: Icon(
+                          LucideIcons.settings,
+                          size: 18,
+                          color: colors.body,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0xFFE2E8F0)),
+            Divider(height: 1, color: colors.border),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 24),
@@ -360,16 +632,22 @@ class LibraryDrawer extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: Material(
-                      color: const Color(0xFFF8FAFC),
+                      color: colors.background,
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(12),
-                        onTap: library.loading ? null : () => _showSpacePicker(context),
+                        onTap:
+                            library.loading
+                                ? null
+                                : () => _showSpacePicker(context),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: colors.border),
                           ),
                           child: Row(
                             children: [
@@ -380,25 +658,30 @@ class LibraryDrawer extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: currentSpace == null
-                                        ? const Color(0xFF94A3B8)
-                                        : const Color(0xFF0F172A),
+                                    color:
+                                        currentSpace == null
+                                            ? colors.muted
+                                            : colors.title,
                                   ),
                                 ),
                               ),
                               if (currentSpace != null) ...[
                                 Text(
                                   '${countNotebooks(currentSpace.groups)} 本',
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colors.muted,
+                                  ),
                                 ),
                                 const SizedBox(width: 6),
                               ],
                               Icon(
                                 LucideIcons.chevronDown,
                                 size: 18,
-                                color: library.loading
-                                    ? const Color(0xFFCBD5E1)
-                                    : const Color(0xFF64748B),
+                                color:
+                                    library.loading
+                                        ? colors.muted
+                                        : colors.body,
                               ),
                             ],
                           ),
@@ -406,19 +689,19 @@ class LibraryDrawer extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                  Divider(height: 1, color: colors.border),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 10, 8, 0),
                     child: Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             '目录',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.4,
-                              color: Color(0xFF94A3B8),
+                              color: colors.muted,
                             ),
                           ),
                         ),
@@ -426,18 +709,27 @@ class LibraryDrawer extends StatelessWidget {
                           IconButton(
                             tooltip: '新建',
                             visualDensity: VisualDensity.compact,
-                            onPressed: () => _showCreateMenu(context, currentSpace.path),
-                            icon: const Icon(LucideIcons.plus, size: 18, color: Color(0xFF0F766E)),
+                            onPressed:
+                                () =>
+                                    _showCreateMenu(context, currentSpace.path),
+                            icon: Icon(
+                              LucideIcons.plus,
+                              size: 18,
+                              color: colors.accent,
+                            ),
                           ),
                       ],
                     ),
                   ),
                   if (currentSpace == null)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: Text(
                         '选择一个空间以浏览目录',
-                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        style: TextStyle(color: colors.muted, fontSize: 13),
                       ),
                     )
                   else if (currentSpace.groups.isEmpty)
@@ -446,13 +738,15 @@ class LibraryDrawer extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             '此空间为空',
-                            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                            style: TextStyle(color: colors.muted, fontSize: 13),
                           ),
                           const SizedBox(height: 8),
                           TextButton.icon(
-                            onPressed: () => _showCreateMenu(context, currentSpace.path),
+                            onPressed:
+                                () =>
+                                    _showCreateMenu(context, currentSpace.path),
                             icon: const Icon(LucideIcons.plus, size: 16),
                             label: const Text('新建目录或笔记本'),
                           ),
@@ -471,7 +765,7 @@ class LibraryDrawer extends StatelessWidget {
                   '库路径：${library.storagePath}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                  style: TextStyle(fontSize: 10, color: colors.muted),
                 ),
               ),
           ],
@@ -480,63 +774,81 @@ class LibraryDrawer extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildTree(BuildContext context, List<LibraryItem> items, int depth) {
+  List<Widget> _buildTree(
+    BuildContext context,
+    List<LibraryItem> items,
+    int depth,
+  ) {
+    final colors = context.colors;
     final widgets = <Widget>[];
     for (final item in items) {
       if (item is GroupItem) {
         final group = item.group;
         final expanded = library.isGroupExpanded(group.path);
         widgets.add(
-          InkWell(
-            onTap: () => library.toggleExpandedGroup(group.path),
-            onLongPress: () => _showGroupMenu(context, group),
-            child: Padding(
-              padding: EdgeInsets.only(left: 12 + depth * 14.0, right: 4),
-              child: SizedBox(
-                height: 44,
-                child: Row(
-                  children: [
-                    Icon(
-                      expanded ? LucideIcons.chevronDown : LucideIcons.chevronRight,
-                      size: 16,
-                      color: const Color(0xFF94A3B8),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(LucideIcons.folder, size: 16, color: Color(0xFF64748B)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        group.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF0F172A),
+          Builder(
+            builder: (itemContext) {
+              return InkWell(
+                onTap: () => library.toggleExpandedGroup(group.path),
+                onLongPress: () => _showGroupMenu(itemContext, group),
+                child: Padding(
+                  padding: EdgeInsets.only(left: 12 + depth * 14.0, right: 4),
+                  child: SizedBox(
+                    height: 44,
+                    child: Row(
+                      children: [
+                        Icon(
+                          expanded
+                              ? LucideIcons.chevronDown
+                              : LucideIcons.chevronRight,
+                          size: 16,
+                          color: colors.muted,
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Icon(LucideIcons.folder, size: 16, color: colors.body),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            group.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: colors.title,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.hover,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '${group.notebookCount}',
+                            style: TextStyle(fontSize: 11, color: colors.body),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: '更多',
+                          visualDensity: VisualDensity.compact,
+                          iconSize: 16,
+                          onPressed: () => _showGroupMenu(itemContext, group),
+                          icon: Icon(
+                            LucideIcons.ellipsis,
+                            size: 16,
+                            color: colors.muted,
+                          ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        '${group.notebookCount}',
-                        style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: '更多',
-                      visualDensity: VisualDensity.compact,
-                      iconSize: 16,
-                      onPressed: () => _showGroupMenu(context, group),
-                      icon: const Icon(LucideIcons.ellipsis, size: 16, color: Color(0xFF94A3B8)),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         );
         if (expanded) {
@@ -546,58 +858,98 @@ class LibraryDrawer extends StatelessWidget {
         final notebook = item.notebook;
         final selected = library.currentNotebook?.path == notebook.path;
         widgets.add(
-          Material(
-            color: selected ? const Color(0xFFEFF6FF) : Colors.transparent,
-            child: InkWell(
-              onTap: () async {
-                await library.selectNotebook(notebook);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-              },
-              onLongPress: () => _showNotebookMenu(context, notebook),
-              child: Padding(
-                padding: EdgeInsets.only(left: 12 + depth * 14.0 + 22, right: 4),
-                child: SizedBox(
-                  height: 44,
-                  child: Row(
-                    children: [
-                      Icon(
-                        LucideIcons.fileText,
-                        size: 16,
-                        color: selected ? const Color(0xFF0F766E) : const Color(0xFF64748B),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          notebook.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                            color: selected
-                                ? const Color(0xFF0F766E)
-                                : const Color(0xFF0F172A),
+          Builder(
+            builder: (itemContext) {
+              return Material(
+                color: selected ? colors.accentSoft : Colors.transparent,
+                child: InkWell(
+                  onTap: () async {
+                    await library.selectNotebook(notebook);
+                    if (context.mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  onLongPress: () => _showNotebookMenu(itemContext, notebook),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 12 + depth * 14.0 + 22,
+                      right: 4,
+                    ),
+                    child: SizedBox(
+                      height: 44,
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.fileText,
+                            size: 16,
+                            color: selected ? colors.accent : colors.body,
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              notebook.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: selected ? colors.accent : colors.title,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: '更多',
+                            visualDensity: VisualDensity.compact,
+                            iconSize: 16,
+                            onPressed: () =>
+                                _showNotebookMenu(itemContext, notebook),
+                            icon: Icon(
+                              LucideIcons.ellipsis,
+                              size: 16,
+                              color: colors.muted,
+                            ),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        tooltip: '更多',
-                        visualDensity: VisualDensity.compact,
-                        iconSize: 16,
-                        onPressed: () => _showNotebookMenu(context, notebook),
-                        icon: const Icon(LucideIcons.ellipsis, size: 16, color: Color(0xFF94A3B8)),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         );
       }
     }
     return widgets;
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  const _HeaderIconButton({
+    required this.tooltip,
+    required this.icon,
+    this.onPressed,
+  });
+
+  final String tooltip;
+  final Widget icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const EdgeInsets.all(6),
+        minimumSize: const Size(34, 34),
+        fixedSize: const Size(34, 34),
+      ),
+      icon: icon,
+    );
   }
 }
 
@@ -608,15 +960,17 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.3,
-          color: Color(0xFF94A3B8),
+          color: colors.muted,
         ),
       ),
     );

@@ -6,6 +6,8 @@ import '../core/types.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../screens/note_block_editor_screen.dart';
+import 'app_context_menu.dart';
+import 'app_toast.dart';
 import 'sheet_drag_area.dart';
 
 const _previewSize = 0.72;
@@ -28,15 +30,16 @@ Future<void> showNoteBlockSheet({
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    isDismissible: true,
+    enableDrag: true,
     useSafeArea: false,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.35),
     builder: (context) {
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          padding: hostPadding,
-          viewPadding: hostViewPadding,
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(padding: hostPadding, viewPadding: hostViewPadding),
         child: NoteBlockSheet(
           library: library,
           block: block,
@@ -114,24 +117,19 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
 
   void _copyContent({String label = '已复制内容'}) {
     Clipboard.setData(ClipboardData(text: _block.content));
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(label), duration: const Duration(milliseconds: 1200)),
-    );
+    showAppToast(context, label);
   }
 
   Future<void> _openEditor() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => NoteBlockEditorScreen(
-          library: widget.library,
-          block: _block,
-        ),
-      ),
+    await showNoteBlockEditorSheet(
+      context: context,
+      library: widget.library,
+      block: _block,
     );
-    final refreshed = widget.library.currentNotebook?.noteBlocks
-        .where((item) => item.id == _block.id)
-        .firstOrNull;
+    final refreshed =
+        widget.library.currentNotebook?.noteBlocks
+            .where((item) => item.id == _block.id)
+            .firstOrNull;
     if (refreshed != null && mounted) {
       setState(() => _block = refreshed);
     } else if (mounted) {
@@ -142,21 +140,24 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
   Future<void> _deleteBlock() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除笔记块'),
-        content: Text('确定删除「${_block.title}」吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final colors = context.colors;
+        return AlertDialog(
+          title: const Text('删除笔记块'),
+          content: Text('确定删除「${_block.title}」吗？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: colors.danger),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('删除'),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true || !mounted) return;
 
@@ -166,37 +167,33 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败：$error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('删除失败：$error')));
     }
   }
 
   Future<void> _showMoreMenu() async {
-    final action = await showModalBottomSheet<String>(
+    final action = await showAppContextMenu<String>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(LucideIcons.pencil, size: 20),
-              title: const Text('编辑'),
-              onTap: () => Navigator.of(context).pop('edit'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.copy, size: 20),
-              title: const Text('复制内容'),
-              onTap: () => Navigator.of(context).pop('copy'),
-            ),
-            ListTile(
-              leading: const Icon(LucideIcons.trash2, size: 20, color: AppColors.danger),
-              title: const Text('删除', style: TextStyle(color: AppColors.danger)),
-              onTap: () => Navigator.of(context).pop('delete'),
-            ),
-          ],
+      items: const [
+        AppContextMenuItem(
+          value: 'edit',
+          label: '编辑',
+          icon: LucideIcons.pencil,
         ),
-      ),
+        AppContextMenuItem(
+          value: 'copy',
+          label: '复制内容',
+          icon: LucideIcons.copy,
+        ),
+        AppContextMenuItem(
+          value: 'delete',
+          label: '删除',
+          icon: LucideIcons.trash2,
+          danger: true,
+        ),
+      ],
     );
     if (!mounted || action == null) return;
     switch (action) {
@@ -211,157 +208,144 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final media = MediaQuery.of(context);
-    final topInset = media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
+    final topInset =
+        media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
     final bottomInset =
-        media.padding.bottom > 0 ? media.padding.bottom : media.viewPadding.bottom;
-    final split = _splitContent(_block.content);
+        media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
     final snippetLabel = _snippetLabel(_block.contentType);
 
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      initialChildSize: _previewSize,
-      minChildSize: 0.42,
-      maxChildSize: _fullSize,
-      snap: true,
-      snapSizes: const [_previewSize, _fullSize],
-      builder: (context, scrollController) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: _isFull
-                ? BorderRadius.zero
-                : const BorderRadius.vertical(top: Radius.circular(28)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              SheetDragArea(
-                controller: _sheetController,
-                minChildSize: 0.42,
-                maxChildSize: _fullSize,
-                snapSizes: const [_previewSize, _fullSize],
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: _isFull ? topInset + 4 : 10),
-                    _SheetHeader(
-                      isFull: _isFull,
-                      showHandle: !_isFull,
-                      onExpandHintTap: _expandToFull,
-                      onCollapseHintTap: _collapseToPreview,
-                      onCopy: () => _copyContent(),
-                      onClose: () => Navigator.of(context).pop(),
-                      onBackToList: () => Navigator.of(context).pop(),
-                      onDelete: _deleteBlock,
-                      onMore: _showMoreMenu,
-                    ),
-                  ],
+    return DismissibleSheetScaffold(
+      sheet: DraggableScrollableSheet(
+        controller: _sheetController,
+        expand: false,
+        initialChildSize: _previewSize,
+        minChildSize: 0.42,
+        maxChildSize: _fullSize,
+        snap: true,
+        snapSizes: const [_previewSize, _fullSize],
+        builder: (context, scrollController) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius:
+                  _isFull
+                      ? BorderRadius.zero
+                      : const BorderRadius.vertical(top: Radius.circular(28)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, -4),
                 ),
-              ),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + bottomInset),
-                  children: [
-                    Text(
-                      _isFull ? '${widget.spaceName} · ${widget.breadcrumb}' : widget.breadcrumb,
-                      style: const TextStyle(fontSize: 12, color: AppColors.muted),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _block.title,
-                      style: TextStyle(
-                        fontSize: _isFull ? 28 : 26,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.title,
-                        height: 1.2,
+              ],
+            ),
+            child: Column(
+              children: [
+                SheetDragArea(
+                  controller: _sheetController,
+                  minChildSize: 0.42,
+                  maxChildSize: _fullSize,
+                  snapSizes: const [_previewSize, _fullSize],
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: _isFull ? topInset + 4 : 10),
+                      _SheetHeader(
+                        isFull: _isFull,
+                        showHandle: !_isFull,
+                        onExpandHintTap: _expandToFull,
+                        onCollapseHintTap: _collapseToPreview,
+                        onCopy: () => _copyContent(),
+                        onClose: () => Navigator.of(context).pop(),
+                        onBackToList: () => Navigator.of(context).pop(),
+                        onDelete: _deleteBlock,
+                        onMore: _showMoreMenu,
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    _SnippetCard(
-                      label: snippetLabel,
-                      content: split.code,
-                      copyLabel: _isFull ? '一键复制' : '复制',
-                      tinted: _isFull,
-                      onCopy: () => _copyContent(label: '已复制命令片段'),
-                    ),
-                    if (split.remark != null && split.remark!.trim().isNotEmpty) ...[
-                      const SizedBox(height: 20),
-                      const Text(
-                        '备注',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.muted,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    padding: EdgeInsets.fromLTRB(20, 8, 20, 24 + bottomInset),
+                    children: [
                       Text(
-                        split.remark!,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.55,
-                          color: AppColors.title,
-                        ),
+                        _isFull
+                            ? '${widget.spaceName} · ${widget.breadcrumb}'
+                            : widget.breadcrumb,
+                        style: TextStyle(fontSize: 12, color: colors.muted),
                       ),
-                    ] else if (!_isFull && _block.content.trim().isNotEmpty) ...[
-                      // preview already shows content in snippet; no extra remark
-                    ],
-                    if (_isFull) ...[
-                      const SizedBox(height: 28),
-                      const Text(
-                        '笔记管理',
+                      const SizedBox(height: 10),
+                      Text(
+                        _block.title,
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.muted,
+                          fontSize: _isFull ? 28 : 26,
+                          fontWeight: FontWeight.w800,
+                          color: colors.title,
+                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _ManageButton(
-                              icon: LucideIcons.pencil,
-                              label: '编辑',
-                              onTap: _openEditor,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _ManageButton(
-                              icon: LucideIcons.copy,
-                              label: '复制',
-                              onTap: () => _copyContent(),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _ManageButton(
-                              icon: LucideIcons.trash2,
-                              label: '删除',
-                              danger: true,
-                              onTap: _deleteBlock,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 18),
+                      _SnippetCard(
+                        label: snippetLabel,
+                        content: _block.content,
+                        copyLabel: _isFull ? '一键复制' : '复制',
+                        tinted: _isFull,
+                        onCopy: () => _copyContent(label: '已复制内容'),
                       ),
+                      if (_isFull) ...[
+                        const SizedBox(height: 28),
+                        Text(
+                          '笔记管理',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: colors.muted,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _ManageButton(
+                                icon: LucideIcons.pencil,
+                                label: '编辑',
+                                onTap: _openEditor,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _ManageButton(
+                                icon: LucideIcons.copy,
+                                label: '复制',
+                                onTap: () => _copyContent(),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _ManageButton(
+                                icon: LucideIcons.trash2,
+                                label: '删除',
+                                danger: true,
+                                onTap: _deleteBlock,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -391,6 +375,8 @@ class _SheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 12, 4),
       child: Column(
@@ -400,7 +386,7 @@ class _SheetHeader extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFFD1D5DB),
+                color: colors.border,
                 borderRadius: BorderRadius.circular(999),
               ),
             ),
@@ -413,16 +399,20 @@ class _SheetHeader extends StatelessWidget {
                   child: GestureDetector(
                     onTap: onExpandHintTap,
                     behavior: HitTestBehavior.opaque,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(LucideIcons.chevronUp, size: 16, color: AppColors.muted),
-                          SizedBox(width: 4),
+                          Icon(
+                            LucideIcons.chevronUp,
+                            size: 16,
+                            color: colors.muted,
+                          ),
+                          const SizedBox(width: 4),
                           Text(
                             '上拉打开详情',
-                            style: TextStyle(fontSize: 13, color: AppColors.muted),
+                            style: TextStyle(fontSize: 13, color: colors.muted),
                           ),
                         ],
                       ),
@@ -440,7 +430,7 @@ class _SheetHeader extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onBackToList,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.title,
+                    foregroundColor: colors.title,
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                   icon: const Icon(LucideIcons.chevronLeft, size: 18),
@@ -450,12 +440,12 @@ class _SheetHeader extends StatelessWidget {
                   child: GestureDetector(
                     onTap: onCollapseHintTap,
                     behavior: HitTestBehavior.opaque,
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Text(
                         '下拉返回预览',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: AppColors.muted),
+                        style: TextStyle(fontSize: 13, color: colors.muted),
                       ),
                     ),
                   ),
@@ -465,8 +455,8 @@ class _SheetHeader extends StatelessWidget {
                 _HeaderIconButton(
                   icon: LucideIcons.trash2,
                   onTap: onDelete,
-                  background: const Color(0xFFFEE2E2),
-                  iconColor: AppColors.danger,
+                  background: colors.dangerSoft,
+                  iconColor: colors.danger,
                 ),
                 const SizedBox(width: 8),
                 _HeaderIconButton(icon: LucideIcons.ellipsis, onTap: onMore),
@@ -482,19 +472,21 @@ class _HeaderIconButton extends StatelessWidget {
   const _HeaderIconButton({
     required this.icon,
     required this.onTap,
-    this.background = AppColors.background,
-    this.iconColor = AppColors.title,
+    this.background,
+    this.iconColor,
   });
 
   final IconData icon;
   final VoidCallback onTap;
-  final Color background;
-  final Color iconColor;
+  final Color? background;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Material(
-      color: background,
+      color: background ?? colors.background,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -502,7 +494,7 @@ class _HeaderIconButton extends StatelessWidget {
         child: SizedBox(
           width: 40,
           height: 40,
-          child: Icon(icon, size: 18, color: iconColor),
+          child: Icon(icon, size: 18, color: iconColor ?? colors.title),
         ),
       ),
     );
@@ -526,11 +518,13 @@ class _SnippetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
-        color: tinted ? AppColors.accentSoft : const Color(0xFFF3F4F6),
+        color: tinted ? colors.accentSoft : colors.hover,
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -541,25 +535,32 @@ class _SnippetCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.muted,
+                    color: colors.muted,
                   ),
                 ),
               ),
               Material(
-                color: AppColors.accent,
+                color: colors.accent,
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
                   onTap: onCopy,
                   borderRadius: BorderRadius.circular(10),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 7,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(LucideIcons.copy, size: 14, color: Colors.white),
+                        const Icon(
+                          LucideIcons.copy,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           copyLabel,
@@ -578,12 +579,12 @@ class _SnippetCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           SelectableText.rich(
-            TextSpan(children: _highlightContent(content)),
-            style: const TextStyle(
+            TextSpan(children: _highlightContent(content, colors)),
+            style: TextStyle(
               fontFamily: 'Menlo',
               fontSize: 13.5,
               height: 1.55,
-              color: AppColors.title,
+              color: colors.codeFg,
             ),
           ),
         ],
@@ -607,9 +608,11 @@ class _ManageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = danger ? AppColors.danger : AppColors.title;
-    final bg = danger ? const Color(0xFFFEE2E2) : AppColors.surface;
-    final border = danger ? const Color(0xFFFECACA) : AppColors.border;
+    final colors = context.colors;
+    final fg = danger ? colors.danger : colors.title;
+    final bg = danger ? colors.dangerSoft : colors.surface;
+    final border =
+        danger ? colors.danger.withValues(alpha: 0.35) : colors.border;
 
     return Material(
       color: bg,
@@ -643,35 +646,6 @@ class _ManageButton extends StatelessWidget {
   }
 }
 
-class _ContentSplit {
-  const _ContentSplit({required this.code, this.remark});
-  final String code;
-  final String? remark;
-}
-
-_ContentSplit _splitContent(String content) {
-  final trimmed = content.trimRight();
-  if (trimmed.isEmpty) {
-    return const _ContentSplit(code: '');
-  }
-
-  final parts = trimmed.split(RegExp(r'\n\s*\n'));
-  if (parts.length < 2) {
-    return _ContentSplit(code: trimmed);
-  }
-
-  final last = parts.last.trim();
-  final looksLikeCode = RegExp(r'^[\s]*([$#]|//|/\*|\*|{|}|`)').hasMatch(last) ||
-      last.contains('\n\$') ||
-      last.contains('\n#');
-  if (looksLikeCode || last.length < 8) {
-    return _ContentSplit(code: trimmed);
-  }
-
-  final code = parts.sublist(0, parts.length - 1).join('\n\n').trimRight();
-  return _ContentSplit(code: code, remark: last);
-}
-
 String _snippetLabel(ContentType type) {
   switch (type) {
     case ContentType.bash:
@@ -685,9 +659,9 @@ String _snippetLabel(ContentType type) {
   }
 }
 
-List<InlineSpan> _highlightContent(String content) {
+List<InlineSpan> _highlightContent(String content, AppPalette colors) {
   if (content.trim().isEmpty) {
-    return const [TextSpan(text: '（空内容）', style: TextStyle(color: AppColors.muted))];
+    return [TextSpan(text: '（空内容）', style: TextStyle(color: colors.muted))];
   }
 
   final spans = <InlineSpan>[];
@@ -696,15 +670,22 @@ List<InlineSpan> _highlightContent(String content) {
     final line = lines[i];
     final trimmed = line.trimLeft();
     if (trimmed.startsWith('#')) {
-      spans.add(TextSpan(text: line, style: const TextStyle(color: AppColors.muted)));
+      spans.add(TextSpan(text: line, style: TextStyle(color: colors.muted)));
     } else if (trimmed.startsWith(r'$')) {
       final leading = line.substring(0, line.length - trimmed.length);
       spans.add(TextSpan(text: leading));
-      spans.add(const TextSpan(text: r'$ ', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)));
-      spans.add(TextSpan(
-        text: trimmed.length > 1 ? trimmed.substring(1).trimLeft() : '',
-        style: const TextStyle(color: AppColors.accent),
-      ));
+      spans.add(
+        TextSpan(
+          text: r'$ ',
+          style: TextStyle(color: colors.accent, fontWeight: FontWeight.w700),
+        ),
+      );
+      spans.add(
+        TextSpan(
+          text: trimmed.length > 1 ? trimmed.substring(1).trimLeft() : '',
+          style: TextStyle(color: colors.accent),
+        ),
+      );
     } else {
       spans.add(TextSpan(text: line));
     }

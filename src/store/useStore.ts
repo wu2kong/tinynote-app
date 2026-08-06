@@ -191,7 +191,7 @@ export const useStore = create<AppStore>((set, get) => ({
   noteBlockFocusKey: 0,
   recentNotebookHistory: [],
   isDarkTheme: false,
-  colorThemeId: 'default' as ColorThemeId,
+  colorThemeId: 'paper' as ColorThemeId,
   isSidebarCollapsed: false,
   showAppBar: true,
   showDirectoryPanel: true,
@@ -279,7 +279,7 @@ export const useStore = create<AppStore>((set, get) => ({
 
     const cfg = await config.loadConfig();
 
-    const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'default';
+    const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'paper';
     applyTheme(colorThemeId, cfg.isDarkTheme);
     applyMinimalStyle(cfg.hideElementBorders ?? false);
     document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();

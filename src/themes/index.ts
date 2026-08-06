@@ -15,7 +15,7 @@ export const COLOR_THEMES: ColorTheme[] = [
   {
     id: 'default',
     label: '极光蓝',
-    description: '当前默认的玻璃拟态文档主题。',
+    description: '玻璃拟态风格的蓝调文档主题。',
     defaultMode: 'light',
     highlight: {
       light: '/themes/default/highlight-light.css',
@@ -45,7 +45,7 @@ export const COLOR_THEMES: ColorTheme[] = [
   {
     id: 'paper',
     label: '纸墨灰',
-    description: '偏纸质阅读感的暖色主题。',
+    description: '偏纸质阅读感的暖色主题（默认）。',
     defaultMode: 'light',
     highlight: {
       light: '/themes/paper/highlight-light.css',
@@ -64,10 +64,12 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
 ];
 
-export const DEFAULT_COLOR_THEME_ID: ColorThemeId = 'default';
+export const DEFAULT_COLOR_THEME_ID: ColorThemeId = 'paper';
 
 export function getColorTheme(id: string): ColorTheme {
-  return COLOR_THEMES.find((theme) => theme.id === id) ?? COLOR_THEMES[0];
+  return COLOR_THEMES.find((theme) => theme.id === id)
+    ?? COLOR_THEMES.find((theme) => theme.id === DEFAULT_COLOR_THEME_ID)
+    ?? COLOR_THEMES[0];
 }
 
 export function isColorThemeId(id: string): id is ColorThemeId {

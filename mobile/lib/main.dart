@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'screens/home_screen.dart';
 import 'services/library_service.dart';
+import 'theme/app_colors.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,20 +19,25 @@ class TinyNoteApp extends StatefulWidget {
 
 class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
   final LibraryService _library = LibraryService();
+  final ThemeController _theme = ThemeController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _library.bootstrap();
-    _library.addListener(_onLibraryChanged);
+    _library.addListener(_onChanged);
+    _theme.addListener(_onChanged);
+    _theme.load();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _library.removeListener(_onLibraryChanged);
+    _library.removeListener(_onChanged);
+    _theme.removeListener(_onChanged);
     _library.dispose();
+    _theme.dispose();
     super.dispose();
   }
 
@@ -41,21 +48,29 @@ class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
     }
   }
 
-  void _onLibraryChanged() {
+  void _onChanged() {
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'TinyNote 轻记',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F766E)),
-        scaffoldBackgroundColor: const Color(0xFFF5F6F7),
-        useMaterial3: true,
+    return ThemeScope(
+      controller: _theme,
+      child: MaterialApp(
+        title: 'TinyNote 轻记',
+        debugShowCheckedModeBanner: false,
+        theme: _theme.themeData,
+        builder: (context, child) {
+          final overlay = _theme.isDark
+              ? SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent)
+              : SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent);
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: overlay,
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+        home: HomeScreen(library: _library),
       ),
-      home: HomeScreen(library: _library),
     );
   }
 }

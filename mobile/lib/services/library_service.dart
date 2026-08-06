@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/file_system.dart';
+import '../core/global_search.dart';
 import '../core/note_parser.dart';
+import '../core/path_utils.dart';
 import '../core/types.dart';
 import '../storage/local_storage.dart';
 import 'icloud_service.dart';
@@ -276,6 +278,89 @@ class LibraryService extends ChangeNotifier {
     await selectSpace(matched.isNotEmpty ? matched.first : created);
   }
 
+  Future<void> renameSpace(Space space, String newName) async {
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed == space.name) return;
+
+    final oldPath = space.path;
+    final newPath = await _fileSystem!.renameSpace(oldPath, trimmed);
+
+    final remapped = expandedGroupPaths.map((path) {
+      if (path == oldPath || path.startsWith('$oldPath/')) {
+        return '$newPath${path.substring(oldPath.length)}';
+      }
+      return path;
+    }).toSet();
+    expandedGroupPaths
+      ..clear()
+      ..addAll(remapped);
+
+    String? notebookPath = currentNotebook?.path;
+    if (notebookPath != null &&
+        (notebookPath == oldPath || notebookPath.startsWith('$oldPath/'))) {
+      notebookPath = '$newPath${notebookPath.substring(oldPath.length)}';
+    }
+
+    final restoreSpacePath =
+        currentSpace?.path == oldPath ? newPath : currentSpace?.path;
+
+    spaces = await _fileSystem!.loadSpaces(storagePath!);
+    currentSpace = _findSpaceByPath(restoreSpacePath) ??
+        (spaces.isNotEmpty ? spaces.first : null);
+
+    if (currentSpace != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_currentSpaceIdKey, currentSpace!.id);
+    }
+
+    if (notebookPath != null) {
+      final notebook = _findNotebook(notebookPath);
+      if (notebook != null) {
+        final fresh = await _fileSystem!.loadNotebook(notebook.path);
+        currentNotebook = fresh ?? notebook;
+      } else {
+        currentNotebook = null;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> deleteSpace(Space space) async {
+    final wasCurrent = currentSpace?.path == space.path;
+    await _fileSystem!.deleteSpace(space.path);
+
+    expandedGroupPaths.removeWhere(
+      (path) => path == space.path || path.startsWith('${space.path}/'),
+    );
+
+    spaces = await _fileSystem!.loadSpaces(storagePath!);
+
+    if (wasCurrent) {
+      currentNotebook = null;
+      if (spaces.isNotEmpty) {
+        await selectSpace(spaces.first);
+      } else {
+        currentSpace = null;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_currentSpaceIdKey);
+        notifyListeners();
+      }
+      return;
+    }
+
+    notifyListeners();
+  }
+
+  Space? _findSpaceByPath(String? path) {
+    if (path == null) return null;
+    for (final space in spaces) {
+      if (space.path == path) return space;
+    }
+    return null;
+  }
+
   Future<void> selectNotebook(Notebook notebook) async {
     currentNotebook = notebook;
     notebookLoading = true;
@@ -290,6 +375,53 @@ class LibraryService extends ChangeNotifier {
       notebookLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Navigate to a global search hit: switch space, expand ancestors, open notebook.
+  Future<NoteBlock?> navigateToGlobalSearchResult(
+    GlobalSearchResult result,
+  ) async {
+    Space? space;
+    for (final item in spaces) {
+      if (normalizePath(item.path) == normalizePath(result.spacePath)) {
+        space = item;
+        break;
+      }
+    }
+    if (space == null) return null;
+
+    final needsSpaceSwitch = currentSpace == null ||
+        normalizePath(currentSpace!.path) != normalizePath(result.spacePath);
+    if (needsSpaceSwitch) {
+      await selectSpace(space);
+    }
+
+    if (result.type == GlobalSearchResultType.space) return null;
+
+    final notebookPath = result.notebookPath;
+    final spaceNow = currentSpace;
+    if (notebookPath == null || spaceNow == null) return null;
+
+    final notebookInTree = _findNotebookInItems(spaceNow.groups, notebookPath);
+    if (notebookInTree == null) return null;
+
+    for (final path in _ancestorPaths(spaceNow.groups, notebookPath)) {
+      expandedGroupPaths.add(path);
+    }
+
+    await selectNotebook(notebookInTree);
+
+    if (result.type != GlobalSearchResultType.noteBlock ||
+        result.blockTitleKey == null) {
+      return null;
+    }
+
+    final loaded = currentNotebook;
+    if (loaded == null) return null;
+    for (final block in loaded.noteBlocks) {
+      if (block.title == result.blockTitleKey) return block;
+    }
+    return null;
   }
 
   void toggleExpandedGroup(String path) {
@@ -354,10 +486,54 @@ class LibraryService extends ChangeNotifier {
     );
   }
 
-  Future<NoteBlock> addNoteBlock({ContentType contentType = ContentType.text}) async {
+  Future<void> deleteGroup(Group group) async {
+    final groupPath = group.path;
+    await _fileSystem!.deleteGroup(groupPath);
+
+    expandedGroupPaths.removeWhere(
+      (path) => path == groupPath || path.startsWith('$groupPath/'),
+    );
+
+    await _reloadTree(
+      preserveNotebookPath: currentNotebook?.path,
+      preserveExpanded: true,
+    );
+  }
+
+  Future<void> deleteNotebook(Notebook notebook) async {
+    await _fileSystem!.deleteNotebook(notebook.path);
+    await _reloadTree(
+      preserveNotebookPath: currentNotebook?.path,
+      preserveExpanded: true,
+    );
+  }
+
+  Future<NoteBlock> addNoteBlock({
+    NoteBlock? existing,
+    ContentType contentType = ContentType.text,
+    String? title,
+    String? content,
+    List<String>? tags,
+  }) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError('未选择笔记本');
-    final block = createNoteBlock(contentType: contentType);
+    final now = DateTime.now().toUtc().toIso8601String();
+    final block = existing != null
+        ? NoteBlock(
+            id: existing.id,
+            title: title ?? existing.title,
+            content: content ?? existing.content,
+            contentType: contentType,
+            tags: tags ?? existing.tags,
+            createdAt: existing.createdAt,
+            updatedAt: now,
+          )
+        : createNoteBlock(
+            contentType: contentType,
+            title: title,
+            content: content,
+            tags: tags,
+          );
     final updated = Notebook(
       id: notebook.id,
       name: notebook.name,
@@ -528,8 +704,10 @@ class LibraryService extends ChangeNotifier {
   }
 
   Notebook? _findNotebookInItems(List<LibraryItem> items, String path) {
+    final target = normalizePath(path);
     for (final item in items) {
-      if (item is NotebookItem && item.notebook.path == path) {
+      if (item is NotebookItem &&
+          normalizePath(item.notebook.path) == target) {
         return item.notebook;
       }
       if (item is GroupItem) {
@@ -538,5 +716,32 @@ class LibraryService extends ChangeNotifier {
       }
     }
     return null;
+  }
+
+  List<String> _ancestorPaths(List<LibraryItem> items, String targetPath) {
+    final normalizedTarget = normalizePath(targetPath);
+    final ancestors = <String>[];
+
+    bool search(List<LibraryItem> list) {
+      for (final item in list) {
+        if (item is NotebookItem &&
+            normalizePath(item.notebook.path) == normalizedTarget) {
+          return true;
+        }
+        if (item is GroupItem) {
+          if (normalizePath(item.group.path) == normalizedTarget) {
+            return true;
+          }
+          if (search(item.group.children)) {
+            ancestors.add(item.group.path);
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    search(items);
+    return ancestors;
   }
 }

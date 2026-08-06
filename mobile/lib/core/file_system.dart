@@ -186,6 +186,21 @@ class FileSystemService {
     return notebook;
   }
 
+  Future<String> renameSpace(String oldPath, String newName) async {
+    final parentPath = dirname(oldPath);
+    final newPath = joinPath(parentPath, '$newName.tinynotes');
+    if (normalizePath(oldPath) == normalizePath(newPath)) return newPath;
+    if (await storage.exists(newPath)) {
+      throw StateError('空间已存在：$newName');
+    }
+    await storage.rename(oldPath, newPath);
+    return newPath;
+  }
+
+  Future<void> deleteSpace(String spacePath) async {
+    await storage.remove(spacePath, recursive: true);
+  }
+
   Future<String> renameGroup(String oldPath, String newName) async {
     final parentPath = dirname(oldPath);
     final newPath = joinPath(parentPath, newName);
@@ -207,6 +222,14 @@ class FileSystemService {
     }
     await storage.rename(oldPath, newPath);
     return newPath;
+  }
+
+  Future<void> deleteGroup(String groupPath) async {
+    await storage.remove(groupPath, recursive: true);
+  }
+
+  Future<void> deleteNotebook(String filePath) async {
+    await storage.remove(filePath, recursive: false);
   }
 
   Future<void> ensureSampleLibrary(String storagePath) async {
