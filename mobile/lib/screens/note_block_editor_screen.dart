@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_toast.dart';
@@ -51,10 +52,9 @@ Future<bool?> showNoteBlockEditorSheet({
     barrierColor: Colors.black.withValues(alpha: 0.35),
     builder: (context) {
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          padding: hostPadding,
-          viewPadding: hostViewPadding,
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(padding: hostPadding, viewPadding: hostViewPadding),
         child: NoteBlockEditorScreen(
           library: library,
           block: block,
@@ -97,7 +97,9 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
   void initState() {
     super.initState();
     final initialTitle =
-        widget.isNew && widget.block.title == 'Untitled' ? '' : widget.block.title;
+        widget.isNew && widget.block.title == 'Untitled'
+            ? ''
+            : widget.block.title;
     _titleController = TextEditingController(text: initialTitle);
     _contentController = TextEditingController(text: widget.block.content);
     _tagsController = TextEditingController(text: widget.block.tags.join(', '));
@@ -194,7 +196,10 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
       await _popWith(true);
     } catch (error) {
       if (!mounted) return;
-      showAppToast(context, '保存失败：$error');
+      showAppToast(
+        context,
+        context.s.fill(context.s.saveFailed, {'error': '$error'}),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -210,7 +215,10 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
         await _popWith(true);
       } catch (error) {
         if (!mounted) return;
-        showAppToast(context, '保存失败：$error');
+        showAppToast(
+          context,
+          context.s.fill(context.s.saveFailed, {'error': '$error'}),
+        );
       } finally {
         if (mounted) setState(() => _saving = false);
       }
@@ -227,7 +235,7 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
     final text = data?.text?.trimRight();
     if (!mounted) return;
     if (text == null || text.isEmpty) {
-      showAppToast(context, '剪贴板为空');
+      showAppToast(context, context.s.clipboardEmpty);
       return;
     }
 
@@ -238,26 +246,29 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
       selection: TextSelection.collapsed(offset: next.length),
     );
     _contentFocus.requestFocus();
-    showAppToast(context, '已粘贴剪贴板内容');
+    showAppToast(context, context.s.pastedClipboard);
   }
 
   Future<void> _delete() async {
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         final colors = context.colors;
         return AlertDialog(
-          title: const Text('删除笔记块'),
-          content: Text('确定删除「${widget.block.title}」吗？'),
+          title: Text(s.deleteNoteBlock),
+          content: Text(
+            s.fill(s.deleteNoteBlockMessage, {'name': widget.block.title}),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
+              child: Text(s.commonCancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: colors.danger),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('删除'),
+              child: Text(s.commonDelete),
             ),
           ],
         );
@@ -269,7 +280,7 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
       await _popWith(true);
     } catch (error) {
       if (!mounted) return;
-      showAppToast(context, '删除失败：$error');
+      showAppToast(context, s.fill(s.deleteFailed, {'error': '$error'}));
     }
   }
 
@@ -283,7 +294,9 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
       hintStyle: TextStyle(color: colors.muted, fontSize: 15),
       filled: true,
       fillColor: colors.background,
-      contentPadding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      contentPadding:
+          contentPadding ??
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: colors.border),
@@ -302,10 +315,14 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final media = MediaQuery.of(context);
-    final topInset = media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
+    final topInset =
+        media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
     final bottomInset =
-        media.padding.bottom > 0 ? media.padding.bottom : media.viewPadding.bottom;
+        media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
     final keyboardInset = media.viewInsets.bottom;
     final blockPop = _allowPop || !(widget.isNew && _dirty);
 
@@ -331,9 +348,12 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                 duration: const Duration(milliseconds: 180),
                 decoration: BoxDecoration(
                   color: colors.surface,
-                  borderRadius: _isFull
-                      ? BorderRadius.zero
-                      : const BorderRadius.vertical(top: Radius.circular(22)),
+                  borderRadius:
+                      _isFull
+                          ? BorderRadius.zero
+                          : const BorderRadius.vertical(
+                            top: Radius.circular(22),
+                          ),
                 ),
                 child: Column(
                   children: [
@@ -360,14 +380,20 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                             child: Row(
                               children: [
                                 IconButton(
-                                  tooltip: '关闭',
+                                  tooltip: s.commonClose,
                                   visualDensity: VisualDensity.compact,
                                   onPressed: _saving ? null : _requestClose,
-                                  icon: Icon(LucideIcons.x, size: 20, color: colors.muted),
+                                  icon: Icon(
+                                    LucideIcons.x,
+                                    size: 20,
+                                    color: colors.muted,
+                                  ),
                                 ),
                                 Expanded(
                                   child: Text(
-                                    widget.isNew ? '新建笔记块' : '编辑笔记块',
+                                    widget.isNew
+                                        ? s.newNoteBlock
+                                        : s.editNoteBlock,
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 17,
@@ -378,7 +404,7 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                                 ),
                                 if (!widget.isNew)
                                   IconButton(
-                                    tooltip: '删除',
+                                    tooltip: s.commonDelete,
                                     visualDensity: VisualDensity.compact,
                                     onPressed: _saving ? null : _delete,
                                     icon: Icon(
@@ -416,18 +442,16 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                             textInputAction: TextInputAction.next,
                             decoration: _fieldDecoration(
                               colors,
-                              hint: '标题',
+                              hint: s.titleHint,
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 16,
                               ),
-                            ).copyWith(
-                              fillColor: colors.background,
-                            ),
+                            ).copyWith(fillColor: colors.background),
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            '类型',
+                            s.typeLabel,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -440,7 +464,8 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: _editableContentTypes.length,
-                              separatorBuilder: (_, _) => const SizedBox(width: 8),
+                              separatorBuilder:
+                                  (_, _) => const SizedBox(width: 8),
                               itemBuilder: (context, index) {
                                 final type = _editableContentTypes[index];
                                 final selected = type == _contentType;
@@ -451,13 +476,22 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                                   visualDensity: VisualDensity.compact,
                                   labelStyle: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                                    color: selected ? colors.accent : colors.body,
+                                    fontWeight:
+                                        selected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                    color:
+                                        selected ? colors.accent : colors.body,
                                   ),
                                   selectedColor: colors.accentSoft,
                                   backgroundColor: colors.background,
                                   side: BorderSide(
-                                    color: selected ? colors.accent.withValues(alpha: 0.35) : colors.border,
+                                    color:
+                                        selected
+                                            ? colors.accent.withValues(
+                                              alpha: 0.35,
+                                            )
+                                            : colors.border,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(999),
@@ -476,7 +510,7 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                             style: TextStyle(fontSize: 14, color: colors.title),
                             decoration: _fieldDecoration(
                               colors,
-                              hint: '标签，用逗号分隔',
+                              hint: s.tagsHint,
                             ).copyWith(
                               prefixIcon: Icon(
                                 LucideIcons.tags,
@@ -487,7 +521,7 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                           ),
                           const SizedBox(height: 14),
                           Text(
-                            '内容',
+                            s.contentLabel,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -514,14 +548,19 @@ class _NoteBlockEditorScreenState extends State<NoteBlockEditorScreen> {
                               ),
                               cursorColor: colors.accent,
                               decoration: InputDecoration(
-                                hintText: widget.isNew ? '写下命令、片段或备忘…' : null,
+                                hintText: widget.isNew ? s.contentHint : null,
                                 hintStyle: TextStyle(
                                   fontFamily: 'Menlo',
                                   fontSize: 14,
                                   color: colors.muted,
                                 ),
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                                contentPadding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  14,
+                                  16,
+                                  16,
+                                ),
                               ),
                             ),
                           ),
@@ -554,6 +593,7 @@ class _SaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     return Material(
       color: colors.accent,
       borderRadius: BorderRadius.circular(999),
@@ -562,23 +602,24 @@ class _SaveButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
+          child:
+              saving
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : Text(
+                    s.commonSave,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                )
-              : const Text(
-                  '保存',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
         ),
       ),
     );
@@ -599,6 +640,7 @@ class _PasteBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(16, 10, 16, 12 + bottomInset),
@@ -617,10 +659,14 @@ class _PasteBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(LucideIcons.clipboardPaste, size: 18, color: colors.accent),
+                Icon(
+                  LucideIcons.clipboardPaste,
+                  size: 18,
+                  color: colors.accent,
+                ),
                 const SizedBox(width: 8),
                 Text(
-                  '一键粘贴剪贴板内容',
+                  s.pasteClipboard,
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,

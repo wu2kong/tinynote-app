@@ -1,6 +1,7 @@
 import { getStorageAdapter } from '@/adapters/storage';
 import { getBoundWorkspacePath } from '@/utils/config';
 import { joinPath, normalizePath } from '@/utils/path';
+import { t } from '@/i18n';
 
 export type ChatRole = 'user' | 'assistant';
 
@@ -152,7 +153,7 @@ function parseSessionFile(content: string): ChatSession | null {
   const now = Date.now();
   return {
     id: typeof fields.id === 'string' && fields.id ? fields.id : globalThis.crypto?.randomUUID?.() ?? `${now}-${Math.random()}`,
-    title: typeof fields.title === 'string' && fields.title ? fields.title : '未命名会话',
+    title: typeof fields.title === 'string' && fields.title ? fields.title : t('utils.aiChatSessions.untitled'),
     createdAt: typeof fields.createdAt === 'number' ? fields.createdAt : now,
     updatedAt: typeof fields.updatedAt === 'number' ? fields.updatedAt : now,
     messages,
@@ -173,15 +174,15 @@ export async function listChatSessions(): Promise<ChatSession[]> {
       const filePath = joinPath(dir, entry.name);
       try {
         const session = parseSessionFile(await storage.readTextFile(filePath));
-        if (!session) throw new Error('会话文件缺少 frontmatter');
+        if (!session) throw new Error('Session file is missing frontmatter');
         sessions.push({ ...session, filePath });
       } catch (error) {
-        console.warn('[ai-chat] 会话文件解析失败，已跳过:', filePath, error);
+        console.warn('[ai-chat] Failed to parse session file, skipped:', filePath, error);
       }
     }
     return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
   } catch (error) {
-    console.warn('[ai-chat] 读取会话目录失败:', error);
+    console.warn('[ai-chat] Failed to read sessions directory:', error);
     return [];
   }
 }
@@ -199,7 +200,7 @@ export async function saveChatSession(session: ChatSession): Promise<string | nu
     try {
       await storage.remove(previousPath);
     } catch (error) {
-      console.warn('[ai-chat] 旧会话文件清理失败:', previousPath, error);
+      console.warn('[ai-chat] Failed to clean up old session file:', previousPath, error);
     }
   }
   return filePath;
@@ -211,6 +212,6 @@ export async function deleteChatSession(filePath: string): Promise<void> {
   try {
     await getStorageAdapter().remove(filePath);
   } catch (error) {
-    console.warn('[ai-chat] 删除会话文件失败:', filePath, error);
+    console.warn('[ai-chat] Failed to delete session file:', filePath, error);
   }
 }

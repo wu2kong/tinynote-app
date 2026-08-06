@@ -11,6 +11,7 @@ import { extractHttpLinks } from '@/utils/extractLinks';
 import ContextMenuPortal from './ContextMenuPortal';
 import LinksModal from './LinksModal';
 import { showToast } from './Toast';
+import { useI18n } from '@/i18n/useI18n';
 
 interface NoteBlockProps {
   block: NoteBlockType;
@@ -21,6 +22,7 @@ interface NoteBlockProps {
 }
 
 const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, index, onSelect }) => {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [clipboardHasNote, setClipboardHasNote] = useState(false);
@@ -76,7 +78,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
       try {
         await openUrl(links[0]);
       } catch {
-        showToast('无法打开链接');
+        showToast(t('note.openLinkFailed'));
       }
       return;
     }
@@ -91,12 +93,12 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
         <button
           className="note-block-copy-btn"
           onClick={handleExtractLinks}
-          title="提取链接"
+          title={t('note.extractLinks')}
         >
           <Globe size={iconSize} />
         </button>
       )}
-      <button className="note-block-copy-btn" onClick={handleCopy} title="复制正文">
+      <button className="note-block-copy-btn" onClick={handleCopy} title={t('note.copyContent')}>
         {copied ? <Check size={iconSize} /> : <Copy size={iconSize} />}
       </button>
     </div>
@@ -193,40 +195,40 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
       <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
         <button className="context-menu-item" onClick={handleAddBelow}>
             <Plus size={14} />
-            添加笔记块
+            {t('note.addBlock')}
           </button>
           <button className="context-menu-item" onClick={handleDuplicate}>
             <CopyPlus size={14} />
-            创建副本
+            {t('note.duplicate')}
           </button>
           <button className="context-menu-item" onClick={handleAddAbove}>
             <Plus size={14} />
-            在上方增加笔记块
+            {t('note.addAbove')}
           </button>
           <div className="context-menu-divider" />
           <button className="context-menu-item" onClick={handleCopyContent}>
             <Copy size={14} />
-            复制正文
+            {t('note.copyContent')}
           </button>
           <button className="context-menu-item" onClick={handleCopyTitleAndContent}>
             <Copy size={14} />
-            复制标题和正文
+            {t('note.copyTitleAndContent')}
           </button>
           <div className="context-menu-divider" />
           <button className="context-menu-item" onClick={handleCopyNote}>
             <CopyPlus size={14} />
-            复制笔记块
+            {t('note.copyBlock')}
           </button>
           {clipboardHasNote && (
             <button className="context-menu-item" onClick={handlePasteNote}>
               <ClipboardPaste size={14} />
-              粘贴笔记
+              {t('note.pasteNote')}
             </button>
           )}
           <div className="context-menu-divider" />
           <button className="context-menu-item danger" onClick={handleDelete}>
             <Trash2 size={14} />
-            删除笔记块
+            {t('note.deleteBlock')}
           </button>
       </ContextMenuPortal>
     );
@@ -245,7 +247,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           <span className="note-block-drag-handle" {...attributes} {...listeners}>
             <GripVertical size={12} />
           </span>
-          <span className="note-block-compact-title">{block.title || 'Untitled'}</span>
+          <span className="note-block-compact-title">{block.title || t('note.untitled')}</span>
           <span className="note-block-compact-meta">{lines}L</span>
           {renderActionButtons(12)}
         </div>
@@ -269,7 +271,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
             <span className="note-block-drag-handle" {...attributes} {...listeners}>
               <GripVertical size={14} />
             </span>
-            <span className="note-block-card-title">{block.title || 'Untitled'}</span>
+            <span className="note-block-card-title">{block.title || t('note.untitled')}</span>
             {renderActionButtons(14)}
           </div>
           <div className="note-block-card-content">{contentPreview}</div>
@@ -300,7 +302,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           <GripVertical size={14} />
         </span>
         <div className="note-block-list-content">
-          <div className="note-block-list-title">{block.title || 'Untitled'}</div>
+          <div className="note-block-list-title">{block.title || t('note.untitled')}</div>
           <div className="note-block-list-preview">{contentPreview}</div>
         </div>
         {renderActionButtons(14)}

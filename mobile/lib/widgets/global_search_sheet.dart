@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/global_search.dart';
+import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 
@@ -26,10 +27,9 @@ Future<GlobalSearchResult?> showGlobalSearchSheet({
     ),
     builder: (context) {
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          padding: hostPadding,
-          viewPadding: hostViewPadding,
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(padding: hostPadding, viewPadding: hostViewPadding),
         child: GlobalSearchSheet(library: library),
       );
     },
@@ -82,9 +82,10 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
     final query = _controller.text.trim();
     setState(() {
       _activeQuery = query;
-      _results = query.isEmpty
-          ? const []
-          : performGlobalSearch(widget.library.spaces, query, _filters);
+      _results =
+          query.isEmpty
+              ? const []
+              : performGlobalSearch(widget.library.spaces, query, _filters);
     });
   }
 
@@ -113,6 +114,7 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final maxHeight = MediaQuery.sizeOf(context).height * 0.88;
 
     return SafeArea(
@@ -155,7 +157,7 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
                         enableSuggestions: false,
                         style: TextStyle(fontSize: 14, color: colors.title),
                         decoration: InputDecoration(
-                          hintText: '全局搜索…',
+                          hintText: s.globalSearch,
                           hintStyle: TextStyle(color: colors.muted),
                           border: InputBorder.none,
                           isDense: true,
@@ -168,7 +170,7 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
                     ),
                     if (_hasInput)
                       IconButton(
-                        tooltip: '清空',
+                        tooltip: s.commonClear,
                         visualDensity: VisualDensity.compact,
                         onPressed: _clearInput,
                         icon: Icon(
@@ -189,10 +191,10 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Text(
-                    '匹配范围：',
+                    s.matchScope,
                     style: TextStyle(fontSize: 12, color: colors.body),
                   ),
-                  for (final option in filterOptions)
+                  for (final option in searchFilterOptions(s))
                     _FilterChip(
                       label: option.$2,
                       checked: _filters[option.$1],
@@ -203,37 +205,38 @@ class _GlobalSearchSheetState extends State<GlobalSearchSheet> {
             ),
             Divider(height: 1, color: colors.border),
             Expanded(
-              child: _activeQuery.isEmpty
-                  ? Center(
-                      child: Text(
-                        '输入关键词后按回车搜索',
-                        style: TextStyle(fontSize: 13, color: colors.muted),
-                      ),
-                    )
-                  : _results.isEmpty
+              child:
+                  _activeQuery.isEmpty
                       ? Center(
-                          child: Text(
-                            '未找到匹配结果',
-                            style: TextStyle(fontSize: 13, color: colors.muted),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                          itemCount: _results.length,
-                          itemBuilder: (context, index) {
-                            final result = _results[index];
-                            return _ResultTile(
-                              result: result,
-                              query: _activeQuery,
-                              onTap: () => Navigator.of(context).pop(result),
-                            );
-                          },
+                        child: Text(
+                          s.enterKeywordSearch,
+                          style: TextStyle(fontSize: 13, color: colors.muted),
                         ),
+                      )
+                      : _results.isEmpty
+                      ? Center(
+                        child: Text(
+                          s.noSearchResults,
+                          style: TextStyle(fontSize: 13, color: colors.muted),
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                        itemCount: _results.length,
+                        itemBuilder: (context, index) {
+                          final result = _results[index];
+                          return _ResultTile(
+                            result: result,
+                            query: _activeQuery,
+                            onTap: () => Navigator.of(context).pop(result),
+                          );
+                        },
+                      ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
               child: Text(
-                '按回车执行搜索',
+                s.pressEnterToSearch,
                 style: TextStyle(fontSize: 11, color: colors.muted),
               ),
             ),
@@ -269,7 +272,10 @@ class _FilterChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: checked ? colors.accent.withValues(alpha: 0.35) : colors.border,
+              color:
+                  checked
+                      ? colors.accent.withValues(alpha: 0.35)
+                      : colors.border,
             ),
           ),
           child: Row(

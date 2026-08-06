@@ -57,8 +57,8 @@ export function parseJsonc<T = unknown>(input: string): T {
 
 export function stringifyJsonc(data: unknown): string {
   const header = [
-    '// TinyNote 工作区配置 — 可纳入 Git 同步',
-    '// 路径字段为相对笔记库根目录；backupDir / syncAuthToken / llmProviders 保存在本机 work-spaces.json',
+    '// TinyNote workspace config — safe to sync with Git',
+    '// Path fields are relative to the note library root; backupDir / syncAuthToken / llmProviders live in local work-spaces.json',
     '',
   ].join('\n');
   return `${header}${JSON.stringify(data, null, 2)}\n`;

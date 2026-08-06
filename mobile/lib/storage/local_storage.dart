@@ -200,9 +200,15 @@ class LocalStorage {
     return FileSystemEntity.typeSync(path) != FileSystemEntityType.notFound;
   }
 
-  static Future<void> _copyDirectory(Directory source, Directory destination) async {
+  static Future<void> _copyDirectory(
+    Directory source,
+    Directory destination,
+  ) async {
     await destination.create(recursive: true);
-    await for (final entity in source.list(recursive: false, followLinks: false)) {
+    await for (final entity in source.list(
+      recursive: false,
+      followLinks: false,
+    )) {
       final name = p.basename(entity.path);
       if (name.startsWith('.') && name != '.tinynotes') continue;
       if (name.endsWith('.icloud')) continue;

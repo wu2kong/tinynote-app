@@ -6,6 +6,7 @@ import '../core/global_search.dart';
 import '../core/note_parser.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../storage/local_storage.dart';
 import 'icloud_service.dart';
 
@@ -52,9 +53,11 @@ class LibraryService extends ChangeNotifier {
           iCloudEnabled = false;
           await prefs.setBool(_iCloudEnabledKey, false);
           await ICloudService.clearLibraryBookmark();
-          syncMessage = '无法访问已选文件夹，已改用本机库。请重新开启同步并选择文件夹。';
+          syncMessage = appStrings.bookmarkUnavailableLocal;
         } else {
-          externalLibraryPath = await resolveExternalLibraryRoot(externalLibraryPath);
+          externalLibraryPath = await resolveExternalLibraryRoot(
+            externalLibraryPath,
+          );
         }
       }
 
@@ -82,7 +85,9 @@ class LibraryService extends ChangeNotifier {
       ready = true;
     } catch (error, stackTrace) {
       debugPrint('Library bootstrap failed: $error\n$stackTrace');
-      errorMessage = '初始化笔记库失败：$error';
+      errorMessage = appStrings.fill(appStrings.libraryInitFailed, {
+        'error': '$error',
+      });
       ready = false;
     } finally {
       loading = false;
@@ -98,12 +103,12 @@ class LibraryService extends ChangeNotifier {
   /// Enable sync by letting the user pick an iCloud Drive / Files folder.
   Future<void> enableICloudSync() async {
     if (!iCloudSupported) {
-      throw StateError('当前平台不支持 iCloud / Files 文件夹同步');
+      throw StateError(appStrings.syncUnsupported);
     }
     if (syncBusy) return;
 
     syncBusy = true;
-    syncMessage = '请选择 iCloud 云盘中的文件夹…';
+    syncMessage = appStrings.selectICloudFolder;
     notifyListeners();
 
     try {
@@ -123,11 +128,11 @@ class LibraryService extends ChangeNotifier {
       final localEmpty = await localStorage.isEmptyLibrary();
 
       if (cloudEmpty && !localEmpty) {
-        syncMessage = '正在将本机笔记复制到所选文件夹…';
+        syncMessage = appStrings.copyingLocalNotes;
         notifyListeners();
         await externalStorage.copyLibraryFrom(localRoot);
       } else if (!cloudEmpty && !localEmpty && localRoot != externalRoot) {
-        syncMessage = '已使用所选文件夹中的笔记库（本机副本仍保留）';
+        syncMessage = appStrings.usingSelectedLibrary;
       }
 
       final prefs = await SharedPreferences.getInstance();
@@ -136,7 +141,7 @@ class LibraryService extends ChangeNotifier {
       iCloudEnabled = true;
 
       await _openRoot(externalRoot, prefs: prefs);
-      syncMessage ??= '已开启同步';
+      syncMessage ??= appStrings.syncEnabled;
     } catch (error) {
       syncMessage = '$error';
       rethrow;
@@ -155,7 +160,7 @@ class LibraryService extends ChangeNotifier {
     if (syncBusy) return;
 
     syncBusy = true;
-    syncMessage = '请重新选择同步文件夹…';
+    syncMessage = appStrings.reselectSyncFolder;
     notifyListeners();
 
     try {
@@ -169,7 +174,7 @@ class LibraryService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_storagePathKey, externalRoot);
       await _openRoot(externalRoot, prefs: prefs);
-      syncMessage = '已切换同步文件夹';
+      syncMessage = appStrings.syncFolderChanged;
     } catch (error) {
       syncMessage = '$error';
       rethrow;
@@ -197,7 +202,7 @@ class LibraryService extends ChangeNotifier {
           current != null &&
           current != localRoot &&
           await localStorage.isEmptyLibrary()) {
-        syncMessage = '正在将同步文件夹中的笔记拷回本机…';
+        syncMessage = appStrings.copyingCloudNotes;
         notifyListeners();
         await localStorage.copyLibraryFrom(current);
       }
@@ -210,7 +215,7 @@ class LibraryService extends ChangeNotifier {
       iCloudEnabled = false;
 
       await _openRoot(localRoot, prefs: prefs);
-      syncMessage = '已关闭同步，改用本机库';
+      syncMessage = appStrings.syncDisabledLocal;
     } catch (error) {
       syncMessage = '$error';
       rethrow;
@@ -229,7 +234,7 @@ class LibraryService extends ChangeNotifier {
       if (iCloudEnabled) {
         final restored = await ICloudService.restoreLibraryAccess();
         if (restored == null) {
-          syncMessage = '无法访问同步文件夹，请到设置中重新选择';
+          syncMessage = appStrings.syncFolderUnavailable;
         }
       }
       await _reloadTree(
@@ -237,7 +242,9 @@ class LibraryService extends ChangeNotifier {
         preserveExpanded: true,
       );
     } catch (error) {
-      errorMessage = '刷新失败：$error';
+      errorMessage = appStrings.fill(appStrings.refreshFailed, {
+        'error': '$error',
+      });
     } finally {
       loading = false;
       notifyListeners();
@@ -267,10 +274,10 @@ class LibraryService extends ChangeNotifier {
 
   Future<void> createSpace(String name) async {
     final trimmed = name.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     final root = storagePath;
     if (root == null || _fileSystem == null) {
-      throw StateError('笔记库未就绪');
+      throw StateError(appStrings.libraryNotReady);
     }
     final created = await _fileSystem!.createSpace(root, trimmed);
     await _reloadTree(preserveExpanded: false);
@@ -280,18 +287,19 @@ class LibraryService extends ChangeNotifier {
 
   Future<void> renameSpace(Space space, String newName) async {
     final trimmed = newName.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     if (trimmed == space.name) return;
 
     final oldPath = space.path;
     final newPath = await _fileSystem!.renameSpace(oldPath, trimmed);
 
-    final remapped = expandedGroupPaths.map((path) {
-      if (path == oldPath || path.startsWith('$oldPath/')) {
-        return '$newPath${path.substring(oldPath.length)}';
-      }
-      return path;
-    }).toSet();
+    final remapped =
+        expandedGroupPaths.map((path) {
+          if (path == oldPath || path.startsWith('$oldPath/')) {
+            return '$newPath${path.substring(oldPath.length)}';
+          }
+          return path;
+        }).toSet();
     expandedGroupPaths
       ..clear()
       ..addAll(remapped);
@@ -306,7 +314,8 @@ class LibraryService extends ChangeNotifier {
         currentSpace?.path == oldPath ? newPath : currentSpace?.path;
 
     spaces = await _fileSystem!.loadSpaces(storagePath!);
-    currentSpace = _findSpaceByPath(restoreSpacePath) ??
+    currentSpace =
+        _findSpaceByPath(restoreSpacePath) ??
         (spaces.isNotEmpty ? spaces.first : null);
 
     if (currentSpace != null) {
@@ -390,7 +399,8 @@ class LibraryService extends ChangeNotifier {
     }
     if (space == null) return null;
 
-    final needsSpaceSwitch = currentSpace == null ||
+    final needsSpaceSwitch =
+        currentSpace == null ||
         normalizePath(currentSpace!.path) != normalizePath(result.spacePath);
     if (needsSpaceSwitch) {
       await selectSpace(space);
@@ -437,32 +447,39 @@ class LibraryService extends ChangeNotifier {
 
   Future<void> createGroup(String parentPath, String name) async {
     final trimmed = name.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     await _fileSystem!.createGroup(parentPath, trimmed);
     expandedGroupPaths.add(parentPath);
-    await _reloadTree(preserveNotebookPath: currentNotebook?.path, preserveExpanded: true);
+    await _reloadTree(
+      preserveNotebookPath: currentNotebook?.path,
+      preserveExpanded: true,
+    );
   }
 
   Future<void> createNotebook(String parentPath, String name) async {
     final trimmed = name.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     final notebook = await _fileSystem!.createNotebook(parentPath, trimmed);
     expandedGroupPaths.add(parentPath);
-    await _reloadTree(preserveNotebookPath: notebook.path, preserveExpanded: true);
+    await _reloadTree(
+      preserveNotebookPath: notebook.path,
+      preserveExpanded: true,
+    );
     await selectNotebook(notebook);
   }
 
   Future<void> renameGroup(Group group, String newName) async {
     final trimmed = newName.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     final oldPath = group.path;
     final newPath = await _fileSystem!.renameGroup(oldPath, trimmed);
-    final remapped = expandedGroupPaths.map((path) {
-      if (path == oldPath || path.startsWith('$oldPath/')) {
-        return '$newPath${path.substring(oldPath.length)}';
-      }
-      return path;
-    }).toSet();
+    final remapped =
+        expandedGroupPaths.map((path) {
+          if (path == oldPath || path.startsWith('$oldPath/')) {
+            return '$newPath${path.substring(oldPath.length)}';
+          }
+          return path;
+        }).toSet();
     expandedGroupPaths
       ..clear()
       ..addAll(remapped);
@@ -472,12 +489,15 @@ class LibraryService extends ChangeNotifier {
         (notebookPath == oldPath || notebookPath.startsWith('$oldPath/'))) {
       notebookPath = '$newPath${notebookPath.substring(oldPath.length)}';
     }
-    await _reloadTree(preserveNotebookPath: notebookPath, preserveExpanded: true);
+    await _reloadTree(
+      preserveNotebookPath: notebookPath,
+      preserveExpanded: true,
+    );
   }
 
   Future<void> renameNotebook(Notebook notebook, String newName) async {
     final trimmed = newName.trim();
-    if (trimmed.isEmpty) throw StateError('名称不能为空');
+    if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     final wasSelected = currentNotebook?.path == notebook.path;
     final newPath = await _fileSystem!.renameNotebook(notebook.path, trimmed);
     await _reloadTree(
@@ -516,24 +536,25 @@ class LibraryService extends ChangeNotifier {
     List<String>? tags,
   }) async {
     final notebook = currentNotebook;
-    if (notebook == null) throw StateError('未选择笔记本');
+    if (notebook == null) throw StateError(appStrings.noNotebookSelected);
     final now = DateTime.now().toUtc().toIso8601String();
-    final block = existing != null
-        ? NoteBlock(
-            id: existing.id,
-            title: title ?? existing.title,
-            content: content ?? existing.content,
-            contentType: contentType,
-            tags: tags ?? existing.tags,
-            createdAt: existing.createdAt,
-            updatedAt: now,
-          )
-        : createNoteBlock(
-            contentType: contentType,
-            title: title,
-            content: content,
-            tags: tags,
-          );
+    final block =
+        existing != null
+            ? NoteBlock(
+              id: existing.id,
+              title: title ?? existing.title,
+              content: content ?? existing.content,
+              contentType: contentType,
+              tags: tags ?? existing.tags,
+              createdAt: existing.createdAt,
+              updatedAt: now,
+            )
+            : createNoteBlock(
+              contentType: contentType,
+              title: title,
+              content: content,
+              tags: tags,
+            );
     final updated = Notebook(
       id: notebook.id,
       name: notebook.name,
@@ -546,27 +567,29 @@ class LibraryService extends ChangeNotifier {
     return block;
   }
 
-  Future<void> updateNoteBlock(String id, {
+  Future<void> updateNoteBlock(
+    String id, {
     String? title,
     String? content,
     ContentType? contentType,
     List<String>? tags,
   }) async {
     final notebook = currentNotebook;
-    if (notebook == null) throw StateError('未选择笔记本');
+    if (notebook == null) throw StateError(appStrings.noNotebookSelected);
     final now = DateTime.now().toUtc().toIso8601String();
-    final updatedBlocks = notebook.noteBlocks.map((block) {
-      if (block.id != id) return block;
-      return NoteBlock(
-        id: block.id,
-        title: title ?? block.title,
-        content: content ?? block.content,
-        contentType: contentType ?? block.contentType,
-        tags: tags ?? block.tags,
-        createdAt: block.createdAt,
-        updatedAt: now,
-      );
-    }).toList();
+    final updatedBlocks =
+        notebook.noteBlocks.map((block) {
+          if (block.id != id) return block;
+          return NoteBlock(
+            id: block.id,
+            title: title ?? block.title,
+            content: content ?? block.content,
+            contentType: contentType ?? block.contentType,
+            tags: tags ?? block.tags,
+            createdAt: block.createdAt,
+            updatedAt: now,
+          );
+        }).toList();
     final updated = Notebook(
       id: notebook.id,
       name: notebook.name,
@@ -580,7 +603,7 @@ class LibraryService extends ChangeNotifier {
 
   Future<void> deleteNoteBlock(String id) async {
     final notebook = currentNotebook;
-    if (notebook == null) throw StateError('未选择笔记本');
+    if (notebook == null) throw StateError(appStrings.noNotebookSelected);
     final updated = Notebook(
       id: notebook.id,
       name: notebook.name,
@@ -600,7 +623,10 @@ class LibraryService extends ChangeNotifier {
     return _fileSystem!.loadNotebook(path);
   }
 
-  Future<void> _openRoot(String rootPath, {required SharedPreferences prefs}) async {
+  Future<void> _openRoot(
+    String rootPath, {
+    required SharedPreferences prefs,
+  }) async {
     loading = true;
     notifyListeners();
 
@@ -622,9 +648,8 @@ class LibraryService extends ChangeNotifier {
     bool preserveExpanded = false,
   }) async {
     final previousSpaceId = currentSpace?.id;
-    final previousExpanded = preserveExpanded
-        ? Set<String>.from(expandedGroupPaths)
-        : <String>{};
+    final previousExpanded =
+        preserveExpanded ? Set<String>.from(expandedGroupPaths) : <String>{};
 
     spaces = await _fileSystem!.loadSpaces(storagePath!);
     _restoreSpace(previousSpaceId);
@@ -706,8 +731,7 @@ class LibraryService extends ChangeNotifier {
   Notebook? _findNotebookInItems(List<LibraryItem> items, String path) {
     final target = normalizePath(path);
     for (final item in items) {
-      if (item is NotebookItem &&
-          normalizePath(item.notebook.path) == target) {
+      if (item is NotebookItem && normalizePath(item.notebook.path) == target) {
         return item.notebook;
       }
       if (item is GroupItem) {

@@ -1,3 +1,5 @@
+import { t } from '@/i18n';
+
 export class TimeoutError extends Error {
   constructor(message: string) {
     super(message);
@@ -30,6 +32,6 @@ export function withTimeout<T>(
 
 export function assertNetworkAvailable(): void {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-    throw new Error('当前处于离线状态，请检查网络连接');
+    throw new Error(t('utils.sync.offline'));
   }
 }

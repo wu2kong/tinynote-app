@@ -10,7 +10,12 @@ String normalizePath(String path) {
 }
 
 String joinPath(String part1, [String? part2, String? part3, String? part4]) {
-  final segments = [part1, part2, part3, part4].whereType<String>().where((s) => s.isNotEmpty);
+  final segments = [
+    part1,
+    part2,
+    part3,
+    part4,
+  ].whereType<String>().where((s) => s.isNotEmpty);
   if (segments.isEmpty) return '';
 
   final first = segments.first.replaceAll('\\', '/');
@@ -27,7 +32,10 @@ String joinPath(String part1, [String? part2, String? part3, String? part4]) {
       );
     } else {
       parts.addAll(
-        normalized.replaceAll(RegExp(r'^/+|/+$'), '').split('/').where((part) => part.isNotEmpty),
+        normalized
+            .replaceAll(RegExp(r'^/+|/+$'), '')
+            .split('/')
+            .where((part) => part.isNotEmpty),
       );
     }
   }

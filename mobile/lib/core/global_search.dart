@@ -1,3 +1,4 @@
+import '../l10n/l10n.dart';
 import 'types.dart';
 
 class SearchFilters {
@@ -46,12 +47,7 @@ class SearchFilters {
   }
 }
 
-enum SearchFilterKey {
-  spaceName,
-  notebookName,
-  blockTitle,
-  blockContent,
-}
+enum SearchFilterKey { spaceName, notebookName, blockTitle, blockContent }
 
 enum GlobalSearchResultType { space, notebook, noteBlock }
 
@@ -88,19 +84,21 @@ class TextSegment {
 
 const defaultSearchFilters = SearchFilters();
 
-const filterOptions = <(SearchFilterKey, String)>[
-  (SearchFilterKey.spaceName, '空间名'),
-  (SearchFilterKey.notebookName, '笔记本名'),
-  (SearchFilterKey.blockTitle, '笔记块标题'),
-  (SearchFilterKey.blockContent, '笔记块内容'),
+List<(SearchFilterKey, String)> searchFilterOptions(AppStrings s) => [
+  (SearchFilterKey.spaceName, s.searchFilterSpaceName),
+  (SearchFilterKey.notebookName, s.searchFilterNotebookName),
+  (SearchFilterKey.blockTitle, s.searchFilterBlockTitle),
+  (SearchFilterKey.blockContent, s.searchFilterBlockContent),
 ];
 
-const _matchLabels = {
-  SearchFilterKey.spaceName: '空间名',
-  SearchFilterKey.notebookName: '笔记本名',
-  SearchFilterKey.blockTitle: '笔记块标题',
-  SearchFilterKey.blockContent: '笔记块内容',
-};
+String searchFilterLabel(SearchFilterKey key, AppStrings s) {
+  return switch (key) {
+    SearchFilterKey.spaceName => s.searchFilterSpaceName,
+    SearchFilterKey.notebookName => s.searchFilterNotebookName,
+    SearchFilterKey.blockTitle => s.searchFilterBlockTitle,
+    SearchFilterKey.blockContent => s.searchFilterBlockContent,
+  };
+}
 
 bool _walkNotebooks(
   List<LibraryItem> items,
@@ -169,6 +167,7 @@ List<GlobalSearchResult> performGlobalSearch(
   final q = query.trim().toLowerCase();
   if (q.isEmpty) return const [];
 
+  final s = appStrings;
   final results = <GlobalSearchResult>[];
 
   for (final space in spaces) {
@@ -177,7 +176,7 @@ List<GlobalSearchResult> performGlobalSearch(
         GlobalSearchResult(
           id: 'space:${space.path}',
           type: GlobalSearchResultType.space,
-          matchLabels: [_matchLabels[SearchFilterKey.spaceName]!],
+          matchLabels: [searchFilterLabel(SearchFilterKey.spaceName, s)],
           spaceName: space.name,
           spacePath: space.path,
         ),
@@ -191,7 +190,7 @@ List<GlobalSearchResult> performGlobalSearch(
           GlobalSearchResult(
             id: 'notebook:${notebook.path}',
             type: GlobalSearchResultType.notebook,
-            matchLabels: [_matchLabels[SearchFilterKey.notebookName]!],
+            matchLabels: [searchFilterLabel(SearchFilterKey.notebookName, s)],
             spaceName: space.name,
             notebookName: notebook.name,
             spacePath: space.path,
@@ -204,10 +203,10 @@ List<GlobalSearchResult> performGlobalSearch(
       for (final block in notebook.noteBlocks) {
         final matchLabels = <String>[];
         if (filters.blockTitle && block.title.toLowerCase().contains(q)) {
-          matchLabels.add(_matchLabels[SearchFilterKey.blockTitle]!);
+          matchLabels.add(searchFilterLabel(SearchFilterKey.blockTitle, s));
         }
         if (filters.blockContent && block.content.toLowerCase().contains(q)) {
-          matchLabels.add(_matchLabels[SearchFilterKey.blockContent]!);
+          matchLabels.add(searchFilterLabel(SearchFilterKey.blockContent, s));
         }
         if (matchLabels.isNotEmpty) {
           results.add(

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '@/i18n/useI18n';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -15,8 +16,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onConfirm,
   title,
   message,
-  confirmLabel = '删除',
+  confirmLabel,
 }) => {
+  const { t } = useI18n();
+
   if (!open) return null;
 
   return (
@@ -25,8 +28,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <h3 className="modal-title">{title}</h3>
         <p className="modal-message">{message}</p>
         <div className="modal-actions">
-          <button className="btn btn-secondary" onClick={onClose}>取消</button>
-          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
+          <button className="btn btn-secondary" onClick={onClose}>{t('confirm.cancel')}</button>
+          <button className="btn btn-danger" onClick={() => { onConfirm(); onClose(); }}>
+            {confirmLabel ?? t('confirm.defaultDelete')}
+          </button>
         </div>
       </div>
     </div>

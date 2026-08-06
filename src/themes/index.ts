@@ -14,8 +14,8 @@ export interface ColorTheme {
 export const COLOR_THEMES: ColorTheme[] = [
   {
     id: 'default',
-    label: '极光蓝',
-    description: '玻璃拟态风格的蓝调文档主题。',
+    label: 'default',
+    description: 'default',
     defaultMode: 'light',
     highlight: {
       light: '/themes/default/highlight-light.css',
@@ -24,8 +24,8 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
   {
     id: 'qinglan',
-    label: '青灰蓝',
-    description: '沉静克制的青灰蓝主题，主色为 #1D4C50。',
+    label: 'qinglan',
+    description: 'qinglan',
     defaultMode: 'light',
     highlight: {
       light: '/themes/qinglan/highlight-light.css',
@@ -34,8 +34,8 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
   {
     id: 'sunset',
-    label: '樱花粉',
-    description: '偏少女粉的杂志感主题，柔和又醒目。',
+    label: 'sunset',
+    description: 'sunset',
     defaultMode: 'light',
     highlight: {
       light: '/themes/sunset/highlight-light.css',
@@ -44,8 +44,8 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
   {
     id: 'paper',
-    label: '纸墨灰',
-    description: '偏纸质阅读感的暖色主题（默认）。',
+    label: 'paper',
+    description: 'paper',
     defaultMode: 'light',
     highlight: {
       light: '/themes/paper/highlight-light.css',
@@ -54,8 +54,8 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
   {
     id: 'matcha',
-    label: '抹茶绿',
-    description: '清爽偏自然的抹茶系主题，适合长时间阅读。',
+    label: 'matcha',
+    description: 'matcha',
     defaultMode: 'light',
     highlight: {
       light: '/themes/matcha/highlight-light.css',

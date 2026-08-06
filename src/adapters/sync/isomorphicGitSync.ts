@@ -5,6 +5,7 @@ import { getWebLightningFs } from '@/adapters/storage/webStorage';
 import { isWeb } from '@/platform/detect';
 import { joinPath, normalizePath } from '@/utils/path';
 import { loadSyncRuntimeOptions } from '@/adapters/sync/runtime';
+import { t } from '@/i18n';
 import { createGitFsFromStorage, repoRelativePath } from './gitFs';
 import type {
   FileDiff,
@@ -60,7 +61,7 @@ async function isGitRepo(storagePath: string): Promise<boolean> {
 async function getRepoDir(storagePath: string): Promise<string> {
   const root = await findGitRootPath(storagePath);
   if (!root) {
-    throw new Error('当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。');
+    throw new Error(t('utils.sync.notGitRepo'));
   }
   return root;
 }
@@ -142,7 +143,7 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
           behind: 0,
           hasRemote: false,
           hostname,
-          statusError: '笔记库目录不存在',
+          statusError: t('utils.sync.libraryMissing'),
         };
       }
 
@@ -185,7 +186,7 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
           statusError: null,
         };
       } catch (error) {
-        const message = error instanceof Error ? error.message : '读取 Git 状态失败';
+        const message = error instanceof Error ? error.message : t('settings.sync.readStatusFailed');
         return {
           isRepo: true,
           remoteUrl: null,
@@ -221,7 +222,7 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
       const dir = await getRepoDir(storagePath);
       const changedFiles = await collectChangedMdFiles(dir);
       if (changedFiles.length === 0) {
-        throw new Error('没有需要提交的内容');
+        throw new Error(t('utils.sync.nothingToCommit'));
       }
 
       const fs = getGitFs(dir);

@@ -16,10 +16,7 @@ class DismissibleSheetScaffold extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: () => Navigator.of(context).maybePop(),
         ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: sheet,
-        ),
+        Align(alignment: Alignment.bottomCenter, child: sheet),
       ],
     );
   }
@@ -46,8 +43,10 @@ class SheetDragArea extends StatelessWidget {
 
   void _dragUpdate(DragUpdateDetails details, double screenHeight) {
     if (!controller.isAttached || screenHeight <= 0) return;
-    final next = (controller.size - details.delta.dy / screenHeight)
-        .clamp(minChildSize, maxChildSize);
+    final next = (controller.size - details.delta.dy / screenHeight).clamp(
+      minChildSize,
+      maxChildSize,
+    );
     controller.jumpTo(next);
   }
 
@@ -60,9 +59,15 @@ class SheetDragArea extends StatelessWidget {
 
     late final double target;
     if (vy < -280) {
-      target = sizes.firstWhere((s) => s > size + 0.02, orElse: () => maxChildSize);
+      target = sizes.firstWhere(
+        (s) => s > size + 0.02,
+        orElse: () => maxChildSize,
+      );
     } else if (vy > 280) {
-      target = sizes.lastWhere((s) => s < size - 0.02, orElse: () => minChildSize);
+      target = sizes.lastWhere(
+        (s) => s < size - 0.02,
+        orElse: () => minChildSize,
+      );
     } else {
       target = sizes.reduce(
         (a, b) => (a - size).abs() <= (b - size).abs() ? a : b,

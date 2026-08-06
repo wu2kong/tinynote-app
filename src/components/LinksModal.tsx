@@ -3,6 +3,8 @@ import { Copy, ExternalLink } from 'lucide-react';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { showToast } from './Toast';
+import { t } from '@/i18n';
+import { useI18n } from '@/i18n/useI18n';
 
 interface LinksModalProps {
   open: boolean;
@@ -13,14 +15,14 @@ interface LinksModalProps {
 const copyLink = async (url: string) => {
   try {
     await writeText(url);
-    showToast('链接已复制');
+    showToast(t('links.copied'));
     return;
   } catch {
     try {
       await navigator.clipboard.writeText(url);
-      showToast('链接已复制');
+      showToast(t('links.copied'));
     } catch {
-      showToast('复制失败');
+      showToast(t('links.copyFailed'));
     }
   }
 };
@@ -29,17 +31,19 @@ const openLink = async (url: string) => {
   try {
     await openUrl(url);
   } catch {
-    showToast('无法打开链接');
+    showToast(t('links.openFailed'));
   }
 };
 
 const LinksModal: React.FC<LinksModalProps> = ({ open, onClose, links }) => {
+  const { t } = useI18n();
+
   if (!open) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal links-modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">链接列表（{links.length}）</h3>
+        <h3 className="modal-title">{t('links.title', { count: links.length })}</h3>
         <div className="links-modal-list">
           {links.map((url) => (
             <div key={url} className="links-modal-item">
@@ -49,14 +53,14 @@ const LinksModal: React.FC<LinksModalProps> = ({ open, onClose, links }) => {
               <div className="links-modal-item-actions">
                 <button
                   className="links-modal-action-btn"
-                  title="复制链接"
+                  title={t('links.copyLink')}
                   onClick={() => copyLink(url)}
                 >
                   <Copy size={14} />
                 </button>
                 <button
                   className="links-modal-action-btn"
-                  title="打开链接"
+                  title={t('links.openLink')}
                   onClick={() => openLink(url)}
                 >
                   <ExternalLink size={14} />
@@ -67,7 +71,7 @@ const LinksModal: React.FC<LinksModalProps> = ({ open, onClose, links }) => {
         </div>
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={onClose}>
-            关闭
+            {t('common.close')}
           </button>
         </div>
       </div>

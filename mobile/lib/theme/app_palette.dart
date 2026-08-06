@@ -69,9 +69,14 @@ class AppPalette extends ThemeExtension<AppPalette> {
         foregroundColor: title,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        systemOverlayStyle: isDark
-            ? SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent)
-            : SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
+        systemOverlayStyle:
+            isDark
+                ? SystemUiOverlayStyle.light.copyWith(
+                  statusBarColor: Colors.transparent,
+                )
+                : SystemUiOverlayStyle.dark.copyWith(
+                  statusBarColor: Colors.transparent,
+                ),
       ),
       dividerColor: border,
       cardColor: surface,

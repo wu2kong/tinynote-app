@@ -4,6 +4,7 @@ import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 import { isNoteSpaceDirectoryName } from './workspaceConfig';
+import { t } from '@/i18n';
 
 function storage() {
   return getStorageAdapter();
@@ -218,11 +219,11 @@ export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
   const sourceName = basename(normalizedSource).replace(/\.md$/, '');
   const content = await storage().readTextFile(normalizedSource);
 
-  let copyName = `${sourceName} 副本`;
+  let copyName = t('common.copySuffix', { name: sourceName });
   let copyPath = joinPath(parentPath, `${copyName}.md`);
   let counter = 2;
   while (await storage().exists(copyPath)) {
-    copyName = `${sourceName} 副本 ${counter}`;
+    copyName = t('common.copySuffixN', { name: sourceName, n: counter });
     copyPath = joinPath(parentPath, `${copyName}.md`);
     counter++;
   }

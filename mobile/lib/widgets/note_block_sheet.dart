@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../screens/note_block_editor_screen.dart';
@@ -115,9 +116,9 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
     );
   }
 
-  void _copyContent({String label = '已复制内容'}) {
+  void _copyContent({String? label}) {
     Clipboard.setData(ClipboardData(text: _block.content));
-    showAppToast(context, label);
+    showAppToast(context, label ?? context.s.commonCopiedContent);
   }
 
   Future<void> _openEditor() async {
@@ -138,22 +139,25 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
   }
 
   Future<void> _deleteBlock() async {
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         final colors = context.colors;
         return AlertDialog(
-          title: const Text('删除笔记块'),
-          content: Text('确定删除「${_block.title}」吗？'),
+          title: Text(s.deleteNoteBlock),
+          content: Text(
+            s.fill(s.deleteNoteBlockMessage, {'name': _block.title}),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
+              child: Text(s.commonCancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: colors.danger),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('删除'),
+              child: Text(s.commonDelete),
             ),
           ],
         );
@@ -167,29 +171,30 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('删除失败：$error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.fill(s.deleteFailed, {'error': '$error'}))),
+      );
     }
   }
 
   Future<void> _showMoreMenu() async {
+    final s = context.s;
     final action = await showAppContextMenu<String>(
       context: context,
-      items: const [
+      items: [
         AppContextMenuItem(
           value: 'edit',
-          label: '编辑',
+          label: s.commonEdit,
           icon: LucideIcons.pencil,
         ),
         AppContextMenuItem(
           value: 'copy',
-          label: '复制内容',
+          label: s.commonCopyContent,
           icon: LucideIcons.copy,
         ),
         AppContextMenuItem(
           value: 'delete',
-          label: '删除',
+          label: s.commonDelete,
           icon: LucideIcons.trash2,
           danger: true,
         ),
@@ -209,6 +214,7 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final media = MediaQuery.of(context);
     final topInset =
         media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
@@ -216,7 +222,7 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
         media.padding.bottom > 0
             ? media.padding.bottom
             : media.viewPadding.bottom;
-    final snippetLabel = _snippetLabel(_block.contentType);
+    final snippetLabel = _snippetLabel(_block.contentType, s);
 
     return DismissibleSheetScaffold(
       sheet: DraggableScrollableSheet(
@@ -294,14 +300,15 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
                       _SnippetCard(
                         label: snippetLabel,
                         content: _block.content,
-                        copyLabel: _isFull ? '一键复制' : '复制',
+                        copyLabel: _isFull ? s.oneTapCopy : s.commonCopy,
                         tinted: _isFull,
-                        onCopy: () => _copyContent(label: '已复制内容'),
+                        onCopy:
+                            () => _copyContent(label: s.commonCopiedContent),
                       ),
                       if (_isFull) ...[
                         const SizedBox(height: 28),
                         Text(
-                          '笔记管理',
+                          s.noteManagement,
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -314,7 +321,7 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
                             Expanded(
                               child: _ManageButton(
                                 icon: LucideIcons.pencil,
-                                label: '编辑',
+                                label: s.commonEdit,
                                 onTap: _openEditor,
                               ),
                             ),
@@ -322,7 +329,7 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
                             Expanded(
                               child: _ManageButton(
                                 icon: LucideIcons.copy,
-                                label: '复制',
+                                label: s.commonCopy,
                                 onTap: () => _copyContent(),
                               ),
                             ),
@@ -330,7 +337,7 @@ class _NoteBlockSheetState extends State<NoteBlockSheet> {
                             Expanded(
                               child: _ManageButton(
                                 icon: LucideIcons.trash2,
-                                label: '删除',
+                                label: s.commonDelete,
                                 danger: true,
                                 onTap: _deleteBlock,
                               ),
@@ -376,6 +383,7 @@ class _SheetHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 12, 4),
@@ -411,7 +419,7 @@ class _SheetHeader extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '上拉打开详情',
+                            s.pullUpDetails,
                             style: TextStyle(fontSize: 13, color: colors.muted),
                           ),
                         ],
@@ -434,7 +442,7 @@ class _SheetHeader extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
                   icon: const Icon(LucideIcons.chevronLeft, size: 18),
-                  label: const Text('列表'),
+                  label: Text(s.commonList),
                 ),
                 Expanded(
                   child: GestureDetector(
@@ -443,7 +451,7 @@ class _SheetHeader extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Text(
-                        '下拉返回预览',
+                        s.pullDownPreview,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: colors.muted),
                       ),
@@ -519,6 +527,7 @@ class _SnippetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     return Container(
       width: double.infinity,
@@ -579,7 +588,7 @@ class _SnippetCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           SelectableText.rich(
-            TextSpan(children: _highlightContent(content, colors)),
+            TextSpan(children: _highlightContent(content, colors, s)),
             style: TextStyle(
               fontFamily: 'Menlo',
               fontSize: 13.5,
@@ -646,22 +655,31 @@ class _ManageButton extends StatelessWidget {
   }
 }
 
-String _snippetLabel(ContentType type) {
+String _snippetLabel(ContentType type, AppStrings s) {
   switch (type) {
     case ContentType.bash:
     case ContentType.shell:
-      return '命令片段';
+      return s.commandSnippet;
     case ContentType.markdown:
     case ContentType.text:
-      return '内容';
+      return s.contentSnippet;
     default:
-      return '代码片段';
+      return s.codeSnippet;
   }
 }
 
-List<InlineSpan> _highlightContent(String content, AppPalette colors) {
+List<InlineSpan> _highlightContent(
+  String content,
+  AppPalette colors,
+  AppStrings s,
+) {
   if (content.trim().isEmpty) {
-    return [TextSpan(text: '（空内容）', style: TextStyle(color: colors.muted))];
+    return [
+      TextSpan(
+        text: s.commonEmptyContent,
+        style: TextStyle(color: colors.muted),
+      ),
+    ];
   }
 
   final spans = <InlineSpan>[];

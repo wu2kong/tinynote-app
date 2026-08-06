@@ -6,11 +6,12 @@ import type {
   GitSyncStatus,
 } from '@/adapters/sync';
 import { assertNetworkAvailable, TimeoutError, withTimeout } from '@/utils/async';
+import { t } from '@/i18n';
 
 export type { FileDiff, GitChangedFile, GitChangeType, GitSyncStatus };
 
 const SYNC_NETWORK_TIMEOUT_MS = 60_000;
-const SYNC_TIMEOUT_MESSAGE = '同步操作超时（60 秒），请检查网络连接后重试';
+const syncTimeoutMessage = () => t('utils.sync.timeout');
 
 export function formatSyncError(error: unknown, fallback: string): string {
   if (error instanceof TimeoutError) {
@@ -24,13 +25,13 @@ export function formatSyncError(error: unknown, fallback: string): string {
       : fallback;
 
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-    return '当前处于离线状态，请检查网络连接';
+    return t('utils.sync.offline');
   }
 
   if (
     /timeout|timed out|超时|ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENOTFOUND|Could not resolve|Could not connect|Failed to connect|network|fetch failed|Load failed|unable to access/i.test(message)
   ) {
-    return '网络连接失败或响应超时，请检查网络后重试';
+    return t('utils.sync.networkFailed');
   }
 
   return message || fallback;
@@ -38,7 +39,7 @@ export function formatSyncError(error: unknown, fallback: string): string {
 
 async function runSyncNetworkOperation<T>(operation: () => Promise<T>): Promise<T> {
   assertNetworkAvailable();
-  return withTimeout(operation(), SYNC_NETWORK_TIMEOUT_MS, SYNC_TIMEOUT_MESSAGE);
+  return withTimeout(operation(), SYNC_NETWORK_TIMEOUT_MS, syncTimeoutMessage());
 }
 
 const DIFF_META_PREFIXES = ['+++', '---', '@@', 'diff ', 'index ', 'new file', 'deleted file'];
@@ -89,10 +90,10 @@ export function getChangeBadge(changeType: GitChangeType): 'A' | 'M' | 'D' {
 export function getChangeTooltip(changeType: GitChangeType, path: string): string {
   switch (changeType) {
     case 'added':
-      return `新增：${path}`;
+      return t('utils.sync.added', { path });
     case 'deleted':
-      return `删除：${path}`;
+      return t('utils.sync.deleted', { path });
     default:
-      return `变更：${path}`;
+      return t('utils.sync.modified', { path });
   }
 }

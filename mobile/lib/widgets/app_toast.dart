@@ -17,9 +17,7 @@ void showAppToast(
   if (overlay == null) {
     ScaffoldMessenger.maybeOf(context)
       ?..clearSnackBars()
-      ..showSnackBar(
-        SnackBar(content: Text(message), duration: duration),
-      );
+      ..showSnackBar(SnackBar(content: Text(message), duration: duration));
     return;
   }
 

@@ -55,17 +55,40 @@ List<NoteBlock> parseNoteBlocks(String content, {String? notebookPath}) {
     pos++;
 
     final frontmatter = fmLines.join('\n');
-    final titleMatch = RegExp(r'^title:\s*(.+)$', multiLine: true).firstMatch(frontmatter);
-    final tagsMatch = RegExp(r'^tags:\s*\[(.+)\]$', multiLine: true).firstMatch(frontmatter);
-    final contentTypeMatch = RegExp(r'^contentType:\s*(.+)$', multiLine: true).firstMatch(frontmatter);
-    final createdAtMatch = RegExp(r'^createdAt:\s*(.+)$', multiLine: true).firstMatch(frontmatter);
-    final updatedAtMatch = RegExp(r'^updatedAt:\s*(.+)$', multiLine: true).firstMatch(frontmatter);
+    final titleMatch = RegExp(
+      r'^title:\s*(.+)$',
+      multiLine: true,
+    ).firstMatch(frontmatter);
+    final tagsMatch = RegExp(
+      r'^tags:\s*\[(.+)\]$',
+      multiLine: true,
+    ).firstMatch(frontmatter);
+    final contentTypeMatch = RegExp(
+      r'^contentType:\s*(.+)$',
+      multiLine: true,
+    ).firstMatch(frontmatter);
+    final createdAtMatch = RegExp(
+      r'^createdAt:\s*(.+)$',
+      multiLine: true,
+    ).firstMatch(frontmatter);
+    final updatedAtMatch = RegExp(
+      r'^updatedAt:\s*(.+)$',
+      multiLine: true,
+    ).firstMatch(frontmatter);
 
     final title = titleMatch?.group(1)?.trim() ?? 'Untitled';
-    final tags = tagsMatch != null
-        ? tagsMatch.group(1)!.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList()
-        : <String>[];
-    final contentType = contentTypeFromString(contentTypeMatch?.group(1)?.trim() ?? 'text');
+    final tags =
+        tagsMatch != null
+            ? tagsMatch
+                .group(1)!
+                .split(',')
+                .map((t) => t.trim())
+                .where((t) => t.isNotEmpty)
+                .toList()
+            : <String>[];
+    final contentType = contentTypeFromString(
+      contentTypeMatch?.group(1)?.trim() ?? 'text',
+    );
     final now = DateTime.now().toUtc().toIso8601String();
     final createdAt = createdAtMatch?.group(1)?.trim() ?? now;
     final updatedAt = updatedAtMatch?.group(1)?.trim() ?? createdAt;
@@ -84,9 +107,15 @@ List<NoteBlock> parseNoteBlocks(String content, {String? notebookPath}) {
 
     blocks.add(
       NoteBlock(
-        id: notebookPath != null
-            ? stableNoteBlockId(notebookPath, blocks.length, createdAt)
-            : stableIdFromParts(['block', blocks.length.toString(), createdAt, title]),
+        id:
+            notebookPath != null
+                ? stableNoteBlockId(notebookPath, blocks.length, createdAt)
+                : stableIdFromParts([
+                  'block',
+                  blocks.length.toString(),
+                  createdAt,
+                  title,
+                ]),
         title: title,
         content: bodyContent,
         contentType: contentType,
@@ -101,18 +130,21 @@ List<NoteBlock> parseNoteBlocks(String content, {String? notebookPath}) {
 }
 
 String serializeNoteBlocks(List<NoteBlock> blocks) {
-  return blocks.map((block) {
-    final tags = block.tags.isNotEmpty ? '[${block.tags.join(', ')}]' : '[]';
-    final content = block.content.replaceAll(RegExp(r'^\n+|\n+$'), '');
-    return '---\n'
-        'title: ${block.title}\n'
-        'contentType: ${block.contentType.name}\n'
-        'tags: $tags\n'
-        'createdAt: ${block.createdAt}\n'
-        'updatedAt: ${block.updatedAt}\n'
-        '---\n'
-        '$content';
-  }).join('\n\n');
+  return blocks
+      .map((block) {
+        final tags =
+            block.tags.isNotEmpty ? '[${block.tags.join(', ')}]' : '[]';
+        final content = block.content.replaceAll(RegExp(r'^\n+|\n+$'), '');
+        return '---\n'
+            'title: ${block.title}\n'
+            'contentType: ${block.contentType.name}\n'
+            'tags: $tags\n'
+            'createdAt: ${block.createdAt}\n'
+            'updatedAt: ${block.updatedAt}\n'
+            '---\n'
+            '$content';
+      })
+      .join('\n\n');
 }
 
 NoteBlock createNoteBlock({

@@ -11,6 +11,8 @@ import { deleteChatSession, listChatSessions, saveChatSession } from '@/utils/ai
 import type { ChatMessage, ChatSession } from '@/utils/aiChatSessions';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
+import { useI18n } from '@/i18n/useI18n';
+import type { I18nParams } from '@/i18n';
 
 interface AIChatModalProps {
   open: boolean;
@@ -43,14 +45,16 @@ function loadStoredPanelSize(): { width: number; height: number } | null {
   return null;
 }
 
-function formatAIError(error: unknown): string {
+type Translate = (key: string, params?: I18nParams) => string;
+
+function formatAIError(error: unknown, translate: Translate): string {
   if (typeof error === 'string' && error.trim()) return error;
   if (error instanceof Error && error.message) return error.message;
   if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message;
-  return 'AI 请求失败';
+  return translate('aiChat.requestFailed');
 }
 
-function formatHistoryTime(ts: number): string {
+function formatHistoryTime(ts: number, translate: Translate): string {
   const date = new Date(ts);
   const now = new Date();
   const pad = (value: number) => String(value).padStart(2, '0');
@@ -58,18 +62,18 @@ function formatHistoryTime(ts: number): string {
   if (date.toDateString() === now.toDateString()) return time;
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return `昨天 ${time}`;
+  if (date.toDateString() === yesterday.toDateString()) return translate('aiChat.yesterday', { time });
   return `${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 /** 请求耗时展示：<10s → X.X秒，>=10s → X秒，>=60s → X分Y秒；两端时间戳齐全才返回。 */
-function formatDuration(startedAt?: number, completedAt?: number): string | null {
+function formatDuration(startedAt: number | undefined, completedAt: number | undefined, translate: Translate): string | null {
   if (typeof startedAt !== 'number' || typeof completedAt !== 'number') return null;
   const seconds = (completedAt - startedAt) / 1000;
   if (!Number.isFinite(seconds) || seconds < 0) return null;
-  if (seconds < 10) return `${seconds.toFixed(1)}秒`;
-  if (seconds < 60) return `${Math.round(seconds)}秒`;
-  return `${Math.floor(seconds / 60)}分${Math.round(seconds % 60)}秒`;
+  if (seconds < 10) return translate('aiChat.durationSecondsPrecise', { seconds: seconds.toFixed(1) });
+  if (seconds < 60) return translate('aiChat.durationSeconds', { seconds: Math.round(seconds) });
+  return translate('aiChat.durationMinutes', { minutes: Math.floor(seconds / 60), seconds: Math.round(seconds % 60) });
 }
 
 /** `YYYY-MM-DD HH:mm:ss`，用于元数据行的悬浮提示。 */
@@ -91,9 +95,9 @@ const MarkdownCode: React.FC<React.ComponentPropsWithoutRef<'code'>> = ({ classN
   return <code className={`hljs${language ? ` language-${language}` : ''}`} dangerouslySetInnerHTML={{ __html: highlighted }} />;
 };
 
-const createSession = (): ChatSession => ({
+const createSession = (title: string): ChatSession => ({
   id: createId(),
-  title: '新对话',
+  title,
   messages: [],
   createdAt: Date.now(),
   updatedAt: Date.now(),
@@ -113,9 +117,10 @@ async function requestCompletionStream(
   model: string,
   messages: ChatMessage[],
   onDelta: (delta: string) => void,
+  translate: Translate,
   signal?: AbortSignal,
 ): Promise<void> {
-  if (!model) throw new Error('请先在设置中启用或填写一个模型');
+  if (!model) throw new Error(translate('aiChat.enableModelFirst'));
   const useResponsesApi = provider.id === 'opencode-zen' && model.startsWith('gpt-');
   const requestMessages = messages.map(({ role, content }) => ({ role, content }));
 
@@ -139,8 +144,8 @@ async function requestCompletionStream(
     },
     body: JSON.stringify(useResponsesApi ? { model, input: requestMessages, stream: true } : { model, messages: requestMessages, stream: true }),
   });
-  if (!response.ok) throw new Error(`AI 请求失败（HTTP ${response.status}）`);
-  if (!response.body) throw new Error('浏览器不支持流式响应');
+  if (!response.ok) throw new Error(`${translate('aiChat.requestFailed')} (HTTP ${response.status})`);
+  if (!response.body) throw new Error(translate('aiChat.streamUnsupported'));
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let pending = '';
@@ -163,7 +168,8 @@ async function requestCompletionStream(
 }
 
 const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => [createSession()]);
+  const { t } = useI18n();
+  const [sessions, setSessions] = useState<ChatSession[]>(() => [createSession(t('aiChat.chatTitle'))]);
   const [activeSessionId, setActiveSessionId] = useState(() => sessions[0].id);
   const [input, setInput] = useState('');
   const [showHistory, setShowHistory] = useState(false);
@@ -208,7 +214,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
     models: getEnabledModels(provider).filter((model) => model.toLowerCase().includes(modelSearch.trim().toLowerCase())),
   })).filter(({ models }) => models.length > 0), [modelSearch, providers]);
 
-  const activeModelLabel = selectedModel?.model ?? '选择模型';
+  const activeModelLabel = selectedModel?.model ?? t('aiChat.chooseModel');
   const canCreateSession = !isSending && Boolean(activeSession) && activeSession.messages.length > 0;
   const activeError = activeSession ? sessionErrors[activeSession.id] : undefined;
 
@@ -420,7 +426,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         item.id === session.id && item.filePath !== filePath ? { ...item, filePath } : item
       )));
     }).catch((error) => {
-      console.warn('[ai-chat] 保存会话失败:', error);
+      console.warn('[ai-chat] Failed to save session:', error);
     });
   }, []);
 
@@ -462,7 +468,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
       const provider = selectedModel
         ? config.llmProviders.find((item) => item.id === selectedModel.providerId && item.enabled)
         : selectProvider(config.llmProviders);
-      if (!provider) throw new Error('请先在设置中启用一个已填写 API Key 的大模型服务');
+      if (!provider) throw new Error(t('aiChat.enableProviderFirst'));
       const model = selectedModel?.model ?? getProviderModel(provider);
       assistantMessage.model = model;
       assistantMessage.startedAt = Date.now();
@@ -489,10 +495,10 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
           streamDirtyRef.current = false;
           persist(); // 流式期间节流落盘
         }
-      }, abortController.signal);
+      }, t, abortController.signal);
     } catch (error) {
       if (currentRequestRef.current === requestId) {
-        const message = formatAIError(error);
+        const message = formatAIError(error, t);
         showToast(message);
         setSessionErrors((current) => ({ ...current, [sessionId]: message }));
       }
@@ -518,7 +524,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         } : session)));
       }
     }
-  }, [clearSessionError, persistSession, selectedModel]);
+  }, [clearSessionError, persistSession, selectedModel, t]);
 
   const sendMessage = () => {
     const content = input.trim();
@@ -567,13 +573,13 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         setCopiedMessageId((current) => (current === message.id ? null : current));
       }, 1500);
     } catch {
-      showToast('复制失败');
+      showToast(t('aiChat.copyFailed'));
     }
   };
 
   const createNewSession = () => {
     if (!canCreateSession) return;
-    const session = createSession();
+    const session = createSession(t('aiChat.chatTitle'));
     setSessions((current) => [session, ...current]);
     setActiveSessionId(session.id);
     setShowHistory(false);
@@ -585,7 +591,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
     if (target.filePath) void deleteChatSession(target.filePath);
     clearSessionError(target.id);
     const remaining = sessionsRef.current.filter((session) => session.id !== target.id);
-    const nextSessions = remaining.length > 0 ? remaining : [createSession()];
+    const nextSessions = remaining.length > 0 ? remaining : [createSession(t('aiChat.chatTitle'))];
     sessionsRef.current = nextSessions;
     setSessions(nextSessions);
     if (target.id === activeSessionId) setActiveSessionId(nextSessions[0].id);
@@ -605,7 +611,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         ref={panelRef}
         className={`ai-chat-modal ${isDragging ? 'dragging' : ''}`}
         style={panelStyle}
-        aria-label="AI 对话"
+        aria-label={t('aiChat.ariaLabel')}
         onClick={(event) => event.stopPropagation()}
       >
         <header className="ai-chat-header" onPointerDown={(event) => {
@@ -625,30 +631,30 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
               className="ai-chat-icon-btn"
               onClick={createNewSession}
               disabled={!canCreateSession}
-              title={canCreateSession ? '新建对话' : '当前已是空白会话'}
+              title={canCreateSession ? t('aiChat.newChat') : t('aiChat.blankChat')}
             >
               <SquarePen size={16} />
             </button>
             <button type="button" className={`ai-chat-session-trigger ${showHistory ? 'open' : ''}`} onClick={() => setShowHistory((value) => !value)}>
-              <span>{activeSession?.title || '新对话'}</span><ChevronDown size={16} />
+              <span>{activeSession?.title || t('aiChat.chatTitle')}</span><ChevronDown size={16} />
             </button>
           </div>
           <div className="ai-chat-header-actions">
-            <button type="button" className="ai-chat-icon-btn" onClick={onClose} title="关闭"><Minus size={18} /></button>
+            <button type="button" className="ai-chat-icon-btn" onClick={onClose} title={t('common.close')}><Minus size={18} /></button>
           </div>
         </header>
 
         <div className="ai-chat-body">
           {showHistory && (
             <aside className="ai-chat-history">
-              <div className="ai-chat-history-title">历史会话</div>
+              <div className="ai-chat-history-title">{t('aiChat.history')}</div>
               {sessions.slice().sort((a, b) => b.updatedAt - a.updatedAt).map((session) => (
                 <div className={`ai-chat-history-item ${session.id === activeSession?.id ? 'active' : ''}`} key={session.id}>
                   <button type="button" onClick={() => { setActiveSessionId(session.id); setShowHistory(false); }}>
                     <span className="ai-chat-history-name">{session.title}</span>
-                    <span className="ai-chat-history-time">{formatHistoryTime(session.updatedAt)}</span>
+                    <span className="ai-chat-history-time">{formatHistoryTime(session.updatedAt, t)}</span>
                   </button>
-                  <button type="button" className="ai-chat-history-delete" onClick={() => setPendingDelete(session)} title="删除会话"><Trash2 size={14} /></button>
+                  <button type="button" className="ai-chat-history-delete" onClick={() => setPendingDelete(session)} title={t('aiChat.deleteSession')}><Trash2 size={14} /></button>
                 </div>
               ))}
             </aside>
@@ -658,7 +664,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
             <div className="ai-chat-messages-wrap">
               <div className="ai-chat-messages" ref={messagesRef} onScroll={handleMessagesScroll}>
                 {activeSession?.messages.length === 0 ? (
-                  <div className="ai-chat-empty"><Bot size={30} /><p>AI问答，探索知识海洋</p><span>从下方输入框开始，AI 会基于已配置的模型回答。</span></div>
+                  <div className="ai-chat-empty"><Bot size={30} /><p>{t('aiChat.emptyTitle')}</p><span>{t('aiChat.emptyDesc')}</span></div>
                 ) : activeSession?.messages.map((message, index) => {
                   const isLast = index === activeSession.messages.length - 1;
                   const isStreamingThis = isSending && message.role === 'assistant' && isLast;
@@ -669,30 +675,30 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                           ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: MarkdownCode }}>{message.content}</ReactMarkdown>
                           : message.content}
                         {isStreamingThis && (message.content.length === 0 ? (
-                          <span className="ai-thinking" aria-label="正在思考">思考中 {thinkingSeconds}秒</span>
+                          <span className="ai-thinking" aria-label={t('aiChat.thinking', { seconds: thinkingSeconds })}>{t('aiChat.thinking', { seconds: thinkingSeconds })}</span>
                         ) : (
-                          <span className="ai-stream-cursor" aria-label="正在生成" />
+                          <span className="ai-stream-cursor" aria-label={t('aiChat.generating')} />
                         ))}
                         {message.role === 'assistant' && !isStreamingThis && (
                           <div className="ai-chat-message-footer">
                             <div className="ai-chat-message-actions">
-                              <button type="button" onClick={() => void copyMessage(message)} title="复制">
+                              <button type="button" onClick={() => void copyMessage(message)} title={t('aiChat.copy')}>
                                 {copiedMessageId === message.id ? <Check size={13} className="copied" /> : <Copy size={13} />}
                               </button>
                               {isLast && (
-                                <button type="button" onClick={() => regenerateMessage(message.id)} title="重新生成">
+                                <button type="button" onClick={() => regenerateMessage(message.id)} title={t('aiChat.regenerate')}>
                                   <RefreshCw size={13} />
                                 </button>
                               )}
                             </div>
-                            {message.content && (message.model || formatDuration(message.startedAt, message.completedAt)) && (
+                            {message.content && (message.model || formatDuration(message.startedAt, message.completedAt, t)) && (
                               <div
                                 className="ai-chat-message-meta"
                                 title={message.startedAt && message.completedAt ? `${formatDateTime(message.startedAt)} → ${formatDateTime(message.completedAt)}` : undefined}
                               >
                                 {message.model && <span className="ai-chat-meta-model">{message.model}</span>}
-                                {message.model && formatDuration(message.startedAt, message.completedAt) && <span className="ai-chat-meta-sep">·</span>}
-                                {formatDuration(message.startedAt, message.completedAt) && <span className="ai-chat-meta-duration">{formatDuration(message.startedAt, message.completedAt)}</span>}
+                                {message.model && formatDuration(message.startedAt, message.completedAt, t) && <span className="ai-chat-meta-sep">·</span>}
+                                {formatDuration(message.startedAt, message.completedAt, t) && <span className="ai-chat-meta-duration">{formatDuration(message.startedAt, message.completedAt, t)}</span>}
                               </div>
                             )}
                           </div>
@@ -705,14 +711,14 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                   <div className="ai-chat-error">
                     <AlertCircle size={14} />
                     <span>{activeError}</span>
-                    <button type="button" className="ai-chat-error-retry" onClick={() => retryFailedRequest(activeSession.id)}>重试</button>
-                    <button type="button" className="ai-chat-error-close" onClick={() => clearSessionError(activeSession.id)} title="关闭"><X size={12} /></button>
+                    <button type="button" className="ai-chat-error-retry" onClick={() => retryFailedRequest(activeSession.id)}>{t('common.retry')}</button>
+                    <button type="button" className="ai-chat-error-close" onClick={() => clearSessionError(activeSession.id)} title={t('common.close')}><X size={12} /></button>
                   </div>
                 )}
               </div>
               {!atBottom && (
                 <button type="button" className="ai-chat-scroll-bottom" onClick={() => scrollToBottom('smooth')}>
-                  <ArrowDown size={12} /> 回到底部
+                  <ArrowDown size={12} /> {t('aiChat.backToBottom')}
                 </button>
               )}
             </div>
@@ -723,7 +729,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                 onChange={(event) => setInput(event.target.value)}
                 onCompositionStart={() => { isComposingRef.current = true; }}
                 onCompositionEnd={() => { isComposingRef.current = false; }}
-                placeholder="输入消息，Enter 发送，Shift + Enter 换行"
+                placeholder={t('aiChat.placeholder')}
                 onKeyDown={(event) => {
                   const isComposing = isComposingRef.current || event.nativeEvent.isComposing || event.keyCode === 229;
                   if (event.key === 'Enter' && !event.shiftKey && !isComposing) {
@@ -740,16 +746,16 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                   {activeModelLabel}<ChevronDown size={14} />
                 </button>
                 {isSending ? (
-                  <button type="button" className="btn ai-chat-stop" onClick={stopGeneration} title="停止生成" aria-label="停止生成"><Square size={12} fill="currentColor" /></button>
+                  <button type="button" className="btn ai-chat-stop" onClick={stopGeneration} title={t('aiChat.stop')} aria-label={t('aiChat.stop')}><Square size={12} fill="currentColor" /></button>
                 ) : (
-                  <button type="button" className="btn btn-primary ai-chat-send" disabled={!input.trim()} onClick={sendMessage} title="发送"><Send size={16} /></button>
+                  <button type="button" className="btn btn-primary ai-chat-send" disabled={!input.trim()} onClick={sendMessage} title={t('aiChat.send')}><Send size={16} /></button>
                 )}
               </div>
               {showModels && (
                 <div className="ai-chat-model-menu" onClick={(event) => event.stopPropagation()}>
-                  <div className="ai-chat-model-search"><Search size={16} /><input autoFocus value={modelSearch} onChange={(event) => setModelSearch(event.target.value)} placeholder="搜索模型…" autoCorrect="off" autoCapitalize="off" spellCheck={false} /></div>
+                  <div className="ai-chat-model-search"><Search size={16} /><input autoFocus value={modelSearch} onChange={(event) => setModelSearch(event.target.value)} placeholder={t('aiChat.searchModel')} autoCorrect="off" autoCapitalize="off" spellCheck={false} /></div>
                   <div className="ai-chat-model-options">
-                    {filteredProviders.length === 0 ? <div className="ai-chat-model-none">未找到可用模型</div> : filteredProviders.map(({ provider, models }) => (
+                    {filteredProviders.length === 0 ? <div className="ai-chat-model-none">{t('aiChat.noModels')}</div> : filteredProviders.map(({ provider, models }) => (
                       <div className="ai-chat-model-group" key={provider.id}>
                         <div className="ai-chat-model-group-title">{provider.id}</div>
                         {models.map((model) => <button type="button" className={selectedModel?.providerId === provider.id && selectedModel.model === model ? 'active' : ''} key={model} onClick={() => { setSelectedModel({ providerId: provider.id, model }); setShowModels(false); setModelSearch(''); }}>{model}</button>)}
@@ -777,8 +783,8 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
         onConfirm={confirmDeleteSession}
-        title="删除会话"
-        message={`确定删除会话「${pendingDelete?.title ?? ''}」吗？该操作不可恢复。`}
+        title={t('aiChat.deleteSession')}
+        message={t('aiChat.deleteSessionConfirm', { title: pendingDelete?.title ?? '' })}
       />
     </div>
   );

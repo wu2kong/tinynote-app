@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/note_parser.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/library_drawer.dart';
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       library: library,
       block: block,
       breadcrumb: _breadcrumb(space, notebook),
-      spaceName: space?.name ?? 'TinyNote 轻记',
+      spaceName: space?.name ?? context.s.appTitle,
       onDeleted: (deleted) async {
         if (_selectedBlockId == deleted.id) {
           setState(() => _selectedBlockId = null);
@@ -76,36 +77,43 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _createNoteBlock() async {
     try {
       if (library.currentNotebook == null) {
-        throw StateError('未选择笔记本');
+        throw StateError(context.s.noNotebookSelected);
       }
       final block = createNoteBlock();
       if (!mounted) return;
       await _openEditor(block: block, isNew: true);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('新建失败：$error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            context.s.fill(context.s.createFailed, {'error': '$error'}),
+          ),
+        ),
+      );
     }
   }
 
   Future<void> _confirmAndDelete(NoteBlock block) async {
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         final colors = context.colors;
         return AlertDialog(
-          title: const Text('删除笔记块'),
-          content: Text('确定删除「${block.title}」吗？'),
+          title: Text(s.deleteNoteBlock),
+          content: Text(
+            s.fill(s.deleteNoteBlockMessage, {'name': block.title}),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('取消'),
+              child: Text(s.commonCancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(backgroundColor: colors.danger),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('删除'),
+              child: Text(s.commonDelete),
             ),
           ],
         );
@@ -119,14 +127,16 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() => _selectedBlockId = null);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('已删除「${block.title}」')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.fill(s.deletedNoteBlock, {'name': block.title})),
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('删除失败：$error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.fill(s.deleteFailed, {'error': '$error'}))),
+      );
     }
   }
 
@@ -158,6 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     if (library.loading && !library.ready) {
       return Scaffold(
@@ -168,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               CircularProgressIndicator(color: colors.accent),
               const SizedBox(height: 12),
-              Text('正在初始化笔记库…', style: TextStyle(color: colors.body)),
+              Text(s.initializingLibrary, style: TextStyle(color: colors.body)),
             ],
           ),
         ),
@@ -195,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: colors.accent),
                   onPressed: library.resetAndRetry,
-                  child: const Text('重试'),
+                  child: Text(s.commonRetry),
                 ),
               ],
             ),
@@ -206,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final notebook = library.currentNotebook;
     final space = library.currentSpace;
-    final spaceName = space?.name ?? 'TinyNote 轻记';
+    final spaceName = space?.name ?? s.appTitle;
 
     final showFab = notebook != null && !library.notebookLoading;
     final edgeWidth = MediaQuery.paddingOf(context).left + 72;
@@ -233,17 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      drawer: LibraryDrawer(
-        library: library,
-        onOpenNoteBlock: _openNoteBlock,
-      ),
+      drawer: LibraryDrawer(library: library, onOpenNoteBlock: _openNoteBlock),
       // Default drawer needs ~50% width dragged; use a short custom edge swipe instead.
       drawerEnableOpenDragGesture: false,
       floatingActionButton:
           showFab
               ? FloatingActionButton(
                 onPressed: _createNoteBlock,
-                tooltip: '新建笔记块',
+                tooltip: s.newNoteBlock,
                 backgroundColor: colors.accent,
                 foregroundColor: Colors.white,
                 elevation: 4,
@@ -361,6 +369,7 @@ class _NotesScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     return SafeArea(
       bottom: false,
@@ -371,7 +380,7 @@ class _NotesScaffold extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: '打开目录',
+                  tooltip: s.openDirectory,
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   style: IconButton.styleFrom(
                     backgroundColor: colors.surface,
@@ -438,7 +447,7 @@ class _NotesScaffold extends StatelessWidget {
               controller: searchController,
               onChanged: onQueryChanged,
               decoration: InputDecoration(
-                hintText: '搜索当前目录笔记',
+                hintText: s.searchCurrentNotebook,
                 hintStyle: TextStyle(color: colors.muted, fontSize: 14),
                 prefixIcon: Icon(
                   LucideIcons.search,
@@ -485,7 +494,10 @@ class _NotesScaffold extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  '${blocks.length == totalCount ? totalCount : blocks.length} 条笔记',
+                  s.fill(s.notesCount, {
+                    'count':
+                        '${blocks.length == totalCount ? totalCount : blocks.length}',
+                  }),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -494,12 +506,12 @@ class _NotesScaffold extends StatelessWidget {
                 ),
                 if (blocks.length != totalCount)
                   Text(
-                    ' / 共 $totalCount',
+                    s.fill(s.totalCountSuffix, {'count': '$totalCount'}),
                     style: TextStyle(fontSize: 12, color: colors.muted),
                   ),
                 const Spacer(),
                 Text(
-                  '左滑可删除',
+                  s.swipeLeftToDelete,
                   style: TextStyle(fontSize: 12, color: colors.muted),
                 ),
               ],
@@ -517,7 +529,9 @@ class _NotesScaffold extends StatelessWidget {
                           const SizedBox(height: 100),
                           Center(
                             child: Text(
-                              query.isEmpty ? '此笔记本暂无笔记块' : '没有匹配的笔记',
+                              query.isEmpty
+                                  ? s.emptyNotebook
+                                  : s.noMatchingNotes,
                               style: TextStyle(color: colors.body),
                             ),
                           ),
@@ -530,7 +544,7 @@ class _NotesScaffold extends StatelessWidget {
                                 ),
                                 onPressed: onCreate,
                                 icon: const Icon(LucideIcons.plus, size: 18),
-                                label: const Text('新建笔记块'),
+                                label: Text(s.newNoteBlock),
                               ),
                             ),
                           ],
@@ -581,6 +595,7 @@ class _SwipeDeleteTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     return Slidable(
       key: key,
@@ -601,14 +616,14 @@ class _SwipeDeleteTile extends StatelessWidget {
                 color: colors.danger,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.trash2, size: 20, color: Colors.white),
-                  SizedBox(height: 4),
+                  const Icon(LucideIcons.trash2, size: 20, color: Colors.white),
+                  const SizedBox(height: 4),
                   Text(
-                    '删除',
-                    style: TextStyle(
+                    s.commonDelete,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -633,6 +648,7 @@ class _EmptyScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
 
     return SafeArea(
       child: Column(
@@ -642,7 +658,7 @@ class _EmptyScaffold extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  tooltip: '打开目录',
+                  tooltip: s.openDirectory,
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   style: IconButton.styleFrom(
                     backgroundColor: colors.surface,
@@ -660,7 +676,7 @@ class _EmptyScaffold extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    spaceName ?? 'TinyNote 轻记',
+                    spaceName ?? s.appTitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -687,7 +703,7 @@ class _EmptyScaffold extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '零碎笔记整理',
+                      s.appTagline,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -697,7 +713,11 @@ class _EmptyScaffold extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      spaceName == null ? '从左侧打开空间与目录' : '在「$spaceName」中选择笔记本',
+                      spaceName == null
+                          ? s.openSpaceAndFolders
+                          : s.fill(s.chooseNotebookInSpace, {
+                            'name': spaceName!,
+                          }),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 17,
@@ -707,7 +727,7 @@ class _EmptyScaffold extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '从屏幕左缘向右滑动打开目录，选择笔记本后即可浏览与编辑笔记块。',
+                      s.openDirectoryInstructions,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -719,7 +739,7 @@ class _EmptyScaffold extends StatelessWidget {
                     OutlinedButton.icon(
                       onPressed: () => Scaffold.of(context).openDrawer(),
                       icon: const Icon(LucideIcons.menu, size: 18),
-                      label: const Text('打开目录'),
+                      label: Text(s.openDirectory),
                     ),
                   ],
                 ),

@@ -1,4 +1,6 @@
 import type { RecentNotebookHistoryItem } from '@/types';
+import type { AppLocale } from '@/i18n';
+import { DEFAULT_LOCALE } from '@/i18n';
 
 export type LLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek' | 'custom';
 
@@ -28,6 +30,7 @@ export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig[] = [
 export interface AppConfig {
   isDarkTheme: boolean;
   colorThemeId: string;
+  displayLanguage: AppLocale;
   isSidebarCollapsed: boolean;
   zoomLevel: number;
   showAppBar: boolean;
@@ -57,6 +60,7 @@ export interface AppConfig {
 export const DEFAULT_CONFIG: AppConfig = {
   isDarkTheme: false,
   colorThemeId: 'paper',
+  displayLanguage: DEFAULT_LOCALE,
   isSidebarCollapsed: false,
   zoomLevel: 1,
   showAppBar: true,

@@ -16,22 +16,24 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { readText } from '@tauri-apps/plugin-clipboard-manager';
 import { parseNoteBlocks } from '@/utils/noteParser';
 import { ContentType } from '@/types';
+import { useI18n } from '@/i18n/useI18n';
 
-const NOTE_TYPES: { contentType: ContentType; label: string }[] = [
-  { contentType: 'text', label: '新增纯文本笔记' },
-  { contentType: 'markdown', label: '新增Markdown笔记' },
-  { contentType: 'json', label: '新增JSON笔记' },
-  { contentType: 'ini', label: '新增INI笔记' },
-  { contentType: 'yaml', label: '新增YAML笔记' },
-  { contentType: 'xml', label: '新增XML笔记' },
-  { contentType: 'css', label: '新增CSS笔记' },
-  { contentType: 'bash', label: '新增Bash笔记' },
-  { contentType: 'sql', label: '新增SQL笔记' },
-  { contentType: 'python', label: '新增Python笔记' },
-  { contentType: 'go', label: '新增Golang笔记' }
+const NOTE_TYPES: { contentType: ContentType; labelKey: string }[] = [
+  { contentType: 'text', labelKey: 'note.addText' },
+  { contentType: 'markdown', labelKey: 'note.addMarkdown' },
+  { contentType: 'json', labelKey: 'note.addJson' },
+  { contentType: 'ini', labelKey: 'note.addIni' },
+  { contentType: 'yaml', labelKey: 'note.addYaml' },
+  { contentType: 'xml', labelKey: 'note.addXml' },
+  { contentType: 'css', labelKey: 'note.addCss' },
+  { contentType: 'bash', labelKey: 'note.addBash' },
+  { contentType: 'sql', labelKey: 'note.addSql' },
+  { contentType: 'python', labelKey: 'note.addPython' },
+  { contentType: 'go', labelKey: 'note.addGo' }
 ];
 
 const NotePanel: React.FC = () => {
+  const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const currentNoteBlock = useStore((s) => s.currentNoteBlock);
   const viewMode = useStore((s) => s.viewMode);
@@ -132,7 +134,7 @@ const NotePanel: React.FC = () => {
   if (!currentNotebook) {
     return (
       <div className="note-panel">
-        <div className="note-panel-empty">选择笔记本以查看笔记</div>
+        <div className="note-panel-empty">{t('note.selectNotebook')}</div>
       </div>
     );
   }
@@ -145,7 +147,7 @@ const NotePanel: React.FC = () => {
         <button
           className="left-panel-toggle"
           onClick={toggleDirectoryPanel}
-          title={leftPanelVisible ? '隐藏侧边栏' : '显示侧边栏'}
+          title={leftPanelVisible ? t('app.hideSidebar') : t('app.showSidebar')}
         >
           {leftPanelVisible ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </button>
@@ -153,21 +155,21 @@ const NotePanel: React.FC = () => {
           <button
             className={`view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
-            title="列表视图"
+            title={t('note.listView')}
           >
             <List size={16} />
           </button>
           <button
             className={`view-toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
             onClick={() => setViewMode('card')}
-            title="卡片视图"
+            title={t('note.cardView')}
           >
             <LayoutGrid size={16} />
           </button>
           <button
             className={`view-toggle-btn ${viewMode === 'compact' ? 'active' : ''}`}
             onClick={() => setViewMode('compact')}
-            title="紧凑视图"
+            title={t('note.compactView')}
           >
             <AlignJustify size={16} />
           </button>
@@ -176,7 +178,7 @@ const NotePanel: React.FC = () => {
           <Search size={14} />
           <input
             type="text"
-            placeholder="搜索笔记..."
+            placeholder={t('note.searchNote')}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             autoCorrect="off"
@@ -189,8 +191,8 @@ const NotePanel: React.FC = () => {
               className="search-clear-btn"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setSearchText('')}
-              title="清空搜索"
-              aria-label="清空搜索"
+              title={t('directory.clearSearch')}
+              aria-label={t('directory.clearSearch')}
             >
               <X size={14} />
             </button>
@@ -225,21 +227,21 @@ const NotePanel: React.FC = () => {
 
       <button className="note-panel-add" onClick={openAddMenu}>
         <Plus size={16} />
-        添加笔记
+        {t('note.addNote')}
       </button>
 
       {contextMenu && (
         <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
-          {NOTE_TYPES.map(({ contentType, label }) => (
+          {NOTE_TYPES.map(({ contentType, labelKey }) => (
             <button key={contentType} className="context-menu-item" onClick={() => handleAddNoteBlock(contentType)}>
               <Plus size={14} />
-              {label}
+              {t(labelKey)}
             </button>
           ))}
             {clipboardHasNote && (
               <button className="context-menu-item" onClick={handlePasteNote}>
                 <ClipboardPaste size={14} />
-                粘贴笔记
+                {t('note.pasteNote')}
               </button>
             )}
         </ContextMenuPortal>

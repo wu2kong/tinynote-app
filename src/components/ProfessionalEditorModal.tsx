@@ -22,6 +22,7 @@ import { format as formatSql } from 'sql-formatter';
 import { X, Braces, Eye, EyeOff } from 'lucide-react';
 import { ContentType } from '@/types';
 import { showToast } from './Toast';
+import { useI18n } from '@/i18n/useI18n';
 
 interface ProfessionalEditorModalProps {
   open: boolean;
@@ -33,15 +34,20 @@ interface ProfessionalEditorModalProps {
   onClose: () => void;
 }
 
-const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
-  text: '纯文本', json: 'JSON', xml: 'XML', ini: 'INI', bash: 'Bash', shell: 'Shell', sql: 'SQL',
-  javascript: 'JavaScript', typescript: 'TypeScript', python: 'Python', java: 'Java',
-  go: 'Go', rust: 'Rust', yaml: 'YAML', markdown: 'Markdown', css: 'CSS', html: 'HTML',
+const CONTENT_TYPE_LABEL_KEYS: Record<ContentType, string> = {
+  text: 'property.contentTypes.text', json: 'property.contentTypes.json', xml: 'property.contentTypes.xml',
+  ini: 'property.contentTypes.ini', bash: 'property.contentTypes.bash', shell: 'property.contentTypes.shell',
+  sql: 'property.contentTypes.sql', javascript: 'property.contentTypes.javascript',
+  typescript: 'property.contentTypes.typescript', python: 'property.contentTypes.python',
+  java: 'property.contentTypes.java', go: 'property.contentTypes.go', rust: 'property.contentTypes.rust',
+  yaml: 'property.contentTypes.yaml', markdown: 'property.contentTypes.markdown',
+  css: 'property.contentTypes.css', html: 'property.contentTypes.html',
 };
 
 const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
   open, title, content, contentType, isDarkTheme, onChange, onClose,
 }) => {
+  const { t } = useI18n();
   const [previewVisible, setPreviewVisible] = useState(true);
   const extensions = useMemo(() => {
     const inputAttrs = EditorView.contentAttributes.of({ spellcheck: 'false', autocorrect: 'off', autocapitalize: 'off' });
@@ -128,38 +134,38 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
   const formatJson = () => {
     try {
       onChange(`${JSON.stringify(JSON.parse(content), null, 2)}\n`);
-      showToast('JSON 已格式化');
+      showToast(t('editor.jsonFormatted'));
     } catch {
-      showToast('JSON 格式无效，无法格式化');
+      showToast(t('editor.jsonInvalid'));
     }
   };
 
   const formatSQL = () => {
     try {
       onChange(formatSql(content, { language: 'sql' }));
-      showToast('SQL 已格式化');
+      showToast(t('editor.sqlFormatted'));
     } catch {
-      showToast('SQL 格式无效，无法格式化');
+      showToast(t('editor.sqlInvalid'));
     }
   };
 
   return (
     <div className="modal-overlay professional-editor-overlay" onClick={onClose}>
-      <section className="professional-editor-modal" onClick={(event) => event.stopPropagation()} aria-label="专业编辑器">
+      <section className="professional-editor-modal" onClick={(event) => event.stopPropagation()} aria-label={t('editor.ariaLabel')}>
         <header className="professional-editor-header">
           <div>
-            <h3>{title || '未命名笔记'}</h3>
-            <span>{CONTENT_TYPE_LABELS[contentType]} 专业编辑器 · 自动保存，关闭弹窗不会丢失内容</span>
+            <h3>{title || t('editor.untitledNote')}</h3>
+            <span>{t('editor.subtitle', { type: t(CONTENT_TYPE_LABEL_KEYS[contentType]) })}</span>
           </div>
           <div className="professional-editor-actions">
             {contentType === 'json' && (
               <button type="button" className="btn btn-secondary btn-sm" onClick={formatJson}>
-                <Braces size={14} />格式化 JSON
+                <Braces size={14} />{t('editor.formatJson')}
               </button>
             )}
             {contentType === 'sql' && (
               <button type="button" className="btn btn-secondary btn-sm" onClick={formatSQL}>
-                <Braces size={14} />格式化 SQL
+                <Braces size={14} />{t('editor.formatSql')}
               </button>
             )}
             {contentType === 'markdown' && (
@@ -169,10 +175,10 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
                 onClick={() => setPreviewVisible((visible) => !visible)}
               >
                 {previewVisible ? <EyeOff size={14} /> : <Eye size={14} />}
-                {previewVisible ? '关闭预览' : '开启预览'}
+                {previewVisible ? t('editor.closePreview') : t('editor.openPreview')}
               </button>
             )}
-            <button type="button" className="icon-btn" onClick={onClose} title="关闭专业编辑器" aria-label="关闭专业编辑器">
+            <button type="button" className="icon-btn" onClick={onClose} title={t('editor.closeEditor')} aria-label={t('editor.closeEditor')}>
               <X size={18} />
             </button>
           </div>
@@ -190,8 +196,8 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
             />
           </div>
           {contentType === 'markdown' && previewVisible && (
-            <aside className="professional-editor-preview" aria-label="Markdown 预览">
-              <div className="professional-editor-preview-title">预览</div>
+            <aside className="professional-editor-preview" aria-label={t('editor.markdownPreview')}>
+              <div className="professional-editor-preview-title">{t('editor.preview')}</div>
               <article className="markdown-preview">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
               </article>

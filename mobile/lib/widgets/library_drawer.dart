@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../core/file_system.dart';
 import '../core/global_search.dart';
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../screens/settings_screen.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
@@ -12,11 +13,7 @@ import 'global_search_sheet.dart';
 import 'name_prompt_dialog.dart';
 
 class LibraryDrawer extends StatelessWidget {
-  const LibraryDrawer({
-    super.key,
-    required this.library,
-    this.onOpenNoteBlock,
-  });
+  const LibraryDrawer({super.key, required this.library, this.onOpenNoteBlock});
 
   final LibraryService library;
   final ValueChanged<NoteBlock>? onOpenNoteBlock;
@@ -31,11 +28,12 @@ class LibraryDrawer extends StatelessWidget {
   static const _createSpaceValue = '__create_space__';
 
   Future<void> _createSpace(BuildContext context) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '新建空间',
-      hint: '空间名称',
-      confirmLabel: '新建',
+      title: s.createSpace,
+      hint: s.spaceName,
+      confirmLabel: s.commonCreate,
     );
     if (name == null || !context.mounted) return;
     try {
@@ -65,6 +63,7 @@ class LibraryDrawer extends StatelessWidget {
   Future<void> _showSpacePicker(BuildContext context) async {
     if (library.loading) return;
     final colors = context.colors;
+    final s = context.s;
     final value = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: colors.surface,
@@ -90,7 +89,7 @@ class LibraryDrawer extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          '切换空间',
+                          s.switchSpace,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -108,13 +107,14 @@ class LibraryDrawer extends StatelessWidget {
                           if (index < library.spaces.length) {
                             final space = library.spaces[index];
                             return GestureDetector(
-                              onLongPressStart: (details) => _showSpaceMenu(
-                                context,
-                                space,
-                                menuContext: itemContext,
-                                sheetContext: sheetContext,
-                                globalPosition: details.globalPosition,
-                              ),
+                              onLongPressStart:
+                                  (details) => _showSpaceMenu(
+                                    context,
+                                    space,
+                                    menuContext: itemContext,
+                                    sheetContext: sheetContext,
+                                    globalPosition: details.globalPosition,
+                                  ),
                               child: ListTile(
                                 dense: true,
                                 visualDensity: const VisualDensity(
@@ -127,32 +127,38 @@ class LibraryDrawer extends StatelessWidget {
                                 leading: Icon(
                                   LucideIcons.box,
                                   size: 16,
-                                  color: space.id == currentId
-                                      ? colors.accent
-                                      : colors.body,
+                                  color:
+                                      space.id == currentId
+                                          ? colors.accent
+                                          : colors.body,
                                 ),
                                 title: Text(
-                                  '${space.name} · ${countNotebooks(space.groups)} 本',
+                                  '${space.name} · ${s.fill(s.notebookCount, {'count': '${countNotebooks(space.groups)}'})}',
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: space.id == currentId
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: space.id == currentId
-                                        ? colors.accent
-                                        : colors.title,
+                                    fontWeight:
+                                        space.id == currentId
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                    color:
+                                        space.id == currentId
+                                            ? colors.accent
+                                            : colors.title,
                                   ),
                                 ),
-                                trailing: space.id == currentId
-                                    ? Icon(
-                                        LucideIcons.check,
-                                        size: 16,
-                                        color: colors.accent,
-                                      )
-                                    : null,
-                                onTap: () =>
-                                    Navigator.of(sheetContext).pop(space.id),
+                                trailing:
+                                    space.id == currentId
+                                        ? Icon(
+                                          LucideIcons.check,
+                                          size: 16,
+                                          color: colors.accent,
+                                        )
+                                        : null,
+                                onTap:
+                                    () => Navigator.of(
+                                      sheetContext,
+                                    ).pop(space.id),
                               ),
                             );
                           }
@@ -177,16 +183,17 @@ class LibraryDrawer extends StatelessWidget {
                                   color: colors.accent,
                                 ),
                                 title: Text(
-                                  '新建空间',
+                                  s.createSpace,
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: colors.accent,
                                   ),
                                 ),
-                                onTap: () => Navigator.of(
-                                  sheetContext,
-                                ).pop(_createSpaceValue),
+                                onTap:
+                                    () => Navigator.of(
+                                      sheetContext,
+                                    ).pop(_createSpaceValue),
                               ),
                               const SizedBox(height: 4),
                             ],
@@ -213,18 +220,19 @@ class LibraryDrawer extends StatelessWidget {
     BuildContext? sheetContext,
     Offset? globalPosition,
   }) async {
+    final s = context.s;
     final action = await showAppContextMenu<String>(
       context: menuContext ?? context,
       globalPosition: globalPosition,
-      items: const [
+      items: [
         AppContextMenuItem(
           value: 'rename',
-          label: '修改空间名',
+          label: s.renameSpace,
           icon: LucideIcons.pencil,
         ),
         AppContextMenuItem(
           value: 'delete',
-          label: '删除空间',
+          label: s.deleteSpace,
           icon: LucideIcons.trash2,
           danger: true,
         ),
@@ -240,12 +248,13 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _renameSpace(BuildContext context, Space space) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '修改空间名',
+      title: s.renameSpace,
       initialValue: space.name,
-      hint: '空间名称',
-      confirmLabel: '保存',
+      hint: s.spaceName,
+      confirmLabel: s.commonSave,
     );
     if (name == null || name == space.name || !context.mounted) return;
     try {
@@ -261,23 +270,25 @@ class LibraryDrawer extends StatelessWidget {
     BuildContext? sheetContext,
   }) async {
     final colors = context.colors;
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除空间'),
-        content: Text('确定删除空间「${space.name}」及其全部目录与笔记本吗？此操作不可恢复。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(s.deleteSpace),
+            content: Text(s.fill(s.deleteSpaceMessage, {'name': space.name})),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(s.commonCancel),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: colors.danger),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(s.commonDelete),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: colors.danger),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
     );
     if (confirmed != true || !context.mounted) return;
     try {
@@ -291,11 +302,12 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _createGroup(BuildContext context, String parentPath) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '新建目录',
-      hint: '目录名称',
-      confirmLabel: '新建',
+      title: s.createFolder,
+      hint: s.folderName,
+      confirmLabel: s.commonCreate,
     );
     if (name == null || !context.mounted) return;
     try {
@@ -306,11 +318,12 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _createNotebook(BuildContext context, String parentPath) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '新建笔记本',
-      hint: '笔记本名称',
-      confirmLabel: '新建',
+      title: s.createNotebook,
+      hint: s.notebookName,
+      confirmLabel: s.commonCreate,
     );
     if (name == null || !context.mounted) return;
     try {
@@ -322,11 +335,13 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _renameGroup(BuildContext context, Group group) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '重命名目录',
+      title: s.renameFolder,
       initialValue: group.name,
-      confirmLabel: '保存',
+      hint: s.folderName,
+      confirmLabel: s.commonSave,
     );
     if (name == null || name == group.name || !context.mounted) return;
     try {
@@ -337,11 +352,13 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _renameNotebook(BuildContext context, Notebook notebook) async {
+    final s = context.s;
     final name = await showNamePromptDialog(
       context,
-      title: '重命名笔记本',
+      title: s.renameNotebook,
       initialValue: notebook.name,
-      confirmLabel: '保存',
+      hint: s.notebookName,
+      confirmLabel: s.commonSave,
     );
     if (name == null || name == notebook.name || !context.mounted) return;
     try {
@@ -353,23 +370,25 @@ class LibraryDrawer extends StatelessWidget {
 
   Future<void> _confirmDeleteGroup(BuildContext context, Group group) async {
     final colors = context.colors;
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除目录'),
-        content: Text('确定删除目录「${group.name}」及其全部子目录与笔记本吗？此操作不可恢复。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(s.deleteFolder),
+            content: Text(s.fill(s.deleteFolderMessage, {'name': group.name})),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(s.commonCancel),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: colors.danger),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(s.commonDelete),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: colors.danger),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
     );
     if (confirmed != true || !context.mounted) return;
     try {
@@ -384,23 +403,27 @@ class LibraryDrawer extends StatelessWidget {
     Notebook notebook,
   ) async {
     final colors = context.colors;
+    final s = context.s;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('删除笔记本'),
-        content: Text('确定删除笔记本「${notebook.name}」吗？此操作不可恢复。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(s.deleteNotebook),
+            content: Text(
+              s.fill(s.deleteNotebookMessage, {'name': notebook.name}),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(s.commonCancel),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: colors.danger),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(s.commonDelete),
+              ),
+            ],
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: colors.danger),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('删除'),
-          ),
-        ],
-      ),
     );
     if (confirmed != true || !context.mounted) return;
     try {
@@ -433,17 +456,18 @@ class LibraryDrawer extends StatelessWidget {
   }
 
   Future<void> _showCreateMenu(BuildContext context, String parentPath) async {
+    final s = context.s;
     final action = await showAppContextMenu<String>(
       context: context,
-      items: const [
+      items: [
         AppContextMenuItem(
           value: 'group',
-          label: '新建目录',
+          label: s.createFolder,
           icon: LucideIcons.folderPlus,
         ),
         AppContextMenuItem(
           value: 'notebook',
-          label: '新建笔记本',
+          label: s.createNotebook,
           icon: LucideIcons.filePlus,
         ),
       ],
@@ -461,28 +485,29 @@ class LibraryDrawer extends StatelessWidget {
     Group group, {
     Offset? globalPosition,
   }) async {
+    final s = context.s;
     final action = await showAppContextMenu<String>(
       context: context,
       globalPosition: globalPosition,
-      items: const [
+      items: [
         AppContextMenuItem(
           value: 'group',
-          label: '新建子目录',
+          label: s.createSubfolder,
           icon: LucideIcons.folderPlus,
         ),
         AppContextMenuItem(
           value: 'notebook',
-          label: '新建笔记本',
+          label: s.createNotebook,
           icon: LucideIcons.filePlus,
         ),
         AppContextMenuItem(
           value: 'rename',
-          label: '重命名',
+          label: s.commonRename,
           icon: LucideIcons.pencil,
         ),
         AppContextMenuItem(
           value: 'delete',
-          label: '删除目录',
+          label: s.deleteFolder,
           icon: LucideIcons.trash2,
           danger: true,
         ),
@@ -506,18 +531,19 @@ class LibraryDrawer extends StatelessWidget {
     Notebook notebook, {
     Offset? globalPosition,
   }) async {
+    final s = context.s;
     final action = await showAppContextMenu<String>(
       context: context,
       globalPosition: globalPosition,
-      items: const [
+      items: [
         AppContextMenuItem(
           value: 'rename',
-          label: '重命名',
+          label: s.commonRename,
           icon: LucideIcons.pencil,
         ),
         AppContextMenuItem(
           value: 'delete',
-          label: '删除笔记本',
+          label: s.deleteNotebook,
           icon: LucideIcons.trash2,
           danger: true,
         ),
@@ -535,6 +561,7 @@ class LibraryDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final currentSpace = library.currentSpace;
 
     return Drawer(
@@ -555,7 +582,7 @@ class LibraryDrawer extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'TinyNote 轻记',
+                            s.appTitle,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -564,7 +591,7 @@ class LibraryDrawer extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '零碎笔记整理',
+                            s.appTagline,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -579,7 +606,7 @@ class LibraryDrawer extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _HeaderIconButton(
-                        tooltip: '刷新',
+                        tooltip: s.commonRefresh,
                         onPressed: library.loading ? null : library.refresh,
                         icon:
                             library.loading
@@ -597,7 +624,7 @@ class LibraryDrawer extends StatelessWidget {
                                 ),
                       ),
                       _HeaderIconButton(
-                        tooltip: '全局搜索',
+                        tooltip: s.globalSearch,
                         onPressed: () => _openGlobalSearch(context),
                         icon: Icon(
                           LucideIcons.search,
@@ -606,7 +633,7 @@ class LibraryDrawer extends StatelessWidget {
                         ),
                       ),
                       _HeaderIconButton(
-                        tooltip: '设置中心',
+                        tooltip: s.settingsCenter,
                         onPressed:
                             () => showSettingsSheet(
                               context: context,
@@ -628,7 +655,7 @@ class LibraryDrawer extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 24),
                 children: [
-                  const _SectionLabel('空间'),
+                  _SectionLabel(s.spaceSection),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: Material(
@@ -653,7 +680,7 @@ class LibraryDrawer extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  currentSpace?.name ?? '选择空间',
+                                  currentSpace?.name ?? s.chooseSpace,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 14,
@@ -667,7 +694,10 @@ class LibraryDrawer extends StatelessWidget {
                               ),
                               if (currentSpace != null) ...[
                                 Text(
-                                  '${countNotebooks(currentSpace.groups)} 本',
+                                  s.fill(s.notebookCount, {
+                                    'count':
+                                        '${countNotebooks(currentSpace.groups)}',
+                                  }),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: colors.muted,
@@ -696,7 +726,7 @@ class LibraryDrawer extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            '目录',
+                            s.foldersSection,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -707,7 +737,7 @@ class LibraryDrawer extends StatelessWidget {
                         ),
                         if (currentSpace != null)
                           IconButton(
-                            tooltip: '新建',
+                            tooltip: s.createNew,
                             visualDensity: VisualDensity.compact,
                             onPressed:
                                 () =>
@@ -728,7 +758,7 @@ class LibraryDrawer extends StatelessWidget {
                         vertical: 8,
                       ),
                       child: Text(
-                        '选择一个空间以浏览目录',
+                        s.chooseSpaceToBrowse,
                         style: TextStyle(color: colors.muted, fontSize: 13),
                       ),
                     )
@@ -739,7 +769,7 @@ class LibraryDrawer extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '此空间为空',
+                            s.emptySpace,
                             style: TextStyle(color: colors.muted, fontSize: 13),
                           ),
                           const SizedBox(height: 8),
@@ -748,7 +778,7 @@ class LibraryDrawer extends StatelessWidget {
                                 () =>
                                     _showCreateMenu(context, currentSpace.path),
                             icon: const Icon(LucideIcons.plus, size: 16),
-                            label: const Text('新建目录或笔记本'),
+                            label: Text(s.createFolderOrNotebook),
                           ),
                         ],
                       ),
@@ -762,7 +792,7 @@ class LibraryDrawer extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Text(
-                  '库路径：${library.storagePath}',
+                  s.fill(s.libraryPath, {'path': library.storagePath!}),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 10, color: colors.muted),
@@ -780,6 +810,7 @@ class LibraryDrawer extends StatelessWidget {
     int depth,
   ) {
     final colors = context.colors;
+    final s = context.s;
     final widgets = <Widget>[];
     for (final item in items) {
       if (item is GroupItem) {
@@ -833,7 +864,7 @@ class LibraryDrawer extends StatelessWidget {
                           ),
                         ),
                         IconButton(
-                          tooltip: '更多',
+                          tooltip: s.commonMore,
                           visualDensity: VisualDensity.compact,
                           iconSize: 16,
                           onPressed: () => _showGroupMenu(itemContext, group),
@@ -891,19 +922,20 @@ class LibraryDrawer extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: selected
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                                fontWeight:
+                                    selected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
                                 color: selected ? colors.accent : colors.title,
                               ),
                             ),
                           ),
                           IconButton(
-                            tooltip: '更多',
+                            tooltip: s.commonMore,
                             visualDensity: VisualDensity.compact,
                             iconSize: 16,
-                            onPressed: () =>
-                                _showNotebookMenu(itemContext, notebook),
+                            onPressed:
+                                () => _showNotebookMenu(itemContext, notebook),
                             icon: Icon(
                               LucideIcons.ellipsis,
                               size: 16,

@@ -74,11 +74,16 @@ Future<T?> showAppContextMenu<T>({
   );
 }
 
-RelativeRect _resolveMenuPosition(BuildContext context, Offset? globalPosition) {
-  final overlay = Navigator.of(context, rootNavigator: true)
-      .overlay
-      ?.context
-      .findRenderObject() as RenderBox?;
+RelativeRect _resolveMenuPosition(
+  BuildContext context,
+  Offset? globalPosition,
+) {
+  final overlay =
+      Navigator.of(
+            context,
+            rootNavigator: true,
+          ).overlay?.context.findRenderObject()
+          as RenderBox?;
   final overlaySize = overlay?.size ?? MediaQuery.sizeOf(context);
 
   if (globalPosition != null) {
@@ -91,7 +96,12 @@ RelativeRect _resolveMenuPosition(BuildContext context, Offset? globalPosition) 
   final box = context.findRenderObject() as RenderBox?;
   if (box != null && box.hasSize && box.attached) {
     final origin = box.localToGlobal(Offset.zero);
-    final rect = Rect.fromLTWH(origin.dx, origin.dy, box.size.width, box.size.height);
+    final rect = Rect.fromLTWH(
+      origin.dx,
+      origin.dy,
+      box.size.width,
+      box.size.height,
+    );
     return RelativeRect.fromRect(rect, Offset.zero & overlaySize);
   }
 

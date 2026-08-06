@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Clock3, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { RecentNotebookHistoryItem } from '@/types';
+import { useI18n } from '@/i18n/useI18n';
 
 interface RecentNotebooksModalProps {
   open: boolean;
@@ -11,6 +12,7 @@ interface RecentNotebooksModalProps {
 const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClose }) => {
   const history = useStore((s) => s.recentNotebookHistory);
   const selectRecentNotebook = useStore((s) => s.selectRecentNotebook);
+  const { t } = useI18n();
 
   useEffect(() => {
     if (!open) return;
@@ -36,16 +38,16 @@ const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClo
       <div className="modal recent-notebooks-modal" onClick={(event) => event.stopPropagation()}>
         <div className="recent-notebooks-header">
           <div>
-            <h3>最近打开的笔记本</h3>
-            <span>按最近打开时间排序</span>
+            <h3>{t('recent.title')}</h3>
+            <span>{t('recent.subtitle')}</span>
           </div>
-          <button type="button" className="recent-notebooks-close" onClick={onClose} title="关闭">
+          <button type="button" className="recent-notebooks-close" onClick={onClose} title={t('common.close')}>
             <X size={16} />
           </button>
         </div>
         <div className="recent-notebooks-list">
           {history.length === 0 ? (
-            <div className="recent-notebooks-empty">暂无打开记录</div>
+            <div className="recent-notebooks-empty">{t('recent.empty')}</div>
           ) : history.map((item) => (
             <button
               key={item.path}
@@ -59,7 +61,7 @@ const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClo
             </button>
           ))}
         </div>
-        <div className="recent-notebooks-shortcut"><kbd>Esc</kbd> 关闭</div>
+        <div className="recent-notebooks-shortcut"><kbd>Esc</kbd> {t('recent.close')}</div>
       </div>
     </div>
   );

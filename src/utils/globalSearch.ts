@@ -1,4 +1,5 @@
 import { Space, Group, Notebook } from '@/types';
+import { t } from '@/i18n';
 
 export interface SearchFilters {
   spaceName: boolean;
@@ -33,18 +34,18 @@ export const DEFAULT_SEARCH_FILTERS: SearchFilters = {
   blockContent: false,
 };
 
-export const FILTER_OPTIONS: { key: keyof SearchFilters; label: string }[] = [
-  { key: 'spaceName', label: '空间名' },
-  { key: 'notebookName', label: '笔记本名' },
-  { key: 'blockTitle', label: '笔记块标题' },
-  { key: 'blockContent', label: '笔记块内容' },
+export const FILTER_OPTIONS: { key: keyof SearchFilters; labelKey: string }[] = [
+  { key: 'spaceName', labelKey: 'search.filters.spaceName' },
+  { key: 'notebookName', labelKey: 'search.filters.notebookName' },
+  { key: 'blockTitle', labelKey: 'search.filters.blockTitle' },
+  { key: 'blockContent', labelKey: 'search.filters.blockContent' },
 ];
 
 const MATCH_LABELS = {
-  spaceName: '空间名',
-  notebookName: '笔记本名',
-  blockTitle: '笔记块标题',
-  blockContent: '笔记块内容',
+  spaceName: 'utils.globalSearch.spaceName',
+  notebookName: 'utils.globalSearch.notebookName',
+  blockTitle: 'utils.globalSearch.blockTitle',
+  blockContent: 'utils.globalSearch.blockContent',
 } as const;
 
 function isGroup(item: Group | Notebook): item is Group {
@@ -114,7 +115,7 @@ export function performGlobalSearch(
       results.push({
         id: `space:${space.path}`,
         type: 'space',
-        matchLabels: [MATCH_LABELS.spaceName],
+        matchLabels: [t(MATCH_LABELS.spaceName)],
         spaceName: space.name,
         spacePath: space.path,
       });
@@ -126,7 +127,7 @@ export function performGlobalSearch(
         results.push({
           id: `notebook:${notebook.path}`,
           type: 'notebook',
-          matchLabels: [MATCH_LABELS.notebookName],
+          matchLabels: [t(MATCH_LABELS.notebookName)],
           spaceName: space.name,
           notebookName: notebook.name,
           spacePath: space.path,
@@ -138,10 +139,10 @@ export function performGlobalSearch(
       for (const block of notebook.noteBlocks) {
         const matchLabels: string[] = [];
         if (filters.blockTitle && block.title.toLowerCase().includes(q)) {
-          matchLabels.push(MATCH_LABELS.blockTitle);
+          matchLabels.push(t(MATCH_LABELS.blockTitle));
         }
         if (filters.blockContent && block.content.toLowerCase().includes(q)) {
-          matchLabels.push(MATCH_LABELS.blockContent);
+          matchLabels.push(t(MATCH_LABELS.blockContent));
         }
         if (matchLabels.length > 0) {
           results.push({

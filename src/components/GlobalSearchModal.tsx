@@ -10,6 +10,7 @@ import {
   getResultTitleParts,
   splitHighlightSegments,
 } from '@/utils/globalSearch';
+import { useI18n } from '@/i18n/useI18n';
 
 interface GlobalSearchModalProps {
   open: boolean;
@@ -43,6 +44,7 @@ const ResultTitle: React.FC<{ result: GlobalSearchResult; query: string }> = ({ 
 };
 
 const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) => {
+  const { t, locale } = useI18n();
   const spaces = useStore((s) => s.spaces);
   const navigateToGlobalSearchResult = useStore((s) => s.navigateToGlobalSearchResult);
 
@@ -53,7 +55,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
 
   const results = useMemo(
     () => performGlobalSearch(spaces, activeQuery, filters, 50),
-    [spaces, activeQuery, filters],
+    [spaces, activeQuery, filters, locale],
   );
 
   const runSearch = useCallback(() => {
@@ -114,7 +116,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
             ref={inputRef}
             className="global-search-input"
             type="text"
-            placeholder="全局搜索..."
+            placeholder={t('search.placeholder')}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             autoCorrect="off"
@@ -132,7 +134,7 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
               type="button"
               className="global-search-clear-btn"
               onClick={handleClearInput}
-              title="清空"
+              title={t('search.clear')}
             >
               <X size={14} />
             </button>
@@ -140,8 +142,8 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
         </div>
 
         <div className="global-search-filters">
-          <span className="global-search-filters-label">匹配范围：</span>
-          {FILTER_OPTIONS.map(({ key, label }) => (
+          <span className="global-search-filters-label">{t('search.scope')}</span>
+          {FILTER_OPTIONS.map(({ key, labelKey }) => (
             <label
               key={key}
               className={`global-search-filter ${filters[key] ? 'checked' : ''}`}
@@ -151,16 +153,16 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
                 checked={filters[key]}
                 onChange={() => toggleFilter(key)}
               />
-              <span>{label}</span>
+              <span>{t(labelKey)}</span>
             </label>
           ))}
         </div>
 
         <div className="global-search-results">
           {activeQuery === '' ? (
-            <div className="global-search-empty">输入关键词后按 Enter 搜索</div>
+            <div className="global-search-empty">{t('search.empty')}</div>
           ) : results.length === 0 ? (
-            <div className="global-search-empty">未找到匹配结果</div>
+            <div className="global-search-empty">{t('search.noResults')}</div>
           ) : (
             results.map((result) => (
               <button
@@ -177,8 +179,8 @@ const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ open, onClose }) 
         </div>
 
         <div className="global-search-shortcuts">
-          <span>输入后自动搜索、</span>
-          <span><kbd>Esc</kbd> 关闭弹窗</span>
+          <span>{t('search.autoSearch')}</span>
+          <span><kbd>Esc</kbd> {t('search.escClose')}</span>
         </div>
       </div>
     </div>

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 Future<String?> showNamePromptDialog(
   BuildContext context, {
   required String title,
   String? initialValue,
-  String hint = '请输入名称',
-  String confirmLabel = '确定',
+  String? hint,
+  String? confirmLabel,
 }) {
+  final s = context.s;
   return showDialog<String>(
     context: context,
-    builder: (context) => _NamePromptDialog(
-      title: title,
-      initialValue: initialValue,
-      hint: hint,
-      confirmLabel: confirmLabel,
-    ),
+    builder:
+        (context) => _NamePromptDialog(
+          title: title,
+          initialValue: initialValue,
+          hint: hint ?? s.nameRequired,
+          confirmLabel: confirmLabel ?? s.commonSave,
+        ),
   );
 }
 
@@ -70,12 +74,9 @@ class _NamePromptDialogState extends State<_NamePromptDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(context.s.commonCancel),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: Text(widget.confirmLabel),
-        ),
+        FilledButton(onPressed: _submit, child: Text(widget.confirmLabel)),
       ],
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../core/types.dart';
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import 'app_toast.dart';
 
@@ -23,8 +24,9 @@ class NoteBlockCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final preview = block.content.trim().replaceAll(RegExp(r'\s+'), ' ');
-    final previewText = preview.isEmpty ? '（空内容）' : preview;
+    final previewText = preview.isEmpty ? s.commonEmptyContent : preview;
 
     return Material(
       color: selected ? colors.accentSoft : colors.surface,
@@ -75,12 +77,12 @@ class NoteBlockCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: '复制内容',
+                tooltip: s.commonCopyContent,
                 visualDensity: VisualDensity.compact,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: block.content));
                   onCopy?.call();
-                  showAppToast(context, '已复制内容');
+                  showAppToast(context, s.commonCopiedContent);
                 },
                 icon: Icon(
                   LucideIcons.copy,

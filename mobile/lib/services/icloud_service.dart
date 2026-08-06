@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../l10n/l10n.dart';
+
 /// iOS Files / iCloud Drive folder access via security-scoped bookmarks.
 ///
 /// Does **not** require the paid-team iCloud container entitlement.
@@ -38,12 +40,12 @@ class ICloudService {
   /// Opens the system folder picker. Returns `null` if the user cancels.
   static Future<String?> pickLibraryFolder() async {
     if (!isSupported) {
-      throw StateError('当前平台不支持通过 Files 选择同步文件夹');
+      throw StateError(appStrings.iCloudFilesUnsupported);
     }
     try {
       return await _channel.invokeMethod<String>('pickLibraryFolder');
     } on PlatformException catch (error) {
-      throw StateError(error.message ?? '选择文件夹失败');
+      throw StateError(error.message ?? appStrings.pickFolderFailed);
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/app.dart';
+import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_toast.dart';
@@ -30,10 +31,9 @@ Future<void> showSettingsSheet({
     barrierColor: Colors.black.withValues(alpha: 0.35),
     builder: (context) {
       return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          padding: hostPadding,
-          viewPadding: hostViewPadding,
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(padding: hostPadding, viewPadding: hostViewPadding),
         child: SettingsScreen(library: library),
       );
     },
@@ -86,52 +86,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _toggleICloud(bool enabled) async {
     if (library.syncBusy) return;
     final colors = context.colors;
+    final s = context.s;
 
     try {
       if (enabled) {
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('开启 iCloud / 云盘同步'),
-            content: const Text(
-              '请在文件选择器中选中「iCloud 云盘」里的文件夹（可新建如 TinyNote）。\n\n'
-              '同一 Apple ID 的其他设备打开同一文件夹即可同步；若为空会把本机笔记复制过去。',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: Text(s.enableSyncTitle),
+                content: Text(s.enableSyncMessage),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(s.commonCancel),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.accent,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(s.commonSelectFolder),
+                  ),
+                ],
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: colors.accent),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('选择文件夹'),
-              ),
-            ],
-          ),
         );
         if (confirmed != true || !mounted) return;
         await library.enableICloudSync();
       } else {
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('关闭同步'),
-            content: const Text(
-              '关闭后改用本机存储。若本机库为空，会把同步文件夹中的笔记拷回；云盘副本会保留。',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('取消'),
+          builder:
+              (context) => AlertDialog(
+                title: Text(s.disableSyncTitle),
+                content: Text(s.disableSyncMessage),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(s.commonCancel),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.accent,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(s.commonTurnOffSync),
+                  ),
+                ],
               ),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: colors.accent),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('关闭同步'),
-              ),
-            ],
-          ),
         );
         if (confirmed != true || !mounted) return;
         await library.disableICloudSync();
@@ -140,13 +142,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       final message = library.syncMessage;
       if (message != null && message.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$error')));
     }
   }
 
@@ -156,17 +160,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       final message = library.syncMessage;
       if (message != null && message.isNotEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('$error')));
     }
   }
 
-  Future<void> _openExternalUrl(String url, {required String failureMessage}) async {
+  Future<void> _openExternalUrl(
+    String url, {
+    required String failureMessage,
+  }) async {
     final uri = Uri.tryParse(url);
     if (uri == null) {
       if (mounted) showAppToast(context, failureMessage);
@@ -182,7 +191,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     // Prefer system browser; fall back for simulator / restricted environments.
-    final opened = await tryLaunch(LaunchMode.externalApplication) ||
+    final opened =
+        await tryLaunch(LaunchMode.externalApplication) ||
         await tryLaunch(LaunchMode.platformDefault) ||
         await tryLaunch(LaunchMode.inAppBrowserView);
     if (!opened && mounted) {
@@ -192,62 +202,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _pickColorTheme(ThemeController theme) async {
     final colors = context.colors;
+    final s = context.s;
     final selected = await showModalBottomSheet<ColorThemeId>(
       context: context,
       backgroundColor: colors.surface,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
         final sheetColors = context.colors;
+        final maxHeight = MediaQuery.sizeOf(context).height * 0.7;
         return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: sheetColors.border,
-                  borderRadius: BorderRadius.circular(999),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: sheetColors.border,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '颜色主题',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: sheetColors.title,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      s.colorTheme,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: sheetColors.title,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              for (final item in ColorThemeId.values)
-                ListTile(
-                  leading: _ThemeSwatch(themeId: item, isDark: theme.isDark),
-                  title: Text(
-                    item.label,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: sheetColors.title,
-                    ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final item in ColorThemeId.values)
+                        ListTile(
+                          leading: _ThemeSwatch(
+                            themeId: item,
+                            isDark: theme.isDark,
+                          ),
+                          title: Text(
+                            item.labelFor(s),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: sheetColors.title,
+                            ),
+                          ),
+                          subtitle: Text(
+                            item.descriptionFor(s),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: sheetColors.body,
+                            ),
+                          ),
+                          trailing:
+                              item == theme.colorThemeId
+                                  ? Icon(
+                                    LucideIcons.check,
+                                    size: 18,
+                                    color: sheetColors.accent,
+                                  )
+                                  : null,
+                          onTap: () => Navigator.of(context).pop(item),
+                        ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
-                  subtitle: Text(
-                    item.description,
-                    style: TextStyle(fontSize: 12, color: sheetColors.body),
-                  ),
-                  trailing: item == theme.colorThemeId
-                      ? Icon(LucideIcons.check, size: 18, color: sheetColors.accent)
-                      : null,
-                  onTap: () => Navigator.of(context).pop(item),
                 ),
-              const SizedBox(height: 8),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -257,15 +291,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _pickLocale() async {
+    final colors = context.colors;
+    final controller = context.l10n;
+    final selected = await showModalBottomSheet<AppLocale>(
+      context: context,
+      backgroundColor: colors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        final sheetColors = context.colors;
+        final current = controller.locale;
+        final maxHeight = MediaQuery.sizeOf(context).height * 0.7;
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: sheetColors.border,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (final locale in AppLocale.values)
+                        ListTile(
+                          title: Text(
+                            locale.nativeLabel,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: sheetColors.title,
+                            ),
+                          ),
+                          trailing:
+                              locale == current
+                                  ? Icon(
+                                    LucideIcons.check,
+                                    size: 18,
+                                    color: sheetColors.accent,
+                                  )
+                                  : null,
+                          onTap: () => Navigator.of(context).pop(locale),
+                        ),
+                      const SizedBox(height: 8),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (selected != null) {
+      await controller.setLocale(selected);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final s = context.s;
     final theme = ThemeScope.of(context);
     final path = library.storagePath ?? '—';
     final media = MediaQuery.of(context);
-    final topInset = media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
+    final topInset =
+        media.padding.top > 0 ? media.padding.top : media.viewPadding.top;
     final bottomInset =
-        media.padding.bottom > 0 ? media.padding.bottom : media.viewPadding.bottom;
+        media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
     final currentTheme = theme.colorThemeId;
 
     return DismissibleSheetScaffold(
@@ -282,9 +387,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             duration: const Duration(milliseconds: 180),
             decoration: BoxDecoration(
               color: colors.surface,
-              borderRadius: _isFull
-                  ? BorderRadius.zero
-                  : const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  _isFull
+                      ? BorderRadius.zero
+                      : const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               children: [
@@ -312,7 +418,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                '设置中心',
+                                s.settingsCenter,
                                 style: TextStyle(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
@@ -321,10 +427,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                             IconButton(
-                              tooltip: '关闭',
+                              tooltip: s.commonClose,
                               visualDensity: VisualDensity.compact,
                               onPressed: () => Navigator.of(context).pop(),
-                              icon: Icon(LucideIcons.x, size: 18, color: colors.muted),
+                              icon: Icon(
+                                LucideIcons.x,
+                                size: 18,
+                                color: colors.muted,
+                              ),
                             ),
                           ],
                         ),
@@ -339,22 +449,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     padding: EdgeInsets.fromLTRB(12, 10, 12, 20 + bottomInset),
                     children: [
                       _SectionCard(
-                        title: '外观',
+                        title: s.appearance,
                         child: Column(
                           children: [
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.languages,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.displayLanguage,
+                              subtitle: s.displayLanguageDesc,
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    context.l10n.locale.nativeLabel,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.body,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    LucideIcons.chevronRight,
+                                    size: 16,
+                                    color: colors.muted,
+                                  ),
+                                ],
+                              ),
+                              onTap: _pickLocale,
+                            ),
+                            Divider(height: 1, color: colors.border),
                             _CompactTile(
                               leading: Icon(
                                 LucideIcons.palette,
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '颜色主题',
-                              subtitle: currentTheme.description,
+                              title: s.colorTheme,
+                              subtitle: currentTheme.descriptionFor(s),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    currentTheme.label,
+                                    currentTheme.labelFor(s),
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -374,12 +514,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Divider(height: 1, color: colors.border),
                             _CompactTile(
                               leading: Icon(
-                                theme.isDark ? LucideIcons.moon : LucideIcons.sun,
+                                theme.isDark
+                                    ? LucideIcons.moon
+                                    : LucideIcons.sun,
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '深色模式',
-                              subtitle: '切换应用明暗主题',
+                              title: s.darkMode,
+                              subtitle: s.darkModeDesc,
                               trailing: Switch.adaptive(
                                 value: theme.isDark,
                                 activeTrackColor: colors.accent,
@@ -391,27 +533,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       _SectionCard(
-                        title: '同步',
+                        title: s.sync,
                         child: Column(
                           children: [
                             _CompactTile(
                               leading: Icon(
                                 LucideIcons.cloud,
                                 size: 18,
-                                color: library.iCloudEnabled ? colors.accent : colors.muted,
+                                color:
+                                    library.iCloudEnabled
+                                        ? colors.accent
+                                        : colors.muted,
                               ),
-                              title: 'iCloud / 云盘同步',
-                              subtitle: !library.iCloudSupported
-                                  ? '仅 iOS 支持'
-                                  : library.iCloudEnabled
-                                      ? '已绑定 Files 文件夹'
-                                      : '通过 Files 选择云盘文件夹',
+                              title: s.iCloudDriveSync,
+                              subtitle:
+                                  !library.iCloudSupported
+                                      ? s.iCloudSyncUnsupported
+                                      : library.iCloudEnabled
+                                      ? s.iCloudSyncBound
+                                      : s.iCloudSyncChooseFolder,
                               trailing: Switch.adaptive(
                                 value: library.iCloudEnabled,
                                 activeTrackColor: colors.accent,
-                                onChanged: (!library.iCloudSupported || library.syncBusy)
-                                    ? null
-                                    : _toggleICloud,
+                                onChanged:
+                                    (!library.iCloudSupported ||
+                                            library.syncBusy)
+                                        ? null
+                                        : _toggleICloud,
                               ),
                             ),
                             if (library.iCloudEnabled) ...[
@@ -422,8 +570,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   size: 18,
                                   color: colors.accent,
                                 ),
-                                title: '重新选择文件夹',
-                                subtitle: '改选 iCloud 云盘中的其他目录',
+                                title: s.reselectFolder,
+                                subtitle: s.reselectFolderDesc,
                                 trailing: Icon(
                                   LucideIcons.chevronRight,
                                   size: 16,
@@ -445,7 +593,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   alignment: Alignment.centerLeft,
                                   child: Text(
                                     library.syncMessage!,
-                                    style: TextStyle(fontSize: 12, color: colors.body),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: colors.body,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -455,7 +606,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       _SectionCard(
-                        title: '数据',
+                        title: s.data,
                         child: Column(
                           children: [
                             _CompactTile(
@@ -464,7 +615,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '当前库路径',
+                              title: s.currentLibraryPath,
                               subtitleWidget: SelectableText(
                                 path,
                                 style: TextStyle(
@@ -483,28 +634,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: library.iCloudEnabled ? '存储：云盘文件夹' : '存储：本机',
-                              subtitle: library.iCloudEnabled
-                                  ? '写入所选 iCloud / Files 文件夹'
-                                  : '保存在本机 Documents',
+                              title:
+                                  library.iCloudEnabled
+                                      ? s.storageCloudFolder
+                                      : s.storageLocal,
+                              subtitle:
+                                  library.iCloudEnabled
+                                      ? s.storageCloudDesc
+                                      : s.storageLocalDesc,
                               trailing: IconButton(
-                                tooltip: '刷新',
+                                tooltip: s.commonRefresh,
                                 visualDensity: VisualDensity.compact,
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
                                 onPressed:
-                                    library.loading || library.syncBusy ? null : library.refresh,
-                                icon: library.loading
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : Icon(
-                                        LucideIcons.refreshCw,
-                                        size: 16,
-                                        color: colors.muted,
-                                      ),
+                                    library.loading || library.syncBusy
+                                        ? null
+                                        : library.refresh,
+                                icon:
+                                    library.loading
+                                        ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                        : Icon(
+                                          LucideIcons.refreshCw,
+                                          size: 16,
+                                          color: colors.muted,
+                                        ),
                               ),
                             ),
                           ],
@@ -512,7 +675,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       _SectionCard(
-                        title: '作者',
+                        title: s.author,
                         child: Column(
                           children: [
                             _CompactTile(
@@ -521,17 +684,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '项目作者',
-                              subtitle: authorName,
+                              title: s.projectAuthor,
+                              subtitle: s.authorName,
                               trailing: Icon(
                                 LucideIcons.externalLink,
                                 size: 16,
                                 color: colors.muted,
                               ),
-                              onTap: () => _openExternalUrl(
-                                authorUrl,
-                                failureMessage: '无法打开作者主页',
-                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    authorUrl,
+                                    failureMessage: s.openAuthorFailed,
+                                  ),
                             ),
                             Divider(height: 1, color: colors.border),
                             _CompactTile(
@@ -540,24 +704,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '作者主页',
+                              title: s.authorHomepage,
                               subtitle: authorUrl,
                               trailing: Icon(
                                 LucideIcons.externalLink,
                                 size: 16,
                                 color: colors.muted,
                               ),
-                              onTap: () => _openExternalUrl(
-                                authorUrl,
-                                failureMessage: '无法打开作者主页',
-                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    authorUrl,
+                                    failureMessage: s.openAuthorFailed,
+                                  ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 8),
                       _SectionCard(
-                        title: '关于',
+                        title: s.about,
                         child: Column(
                           children: [
                             _CompactTile(
@@ -566,8 +731,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: 'TinyNote 轻记',
-                              subtitle: appDescription,
+                              title: s.appTitle,
+                              subtitle: s.appDescription,
                             ),
                             Divider(height: 1, color: colors.border),
                             _CompactTile(
@@ -576,17 +741,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 size: 18,
                                 color: colors.accent,
                               ),
-                              title: '项目主页',
+                              title: s.projectHomepage,
                               subtitle: homepageUrl,
                               trailing: Icon(
                                 LucideIcons.externalLink,
                                 size: 16,
                                 color: colors.muted,
                               ),
-                              onTap: () => _openExternalUrl(
-                                homepageUrl,
-                                failureMessage: '无法打开项目主页',
-                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    homepageUrl,
+                                    failureMessage: s.openProjectFailed,
+                                  ),
                             ),
                           ],
                         ),
@@ -631,6 +797,28 @@ class _ThemeSwatch extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+extension _ColorThemeL10n on ColorThemeId {
+  String labelFor(AppStrings s) {
+    return switch (this) {
+      ColorThemeId.defaultTheme => s.themeAuroraBlueLabel,
+      ColorThemeId.qinglan => s.themeTealBlueLabel,
+      ColorThemeId.sunset => s.themeSakuraPinkLabel,
+      ColorThemeId.paper => s.themePaperGrayLabel,
+      ColorThemeId.matcha => s.themeMatchaGreenLabel,
+    };
+  }
+
+  String descriptionFor(AppStrings s) {
+    return switch (this) {
+      ColorThemeId.defaultTheme => s.themeAuroraBlueDesc,
+      ColorThemeId.qinglan => s.themeTealBlueDesc,
+      ColorThemeId.sunset => s.themeSakuraPinkDesc,
+      ColorThemeId.paper => s.themePaperGrayDesc,
+      ColorThemeId.matcha => s.themeMatchaGreenDesc,
+    };
   }
 }
 
@@ -717,16 +905,17 @@ class _CompactTile extends StatelessWidget {
                 const SizedBox(height: 1),
                 Text(
                   subtitle!,
-                  style: TextStyle(fontSize: 12, height: 1.25, color: colors.body),
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.25,
+                    color: colors.body,
+                  ),
                 ),
               ],
             ],
           ),
         ),
-        if (trailing != null) ...[
-          const SizedBox(width: 4),
-          trailing!,
-        ],
+        if (trailing != null) ...[const SizedBox(width: 4), trailing!],
       ],
     );
 

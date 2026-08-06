@@ -5,25 +5,26 @@ import { ContentType } from '@/types';
 import hljs from 'highlight.js';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import ProfessionalEditorModal from './ProfessionalEditorModal';
+import { useI18n } from '@/i18n/useI18n';
 
-const CONTENT_TYPES: { value: ContentType; label: string }[] = [
-  { value: 'text', label: '纯文本' },
-  { value: 'markdown', label: 'Markdown' },
-  { value: 'json', label: 'JSON' },
-  { value: 'ini', label: 'INI' },
-  { value: 'yaml', label: 'YAML' },
-  { value: 'xml', label: 'XML' },
-  { value: 'bash', label: 'Bash' },
-  { value: 'shell', label: 'Shell' },
-  { value: 'sql', label: 'SQL' },
-  { value: 'javascript', label: 'JavaScript' },
-  { value: 'typescript', label: 'TypeScript' },
-  { value: 'python', label: 'Python' },
-  { value: 'go', label: 'Go' },
-  { value: 'java', label: 'Java' },
-  { value: 'rust', label: 'Rust' },
-  { value: 'css', label: 'CSS' },
-  { value: 'html', label: 'HTML' }
+const CONTENT_TYPES: { value: ContentType; labelKey: string }[] = [
+  { value: 'text', labelKey: 'property.contentTypes.text' },
+  { value: 'markdown', labelKey: 'property.contentTypes.markdown' },
+  { value: 'json', labelKey: 'property.contentTypes.json' },
+  { value: 'ini', labelKey: 'property.contentTypes.ini' },
+  { value: 'yaml', labelKey: 'property.contentTypes.yaml' },
+  { value: 'xml', labelKey: 'property.contentTypes.xml' },
+  { value: 'bash', labelKey: 'property.contentTypes.bash' },
+  { value: 'shell', labelKey: 'property.contentTypes.shell' },
+  { value: 'sql', labelKey: 'property.contentTypes.sql' },
+  { value: 'javascript', labelKey: 'property.contentTypes.javascript' },
+  { value: 'typescript', labelKey: 'property.contentTypes.typescript' },
+  { value: 'python', labelKey: 'property.contentTypes.python' },
+  { value: 'go', labelKey: 'property.contentTypes.go' },
+  { value: 'java', labelKey: 'property.contentTypes.java' },
+  { value: 'rust', labelKey: 'property.contentTypes.rust' },
+  { value: 'css', labelKey: 'property.contentTypes.css' },
+  { value: 'html', labelKey: 'property.contentTypes.html' }
 ];
 
 const CONTENT_TYPE_MAP: Record<ContentType, string> = {
@@ -47,6 +48,7 @@ const CONTENT_TYPE_MAP: Record<ContentType, string> = {
 };
 
 const PropertyPanel: React.FC = () => {
+  const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const currentNoteBlock = useStore((s) => s.currentNoteBlock);
   const noteBlockFocusKey = useStore((s) => s.noteBlockFocusKey);
@@ -109,11 +111,11 @@ const PropertyPanel: React.FC = () => {
     const language = CONTENT_TYPE_MAP[contentType];
     try {
       const highlighted = hljs.highlight(localContent, { language, ignoreIllegals: true }).value;
-      highlight.innerHTML = highlighted || '<span class="hljs-empty">空内容...</span>';
+      highlight.innerHTML = highlighted || `<span class="hljs-empty">${t('property.emptyContent')}</span>`;
     } catch {
-      highlight.textContent = localContent || '空内容...';
+      highlight.textContent = localContent || t('property.emptyContent');
     }
-  }, [localContent, currentNoteBlock]);
+  }, [localContent, currentNoteBlock, t]);
 
   const handleFocusContent = useCallback(() => {
     setIsEditing(true);
@@ -188,7 +190,7 @@ const PropertyPanel: React.FC = () => {
   if (!currentNotebook) {
     return (
       <div className="property-panel">
-        <div className="property-panel-empty">选择笔记以编辑</div>
+        <div className="property-panel-empty">{t('property.selectNote')}</div>
       </div>
     );
   }
@@ -196,7 +198,7 @@ const PropertyPanel: React.FC = () => {
   if (!currentNoteBlock) {
     return (
       <div className="property-panel">
-        <div className="property-panel-empty">选择笔记以编辑</div>
+        <div className="property-panel-empty">{t('property.selectNote')}</div>
       </div>
     );
   }
@@ -219,11 +221,11 @@ const PropertyPanel: React.FC = () => {
   return (
     <div className="property-panel">
       <div className="property-panel-header" style={{ display: 'none' }}>
-        <h3>编辑笔记</h3>
+        <h3>{t('property.editNote')}</h3>
       </div>
 
       <div className="property-field">
-        <label>标题</label>
+        <label>{t('property.title')}</label>
         <input
           ref={titleRef}
           type="text"
@@ -246,7 +248,7 @@ const PropertyPanel: React.FC = () => {
           }}
           onCompositionStart={() => { composingRef.current.title = true; }}
           onCompositionEnd={() => handleCompositionEnd('title')}
-          placeholder="笔记标题"
+          placeholder={t('property.titlePlaceholder')}
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
@@ -256,7 +258,7 @@ const PropertyPanel: React.FC = () => {
       <div className="property-field property-field-content">
         <div className="property-field-header">
           <div className="property-field-label-group">
-            <label>正文</label>
+            <label>{t('property.body')}</label>
             <select
               className="property-select-inline"
               tabIndex={-1}
@@ -265,7 +267,7 @@ const PropertyPanel: React.FC = () => {
             >
               {CONTENT_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
-                  {type.label}
+                  {t(type.labelKey)}
                 </option>
               ))}
             </select>
@@ -275,7 +277,7 @@ const PropertyPanel: React.FC = () => {
               className="content-action-btn"
               tabIndex={-1}
               onClick={handleCopyContent}
-              title="复制内容"
+              title={t('property.copyContent')}
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
             </button>
@@ -283,7 +285,7 @@ const PropertyPanel: React.FC = () => {
               className="content-action-btn"
               tabIndex={-1}
               onClick={() => setIsEditing(!isEditing)}
-              title={isEditing ? '预览' : '编辑'}
+              title={isEditing ? t('property.preview') : t('property.edit')}
             >
               {isEditing ? <Eye size={14} /> : <Edit3 size={14} />}
             </button>
@@ -291,7 +293,7 @@ const PropertyPanel: React.FC = () => {
               className="content-action-btn"
               tabIndex={-1}
               onClick={toggleContentExpanded}
-              title={contentExpanded ? '收起' : '展开'}
+              title={contentExpanded ? t('property.collapse') : t('property.expand')}
             >
               {contentExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             </button>
@@ -299,8 +301,8 @@ const PropertyPanel: React.FC = () => {
               className="content-action-btn professional-editor-btn"
               tabIndex={-1}
               onClick={() => setProfessionalEditorOpen(true)}
-              title="全屏专业编辑"
-              aria-label="全屏专业编辑"
+              title={t('property.fullscreenEditor')}
+              aria-label={t('property.fullscreenEditor')}
             >
               <Maximize size={14} />
             </button>
@@ -359,7 +361,7 @@ const PropertyPanel: React.FC = () => {
             onBlur={handleBlurContent}
             onCompositionStart={() => { composingRef.current.content = true; }}
             onCompositionEnd={() => handleCompositionEnd('content')}
-            placeholder="笔记内容..."
+            placeholder={t('property.bodyPlaceholder')}
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
@@ -370,7 +372,7 @@ const PropertyPanel: React.FC = () => {
             className={`property-highlight-box ${contentExpanded ? 'expanded' : 'collapsed'}`}
             onClick={() => setIsEditing(true)}
           >
-            {localContent || '点击编辑...'}
+            {localContent || t('property.clickToEdit')}
           </pre>
         )}
       </div>
@@ -378,7 +380,7 @@ const PropertyPanel: React.FC = () => {
       <div className="property-field">
         <label>
           <Tag size={14} />
-          标签
+          {t('property.tags')}
         </label>
         <div className="property-tags">
           {currentNoteBlock.tags.map((tag) => (
@@ -397,7 +399,7 @@ const PropertyPanel: React.FC = () => {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(); }}
-              placeholder="添加标签..."
+              placeholder={t('property.addTag')}
               autoCorrect="off"
               autoCapitalize="off"
               spellCheck={false}
@@ -409,14 +411,14 @@ const PropertyPanel: React.FC = () => {
       <div className="property-field property-field-meta">
         <label>
           <Calendar size={14} />
-          创建时间
+          {t('property.createdAt')}
         </label>
         <span className="property-meta-text">
           {new Date(currentNoteBlock.createdAt).toLocaleString()}
         </span>
         <label>
           <Calendar size={14} />
-          更新时间
+          {t('property.updatedAt')}
         </label>
         <span className="property-meta-text">
           {new Date(currentNoteBlock.updatedAt).toLocaleString()}

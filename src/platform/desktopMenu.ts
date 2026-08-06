@@ -14,6 +14,7 @@ import {
   promptAndOpenWorkspaceInCurrentWindow,
   promptAndOpenWorkspaceInNewWindow,
 } from '@/utils/workspaceActions';
+import { t } from '@/i18n';
 
 const APP_NAME = 'TinyNote';
 const MAX_RECENT = 10;
@@ -52,14 +53,14 @@ async function buildRecentWorkspacesSubmenu(): Promise<Submenu> {
     : [
         await MenuItem.new({
           id: 'recent-workspace-empty',
-          text: '（无最近工作区）',
+          text: t('menu.noRecentWorkspaces'),
           enabled: false,
         }),
       ];
 
   return Submenu.new({
     id: 'recent-workspaces',
-    text: '最近的工作区',
+    text: t('menu.recentWorkspaces'),
     items,
   });
 }
@@ -68,11 +69,11 @@ async function buildFileSubmenu(): Promise<Submenu> {
   const recentSubmenu = await buildRecentWorkspacesSubmenu();
   const fileSubmenu = await Submenu.new({
     id: 'file-menu',
-    text: '文件',
+    text: t('menu.file'),
     items: [
       await MenuItem.new({
         id: 'open-workspace',
-        text: '打开工作区…',
+        text: t('menu.openWorkspace'),
         accelerator: 'CommandOrControl+O',
         action: () => {
           void promptAndOpenWorkspaceInCurrentWindow();
@@ -80,7 +81,7 @@ async function buildFileSubmenu(): Promise<Submenu> {
       }),
       await MenuItem.new({
         id: 'open-workspace-new-window',
-        text: '在新窗口打开工作区…',
+        text: t('menu.openWorkspaceNewWindow'),
         accelerator: 'CommandOrControl+Shift+O',
         action: () => {
           void promptAndOpenWorkspaceInNewWindow();
@@ -91,7 +92,7 @@ async function buildFileSubmenu(): Promise<Submenu> {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         id: 'close-window',
-        text: '关闭窗口',
+        text: t('menu.closeWindow'),
         accelerator: 'CommandOrControl+W',
         action: () => {
           void closeCurrentWindow();
@@ -105,7 +106,7 @@ async function buildFileSubmenu(): Promise<Submenu> {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         id: 'settings',
-        text: '设置…',
+        text: t('menu.settings'),
         accelerator: 'CommandOrControl+,',
         action: openSettingsFromMenu,
       }),
@@ -124,13 +125,13 @@ async function buildAppSubmenu(): Promise<Submenu> {
     items: [
       await MenuItem.new({
         id: 'about',
-        text: `关于 ${APP_NAME}`,
+        text: t('menu.aboutApp', { app: APP_NAME }),
         action: openSettingsFromMenu,
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         id: 'settings',
-        text: '设置…',
+        text: t('menu.settings'),
         accelerator: 'CommandOrControl+,',
         action: openSettingsFromMenu,
       }),
@@ -149,7 +150,7 @@ async function buildAppSubmenu(): Promise<Submenu> {
 async function buildEditSubmenu(): Promise<Submenu> {
   return Submenu.new({
     id: 'edit-menu',
-    text: '编辑',
+    text: t('menu.edit'),
     items: [
       await PredefinedMenuItem.new({ item: 'Undo' }),
       await PredefinedMenuItem.new({ item: 'Redo' }),
@@ -165,11 +166,11 @@ async function buildEditSubmenu(): Promise<Submenu> {
 async function buildViewSubmenu(): Promise<Submenu> {
   return Submenu.new({
     id: 'view-menu',
-    text: '视图',
+    text: t('menu.view'),
     items: [
       await MenuItem.new({
         id: 'toggle-app-bar',
-        text: '切换侧边栏',
+        text: t('menu.toggleSidebar'),
         accelerator: 'CommandOrControl+1',
         action: () => {
           void import('@tauri-apps/api/event').then(({ emit }) => emit('toggle_app_bar'));
@@ -177,7 +178,7 @@ async function buildViewSubmenu(): Promise<Submenu> {
       }),
       await MenuItem.new({
         id: 'toggle-directory',
-        text: '切换目录面板',
+        text: t('menu.toggleDirectory'),
         accelerator: 'CommandOrControl+2',
         action: () => {
           void import('@tauri-apps/api/event').then(({ emit }) => emit('toggle_directory'));

@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
 import { GITHUB_RELEASES_API } from '@/constants/app';
+import { t } from '@/i18n';
 
 export interface GitHubReleaseAsset {
   name: string;
@@ -64,7 +65,7 @@ function formatNetworkError(message: string): string {
     message === 'Load failed' ||
     /failed to fetch|networkerror|network error|无法连接|连接失败/i.test(message)
   ) {
-    return '网络请求失败，请检查网络连接是否正常';
+    return t('utils.updater.networkFailed');
   }
   return message;
 }
@@ -73,7 +74,7 @@ export async function getAppVersion(): Promise<string> {
   try {
     return await getVersion();
   } catch {
-    return '0.0.0';
+    return t('utils.updater.fallbackVersion');
   }
 }
 
@@ -85,12 +86,12 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
       headers: { Accept: 'application/vnd.github+json' },
     });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : '检查更新失败';
+    const msg = e instanceof Error ? e.message : t('utils.updater.checkFailed');
     throw new Error(formatNetworkError(msg));
   }
 
   if (!response.ok) {
-    throw new Error(`检查更新失败 (${response.status})`);
+    throw new Error(t('utils.updater.checkFailedWithStatus', { status: response.status }));
   }
 
   const release = await response.json() as {
@@ -106,7 +107,7 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
 
   const asset = pickAsset(release.assets, detectPlatform());
   if (!asset) {
-    throw new Error('未找到适用于当前平台的安装包');
+    throw new Error(t('utils.updater.noAsset'));
   }
 
   return {

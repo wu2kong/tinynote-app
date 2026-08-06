@@ -5,6 +5,7 @@ import '../core/path_utils.dart';
 import '../core/stable_id.dart';
 import '../core/types.dart';
 import '../core/workspace_config.dart';
+import '../l10n/l10n.dart';
 import '../storage/local_storage.dart';
 
 int countNotebooks(List<LibraryItem> children) {
@@ -139,7 +140,7 @@ class FileSystemService {
   Future<Space> createSpace(String storagePath, String name) async {
     final spacePath = joinPath(storagePath, '$name.tinynotes');
     if (await storage.exists(spacePath)) {
-      throw StateError('空间已存在：$name');
+      throw StateError(appStrings.fill(appStrings.spaceExists, {'name': name}));
     }
     await storage.mkdir(spacePath, recursive: true);
     return Space(
@@ -153,7 +154,9 @@ class FileSystemService {
   Future<Group> createGroup(String parentPath, String name) async {
     final groupPath = joinPath(parentPath, name);
     if (await storage.exists(groupPath)) {
-      throw StateError('目录已存在：$name');
+      throw StateError(
+        appStrings.fill(appStrings.folderExists, {'name': name}),
+      );
     }
     await storage.mkdir(groupPath, recursive: true);
     return Group(
@@ -169,10 +172,13 @@ class FileSystemService {
     final fileName = name.endsWith('.md') ? name : '$name.md';
     final filePath = joinPath(parentPath, fileName);
     if (await storage.exists(filePath)) {
-      throw StateError('笔记本已存在：$name');
+      throw StateError(
+        appStrings.fill(appStrings.notebookExists, {'name': name}),
+      );
     }
     final now = DateTime.now().toUtc().toIso8601String();
-    final initialContent = '---\n'
+    final initialContent =
+        '---\n'
         'title: $name\n'
         'tags: []\n'
         'createdAt: $now\n'
@@ -191,7 +197,9 @@ class FileSystemService {
     final newPath = joinPath(parentPath, '$newName.tinynotes');
     if (normalizePath(oldPath) == normalizePath(newPath)) return newPath;
     if (await storage.exists(newPath)) {
-      throw StateError('空间已存在：$newName');
+      throw StateError(
+        appStrings.fill(appStrings.spaceExists, {'name': newName}),
+      );
     }
     await storage.rename(oldPath, newPath);
     return newPath;
@@ -206,7 +214,9 @@ class FileSystemService {
     final newPath = joinPath(parentPath, newName);
     if (normalizePath(oldPath) == normalizePath(newPath)) return newPath;
     if (await storage.exists(newPath)) {
-      throw StateError('目录已存在：$newName');
+      throw StateError(
+        appStrings.fill(appStrings.folderExists, {'name': newName}),
+      );
     }
     await storage.rename(oldPath, newPath);
     return newPath;
@@ -218,7 +228,9 @@ class FileSystemService {
     final newPath = joinPath(parentPath, newFileName);
     if (normalizePath(oldPath) == normalizePath(newPath)) return newPath;
     if (await storage.exists(newPath)) {
-      throw StateError('笔记本已存在：$newName');
+      throw StateError(
+        appStrings.fill(appStrings.notebookExists, {'name': newName}),
+      );
     }
     await storage.rename(oldPath, newPath);
     return newPath;
@@ -236,9 +248,10 @@ class FileSystemService {
     final spaces = await loadSpaces(storagePath);
     if (spaces.isNotEmpty) return;
 
-    final space = await createSpace(storagePath, '示例');
-    final group = await createGroup(space.path, '常用命令');
-    final notebook = await createNotebook(group.path, 'Shell 片段');
+    final s = appStrings;
+    final space = await createSpace(storagePath, s.sampleSpaceName);
+    final group = await createGroup(space.path, s.sampleGroupName);
+    final notebook = await createNotebook(group.path, s.sampleNotebookName);
     final now = DateTime.now().toUtc().toIso8601String();
 
     await saveNotebook(
@@ -248,8 +261,11 @@ class FileSystemService {
         path: notebook.path,
         noteBlocks: [
           NoteBlock(
-            id: notebook.noteBlocks.isNotEmpty ? notebook.noteBlocks.first.id : 'sample-1',
-            title: '查看端口占用',
+            id:
+                notebook.noteBlocks.isNotEmpty
+                    ? notebook.noteBlocks.first.id
+                    : 'sample-1',
+            title: s.samplePortTitle,
             content: 'lsof -i :8080',
             contentType: ContentType.bash,
             tags: const ['shell'],
@@ -258,7 +274,7 @@ class FileSystemService {
           ),
           NoteBlock(
             id: 'sample-2',
-            title: 'Git 状态',
+            title: s.sampleGitStatusTitle,
             content: 'git status -sb',
             contentType: ContentType.bash,
             tags: const ['git'],

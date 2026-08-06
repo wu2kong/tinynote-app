@@ -7,7 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
-import { HOMEPAGE_URL, APP_DESCRIPTION, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
+import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
@@ -24,6 +24,8 @@ import { resetSyncAdapterForTests } from '@/adapters/sync';
 import { getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
 import { showToast } from './Toast';
+import { t as globalT } from '@/i18n';
+import { useI18n, type AppLocale } from '@/i18n/useI18n';
 
 type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'about';
 
@@ -32,20 +34,20 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-const MODULES: { id: SettingsModule; label: string; icon: React.ReactNode }[] = [
-  { id: 'general', label: '通用', icon: <Settings size={16} /> },
-  { id: 'data', label: '数据', icon: <Database size={16} /> },
-  { id: 'sync', label: '同步', icon: <GitBranch size={16} /> },
-  { id: 'backup', label: '备份', icon: <Archive size={16} /> },
-  { id: 'ai', label: '大模型', icon: <Bot size={16} /> },
-  { id: 'shortcuts', label: '快捷键', icon: <KeyRound size={16} /> },
-  { id: 'about', label: '关于', icon: <Info size={16} /> },
+const MODULES: { id: SettingsModule; icon: React.ReactNode }[] = [
+  { id: 'general', icon: <Settings size={16} /> },
+  { id: 'data', icon: <Database size={16} /> },
+  { id: 'sync', icon: <GitBranch size={16} /> },
+  { id: 'backup', icon: <Archive size={16} /> },
+  { id: 'ai', icon: <Bot size={16} /> },
+  { id: 'shortcuts', icon: <KeyRound size={16} /> },
+  { id: 'about', icon: <Info size={16} /> },
 ];
 
-const VIEW_MODE_OPTIONS: { value: ViewMode; label: string }[] = [
-  { value: 'list', label: '列表' },
-  { value: 'card', label: '卡片' },
-  { value: 'compact', label: '紧凑' },
+const VIEW_MODE_OPTIONS: { value: ViewMode; labelKey: string }[] = [
+  { value: 'list', labelKey: 'settings.general.viewList' },
+  { value: 'card', labelKey: 'settings.general.viewCard' },
+  { value: 'compact', labelKey: 'settings.general.viewCompact' },
 ];
 
 const SettingsToggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => (
@@ -61,6 +63,7 @@ const SettingsToggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ 
 );
 
 const GeneralSettings: React.FC = () => {
+  const { t, locale, setLocale, locales } = useI18n();
   const isDarkTheme = useStore((s) => s.isDarkTheme);
   const colorThemeId = useStore((s) => s.colorThemeId);
   const showAppBar = useStore((s) => s.showAppBar);
@@ -80,12 +83,28 @@ const GeneralSettings: React.FC = () => {
 
   return (
     <div className="settings-panel">
-      <h4 className="settings-panel-title">通用设置</h4>
+      <h4 className="settings-panel-title">{t('settings.general.panelTitle')}</h4>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">颜色主题</span>
-          <span className="settings-row-desc">{currentTheme.description}</span>
+          <span className="settings-row-label">{t('settings.general.displayLanguage')}</span>
+          <span className="settings-row-desc">{t('settings.general.displayLanguageDesc')}</span>
+        </div>
+        <select
+          className="settings-select"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value as AppLocale)}
+        >
+          {locales.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.general.colorTheme')}</span>
+          <span className="settings-row-desc">{t(`settings.themes.${currentTheme.id}.description`)}</span>
         </div>
         <select
           className="settings-select"
@@ -93,39 +112,39 @@ const GeneralSettings: React.FC = () => {
           onChange={(e) => setColorTheme(e.target.value as ColorThemeId)}
         >
           {COLOR_THEMES.map((theme) => (
-            <option key={theme.id} value={theme.id}>{theme.label}</option>
+            <option key={theme.id} value={theme.id}>{t(`settings.themes.${theme.id}.label`)}</option>
           ))}
         </select>
       </div>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">深色模式</span>
-          <span className="settings-row-desc">切换应用明暗主题</span>
+          <span className="settings-row-label">{t('settings.general.darkMode')}</span>
+          <span className="settings-row-desc">{t('settings.general.darkModeDesc')}</span>
         </div>
         <SettingsToggle checked={isDarkTheme} onChange={toggleTheme} />
       </div>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">显示空间栏</span>
-          <span className="settings-row-desc">显示左侧空间导航栏</span>
+          <span className="settings-row-label">{t('settings.general.showAppBar')}</span>
+          <span className="settings-row-desc">{t('settings.general.showAppBarDesc')}</span>
         </div>
         <SettingsToggle checked={showAppBar} onChange={toggleAppBar} />
       </div>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">隐藏元素边框</span>
-          <span className="settings-row-desc">开启极简风格，去除界面上不必要的边框</span>
+          <span className="settings-row-label">{t('settings.general.hideBorders')}</span>
+          <span className="settings-row-desc">{t('settings.general.hideBordersDesc')}</span>
         </div>
         <SettingsToggle checked={hideElementBorders} onChange={toggleHideElementBorders} />
       </div>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">默认视图</span>
-          <span className="settings-row-desc">笔记列表的默认展示方式</span>
+          <span className="settings-row-label">{t('settings.general.defaultView')}</span>
+          <span className="settings-row-desc">{t('settings.general.defaultViewDesc')}</span>
         </div>
         <select
           className="settings-select"
@@ -133,53 +152,49 @@ const GeneralSettings: React.FC = () => {
           onChange={(e) => setViewMode(e.target.value as ViewMode)}
         >
           {VIEW_MODE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
           ))}
         </select>
       </div>
 
       <div className="settings-row">
         <div className="settings-row-info">
-          <span className="settings-row-label">界面缩放</span>
-          <span className="settings-row-desc">调整界面显示比例</span>
+          <span className="settings-row-label">{t('settings.general.zoom')}</span>
+          <span className="settings-row-desc">{t('settings.general.zoomDesc')}</span>
         </div>
         <div className="settings-zoom-controls">
           <button type="button" className="btn btn-secondary settings-zoom-btn" onClick={zoomOut}>−</button>
           <span className="settings-zoom-value">{Math.round(zoomLevel * 100)}%</span>
           <button type="button" className="btn btn-secondary settings-zoom-btn" onClick={zoomIn}>+</button>
-          <button type="button" className="btn btn-secondary settings-zoom-reset" onClick={resetZoom}>重置</button>
+          <button type="button" className="btn btn-secondary settings-zoom-reset" onClick={resetZoom}>{t('common.reset')}</button>
         </div>
       </div>
     </div>
   );
 };
 
-const PROVIDER_DETAILS: Record<LLMProviderId, { label: string; description: string; keyPlaceholder: string }> = {
-  openai: {
-    label: 'OpenAI',
-    description: '使用 OpenAI API，例如 GPT-4.1 和 GPT-5 系列模型',
-    keyPlaceholder: 'sk-...',
-  },
-  'opencode-go': {
-    label: 'OpenCode Go',
-    description: 'OpenAI 兼容接口，可使用 OpenCode Go 订阅提供的模型',
-    keyPlaceholder: 'OpenCode Go API Key',
-  },
-  'opencode-zen': {
-    label: 'OpenCode Zen',
-    description: 'OpenCode Zen 提供的 OpenAI 兼容模型服务',
-    keyPlaceholder: 'OpenCode Zen API Key',
-  },
-  deepseek: {
-    label: 'DeepSeek',
-    description: '使用 DeepSeek 官方 API，例如 DeepSeek V4 Flash 和 V4 Pro',
-    keyPlaceholder: 'sk-...',
-  },
-  custom: {
-    label: '自定义',
-    description: '接入任意 OpenAI 兼容的大模型服务或本地模型',
-    keyPlaceholder: 'API Key（如不需要可留空）',
-  },
+const PROVIDER_LABELS: Record<LLMProviderId, string> = {
+  openai: 'OpenAI',
+  'opencode-go': 'OpenCode Go',
+  'opencode-zen': 'OpenCode Zen',
+  deepseek: 'DeepSeek',
+  custom: 'settings.ai.customProvider',
+};
+
+const PROVIDER_DESCRIPTION_KEYS: Record<LLMProviderId, string> = {
+  openai: 'settings.ai.providerDescriptions.openai',
+  'opencode-go': 'settings.ai.providerDescriptions.opencodeGo',
+  'opencode-zen': 'settings.ai.providerDescriptions.opencodeZen',
+  deepseek: 'settings.ai.providerDescriptions.deepseek',
+  custom: 'settings.ai.providerDescriptions.custom',
+};
+
+const PROVIDER_KEY_PLACEHOLDERS: Record<LLMProviderId, string> = {
+  openai: 'sk-...',
+  'opencode-go': 'OpenCode Go API Key',
+  'opencode-zen': 'OpenCode Zen API Key',
+  deepseek: 'sk-...',
+  custom: 'settings.ai.apiKeyOptionalPlaceholder',
 };
 
 function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProviderConfig[] {
@@ -196,7 +211,7 @@ function getModelsUrl(baseUrl: string): string {
 
 function parseModels(payload: unknown): LLMModelConfig[] {
   if (!payload || typeof payload !== 'object' || !Array.isArray((payload as { data?: unknown }).data)) {
-    throw new Error('服务返回的模型列表格式不正确');
+    throw new Error(globalT('settings.ai.invalidModelList'));
   }
   const ids = (payload as { data: unknown[] }).data
     .map((item) => typeof item === 'object' && item ? (item as { id?: unknown }).id : undefined)
@@ -213,11 +228,12 @@ async function requestProviderModels(baseUrl: string, apiKey: string | null): Pr
   const response = await fetch(getModelsUrl(baseUrl), {
     headers: apiKey?.trim() ? { Authorization: `Bearer ${apiKey.trim()}` } : undefined,
   });
-  if (!response.ok) throw new Error(`请求失败（${response.status}）`);
+  if (!response.ok) throw new Error(globalT('settings.ai.requestFailed', { status: response.status }));
   return response.json();
 }
 
 const AISettings: React.FC = () => {
+  const { t } = useI18n();
   const [providers, setProviders] = useState<LLMProviderConfig[]>(() => normalizeProviders(undefined));
   const [selectedId, setSelectedId] = useState<LLMProviderId>('openai');
   const [saving, setSaving] = useState(false);
@@ -229,7 +245,14 @@ const AISettings: React.FC = () => {
   }, []);
 
   const selected = providers.find((provider) => provider.id === selectedId) ?? providers[0];
-  const details = PROVIDER_DETAILS[selected.id];
+  const providerLabel = (id: LLMProviderId) => {
+    const label = PROVIDER_LABELS[id];
+    return label.startsWith('settings.') ? t(label) : label;
+  };
+  const providerKeyPlaceholder = (id: LLMProviderId) => {
+    const placeholder = PROVIDER_KEY_PLACEHOLDERS[id];
+    return placeholder.startsWith('settings.') ? t(placeholder) : placeholder;
+  };
 
   const updateProvider = (patch: Partial<LLMProviderConfig>) => {
     setProviders((current) => current.map((provider) => (
@@ -240,7 +263,7 @@ const AISettings: React.FC = () => {
   const handleFetchModels = async () => {
     const baseUrl = selected.baseUrl.trim().replace(/\/+$/, '');
     if (!baseUrl) {
-      showToast('请先填写 API 地址');
+      showToast(t('settings.ai.fillApiUrlFirst'));
       return;
     }
 
@@ -256,9 +279,9 @@ const AISettings: React.FC = () => {
           ...existingModels.filter((model) => !fetchedIds.has(model.id)),
         ],
       });
-      showToast(`已获取 ${fetchedModels.length} 个模型`);
+      showToast(t('settings.ai.modelsFetched', { count: fetchedModels.length }));
     } catch (error) {
-      showToast(error instanceof Error ? `获取模型失败：${error.message}` : '获取模型失败');
+      showToast(error instanceof Error ? `${t('settings.ai.fetchModelsFailed')}: ${error.message}` : t('settings.ai.fetchModelsFailed'));
     } finally {
       setLoadingModels(false);
     }
@@ -278,17 +301,17 @@ const AISettings: React.FC = () => {
       ? models.find((model) => model.enabled)?.id ?? ''
       : selected.model;
     updateProvider({ models, model: nextDefaultModel });
-    showToast(`已删除模型：${modelId}`);
+    showToast(t('settings.ai.removedModel', { model: modelId }));
   };
 
   const handleAddModel = () => {
     const modelId = manualModelId.trim();
     if (!modelId) {
-      showToast('请输入模型名称');
+      showToast(t('settings.ai.enterModelName'));
       return;
     }
     if ((selected.models ?? []).some((model) => model.id === modelId)) {
-      showToast('该模型已在列表中');
+      showToast(t('settings.ai.modelAlreadyExists'));
       return;
     }
     updateProvider({
@@ -296,7 +319,7 @@ const AISettings: React.FC = () => {
       model: modelId,
     });
     setManualModelId('');
-    showToast(`已添加并启用模型：${modelId}`);
+    showToast(t('settings.ai.addedAndEnabled', { model: modelId }));
   };
 
   const handleSave = async () => {
@@ -311,7 +334,7 @@ const AISettings: React.FC = () => {
           models: provider.models?.filter((model) => model.id.trim()).map((model) => ({ ...model, id: model.id.trim() })),
         })),
       });
-      showToast('大模型配置已保存');
+      showToast(t('settings.ai.saved'));
     } finally {
       setSaving(false);
     }
@@ -320,11 +343,11 @@ const AISettings: React.FC = () => {
   return (
     <div className="settings-panel ai-settings">
       <div className="settings-panel-head">
-        <h4 className="settings-panel-title">大模型接入</h4>
-        <p className="settings-panel-desc">配置会保存在本机，不会写入或同步到笔记库。</p>
+        <h4 className="settings-panel-title">{t('settings.ai.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.ai.panelDesc')}</p>
       </div>
 
-      <div className="ai-provider-tabs" role="tablist" aria-label="大模型服务商">
+      <div className="ai-provider-tabs" role="tablist" aria-label={t('settings.ai.providerTabsLabel')}>
         {providers.map((provider) => (
           <button
             key={provider.id}
@@ -334,22 +357,22 @@ const AISettings: React.FC = () => {
             className={`ai-provider-tab ${selectedId === provider.id ? 'active' : ''}`}
             onClick={() => setSelectedId(provider.id)}
           >
-            {PROVIDER_DETAILS[provider.id].label}
-            {provider.enabled && <span className="ai-provider-status">已启用</span>}
+            {providerLabel(provider.id)}
+            {provider.enabled && <span className="ai-provider-status">{t('settings.ai.enabled')}</span>}
           </button>
         ))}
       </div>
 
       <div className="ai-provider-head">
         <div>
-          <div className="settings-row-label">{details.label}</div>
-          <p className="settings-panel-desc">{details.description}</p>
+          <div className="settings-row-label">{providerLabel(selected.id)}</div>
+          <p className="settings-panel-desc">{t(PROVIDER_DESCRIPTION_KEYS[selected.id])}</p>
         </div>
         <SettingsToggle checked={selected.enabled} onChange={() => updateProvider({ enabled: !selected.enabled })} />
       </div>
 
       <label className="ai-settings-field">
-        <span>API 地址</span>
+        <span>{t('settings.ai.apiUrl')}</span>
         <input
           className="settings-input"
           type="url"
@@ -364,17 +387,17 @@ const AISettings: React.FC = () => {
 
       <div className="ai-models-head">
         <div>
-          <span className="ai-models-title">模型列表</span>
-          <p className="ai-models-desc">可自动获取，或手动添加不提供模型列表接口的服务。</p>
+          <span className="ai-models-title">{t('settings.ai.modelList')}</span>
+          <p className="ai-models-desc">{t('settings.ai.modelListDesc')}</p>
         </div>
         <button type="button" className="btn btn-secondary btn-sm" onClick={handleFetchModels} disabled={loadingModels}>
           {loadingModels ? <Loader2 size={14} className="settings-spin" /> : <ListRestart size={14} />}
-          {loadingModels ? '获取中...' : '获取模型列表'}
+          {loadingModels ? t('settings.ai.fetchingModels') : t('settings.ai.fetchModels')}
         </button>
       </div>
 
       {selected.models && selected.models.length > 0 && (
-        <div className="ai-model-list" aria-label={`${details.label} 模型列表`}>
+        <div className="ai-model-list" aria-label={t('settings.ai.modelsLabel', { provider: providerLabel(selected.id) })}>
           {selected.models.map((model) => (
             <div className="ai-model-row" key={model.id}>
               <code>{model.id}</code>
@@ -384,8 +407,8 @@ const AISettings: React.FC = () => {
                   type="button"
                   className="ai-model-delete"
                   onClick={() => removeModel(model.id)}
-                  title={`删除 ${model.id}`}
-                  aria-label={`删除模型 ${model.id}`}
+                  title={t('settings.ai.deleteModel', { model: model.id })}
+                  aria-label={t('settings.ai.deleteModelAria', { model: model.id })}
                 >
                   <Trash2 size={15} />
                 </button>
@@ -406,14 +429,14 @@ const AISettings: React.FC = () => {
               handleAddModel();
             }
           }}
-          placeholder="手动输入模型名称，例如：qwen-plus"
+          placeholder={t('settings.ai.manualModelPlaceholder')}
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
         />
         <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddModel}>
           <Plus size={14} />
-          添加模型
+          {t('settings.ai.addModel')}
         </button>
       </div>
 
@@ -426,19 +449,19 @@ const AISettings: React.FC = () => {
             type="password"
             value={selected.apiKey ?? ''}
             onChange={(event) => updateProvider({ apiKey: event.target.value })}
-            placeholder={details.keyPlaceholder}
+            placeholder={providerKeyPlaceholder(selected.id)}
             autoComplete="off"
           />
         </div>
       </label>
 
       <label className="ai-settings-field">
-        <span>模型名称</span>
+        <span>{t('settings.ai.modelName')}</span>
         <input
           className="settings-input"
           value={selected.model}
           onChange={(event) => updateProvider({ model: event.target.value })}
-          placeholder={selected.id === 'custom' ? '例如：qwen-plus' : undefined}
+          placeholder={selected.id === 'custom' ? t('settings.ai.modelPlaceholder') : undefined}
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
@@ -447,17 +470,17 @@ const AISettings: React.FC = () => {
 
       <p className="ai-settings-hint">
         {selected.id === 'opencode-go' || selected.id === 'opencode-zen'
-          ? '请填写订阅后获得的 API Key；模型列表会从 OpenAI 兼容接口获取。'
-          : '需要使用该服务时请开启开关，并填写可用的模型名称。'}
+          ? t('settings.ai.apiKeyHintSubscription')
+          : t('settings.ai.apiKeyHintGeneric')}
       </p>
 
       <div className="ai-settings-actions">
         <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
           <Save size={14} />
-          {saving ? '保存中...' : '保存配置'}
+          {saving ? t('settings.ai.saving') : t('settings.ai.saveConfig')}
         </button>
         <span className="ai-settings-shortcut-hint">
-          <kbd>{formatShortcut('I')}</kbd> 唤起 AI 对话
+          <kbd>{formatShortcut('I')}</kbd> {t('settings.ai.shortcutHint')}
         </span>
       </div>
     </div>
@@ -470,11 +493,11 @@ function getModifierKeyLabel(): string {
   return /mac|darwin|iphone|ipad|ipod/.test(platform) ? 'Cmd' : 'Ctrl';
 }
 
-const SHORTCUT_ITEMS: { key: 'P' | 'I' | 'F' | 'Shift+F'; description: string }[] = [
-  { key: 'P', description: '查看访问历史' },
-  { key: 'I', description: 'AI 对话' },
-  { key: 'F', description: '当前工作区搜索' },
-  { key: 'Shift+F', description: '全局笔记搜索' },
+const SHORTCUT_ITEMS: { key: 'P' | 'I' | 'F' | 'Shift+F'; descriptionKey: string }[] = [
+  { key: 'P', descriptionKey: 'settings.shortcuts.history' },
+  { key: 'I', descriptionKey: 'settings.shortcuts.aiChat' },
+  { key: 'F', descriptionKey: 'settings.shortcuts.workspaceSearch' },
+  { key: 'Shift+F', descriptionKey: 'settings.shortcuts.globalSearch' },
 ];
 
 function formatShortcut(key: string): string {
@@ -482,23 +505,27 @@ function formatShortcut(key: string): string {
   return `${mod} + ${key}`;
 }
 
-const ShortcutsSettings: React.FC = () => (
-  <div className="settings-panel">
-    <div className="settings-panel-head">
-      <h4 className="settings-panel-title">快捷键</h4>
-      <p className="settings-panel-desc">以下快捷键可在应用中快速唤起对应功能。</p>
-    </div>
+const ShortcutsSettings: React.FC = () => {
+  const { t } = useI18n();
 
-    <div className="settings-shortcuts-list">
-      {SHORTCUT_ITEMS.map((item) => (
-        <div className="settings-shortcut-row" key={item.key}>
-          <span className="settings-shortcut-desc">{item.description}</span>
-          <kbd className="settings-shortcut-key">{formatShortcut(item.key)}</kbd>
-        </div>
-      ))}
+  return (
+    <div className="settings-panel">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">{t('settings.shortcuts.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.shortcuts.panelDesc')}</p>
+      </div>
+
+      <div className="settings-shortcuts-list">
+        {SHORTCUT_ITEMS.map((item) => (
+          <div className="settings-shortcut-row" key={item.key}>
+            <span className="settings-shortcut-desc">{t(item.descriptionKey)}</span>
+            <kbd className="settings-shortcut-key">{formatShortcut(item.key)}</kbd>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const PathItem: React.FC<{
   label: string;
@@ -506,7 +533,8 @@ const PathItem: React.FC<{
   onSelect?: () => void;
   selectLabel?: string;
   compact?: boolean;
-}> = ({ label, path, onSelect, selectLabel = '选择目录', compact = false }) => {
+}> = ({ label, path, onSelect, selectLabel, compact = false }) => {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -514,16 +542,16 @@ const PathItem: React.FC<{
     try {
       await writeText(path);
       setCopied(true);
-      showToast('路径已复制');
+      showToast(t('settings.path.pathCopied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
       try {
         await navigator.clipboard.writeText(path);
         setCopied(true);
-        showToast('路径已复制');
+        showToast(t('settings.path.pathCopied'));
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        showToast('复制失败');
+        showToast(t('settings.path.copyFailed'));
       }
     }
   }, [path]);
@@ -534,7 +562,7 @@ const PathItem: React.FC<{
       await revealItemInDir(path);
     } catch (e) {
       console.error('Failed to open path:', e);
-      showToast('无法打开路径');
+      showToast(t('settings.path.openPathFailed'));
     }
   }, [path]);
 
@@ -548,7 +576,7 @@ const PathItem: React.FC<{
             className="settings-path-btn"
             onClick={handleCopy}
             disabled={!path}
-            title="复制路径"
+            title={t('settings.path.copyPath')}
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
@@ -557,24 +585,24 @@ const PathItem: React.FC<{
             className="settings-path-btn"
             onClick={handleOpen}
             disabled={!path}
-            title="在文件管理器中打开"
+            title={t('settings.path.openInFileManager')}
           >
             <FolderOpen size={14} />
           </button>
         </div>
       </div>
       <div className={`settings-path-value ${!path ? 'empty' : ''}`}>
-        {path || '未设置'}
+        {path || t('settings.path.notSet')}
       </div>
       {!path && onSelect && (
         <button type="button" className="btn btn-secondary settings-path-select-btn" onClick={onSelect}>
           <HardDrive size={14} />
-          {selectLabel}
+          {selectLabel ?? t('settings.path.selectDirectory')}
         </button>
       )}
       {path && onSelect && (
         <button type="button" className="settings-path-change-btn" onClick={onSelect}>
-          更改目录
+          {t('settings.path.changeDirectory')}
         </button>
       )}
     </div>
@@ -582,6 +610,7 @@ const PathItem: React.FC<{
 };
 
 const BackupSettings: React.FC = () => {
+  const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
   const [backupDir, setBackupDir] = useState<string | null>(null);
   const [configPath, setConfigPath] = useState<string | null>(null);
@@ -621,10 +650,10 @@ const BackupSettings: React.FC = () => {
       await saveBackupDir(selected);
       setBackupDir(selected);
       await refreshStats(selected);
-      showToast('备份目录已更新');
+      showToast(t('settings.backup.backupDirUpdated'));
     } catch (e) {
       console.error('Failed to save backup dir:', e);
-      showToast('保存备份目录失败');
+      showToast(t('settings.backup.backupDirSaveFailed'));
     }
   }, [refreshStats]);
 
@@ -634,9 +663,9 @@ const BackupSettings: React.FC = () => {
     try {
       const filename = await createBackup(backupDir, storagePath, configPath);
       await refreshStats(backupDir);
-      showToast(`备份完成：${filename}`);
+      showToast(t('settings.backup.completed', { filename }));
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '备份失败';
+      const msg = e instanceof Error ? e.message : t('settings.backup.failed');
       console.error('Backup failed:', e);
       showToast(msg);
     } finally {
@@ -647,23 +676,21 @@ const BackupSettings: React.FC = () => {
   return (
     <div className="settings-panel settings-panel--compact">
       <div className="settings-panel-head">
-        <h4 className="settings-panel-title">数据备份</h4>
-        <p className="settings-panel-desc">将笔记库与配置文件打包为 zip</p>
+        <h4 className="settings-panel-title">{t('settings.backup.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.backup.panelDesc')}</p>
       </div>
 
       <PathItem
-        label="备份目录"
+        label={t('settings.backup.backupDir')}
         path={backupDir}
         onSelect={handleSelectBackupDir}
         compact
       />
 
       <div className="settings-backup-summary">
-        <span>共 <strong>{stats?.count ?? 0}</strong> 个备份</span>
+        <span>{t('settings.backup.summaryCount', { count: stats?.count ?? 0 })}</span>
         <span className="settings-backup-summary-sep">·</span>
-        <span>
-          最近 {stats?.latestTimeDisplay ?? '暂无'}
-        </span>
+        <span>{stats?.latestTimeDisplay ? t('settings.backup.latest', { time: stats.latestTimeDisplay }) : t('settings.backup.latestNone')}</span>
       </div>
 
       <div className="settings-backup-actions">
@@ -674,24 +701,24 @@ const BackupSettings: React.FC = () => {
           disabled={!backupDir || backingUp}
         >
           {backingUp ? <Loader2 size={13} className="settings-spin" /> : <Archive size={13} />}
-          {backingUp ? '备份中...' : '立即备份'}
+          {backingUp ? t('settings.backup.backingUp') : t('settings.backup.backupNow')}
         </button>
         {!backupDir && (
-          <span className="settings-backup-hint">请先选择备份目录</span>
+          <span className="settings-backup-hint">{t('settings.backup.selectBackupDirFirst')}</span>
         )}
       </div>
 
       <div className="settings-backup-list">
         <div className="settings-backup-list-header">
-          <span>备份文件</span>
+          <span>{t('settings.backup.backupFiles')}</span>
           {(stats?.files.length ?? 0) > 0 && (
             <span className="settings-backup-list-count">{stats?.files.length}</span>
           )}
         </div>
         {!backupDir ? (
-          <div className="settings-backup-list-empty">选择备份目录后显示文件列表</div>
+          <div className="settings-backup-list-empty">{t('settings.backup.showAfterSelect')}</div>
         ) : (stats?.files.length ?? 0) === 0 ? (
-          <div className="settings-backup-list-empty">暂无备份文件</div>
+          <div className="settings-backup-list-empty">{t('settings.backup.noBackupFiles')}</div>
         ) : (
           <ul className="settings-backup-list-items">
             {stats!.files.map((file) => (
@@ -728,6 +755,8 @@ const SyncDiffModal: React.FC<{
   loading: boolean;
   onClose: () => void;
 }> = ({ open, filePath, diff, loading, onClose }) => {
+  const { t } = useI18n();
+
   if (!open || !filePath) return null;
 
   const displayLines = diff?.diff ? getDisplayDiffLines(diff.diff) : [];
@@ -737,10 +766,10 @@ const SyncDiffModal: React.FC<{
       <div className="settings-sync-diff-modal" onClick={(e) => e.stopPropagation()}>
         <div className="settings-sync-diff-header">
           <div>
-            <h3 className="modal-title">查看变更</h3>
+            <h3 className="modal-title">{t('settings.sync.diffTitle')}</h3>
             <p className="settings-sync-diff-path" title={filePath}>{filePath}</p>
           </div>
-          <button type="button" className="icon-btn" onClick={onClose} title="关闭">
+          <button type="button" className="icon-btn" onClick={onClose} title={t('common.close')}>
             <X size={18} />
           </button>
         </div>
@@ -748,14 +777,14 @@ const SyncDiffModal: React.FC<{
           {loading ? (
             <div className="settings-sync-diff-loading">
               <Loader2 size={18} className="settings-spin" />
-              加载中...
+              {t('settings.sync.diffLoading')}
             </div>
           ) : displayLines.length > 0 ? (
             displayLines.map((line, index) => (
               <DiffLine key={`${index}-${line.slice(0, 8)}`} line={line} />
             ))
           ) : (
-            <div className="settings-sync-diff-empty">没有可显示的变更内容</div>
+            <div className="settings-sync-diff-empty">{t('settings.sync.diffEmpty')}</div>
           )}
         </div>
       </div>
@@ -764,6 +793,7 @@ const SyncDiffModal: React.FC<{
 };
 
 const SyncSettings: React.FC = () => {
+  const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
   const [status, setStatus] = useState<GitSyncStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -796,7 +826,7 @@ const SyncSettings: React.FC = () => {
       syncAuthToken: syncAuthToken.trim() || null,
     });
     resetSyncAdapterForTests();
-    showToast('同步配置已保存');
+    showToast(t('settings.sync.configSaved'));
   }, [gitCorsProxy, syncAuthToken]);
 
   const refreshStatus = useCallback(async (options?: { toastOnSuccess?: boolean }) => {
@@ -810,13 +840,13 @@ const SyncSettings: React.FC = () => {
       const result = await getGitStatus(storagePath);
       setStatus(result);
       if (result.statusError) {
-        setSyncError(`读取 Git 状态失败：${result.statusError}`);
+        setSyncError(`${t('settings.sync.readStatusFailed')}: ${result.statusError}`);
       } else if (options?.toastOnSuccess) {
-        showToast('同步状态已刷新');
+        showToast(t('settings.sync.statusRefreshed'));
       }
     } catch (e) {
       console.error('Failed to load git status:', e);
-      const msg = e instanceof Error ? e.message : '读取 Git 状态失败';
+      const msg = e instanceof Error ? e.message : t('settings.sync.readStatusFailed');
       setStatus(null);
       setSyncError(msg);
       showToast(msg);
@@ -835,16 +865,16 @@ const SyncSettings: React.FC = () => {
     try {
       await writeText(url);
       setCopiedRemote(true);
-      showToast('仓库地址已复制');
+      showToast(t('settings.sync.remoteCopied'));
       setTimeout(() => setCopiedRemote(false), 2000);
     } catch {
       try {
         await navigator.clipboard.writeText(url);
         setCopiedRemote(true);
-        showToast('仓库地址已复制');
+        showToast(t('settings.sync.remoteCopied'));
         setTimeout(() => setCopiedRemote(false), 2000);
       } catch {
-        showToast('复制失败');
+        showToast(t('settings.path.copyFailed'));
       }
     }
   }, [status?.remoteUrl]);
@@ -854,16 +884,16 @@ const SyncSettings: React.FC = () => {
     try {
       await writeText(storagePath);
       setCopiedStoragePath(true);
-      showToast('笔记库路径已复制');
+      showToast(t('settings.sync.repoPathCopied'));
       setTimeout(() => setCopiedStoragePath(false), 2000);
     } catch {
       try {
         await navigator.clipboard.writeText(storagePath);
         setCopiedStoragePath(true);
-        showToast('笔记库路径已复制');
+        showToast(t('settings.sync.repoPathCopied'));
         setTimeout(() => setCopiedStoragePath(false), 2000);
       } catch {
-        showToast('复制失败');
+        showToast(t('settings.path.copyFailed'));
       }
     }
   }, [storagePath]);
@@ -874,7 +904,7 @@ const SyncSettings: React.FC = () => {
       await revealItemInDir(storagePath);
     } catch (e) {
       console.error('Failed to open repo path:', e);
-      showToast('无法打开目录');
+      showToast(t('settings.path.openPathFailed'));
     }
   }, [storagePath]);
 
@@ -886,11 +916,11 @@ const SyncSettings: React.FC = () => {
     });
     try {
       await gitPull(storagePath);
-      showToast('拉取完成');
+      showToast(t('settings.sync.pullComplete'));
       await refreshStatus();
     } catch (e) {
-      const msg = formatSyncError(e, '拉取失败');
-      setSyncError(`${msg}\n\n请在终端进入笔记库目录，手动执行 git pull 解决冲突或认证问题。`);
+      const msg = formatSyncError(e, t('settings.sync.pullFailed'));
+      setSyncError(`${msg}\n\n${t('settings.sync.manualPullHint')}`);
       showToast(msg);
     } finally {
       setPulling(false);
@@ -900,7 +930,7 @@ const SyncSettings: React.FC = () => {
   const handlePush = useCallback(async () => {
     if (!storagePath || pushing) return;
     if ((status?.changedMdCount ?? 0) === 0) {
-      showToast('没有需要提交的内容');
+      showToast(t('settings.sync.noChanges'));
       return;
     }
     flushSync(() => {
@@ -909,16 +939,16 @@ const SyncSettings: React.FC = () => {
     });
     try {
       const message = await gitSyncPush(storagePath);
-      showToast(`已推送：${message}`);
+      showToast(t('settings.sync.pushed', { message }));
       await refreshStatus();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '推送失败';
-      if (msg === '没有需要提交的内容') {
-        showToast(msg);
+      const msg = e instanceof Error ? e.message : t('settings.sync.pushFailed');
+      if (msg === t('utils.sync.nothingToCommit')) {
+        showToast(t('settings.sync.noChanges'));
         return;
       }
-      const friendlyMsg = formatSyncError(e, '推送失败');
-      setSyncError(`${friendlyMsg}\n\n请在终端进入笔记库目录，手动执行 git status 查看状态并解决冲突或认证问题。`);
+      const friendlyMsg = formatSyncError(e, t('settings.sync.pushFailed'));
+      setSyncError(`${friendlyMsg}\n\n${t('settings.sync.manualStatusHint')}`);
       showToast(friendlyMsg);
     } finally {
       setPushing(false);
@@ -949,7 +979,7 @@ const SyncSettings: React.FC = () => {
       const data = await getFileDiff(storagePath, file.path);
       setDiffModal({ open: true, file, data, loading: false });
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '读取变更失败';
+      const msg = e instanceof Error ? e.message : t('settings.sync.readDiffFailed');
       showToast(msg);
       setDiffModal({ open: false, file: null, data: null, loading: false });
     }
@@ -965,11 +995,11 @@ const SyncSettings: React.FC = () => {
       if (file.changeType === 'deleted') {
         await reloadOpenNotebookIfNeeded(file.path, false);
       }
-      showToast(`已撤销：${file.path}`);
+      showToast(t('settings.sync.reverted', { path: file.path }));
       await refreshStatus();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '撤销失败';
-      setSyncError(`撤销失败：${msg}\n\n请在终端进入笔记库目录，手动处理该文件。`);
+      const msg = e instanceof Error ? e.message : t('settings.sync.revertFailed');
+      setSyncError(`${t('settings.sync.revertFailed')}: ${msg}\n\n${t('settings.sync.manualFileHint')}`);
       showToast(msg);
     } finally {
       setRevertingPath(null);
@@ -987,11 +1017,11 @@ const SyncSettings: React.FC = () => {
       <div className="settings-panel-head">
         <div className="settings-panel-head-row">
           <div>
-            <h4 className="settings-panel-title">Git 同步</h4>
+            <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
             <p className="settings-panel-desc">
               {usesSystemGit
-                ? '桌面端使用系统 Git，支持 SSH / HTTPS 远程（如 Gitea、GitHub、Gitee）'
-                : 'Web 端使用 isomorphic-git + CORS 代理（仅 HTTPS Token）'}
+                ? t('settings.sync.desktopDesc')
+                : t('settings.sync.webDesc')}
             </p>
           </div>
           <button
@@ -999,7 +1029,7 @@ const SyncSettings: React.FC = () => {
             className="settings-path-btn"
             onClick={() => refreshStatus({ toastOnSuccess: true })}
             disabled={!storagePath || loading || busy}
-            title="刷新状态"
+            title={t('settings.sync.refreshStatus')}
           >
             {loading ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
           </button>
@@ -1007,23 +1037,23 @@ const SyncSettings: React.FC = () => {
       </div>
 
       {!storagePath ? (
-        <div className="settings-sync-empty">请先在「数据」中设置笔记库目录</div>
+        <div className="settings-sync-empty">{t('settings.sync.setStorageFirst')}</div>
       ) : !status?.isRepo ? (
         <div className="settings-sync-empty">
-          <p>当前笔记库目录尚未识别为 Git 仓库（与是否配置 origin 无关）。</p>
+          <p>{t('settings.sync.notRepo')}</p>
           <p className="settings-sync-empty-hint">
-            请在终端进入该目录或其父目录，确认存在 <code>.git</code> 文件夹；若尚未初始化，执行 <code>git init</code> 并配置 remote。
+            {t('settings.sync.notRepoHint')}
           </p>
           <button type="button" className="btn btn-secondary btn-sm settings-sync-open-btn" onClick={handleOpenRepo}>
             <FolderOpen size={13} />
-            打开笔记库目录
+            {t('settings.sync.openRepoDir')}
           </button>
         </div>
       ) : (
         <>
           <div className="settings-sync-info">
             <div className="settings-sync-info-row">
-              <span className="settings-sync-info-label">当前笔记库</span>
+              <span className="settings-sync-info-label">{t('settings.sync.currentRepo')}</span>
               <div className="settings-sync-info-value-row">
                 <span className="settings-sync-remote" title={storagePath ?? undefined}>
                   {storagePath}
@@ -1032,7 +1062,7 @@ const SyncSettings: React.FC = () => {
                   type="button"
                   className="settings-path-btn"
                   onClick={handleCopyStoragePath}
-                  title="复制笔记库路径"
+                  title={t('settings.sync.copyRepoPath')}
                 >
                   {copiedStoragePath ? <Check size={14} /> : <Copy size={14} />}
                 </button>
@@ -1040,24 +1070,24 @@ const SyncSettings: React.FC = () => {
                   type="button"
                   className="settings-path-btn"
                   onClick={handleOpenRepo}
-                  title="在文件管理器中打开"
+                  title={t('settings.path.openInFileManager')}
                 >
                   <FolderOpen size={14} />
                 </button>
               </div>
             </div>
             <div className="settings-sync-info-row">
-              <span className="settings-sync-info-label">远程仓库</span>
+              <span className="settings-sync-info-label">{t('settings.sync.remoteRepo')}</span>
               <div className="settings-sync-info-value-row">
                 <span className="settings-sync-remote" title={status.remoteUrl ?? undefined}>
-                  {status.remoteUrl ?? '未配置 origin 远程'}
+                  {status.remoteUrl ?? t('settings.sync.originNotConfigured')}
                 </span>
                 {status.remoteUrl && (
                   <button
                     type="button"
                     className="settings-path-btn"
                     onClick={handleCopyRemote}
-                    title="复制仓库地址"
+                    title={t('settings.sync.copyRemote')}
                   >
                     {copiedRemote ? <Check size={14} /> : <Copy size={14} />}
                   </button>
@@ -1066,32 +1096,32 @@ const SyncSettings: React.FC = () => {
             </div>
             {status.branch && (
               <div className="settings-sync-info-row">
-                <span className="settings-sync-info-label">当前分支：<span className="settings-sync-branch">{status.branch}</span></span>
+                <span className="settings-sync-info-label">{t('settings.sync.currentBranch', { branch: status.branch })}</span>
               </div>
             )}
           </div>
 
           <div className="settings-backup-summary settings-sync-summary">
-            <span>待同步 <strong>{status.changedMdCount}</strong> 个 .md 文件</span>
+            <span>{t('settings.sync.pendingMdFiles', { count: status.changedMdCount })}</span>
             {(status.ahead > 0 || status.behind > 0) && (
               <>
                 <span className="settings-backup-summary-sep">·</span>
-                {status.behind > 0 && <span>落后远程 {status.behind} 提交</span>}
+                {status.behind > 0 && <span>{t('settings.sync.behindRemote', { count: status.behind })}</span>}
                 {status.behind > 0 && status.ahead > 0 && <span className="settings-backup-summary-sep">·</span>}
-                {status.ahead > 0 && <span>领先远程 {status.ahead} 提交</span>}
+                {status.ahead > 0 && <span>{t('settings.sync.aheadRemote', { count: status.ahead })}</span>}
               </>
             )}
           </div>
 
           <div className="settings-sync-commit-preview">
-            自动生成的提交信息：<code>{commitPreview}</code>
+            {t('settings.sync.commitPreview', { message: commitPreview })}
           </div>
 
           <div className="settings-sync-info" style={{ marginTop: '12px' }}>
             {!usesSystemGit && (
               <>
                 <div className="settings-sync-info-row">
-                  <span className="settings-sync-info-label">CORS 代理</span>
+                  <span className="settings-sync-info-label">{t('settings.sync.corsProxy')}</span>
                   <input
                     className="settings-input"
                     value={gitCorsProxy}
@@ -1103,7 +1133,7 @@ const SyncSettings: React.FC = () => {
                   />
                 </div>
                 <div className="settings-sync-info-row">
-                  <span className="settings-sync-info-label">Git Token</span>
+                  <span className="settings-sync-info-label">{t('settings.sync.gitToken')}</span>
                   <input
                     className="settings-input"
                     type="password"
@@ -1114,17 +1144,17 @@ const SyncSettings: React.FC = () => {
                 </div>
                 {isWeb() && (
                   <p className="settings-sync-empty-hint">
-                    Web 端不支持 SSH 远程，请为 Gitea/GitHub 使用 HTTPS 地址与 Token。
+                    {t('settings.sync.webSshUnsupported')}
                   </p>
                 )}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveSyncConfig} disabled={busy}>
-                  保存同步配置
+                  {t('settings.sync.saveConfig')}
                 </button>
               </>
             )}
             {/* {usesSystemGit && (
               <p className="settings-sync-empty-hint">
-                SSH 远程（如 <code>git@gitea.example.com:user/repo.git</code>）由系统 Git 与本地凭据处理，无需在此填写 Token。
+                SSH remotes such as <code>git@gitea.example.com:user/repo.git</code> are handled by system Git and local credentials; no Token is needed here.
               </p>
             )} */}
           </div>
@@ -1135,20 +1165,20 @@ const SyncSettings: React.FC = () => {
               className="btn btn-secondary btn-sm"
               onClick={handlePull}
               disabled={!status.hasRemote || busy}
-              title={!status.hasRemote ? '请先配置 origin 远程' : undefined}
+              title={!status.hasRemote ? t('settings.sync.configureOriginFirst') : undefined}
             >
               {pulling ? <Loader2 size={13} className="settings-spin" /> : <ArrowDownToLine size={13} />}
-              {pulling ? '拉取中...' : '拉取最新'}
+              {pulling ? t('settings.sync.pulling') : t('settings.sync.pullLatest')}
             </button>
             <button
               type="button"
               className="btn btn-primary btn-sm"
               onClick={handlePush}
               disabled={!status.hasRemote || busy}
-              title={!status.hasRemote ? '请先配置 origin 远程' : undefined}
+              title={!status.hasRemote ? t('settings.sync.configureOriginFirst') : undefined}
             >
               {pushing ? <Loader2 size={13} className="settings-spin" /> : <Upload size={13} />}
-              {pushing ? '推送中...' : '提交并推送'}
+              {pushing ? t('settings.sync.pushing') : t('settings.sync.push')}
             </button>
           </div>
 
@@ -1160,13 +1190,13 @@ const SyncSettings: React.FC = () => {
 
           <div className="settings-backup-list">
             <div className="settings-backup-list-header">
-              <span>变更的 Markdown 文件</span>
+              <span>{t('settings.sync.changedMarkdownFiles')}</span>
               {status.changedFiles.length > 0 && (
                 <span className="settings-backup-list-count">{status.changedFiles.length}</span>
               )}
             </div>
             {status.changedFiles.length === 0 ? (
-              <div className="settings-backup-list-empty">没有待提交的 .md 变更</div>
+              <div className="settings-backup-list-empty">{t('settings.sync.noPendingMdChanges')}</div>
             ) : (
               <ul className="settings-backup-list-items settings-sync-file-list">
                 {status.changedFiles.map((file) => (
@@ -1188,7 +1218,7 @@ const SyncSettings: React.FC = () => {
                         onClick={() => handleViewDiff(file)}
                         disabled={busy || revertingPath === file.path}
                       >
-                        查看变更
+                        {t('settings.sync.viewDiff')}
                       </button>
                       <button
                         type="button"
@@ -1196,7 +1226,7 @@ const SyncSettings: React.FC = () => {
                         onClick={() => setRevertTarget(file)}
                         disabled={busy || revertingPath === file.path}
                       >
-                        {revertingPath === file.path ? '撤销中...' : '撤销变更'}
+                        {revertingPath === file.path ? t('settings.sync.reverting') : t('settings.sync.revertChange')}
                       </button>
                     </div>
                   </li>
@@ -1217,15 +1247,15 @@ const SyncSettings: React.FC = () => {
             open={!!revertTarget}
             onClose={() => setRevertTarget(null)}
             onConfirm={() => { if (revertTarget) handleRevert(revertTarget); }}
-            title="撤销变更"
+            title={t('settings.sync.revertTitle')}
             message={
               revertTarget?.changeType === 'added'
-                ? `确定删除新文件「${revertTarget.path}」吗？此操作不可恢复。`
+                ? t('settings.sync.revertAddedConfirm', { path: revertTarget.path })
                 : revertTarget?.changeType === 'deleted'
-                  ? `确定恢复已删除的文件「${revertTarget.path}」吗？`
-                  : `确定将「${revertTarget?.path ?? ''}」恢复到最后一次提交的版本吗？当前未提交的修改将丢失。`
+                  ? t('settings.sync.revertDeletedConfirm', { path: revertTarget.path })
+                  : t('settings.sync.revertModifiedConfirm', { path: revertTarget?.path ?? '' })
             }
-            confirmLabel="撤销"
+            confirmLabel={t('settings.sync.revertConfirm')}
           />
         </>
       )}
@@ -1234,6 +1264,7 @@ const SyncSettings: React.FC = () => {
 };
 
 const DataSettings: React.FC = () => {
+  const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
   const [configPath, setConfigPath] = useState<string | null>(null);
   const [workspacesPath, setWorkspacesPath] = useState<string | null>(null);
@@ -1253,18 +1284,19 @@ const DataSettings: React.FC = () => {
 
   return (
     <div className="settings-panel">
-      <h4 className="settings-panel-title">存储路径</h4>
-      <p className="settings-panel-desc">工作区配置位于笔记库内（可 Git 同步）；本机多工作区注册表位于用户Home目录</p>
+      <h4 className="settings-panel-title">{t('settings.data.panelTitle')}</h4>
+      <p className="settings-panel-desc">{t('settings.data.panelDesc')}</p>
 
-      <PathItem label="多工作区注册表" path={workspacesPath} />
-      <PathItem label="当前工作区配置" path={configPath} />
-      <PathItem label="当前笔记库目录" path={storagePath} />
-      <PathItem label="当前程序所在目录" path={appDir} />
+      <PathItem label={t('settings.data.workspacesRegistry')} path={workspacesPath} />
+      <PathItem label={t('settings.data.currentWorkspaceConfig')} path={configPath} />
+      <PathItem label={t('settings.data.currentStorageDir')} path={storagePath} />
+      <PathItem label={t('settings.data.currentAppDir')} path={appDir} />
     </div>
   );
 };
 
 const AboutSettings: React.FC = () => {
+  const { t } = useI18n();
   const [version, setVersion] = useState('');
   const [checking, setChecking] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -1283,12 +1315,12 @@ const AboutSettings: React.FC = () => {
       const info = await checkForUpdate();
       if (info) {
         setUpdateInfo(info);
-        setCheckMessage(`发现新版本 v${info.latestVersion}`);
+        setCheckMessage(t('settings.about.newVersion', { version: info.latestVersion }));
       } else {
-        setCheckMessage('当前已是最新版本');
+        setCheckMessage(t('settings.about.latestVersion'));
       }
     } catch (e) {
-      const msg = formatUpdateError(e, '检查更新失败');
+      const msg = formatUpdateError(e, t('settings.about.checkFailed'));
       setCheckMessage(msg);
       showToast(msg);
     } finally {
@@ -1301,9 +1333,9 @@ const AboutSettings: React.FC = () => {
     setDownloading(true);
     try {
       await downloadAndInstall(updateInfo.asset);
-      showToast('安装程序已启动，请按提示完成更新');
+      showToast(t('settings.about.installerStarted'));
     } catch (e) {
-      const msg = formatUpdateError(e, '下载更新失败，请检查网络连接是否正常');
+      const msg = formatUpdateError(e, t('settings.about.downloadFailed'));
       showToast(msg);
       setCheckMessage(msg);
     } finally {
@@ -1317,7 +1349,7 @@ const AboutSettings: React.FC = () => {
       await openReleasePage(updateInfo.releaseUrl);
     } catch (e) {
       console.error('Failed to open release page:', e);
-      showToast('无法打开 GitHub Release 页面');
+      showToast(t('settings.about.openReleaseFailed'));
     }
   }, [updateInfo]);
 
@@ -1326,7 +1358,7 @@ const AboutSettings: React.FC = () => {
       await openUrl(MIRROR_DOWNLOAD_URL);
     } catch (e) {
       console.error('Failed to open mirror download page:', e);
-      showToast('无法打开蓝奏云下载页面');
+      showToast(t('settings.about.openMirrorFailed'));
     }
   }, []);
 
@@ -1335,7 +1367,7 @@ const AboutSettings: React.FC = () => {
       await openUrl(HOMEPAGE_URL);
     } catch (e) {
       console.error('Failed to open homepage:', e);
-      showToast('无法打开项目主页');
+      showToast(t('settings.about.openHomepageFailed'));
     }
   }, []);
 
@@ -1344,26 +1376,26 @@ const AboutSettings: React.FC = () => {
       await openUrl(AUTHOR_URL);
     } catch (e) {
       console.error('Failed to open author homepage:', e);
-      showToast('无法打开作者主页');
+      showToast(t('settings.about.openAuthorFailed'));
     }
   }, []);
 
   return (
     <div className="settings-panel">
-      <h4 className="settings-panel-title">关于 TinyNote</h4>
+      <h4 className="settings-panel-title">{t('settings.about.panelTitle')}</h4>
 
       <div className="settings-about-card">
         <div className="settings-about-logo">📝</div>
         <div className="settings-about-info">
           <div className="settings-about-name">TinyNote</div>
-          <div className="settings-about-version">版本 {version || '...'}</div>
-          <div className="settings-about-desc">{APP_DESCRIPTION}</div>
+          <div className="settings-about-version">{t('settings.about.version', { version: version || '...' })}</div>
+          <div className="settings-about-desc">{t('utils.app.description')}</div>
         </div>
       </div>
 
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
-          <span className="settings-row-label">项目作者</span>
+          <span className="settings-row-label">{t('settings.about.projectAuthor')}</span>
           <button type="button" className="settings-link" onClick={handleOpenAuthorHomepage}>
             {AUTHOR_NAME}
             <ExternalLink size={14} />
@@ -1374,7 +1406,7 @@ const AboutSettings: React.FC = () => {
 
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
-          <span className="settings-row-label">项目主页</span>
+          <span className="settings-row-label">{t('settings.about.projectHome')}</span>
           <button type="button" className="settings-link" onClick={handleOpenHomepage}>
             {HOMEPAGE_URL}
             <ExternalLink size={14} />
@@ -1384,8 +1416,8 @@ const AboutSettings: React.FC = () => {
 
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
-          <span className="settings-row-label">软件更新</span>
-          <span className="settings-row-desc">从 GitHub Releases 检查并下载最新版本；无法访问 GitHub 时可使用蓝奏云镜像</span>
+          <span className="settings-row-label">{t('settings.about.softwareUpdate')}</span>
+          <span className="settings-row-desc">{t('settings.about.softwareUpdateDesc')}</span>
         </div>
         <div className="settings-update-actions">
           <button
@@ -1395,7 +1427,7 @@ const AboutSettings: React.FC = () => {
             disabled={checking || downloading}
           >
             {checking ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
-            检查更新
+            {checking ? t('settings.about.checking') : t('settings.about.checkUpdate')}
           </button>
           {updateInfo && (
             <>
@@ -1406,7 +1438,7 @@ const AboutSettings: React.FC = () => {
                 disabled={downloading}
               >
                 {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
-                下载并更新
+                {downloading ? t('settings.about.downloading') : t('settings.about.downloadAndUpdate')}
               </button>
               <button
                 type="button"
@@ -1415,7 +1447,7 @@ const AboutSettings: React.FC = () => {
                 disabled={downloading}
               >
                 <ExternalLink size={14} />
-                GitHub 下载
+                {t('settings.about.githubDownload')}
               </button>
               <button
                 type="button"
@@ -1424,7 +1456,7 @@ const AboutSettings: React.FC = () => {
                 disabled={downloading}
               >
                 <ExternalLink size={14} />
-                蓝奏云下载
+                {t('settings.about.mirrorDownload')}
               </button>
             </>
           )}
@@ -1440,6 +1472,7 @@ const AboutSettings: React.FC = () => {
 };
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
+  const { t } = useI18n();
   const [activeModule, setActiveModule] = useState<SettingsModule>('general');
 
   if (!open) return null;
@@ -1448,8 +1481,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="settings-modal-header">
-          <h3 className="modal-title">设置中心</h3>
-          <button type="button" className="icon-btn" onClick={onClose} title="关闭">
+          <h3 className="modal-title">{t('settings.title')}</h3>
+          <button type="button" className="icon-btn" onClick={onClose} title={t('common.close')}>
             <X size={18} />
           </button>
         </div>
@@ -1464,7 +1497,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
                 onClick={() => setActiveModule(mod.id)}
               >
                 {mod.icon}
-                <span>{mod.label}</span>
+                <span>{t(`settings.modules.${mod.id}`)}</span>
               </button>
             ))}
           </nav>

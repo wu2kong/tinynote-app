@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '@/i18n/useI18n';
 
 interface InputModalProps {
   open: boolean;
@@ -10,8 +11,9 @@ interface InputModalProps {
   confirmLabel?: string;
 }
 
-const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title, placeholder, defaultValue = '', confirmLabel = '新建' }) => {
+const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title, placeholder, defaultValue = '', confirmLabel }) => {
   const [value, setValue] = useState(defaultValue);
+  const { t } = useI18n();
 
   useEffect(() => {
     if (open) {
@@ -46,8 +48,8 @@ const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title,
             spellCheck={false}
           />
           <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>取消</button>
-            <button type="submit" className="btn btn-primary">{confirmLabel}</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
+            <button type="submit" className="btn btn-primary">{confirmLabel ?? t('common.create')}</button>
           </div>
         </form>
       </div>

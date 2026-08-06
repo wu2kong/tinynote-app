@@ -17,8 +17,10 @@ import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
+import { useI18n } from '@/i18n/useI18n';
 
 const SourceEditorPanel: React.FC = () => {
+  const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
   const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
@@ -42,13 +44,13 @@ const SourceEditorPanel: React.FC = () => {
           <button
             className="left-panel-toggle"
             onClick={toggleDirectoryPanel}
-            title={leftPanelVisible ? '隐藏侧边栏' : '显示侧边栏'}
+            title={leftPanelVisible ? t('app.hideSidebar') : t('app.showSidebar')}
           >
             {leftPanelVisible ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
           </button>
-          <h3>{currentNotebook.name} — 源码模式</h3>
+          <h3>{t('app.sourceMode', { name: currentNotebook.name })}</h3>
         </div>
-        <button className="icon-btn" onClick={() => { toggleSourceMode(); setSourceContent(''); }} title="退出源码模式">
+        <button className="icon-btn" onClick={() => { toggleSourceMode(); setSourceContent(''); }} title={t('app.exitSourceMode')}>
           <Code size={16} />
         </button>
       </div>
@@ -64,9 +66,9 @@ const SourceEditorPanel: React.FC = () => {
         <button
           className="btn"
           onClick={() => { toggleSourceMode(); setSourceContent(''); }}
-          title="退出源码模式"
+          title={t('app.exitSourceMode')}
         >
-          取消
+          {t('common.cancel')}
         </button>
         <button
           className="btn btn-primary"
@@ -78,7 +80,7 @@ const SourceEditorPanel: React.FC = () => {
             setSourceContent('');
           }}
         >
-          保存并解析
+          {t('app.saveAndParse')}
         </button>
       </div>
     </div>
@@ -86,6 +88,7 @@ const SourceEditorPanel: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
   const initApp = useStore((s) => s.initApp);
   const setStoragePath = useStore((s) => s.setStoragePath);
@@ -204,7 +207,7 @@ const App: React.FC = () => {
         <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
           <div className="loading-screen">
             <div className="loading-icon">📝</div>
-            <div className="loading-text">正在加载...</div>
+            <div className="loading-text">{t('app.loading')}</div>
           </div>
         </div>
         {settingsModal}

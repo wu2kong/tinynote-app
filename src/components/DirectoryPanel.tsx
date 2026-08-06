@@ -31,6 +31,7 @@ import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import * as config from '@/utils/config';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
+import { useI18n } from '@/i18n/useI18n';
 
 const DEFAULT_PANEL_WIDTH = 300;
 const MIN_PANEL_WIDTH = 200;
@@ -81,6 +82,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
   isDragOverMove, isDraggingMove,
   currentGroupPath, currentNotebookPath,
 }) => {
+  const { t } = useI18n();
   const {
     attributes,
     listeners,
@@ -134,7 +136,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
           <button
             className="tree-item-action"
             onClick={(e) => { e.stopPropagation(); onAddNotebook(group.path); }}
-            title="新建笔记本"
+            title={t('directory.newNotebook')}
           >
             <Plus size={12} />
           </button>
@@ -196,6 +198,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
 };
 
 const DirectoryPanel: React.FC = () => {
+  const { t } = useI18n();
   const currentSpace = useStore((s) => s.currentSpace);
   const currentGroup = useStore((s) => s.currentGroup);
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -435,42 +438,42 @@ const DirectoryPanel: React.FC = () => {
 
   const handleAddNotebookModal = useCallback((parentPath: string) => {
     setModalState({
-      open: true, title: '新建笔记本', placeholder: '笔记本名称', defaultValue: '', confirmLabel: '新建',
+      open: true, title: t('directory.newNotebook'), placeholder: t('directory.notebookName'), defaultValue: '', confirmLabel: t('common.create'),
       onSubmit: (name) => { addNotebook(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
     });
   }, [addNotebook]);
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
-      open: true, title: '新建分组', placeholder: '分组名称', defaultValue: '', confirmLabel: '新建',
+      open: true, title: t('directory.newGroup'), placeholder: t('directory.groupName'), defaultValue: '', confirmLabel: t('common.create'),
       onSubmit: (name) => { addGroup(parentPath, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleRenameGroup = (group: Group) => {
     setModalState({
-      open: true, title: '重命名分组', placeholder: '新名称', defaultValue: group.name, confirmLabel: '保存',
+      open: true, title: t('directory.renameGroup'), placeholder: t('appBar.newName'), defaultValue: group.name, confirmLabel: t('common.save'),
       onSubmit: (name) => { storeRenameGroup(group, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleRenameNotebook = (notebook: Notebook) => {
     setModalState({
-      open: true, title: '重命名笔记本', placeholder: '新名称', defaultValue: notebook.name, confirmLabel: '保存',
+      open: true, title: t('directory.renameNotebook'), placeholder: t('appBar.newName'), defaultValue: notebook.name, confirmLabel: t('common.save'),
       onSubmit: (name) => { storeRenameNotebook(notebook, name); setModalState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleDeleteGroup = (group: Group) => {
     setConfirmState({
-      open: true, title: '删除分组', message: `确定要删除「${group.name}」吗？`,
+      open: true, title: t('directory.deleteGroup'), message: t('directory.deleteGroupConfirm', { name: group.name }),
       onConfirm: () => { storeDeleteGroup(group); setConfirmState((p) => ({ ...p, open: false })); },
     });
   };
 
   const handleDeleteNotebook = (notebook: Notebook) => {
     setConfirmState({
-      open: true, title: '删除笔记本', message: `确定要删除「${notebook.name}」吗？`,
+      open: true, title: t('directory.deleteNotebook'), message: t('directory.deleteNotebookConfirm', { name: notebook.name }),
       onConfirm: () => { storeDeleteNotebook(notebook); setConfirmState((p) => ({ ...p, open: false })); },
     });
   };
@@ -487,13 +490,13 @@ const DirectoryPanel: React.FC = () => {
   const handleCopyDirectory = async (group: Group) => {
     try {
       await writeText(group.path);
-      showToast('目录位置已复制');
+      showToast(t('directory.directoryCopied'));
     } catch {
       try {
         await navigator.clipboard.writeText(group.path);
-        showToast('目录位置已复制');
+        showToast(t('directory.directoryCopied'));
       } catch {
-        showToast('复制目录位置失败');
+        showToast(t('directory.copyDirectoryFailed'));
       }
     }
     closeContextMenu();
@@ -543,7 +546,7 @@ const DirectoryPanel: React.FC = () => {
               <button
                 className="tree-item-action"
                 onClick={(e) => { e.stopPropagation(); handleAddNotebookModal(group.path); }}
-                title="新建笔记本"
+                title={t('directory.newNotebook')}
               >
                 <Plus size={12} />
               </button>
@@ -588,7 +591,7 @@ const DirectoryPanel: React.FC = () => {
       style={{ width: panelWidth, minWidth: panelWidth }}
     >
       <div className="directory-header">
-        <button className="directory-sidebar-toggle" onClick={toggleAppBar} title={showAppBar ? '隐藏侧边栏' : '显示侧边栏'}>
+        <button className="directory-sidebar-toggle" onClick={toggleAppBar} title={showAppBar ? t('directory.hideSidebar') : t('directory.showSidebar')}>
           {showAppBar ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
         </button>
         <div className="directory-search">
@@ -596,7 +599,7 @@ const DirectoryPanel: React.FC = () => {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="搜索笔记本..."
+            placeholder={t('directory.searchNotebook')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             autoCorrect="off"
@@ -609,8 +612,8 @@ const DirectoryPanel: React.FC = () => {
               className="search-clear-btn"
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => setSearchQuery('')}
-              title="清空搜索"
-              aria-label="清空搜索"
+              title={t('directory.clearSearch')}
+              aria-label={t('directory.clearSearch')}
             >
               <X size={14} />
             </button>
@@ -655,7 +658,7 @@ const DirectoryPanel: React.FC = () => {
             </DndContext>
           )
         ) : (
-          <div className="directory-empty">选择一个空间以浏览</div>
+          <div className="directory-empty">{t('directory.selectSpace')}</div>
         )}
       </div>
 
@@ -666,7 +669,7 @@ const DirectoryPanel: React.FC = () => {
               else handleRenameNotebook(contextMenu!.item as Notebook);
               closeContextMenu();
             }}>
-              <Edit3 size={14} />重命名
+              <Edit3 size={14} />{t('common.rename')}
             </button>
             {isNotebook(contextMenu.item) && (
               <button className="context-menu-item" onClick={async () => {
@@ -675,45 +678,45 @@ const DirectoryPanel: React.FC = () => {
                 try {
                   const duplicated = await duplicateNotebook(notebook);
                   if (duplicated) {
-                    showToast(`已创建「${duplicated.name}」`);
+                    showToast(t('directory.createdCopy', { name: duplicated.name }));
                   }
                 } catch (e) {
                   console.error('Failed to duplicate notebook:', e);
-                  showToast('创建副本失败');
+                  showToast(t('directory.createCopyFailed'));
                 }
               }}>
-                <Copy size={14} />创建副本
+                <Copy size={14} />{t('directory.createCopy')}
               </button>
             )}
             {isNotebook(contextMenu.item) && currentNotebook?.path === (contextMenu.item as Notebook).path && (
               <button className="context-menu-item" onClick={() => { toggleSourceMode(); closeContextMenu(); }}>
                 {currentNotebook.isSourceMode ? <Blocks size={14} /> : <Code size={14} />}
-                {currentNotebook.isSourceMode ? '笔记块模式' : '源码模式'}
+                {currentNotebook.isSourceMode ? t('directory.blockMode') : t('directory.sourceMode')}
               </button>
             )}
             {isGroup(contextMenu.item) && (
               <>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path); closeContextMenu(); }}>
-                  <FilePlus size={14} />新建笔记本
+                  <FilePlus size={14} />{t('directory.newNotebook')}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
-                  <FolderPlus size={14} />新建子分组
+                  <FolderPlus size={14} />{t('directory.newChildGroup')}
                 </button>
                 <div className="context-menu-divider" />
                 <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.item as Group)}>
                   <FolderOpen size={14} />
-                  打开目录位置
+                  {t('directory.openDirectory')}
                 </button>
                 <button className="context-menu-item" onClick={() => handleCopyDirectory(contextMenu.item as Group)}>
                   <Copy size={14} />
-                  复制目录位置
+                  {t('directory.copyDirectory')}
                 </button>
               </>
             )}
             <div className="context-menu-divider" />
             <div className="context-menu-submenu">
               <button className="context-menu-item" onClick={(e) => { e.stopPropagation(); }}>
-                <span className="context-menu-item-inner"><ArrowRight size={14} />移动到...</span>
+                <span className="context-menu-item-inner"><ArrowRight size={14} />{t('directory.moveTo')}</span>
               </button>
               <div className="context-menu-sub">
                 {spaces.filter((s) => s.path !== currentSpace?.path).map((s) => (
@@ -723,7 +726,7 @@ const DirectoryPanel: React.FC = () => {
                     closeContextMenu();
                     await moveItem(item.path, kind, s.path);
                     await reloadSpaces();
-                    showToast(`已移动到「${s.name}」`);
+                    showToast(t('directory.movedTo', { name: s.name }));
                   }}>
                     {s.icon || '📁'} {s.name}
                   </button>
@@ -733,7 +736,7 @@ const DirectoryPanel: React.FC = () => {
             {isNotebook(contextMenu.item) && (
               <button className="context-menu-item" onClick={() => handleOpenInEditor(contextMenu.item as Notebook)}>
                 <ExternalLink size={14} />
-                用编辑器打开
+                {t('directory.openInEditor')}
               </button>
             )}
             <div className="context-menu-divider" />
@@ -742,7 +745,7 @@ const DirectoryPanel: React.FC = () => {
               else handleDeleteNotebook(contextMenu!.item as Notebook);
               closeContextMenu();
             }}>
-              <Trash2 size={14} />删除
+              <Trash2 size={14} />{t('common.delete')}
             </button>
         </ContextMenuPortal>
       )}
@@ -750,20 +753,20 @@ const DirectoryPanel: React.FC = () => {
       {blankContextMenu && currentSpace && (
         <ContextMenuPortal x={blankContextMenu.x} y={blankContextMenu.y} onClose={closeContextMenu}>
           <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path); closeContextMenu(); }}>
-              <FilePlus size={14} />新建笔记本
+              <FilePlus size={14} />{t('directory.newNotebook')}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
-              <FolderPlus size={14} />新增分组
+              <FolderPlus size={14} />{t('directory.addGroup')}
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={() => { expandAllGroups(); closeContextMenu(); }}>
-              <ChevronsDown size={14} />展开全部
+              <ChevronsDown size={14} />{t('directory.expandAll')}
             </button>
             <button className="context-menu-item" onClick={() => { collapseAllGroups(); closeContextMenu(); }}>
-              <ChevronsUp size={14} />收起全部
+              <ChevronsUp size={14} />{t('directory.collapseAll')}
             </button>
-            <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast('缓存已刷新'); closeContextMenu(); }}>
-              <RefreshCw size={14} />刷新缓存
+            <button className="context-menu-item" onClick={async () => { await reloadSpaces(); showToast(t('directory.cacheRefreshed')); closeContextMenu(); }}>
+              <RefreshCw size={14} />{t('directory.refreshCache')}
             </button>
         </ContextMenuPortal>
       )}
@@ -789,7 +792,7 @@ const DirectoryPanel: React.FC = () => {
       <div
         className="directory-panel-resize-handle"
         onPointerDown={handlePanelResizeStart}
-        title="拖拽调整宽度"
+        title={t('directory.resizeWidth')}
       />
     </div>
   );

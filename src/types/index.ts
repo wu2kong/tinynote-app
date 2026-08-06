@@ -1,3 +1,5 @@
+import type { AppLocale } from '@/i18n';
+
 export type ContentType = 'text' | 'json' | 'xml' | 'ini' | 'yaml' | 'css' | 'html' | 'bash' | 'shell' | 'sql' | 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'markdown';
 
 export interface NoteBlock {
@@ -45,6 +47,8 @@ export type ViewMode = 'list' | 'card' | 'compact';
 
 export type ColorThemeId = 'default' | 'qinglan' | 'sunset' | 'paper' | 'matcha';
 
+export type { AppLocale };
+
 export interface AppState {
   spaces: Space[];
   currentSpace: Space | null;
@@ -55,6 +59,7 @@ export interface AppState {
   recentNotebookHistory: RecentNotebookHistoryItem[];
   isDarkTheme: boolean;
   colorThemeId: ColorThemeId;
+  displayLanguage: AppLocale;
   isSidebarCollapsed: boolean;
   showAppBar: boolean;
   showDirectoryPanel: boolean;

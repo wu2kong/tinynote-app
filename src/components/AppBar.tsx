@@ -29,6 +29,7 @@ import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
 import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
+import { useI18n } from '@/i18n/useI18n';
 
 interface SortableSpaceItemProps {
   space: Space;
@@ -100,6 +101,7 @@ interface AppBarProps {
 }
 
 const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
+  const { t } = useI18n();
   const spaces = useStore((s) => s.spaces);
   const currentSpace = useStore((s) => s.currentSpace);
   const isDarkTheme = useStore((s) => s.isDarkTheme);
@@ -193,13 +195,13 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const handleCopyDirectory = async (space: Space) => {
     try {
       await writeText(space.path);
-      showToast('目录位置已复制');
+      showToast(t('appBar.directoryCopied'));
     } catch {
       try {
         await navigator.clipboard.writeText(space.path);
-        showToast('目录位置已复制');
+        showToast(t('appBar.directoryCopied'));
       } catch {
-        showToast('复制目录位置失败');
+        showToast(t('appBar.copyDirectoryFailed'));
       }
     }
     closeContextMenu();
@@ -227,7 +229,7 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         {!isSidebarCollapsed && (
           <div className="app-bar-brand">
             <span className="app-bar-app-name">TinyNote</span>
-            <span className="app-bar-slogan">零碎笔记整理</span>
+            <span className="app-bar-slogan">{t('appBar.slogan')}</span>
           </div>
         )}
       </div>
@@ -257,33 +259,33 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         <button
           className="app-bar-space-add"
           onClick={() => setShowAddSpace(true)}
-          title="新建空间"
+          title={t('appBar.newSpace')}
         >
           <Plus size={16} />
-          {!isSidebarCollapsed && <span className="app-bar-space-name">新建空间</span>}
+          {!isSidebarCollapsed && <span className="app-bar-space-name">{t('appBar.newSpace')}</span>}
         </button>
       </div>
 
       <div className="app-bar-footer">
-        <button className="app-bar-btn" onClick={onOpenGlobalSearch} title="全局搜索 (⌘⇧F / Ctrl+Shift+F)">
+        <button className="app-bar-btn" onClick={onOpenGlobalSearch} title={t('appBar.globalSearchShortcut')}>
           <Search size={18} />
-          {!isSidebarCollapsed && <span className="app-bar-btn-label">全局搜索</span>}
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">{t('appBar.globalSearch')}</span>}
         </button>
-        <button className="app-bar-btn" onClick={toggleSidebar} title={isSidebarCollapsed ? '展开/收起' : '收起/展开'}>
+        <button className="app-bar-btn" onClick={toggleSidebar} title={t('appBar.collapseExpand')}>
           {isSidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          {!isSidebarCollapsed && <span className="app-bar-btn-label">{isSidebarCollapsed ? '展开/收起' : '收起/展开'}</span>}
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">{t('appBar.collapseExpand')}</span>}
         </button>
-        <button className="app-bar-btn" onClick={toggleTheme} title="切换主题">
+        <button className="app-bar-btn" onClick={toggleTheme} title={t('appBar.toggleTheme')}>
           {isDarkTheme ? <Sun size={18} /> : <Moon size={18} />}
-          {!isSidebarCollapsed && <span className="app-bar-btn-label">切换主题</span>}
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">{t('appBar.toggleTheme')}</span>}
         </button>
         <button
           className="app-bar-btn"
           onClick={() => window.dispatchEvent(new Event(OPEN_SETTINGS_EVENT))}
-          title="设置中心"
+          title={t('appBar.settings')}
         >
           <Settings size={18} />
-          {!isSidebarCollapsed && <span className="app-bar-btn-label">设置中心</span>}
+          {!isSidebarCollapsed && <span className="app-bar-btn-label">{t('appBar.settings')}</span>}
         </button>
       </div>
 
@@ -291,24 +293,24 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
           <button className="context-menu-item" onClick={() => handleRename(contextMenu.space)}>
               <Edit3 size={14} />
-              重命名
+              {t('appBar.rename')}
             </button>
             <button className="context-menu-item" onClick={() => handleChangeIcon(contextMenu.space)}>
               <Smile size={14} />
-              更改图标
+              {t('appBar.changeIcon')}
             </button>
             <button className="context-menu-item" onClick={() => handleOpenDirectory(contextMenu.space)}>
               <FolderOpen size={14} />
-              打开目录位置
+              {t('appBar.openDirectory')}
             </button>
             <button className="context-menu-item" onClick={() => handleCopyDirectory(contextMenu.space)}>
               <Copy size={14} />
-              复制目录位置
+              {t('appBar.copyDirectory')}
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item danger" onClick={() => handleDelete(contextMenu.space)}>
               <Trash2 size={14} />
-              删除
+              {t('appBar.delete')}
             </button>
         </ContextMenuPortal>
       )}
@@ -317,7 +319,7 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         <>
           <div className="modal-overlay" onClick={() => { setShowEmojiPicker(false); setEmojiPickerSpace(null); }} />
           <div className="emoji-picker" onClick={(e) => e.stopPropagation()}>
-            <div className="emoji-picker-title">选择图标</div>
+            <div className="emoji-picker-title">{t('appBar.chooseIcon')}</div>
             <div className="emoji-picker-grid">
               {SPACE_EMOJI_OPTIONS.map((emoji) => (
                 <button
@@ -344,10 +346,10 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
           if (renameModal.space) renameSpaceAction(renameModal.space, name);
           setRenameModal({ open: false, space: null });
         }}
-        title="重命名空间"
-        placeholder="新名称"
+        title={t('appBar.renameSpace')}
+        placeholder={t('appBar.newName')}
         defaultValue={renameModal.space?.name || ''}
-        confirmLabel="保存"
+        confirmLabel={t('common.save')}
       />
 
       <ConfirmModal
@@ -357,16 +359,16 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
           if (deleteConfirm.space) deleteSpaceAction(deleteConfirm.space);
           setDeleteConfirm({ open: false, space: null });
         }}
-        title="删除空间"
-        message={`确定要删除「${deleteConfirm.space?.name}」吗？`}
+        title={t('appBar.deleteSpace')}
+        message={t('appBar.deleteSpaceConfirm', { name: deleteConfirm.space?.name ?? '' })}
       />
 
       <InputModal
         open={showAddSpace}
         onClose={() => setShowAddSpace(false)}
         onSubmit={(name) => { addSpace(name); setShowAddSpace(false); }}
-        title="新建空间"
-        placeholder="空间名称"
+        title={t('appBar.newSpace')}
+        placeholder={t('appBar.spaceName')}
       />
 
 
@@ -375,7 +377,7 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         <div
           className="app-bar-resize-handle"
           onPointerDown={handlePanelResizeStart}
-          title="拖拽调整宽度"
+          title={t('appBar.resizeWidth')}
         />
       )}
     </div>
