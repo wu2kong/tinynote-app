@@ -414,7 +414,7 @@ const DirectoryPanel: React.FC = () => {
     defaultValue: string;
     confirmLabel: string;
     onSubmit: (value: string) => void;
-  }>({ open: false, title: '', placeholder: '', defaultValue: '', confirmLabel: 'Create', onSubmit: () => {} });
+  }>({ open: false, title: '', placeholder: '', defaultValue: '', confirmLabel: '', onSubmit: () => {} });
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
     title: string;

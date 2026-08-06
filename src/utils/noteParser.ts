@@ -1,4 +1,5 @@
 import { NoteBlock, ContentType } from '@/types';
+import { t } from '@/i18n';
 import { stableIdFromParts, stableNoteBlockId } from './stableId';
 
 export function parseNoteBlocks(content: string, notebookPath?: string): NoteBlock[] {
@@ -33,7 +34,7 @@ export function parseNoteBlocks(content: string, notebookPath?: string): NoteBlo
     const createdAtMatch = frontmatter.match(/^createdAt:\s*(.+)$/m);
     const updatedAtMatch = frontmatter.match(/^updatedAt:\s*(.+)$/m);
 
-    const title = titleMatch ? titleMatch[1].trim() : 'Untitled';
+    const title = titleMatch ? titleMatch[1].trim() : t('common.untitled');
     const tags = tagsMatch
       ? tagsMatch[1].split(',').map((t) => t.trim()).filter(Boolean)
       : [];
@@ -111,7 +112,7 @@ export function serializeNoteBlocks(blocks: NoteBlock[]): string {
 
 export function createNoteBlock(partial?: Partial<NoteBlock>): NoteBlock {
   const now = new Date().toISOString();
-  const title = partial?.title ?? 'Untitled';
+  const title = partial?.title ?? t('common.untitled');
   return {
     id: stableIdFromParts('draft', now, title),
     title,

@@ -441,7 +441,7 @@ const AISettings: React.FC = () => {
       </div>
 
       <label className="ai-settings-field">
-        <span>API Key</span>
+        <span>{t('settings.ai.apiKey')}</span>
         <div className="ai-key-input-wrap">
           <KeyRound size={14} />
           <input
@@ -1139,7 +1139,7 @@ const SyncSettings: React.FC = () => {
                     type="password"
                     value={syncAuthToken}
                     onChange={(e) => setSyncAuthToken(e.target.value)}
-                    placeholder="HTTPS Personal Access Token"
+                    placeholder={t('settings.sync.gitTokenPlaceholder')}
                   />
                 </div>
                 {isWeb() && (
