@@ -48,10 +48,19 @@ class LocaleController extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final next = AppLocale.fromId(prefs.getString(localePreferenceKey));
-    if (next == _locale) return;
-    _locale = next;
+    final stored = AppLocale.tryParseId(prefs.getString(localePreferenceKey));
+    if (stored != null) {
+      if (stored == _locale) return;
+      _locale = stored;
+      notifyListeners();
+      return;
+    }
+
+    // First launch: match OS language, then persist so later launches stay stable.
+    final detected = AppLocale.detectSystem();
+    _locale = detected;
     notifyListeners();
+    await prefs.setString(localePreferenceKey, detected.localeId);
   }
 
   Future<void> setLocale(AppLocale locale) async {

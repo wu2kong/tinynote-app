@@ -8,7 +8,7 @@ import { createNoteBlock } from '@/utils/noteParser';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
 import { GlobalSearchResult } from '@/utils/globalSearch';
-import { DEFAULT_LOCALE, isAppLocale, setI18nLocale, t } from '@/i18n';
+import { DEFAULT_LOCALE, resolveAppLocale, setI18nLocale, t } from '@/i18n';
 import { isTauri } from '@/platform/detect';
 
 interface AppActions {
@@ -294,9 +294,13 @@ export const useStore = create<AppStore>((set, get) => ({
     const cfg = await config.loadConfig();
 
     const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'paper';
-    const displayLanguage = isAppLocale(cfg.displayLanguage) ? cfg.displayLanguage : DEFAULT_LOCALE;
+    const { locale: displayLanguage, fromSystem } = resolveAppLocale(cfg.displayLanguage);
     setI18nLocale(displayLanguage);
     document.documentElement.lang = displayLanguage;
+    if (fromSystem) {
+      // Persist the first-launch system match so later launches stay stable.
+      void config.saveConfig({ displayLanguage });
+    }
     applyTheme(colorThemeId, cfg.isDarkTheme);
     applyMinimalStyle(cfg.hideElementBorders ?? false);
     document.documentElement.style.zoom = (cfg.zoomLevel ?? 1).toString();

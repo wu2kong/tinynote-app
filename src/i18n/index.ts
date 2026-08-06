@@ -11,7 +11,14 @@ import { DEFAULT_LOCALE } from './types';
 import type { AppLocale, I18nParams, MessageTree } from './types';
 
 export type { AppLocale, I18nParams, MessageTree } from './types';
-export { LOCALE_OPTIONS, DEFAULT_LOCALE, isAppLocale } from './types';
+export {
+  LOCALE_OPTIONS,
+  DEFAULT_LOCALE,
+  isAppLocale,
+  matchAppLocale,
+  detectSystemLocale,
+  resolveAppLocale,
+} from './types';
 
 const catalogs: Record<AppLocale, MessageTree> = {
   en: enMessages,
