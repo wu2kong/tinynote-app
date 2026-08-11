@@ -162,24 +162,120 @@ body.app-bar-resizing {
   overflow: hidden;
 }
 
-.app-bar-group-switcher {
+.app-bar-group-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 8px 8px 0;
+  min-width: 0;
 }
 
-.app-bar-group-select {
-  width: 100%;
-  height: 30px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary);
+.app-bar-group-switcher {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-bar-group-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 999px;
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   font-size: 12px;
-  padding: 0 8px;
-  outline: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
 }
 
-.app-bar-group-select:focus {
-  border-color: var(--accent);
+.app-bar-group-trigger:hover,
+.app-bar-group-trigger.open {
+  background: var(--bg-hover);
+}
+
+.app-bar-group-trigger-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-bar-group-trigger svg {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.app-bar-group-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 40;
+  min-width: max(160px, 100%);
+  max-width: min(240px, calc(100vw - 24px));
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.app-bar-group-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-bar-group-menu-item:hover,
+.app-bar-group-menu-item.active {
+  background: var(--bg-hover);
+}
+
+.app-bar-group-menu-item-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.app-bar-group-menu-check {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.app-bar-group-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.app-bar-group-toolbar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .app-bar-group-collapsed-btn {

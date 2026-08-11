@@ -170,6 +170,8 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     group: null,
   });
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [groupMenuOpen, setGroupMenuOpen] = useState(false);
+  const groupSwitcherRef = useRef<HTMLDivElement>(null);
   const [panelWidth, setPanelWidth] = useState(
     () => config.getConfig().appBarWidth ?? DEFAULT_APP_BAR_WIDTH
   );
@@ -214,6 +216,27 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     if (currentSpace && visibleSpaces.some((space) => space.id === currentSpace.id)) return;
     void selectSpace(visibleSpaces[0]);
   }, [groupingEnabled, useCollapseMode, currentSpaceGroupId, visibleSpaces, currentSpace, selectSpace]);
+
+  useEffect(() => {
+    if (!groupMenuOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (groupSwitcherRef.current?.contains(event.target as Node)) return;
+      setGroupMenuOpen(false);
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setGroupMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [groupMenuOpen]);
+
+  useEffect(() => {
+    if (!useDropdownMode || isSidebarCollapsed) setGroupMenuOpen(false);
+  }, [useDropdownMode, isSidebarCollapsed]);
 
   const handlePanelResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -383,19 +406,68 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
       </div>
 
       {useDropdownMode && !isSidebarCollapsed && (
-        <div className="app-bar-group-switcher">
-          <select
-            className="app-bar-group-select"
-            value={currentSpaceGroupId}
-            onChange={(e) => setCurrentSpaceGroup(e.target.value)}
-            title={t('appBar.switchGroup')}
-            aria-label={t('appBar.switchGroup')}
+        <div className="app-bar-group-toolbar">
+          <div className="app-bar-group-switcher" ref={groupSwitcherRef}>
+            <button
+              type="button"
+              className={`app-bar-group-trigger${groupMenuOpen ? ' open' : ''}`}
+              onClick={() => setGroupMenuOpen((open) => !open)}
+              title={t('appBar.switchGroup')}
+              aria-label={t('appBar.switchGroup')}
+              aria-haspopup="listbox"
+              aria-expanded={groupMenuOpen}
+            >
+              <span className="app-bar-group-trigger-label">{currentGroupLabel}</span>
+              <ChevronDown size={14} />
+            </button>
+            {groupMenuOpen && (
+              <div className="app-bar-group-menu" role="listbox" aria-label={t('appBar.switchGroup')}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={currentSpaceGroupId === ALL_SPACE_GROUP_ID}
+                  className={`app-bar-group-menu-item${currentSpaceGroupId === ALL_SPACE_GROUP_ID ? ' active' : ''}`}
+                  onClick={() => {
+                    setCurrentSpaceGroup(ALL_SPACE_GROUP_ID);
+                    setGroupMenuOpen(false);
+                  }}
+                >
+                  <span className="app-bar-group-menu-item-text">{t('appBar.allGroups')}</span>
+                  {currentSpaceGroupId === ALL_SPACE_GROUP_ID && (
+                    <Check size={14} className="app-bar-group-menu-check" />
+                  )}
+                </button>
+                {spaceGroups.map((group) => {
+                  const isActive = currentSpaceGroupId === group.id;
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      role="option"
+                      aria-selected={isActive}
+                      className={`app-bar-group-menu-item${isActive ? ' active' : ''}`}
+                      onClick={() => {
+                        setCurrentSpaceGroup(group.id);
+                        setGroupMenuOpen(false);
+                      }}
+                    >
+                      <span className="app-bar-group-menu-item-text">{group.name}</span>
+                      {isActive && <Check size={14} className="app-bar-group-menu-check" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            className="app-bar-group-toolbar-btn"
+            onClick={onOpenGlobalSearch}
+            title={t('appBar.globalSearchShortcut')}
+            aria-label={t('appBar.globalSearch')}
           >
-            <option value={ALL_SPACE_GROUP_ID}>{t('appBar.allGroups')}</option>
-            {spaceGroups.map((group) => (
-              <option key={group.id} value={group.id}>{group.name}</option>
-            ))}
-          </select>
+            <Search size={16} />
+          </button>
         </div>
       )}
 
