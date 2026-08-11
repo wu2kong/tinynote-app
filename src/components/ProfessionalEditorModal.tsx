@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { format as formatSql } from 'sql-formatter';
 import { X, Braces, Eye, EyeOff } from 'lucide-react';
 import { ContentType } from '@/types';
 import { getContentTypeExtensions } from '@/utils/codemirrorExtensions';
+import MarkdownPreview from './MarkdownPreview';
 import { showToast } from './Toast';
 import { useI18n } from '@/i18n/useI18n';
 
@@ -115,9 +114,7 @@ const ProfessionalEditorModal: React.FC<ProfessionalEditorModalProps> = ({
           {contentType === 'markdown' && previewVisible && (
             <aside className="professional-editor-preview" aria-label={t('editor.markdownPreview')}>
               <div className="professional-editor-preview-title">{t('editor.preview')}</div>
-              <article className="markdown-preview">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-              </article>
+              <MarkdownPreview content={content} />
             </aside>
           )}
         </div>

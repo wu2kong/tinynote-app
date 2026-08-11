@@ -60,6 +60,7 @@ export default defineConfig(({ mode: viteMode }) => {
         '@codemirror/lang-go',
         '@codemirror/theme-one-dark',
         '@codemirror/legacy-modes/mode/properties',
+        'marked',
       ],
     },
     define: {

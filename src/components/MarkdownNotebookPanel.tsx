@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { getMarkdownNotebookExtensions } from '@/utils/codemirrorExtensions';
+import MarkdownPreview from './MarkdownPreview';
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -152,9 +151,7 @@ const MarkdownNotebookPanel: React.FC = () => {
             {viewMode === 'split' && (
               <div className="professional-editor-preview-title">{t('editor.preview')}</div>
             )}
-            <article className="markdown-preview">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{localContent}</ReactMarkdown>
-            </article>
+            <MarkdownPreview content={localContent} />
           </aside>
         )}
       </div>
