@@ -310,12 +310,17 @@ export const koMessages = {
   },
   "directory": {
     "newNotebook": "새 노트북",
+    "newMarkdownNotebook": "새 Markdown 노트북",
     "newGroup": "새 그룹",
     "renameGroup": "그룹 이름 변경",
     "renameNotebook": "노트북 이름 변경",
     "deleteGroup": "그룹 삭제",
     "deleteNotebook": "노트북 삭제",
     "notebookName": "노트북 이름",
+    "formats": {
+      "blocks": "블록 노트",
+      "markdown": "Markdown"
+    },
     "groupName": "그룹 이름",
     "searchNotebook": "노트북 검색...",
     "clearSearch": "검색 지우기",
@@ -486,7 +491,13 @@ export const koMessages = {
     "openPreview": "미리보기 열기",
     "closeEditor": "전문 편집기 닫기",
     "markdownPreview": "Markdown 미리보기",
-    "preview": "미리보기"
+    "preview": "미리보기",
+    "viewMode": "보기 모드",
+    "viewModes": {
+      "edit": "편집만",
+      "preview": "미리보기만",
+      "split": "편집 및 미리보기"
+    }
   },
   "confirm": {
     "defaultDelete": "삭제",

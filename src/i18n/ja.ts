@@ -310,12 +310,17 @@ export const jaMessages = {
   },
   "directory": {
     "newNotebook": "新しいノートブック",
+    "newMarkdownNotebook": "新しい Markdown ノートブック",
     "newGroup": "新しいグループ",
     "renameGroup": "グループ名を変更",
     "renameNotebook": "ノートブック名を変更",
     "deleteGroup": "グループを削除",
     "deleteNotebook": "ノートブックを削除",
     "notebookName": "ノートブック名",
+    "formats": {
+      "blocks": "ブロックノート",
+      "markdown": "Markdown"
+    },
     "groupName": "グループ名",
     "searchNotebook": "ノートブックを検索...",
     "clearSearch": "検索をクリア",
@@ -486,7 +491,13 @@ export const jaMessages = {
     "openPreview": "プレビューを開く",
     "closeEditor": "プロフェッショナルエディターを閉じる",
     "markdownPreview": "Markdown プレビュー",
-    "preview": "プレビュー"
+    "preview": "プレビュー",
+    "viewMode": "表示モード",
+    "viewModes": {
+      "edit": "編集のみ",
+      "preview": "プレビューのみ",
+      "split": "編集とプレビュー"
+    }
   },
   "confirm": {
     "defaultDelete": "削除",

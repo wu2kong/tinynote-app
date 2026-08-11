@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import {
   AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId,
   RecentNotebookHistoryItem, ContentType, AppLocale, SpaceGroupDisplayMode,
+  NotebookFormatId,
 } from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { isColorThemeId } from '@/themes';
@@ -9,7 +10,8 @@ import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
 import { createNoteBlock } from '@/utils/noteParser';
-import { isSubPath, normalizePath, dirname } from '@/utils/path';
+import { detectNotebookFormat, getNotebookDisplayName } from '@/utils/notebookFormat';
+import { isSubPath, normalizePath, dirname, basename } from '@/utils/path';
 import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
 import { stableIdFromParts } from '@/utils/stableId';
 import { GlobalSearchResult } from '@/utils/globalSearch';
@@ -52,7 +54,7 @@ interface AppActions {
   addGroup: (parentPath: string, name: string) => Promise<void>;
   deleteGroup: (group: Group) => Promise<void>;
   renameGroup: (group: Group, newName: string) => Promise<void>;
-  addNotebook: (parentPath: string, name: string) => Promise<void>;
+  addNotebook: (parentPath: string, name: string, format?: NotebookFormatId) => Promise<void>;
   duplicateNotebook: (notebook: Notebook) => Promise<Notebook | null>;
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
@@ -62,6 +64,7 @@ interface AppActions {
   pasteNoteBlock: (block: NoteBlock, index: number) => Promise<void>;
   pasteNoteBlockAtEnd: (block: NoteBlock) => Promise<void>;
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
+  updateNotebookContent: (content: string) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
   reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
@@ -925,8 +928,8 @@ export const useStore = create<AppStore>((set, get) => ({
     }
   },
 
-  addNotebook: async (parentPath, name) => {
-    const notebook = await fs.createNotebook(parentPath, name);
+  addNotebook: async (parentPath, name, format = 'blocks') => {
+    const notebook = await fs.createNotebook(parentPath, name, format);
     const { currentSpace } = get();
     if (currentSpace) {
       const addNotebookToTree = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
@@ -1050,12 +1053,15 @@ export const useStore = create<AppStore>((set, get) => ({
 
   renameNotebook: async (notebook, newName) => {
     const newPath = await fs.renameNotebook(notebook.path, newName);
+    const fileName = basename(newPath);
+    const displayName = getNotebookDisplayName(fileName);
+    const format = detectNotebookFormat(fileName);
     const { currentSpace } = get();
     if (currentSpace) {
       const renameInTree = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
         return children.map((child) => {
           if (child.id === notebook.id) {
-            return { ...child, name: newName, path: newPath };
+            return { ...child, name: displayName, path: newPath, format };
           }
           if ('children' in child) {
             return { ...child, children: renameInTree(child.children) };
@@ -1066,7 +1072,7 @@ export const useStore = create<AppStore>((set, get) => ({
       const updatedGroups = renameInTree(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       const updatedCurrentNotebook = get().currentNotebook?.id === notebook.id
-        ? { ...get().currentNotebook!, name: newName, path: newPath }
+        ? { ...get().currentNotebook!, name: displayName, path: newPath, format }
         : get().currentNotebook;
       set((state) => ({
         currentSpace: updatedSpace,
@@ -1171,6 +1177,14 @@ export const useStore = create<AppStore>((set, get) => ({
     });
   },
 
+  updateNotebookContent: async (content) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook || currentNotebook.format === 'blocks') return;
+    const updated = { ...currentNotebook, content };
+    await fs.saveNotebook(updated);
+    set({ currentNotebook: updated });
+  },
+
   deleteNoteBlock: async (id) => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
@@ -1243,7 +1257,7 @@ export const useStore = create<AppStore>((set, get) => ({
 
   toggleSourceMode: () => {
     const { currentNotebook } = get();
-    if (!currentNotebook) return;
+    if (!currentNotebook || currentNotebook.format !== 'blocks') return;
     set({ currentNotebook: { ...currentNotebook, isSourceMode: !currentNotebook.isSourceMode } });
   },
 

@@ -310,12 +310,17 @@ export const enMessages = {
   },
   "directory": {
     "newNotebook": "New Notebook",
+    "newMarkdownNotebook": "New Markdown Notebook",
     "newGroup": "New Group",
     "renameGroup": "Rename Group",
     "renameNotebook": "Rename Notebook",
     "deleteGroup": "Delete Group",
     "deleteNotebook": "Delete Notebook",
     "notebookName": "Notebook Name",
+    "formats": {
+      "blocks": "Block Notes",
+      "markdown": "Markdown"
+    },
     "groupName": "Group Name",
     "searchNotebook": "Search notebooks...",
     "clearSearch": "Clear search",
@@ -486,7 +491,13 @@ export const enMessages = {
     "openPreview": "Open Preview",
     "closeEditor": "Close Professional Editor",
     "markdownPreview": "Markdown Preview",
-    "preview": "Preview"
+    "preview": "Preview",
+    "viewMode": "View Mode",
+    "viewModes": {
+      "edit": "Edit Only",
+      "preview": "Preview Only",
+      "split": "Edit & Preview"
+    }
   },
   "confirm": {
     "defaultDelete": "Delete",

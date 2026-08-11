@@ -310,12 +310,17 @@ export const frMessages = {
   },
   "directory": {
     "newNotebook": "Nouveau carnet",
+    "newMarkdownNotebook": "Nouveau carnet Markdown",
     "newGroup": "Nouveau groupe",
     "renameGroup": "Renommer le groupe",
     "renameNotebook": "Renommer le carnet",
     "deleteGroup": "Supprimer le groupe",
     "deleteNotebook": "Supprimer le carnet",
     "notebookName": "Nom du carnet",
+    "formats": {
+      "blocks": "Blocs de note",
+      "markdown": "Markdown"
+    },
     "groupName": "Nom du groupe",
     "searchNotebook": "Rechercher des carnets...",
     "clearSearch": "Effacer la recherche",
@@ -486,7 +491,13 @@ export const frMessages = {
     "openPreview": "Ouvrir l'aperçu",
     "closeEditor": "Fermer l'éditeur professionnel",
     "markdownPreview": "Aperçu Markdown",
-    "preview": "Aperçu"
+    "preview": "Aperçu",
+    "viewMode": "Mode d'affichage",
+    "viewModes": {
+      "edit": "Édition seule",
+      "preview": "Aperçu seul",
+      "split": "Édition et aperçu"
+    }
   },
   "confirm": {
     "defaultDelete": "Supprimer",

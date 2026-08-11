@@ -1,6 +1,9 @@
 import type { AppLocale } from '@/i18n';
+import type { NotebookFormatId } from '@/utils/notebookFormat';
 
 export type ContentType = 'text' | 'json' | 'xml' | 'ini' | 'yaml' | 'css' | 'html' | 'bash' | 'shell' | 'sql' | 'javascript' | 'typescript' | 'python' | 'java' | 'go' | 'rust' | 'markdown';
+
+export type { NotebookFormatId };
 
 export interface NoteBlock {
   id: string;
@@ -16,7 +19,11 @@ export interface Notebook {
   id: string;
   name: string;
   path: string;
+  /** Determined by filename suffix, e.g. `.blk.md` / legacy `.md` (blocks) or `.mk.md` (markdown). */
+  format: NotebookFormatId;
   noteBlocks: NoteBlock[];
+  /** Raw document body for non-block formats (markdown, future writer/treemind, …). */
+  content: string;
   isSourceMode: boolean;
 }
 

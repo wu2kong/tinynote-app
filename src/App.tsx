@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { Component, useEffect, useState, useCallback, type ErrorInfo, type ReactNode } from 'react';
 import { useStore } from '@/store/useStore';
 import AppBar from '@/components/AppBar';
 import DirectoryPanel from '@/components/DirectoryPanel';
 import NotePanel from '@/components/NotePanel';
 import PropertyPanel from '@/components/PropertyPanel';
+import MarkdownNotebookPanel from '@/components/MarkdownNotebookPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -18,6 +19,32 @@ import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
+
+class EditorAreaErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Editor area crashed:', error, info.componentStack);
+  }
+
+  componentDidUpdate(prevProps: { children: ReactNode }) {
+    if (prevProps.children !== this.props.children && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
 
 const SourceEditorPanel: React.FC = () => {
   const { t } = useI18n();
@@ -227,19 +254,30 @@ const App: React.FC = () => {
   }
 
   const isSourceMode = currentNotebook?.isSourceMode;
+  const isMarkdownNotebook = currentNotebook?.format === 'markdown';
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
       {showAppBar && <AppBar onOpenGlobalSearch={() => setShowGlobalSearch(true)} />}
       {showDirectoryPanel && <DirectoryPanel />}
-      {isSourceMode ? (
-        <SourceEditorPanel />
-      ) : (
-        <>
-          <NotePanel />
-          <PropertyPanel />
-        </>
-      )}
+      <EditorAreaErrorBoundary
+        fallback={
+          <div className="note-panel">
+            <div className="note-panel-empty">{t('note.selectNotebook')}</div>
+          </div>
+        }
+      >
+        {isMarkdownNotebook ? (
+          <MarkdownNotebookPanel />
+        ) : isSourceMode ? (
+          <SourceEditorPanel />
+        ) : (
+          <>
+            <NotePanel />
+            <PropertyPanel />
+          </>
+        )}
+      </EditorAreaErrorBoundary>
       <Toast />
       {settingsModal}
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />

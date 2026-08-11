@@ -310,12 +310,17 @@ export const zhHantMessages = {
   },
   "directory": {
     "newNotebook": "新增筆記本",
+    "newMarkdownNotebook": "新增 Markdown 筆記本",
     "newGroup": "新增分組",
     "renameGroup": "重新命名分組",
     "renameNotebook": "重新命名筆記本",
     "deleteGroup": "刪除分組",
     "deleteNotebook": "刪除筆記本",
     "notebookName": "筆記本名稱",
+    "formats": {
+      "blocks": "區塊筆記",
+      "markdown": "Markdown"
+    },
     "groupName": "分組名稱",
     "searchNotebook": "搜尋筆記本...",
     "clearSearch": "清除搜尋",
@@ -486,7 +491,13 @@ export const zhHantMessages = {
     "openPreview": "開啟預覽",
     "closeEditor": "關閉專業編輯器",
     "markdownPreview": "Markdown 預覽",
-    "preview": "預覽"
+    "preview": "預覽",
+    "viewMode": "檢視模式",
+    "viewModes": {
+      "edit": "僅編輯",
+      "preview": "僅預覽",
+      "split": "編輯和預覽"
+    }
   },
   "confirm": {
     "defaultDelete": "刪除",

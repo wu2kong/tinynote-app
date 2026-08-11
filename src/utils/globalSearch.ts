@@ -136,6 +136,22 @@ export function performGlobalSearch(
         if (results.length >= maxResults) return true;
       }
 
+      if (notebook.format !== 'blocks') {
+        if (filters.blockContent && notebook.content.toLowerCase().includes(q)) {
+          results.push({
+            id: `notebook-content:${notebook.path}`,
+            type: 'notebook',
+            matchLabels: [t(MATCH_LABELS.blockContent)],
+            spaceName: space.name,
+            notebookName: notebook.name,
+            spacePath: space.path,
+            notebookPath: notebook.path,
+          });
+          if (results.length >= maxResults) return true;
+        }
+        return false;
+      }
+
       for (const block of notebook.noteBlocks) {
         const matchLabels: string[] = [];
         if (filters.blockTitle && block.title.toLowerCase().includes(q)) {

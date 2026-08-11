@@ -310,12 +310,17 @@ export const itMessages = {
   },
   "directory": {
     "newNotebook": "Nuovo taccuino",
+    "newMarkdownNotebook": "Nuovo taccuino Markdown",
     "newGroup": "Nuovo gruppo",
     "renameGroup": "Rinomina gruppo",
     "renameNotebook": "Rinomina taccuino",
     "deleteGroup": "Elimina gruppo",
     "deleteNotebook": "Elimina taccuino",
     "notebookName": "Nome taccuino",
+    "formats": {
+      "blocks": "Blocchi nota",
+      "markdown": "Markdown"
+    },
     "groupName": "Nome gruppo",
     "searchNotebook": "Cerca taccuini...",
     "clearSearch": "Cancella ricerca",
@@ -486,7 +491,13 @@ export const itMessages = {
     "openPreview": "Apri anteprima",
     "closeEditor": "Chiudi editor professionale",
     "markdownPreview": "Anteprima Markdown",
-    "preview": "Anteprima"
+    "preview": "Anteprima",
+    "viewMode": "Modalità visualizzazione",
+    "viewModes": {
+      "edit": "Solo modifica",
+      "preview": "Solo anteprima",
+      "split": "Modifica e anteprima"
+    }
   },
   "confirm": {
     "defaultDelete": "Elimina",

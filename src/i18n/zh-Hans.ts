@@ -310,12 +310,17 @@ export const zhHansMessages = {
   },
   "directory": {
     "newNotebook": "新建笔记本",
+    "newMarkdownNotebook": "新建 Markdown 笔记本",
     "newGroup": "新建分组",
     "renameGroup": "重命名分组",
     "renameNotebook": "重命名笔记本",
     "deleteGroup": "删除分组",
     "deleteNotebook": "删除笔记本",
     "notebookName": "笔记本名称",
+    "formats": {
+      "blocks": "块笔记",
+      "markdown": "Markdown"
+    },
     "groupName": "分组名称",
     "searchNotebook": "搜索笔记本...",
     "clearSearch": "清空搜索",
@@ -486,7 +491,13 @@ export const zhHansMessages = {
     "openPreview": "打开预览",
     "closeEditor": "关闭专业编辑器",
     "markdownPreview": "Markdown 预览",
-    "preview": "预览"
+    "preview": "预览",
+    "viewMode": "视图模式",
+    "viewModes": {
+      "edit": "仅编辑",
+      "preview": "仅预览",
+      "split": "编辑和预览"
+    }
   },
   "confirm": {
     "defaultDelete": "删除",

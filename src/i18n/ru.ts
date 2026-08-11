@@ -310,12 +310,17 @@ export const ruMessages = {
   },
   "directory": {
     "newNotebook": "Новый блокнот",
+    "newMarkdownNotebook": "Новый Markdown-блокнот",
     "newGroup": "Новая группа",
     "renameGroup": "Переименовать группу",
     "renameNotebook": "Переименовать блокнот",
     "deleteGroup": "Удалить группу",
     "deleteNotebook": "Удалить блокнот",
     "notebookName": "Имя блокнота",
+    "formats": {
+      "blocks": "Блоки заметок",
+      "markdown": "Markdown"
+    },
     "groupName": "Имя группы",
     "searchNotebook": "Поиск блокнотов...",
     "clearSearch": "Очистить поиск",
@@ -486,7 +491,13 @@ export const ruMessages = {
     "openPreview": "Открыть предпросмотр",
     "closeEditor": "Закрыть профессиональный редактор",
     "markdownPreview": "Предпросмотр Markdown",
-    "preview": "Предпросмотр"
+    "preview": "Предпросмотр",
+    "viewMode": "Режим просмотра",
+    "viewModes": {
+      "edit": "Только редактирование",
+      "preview": "Только предпросмотр",
+      "split": "Редактирование и предпросмотр"
+    }
   },
   "confirm": {
     "defaultDelete": "Удалить",

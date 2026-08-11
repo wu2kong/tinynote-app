@@ -1,6 +1,12 @@
 import { getStorageAdapter } from '@/adapters/storage';
-import { Space, Group, Notebook } from '@/types';
+import { Space, Group, Notebook, NotebookFormatId } from '@/types';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
+import {
+  detectNotebookFormat,
+  getMatchedNotebookSuffix,
+  getNotebookDisplayName,
+  resolveNotebookFileName,
+} from './notebookFormat';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 import { isNoteSpaceDirectoryName } from './workspaceConfig';
@@ -156,14 +162,30 @@ function countNotebooks(children: (Group | Notebook)[]): number {
 export async function loadNotebook(filePath: string): Promise<Notebook | null> {
   const normalizedPath = normalizePath(filePath);
   try {
-    const content = await storage().readTextFile(normalizedPath);
-    const noteBlocks = parseNoteBlocks(content, normalizedPath);
-    const name = basename(normalizedPath).replace('.md', '');
+    const raw = await storage().readTextFile(normalizedPath);
+    const fileName = basename(normalizedPath);
+    const format = detectNotebookFormat(fileName);
+    const name = getNotebookDisplayName(fileName);
+
+    if (format === 'blocks') {
+      return {
+        id: stableIdFromPath(normalizedPath),
+        name,
+        path: normalizedPath,
+        format,
+        noteBlocks: parseNoteBlocks(raw, normalizedPath),
+        content: '',
+        isSourceMode: false,
+      };
+    }
+
     return {
       id: stableIdFromPath(normalizedPath),
       name,
       path: normalizedPath,
-      noteBlocks,
+      format,
+      noteBlocks: [],
+      content: raw,
       isSourceMode: false,
     };
   } catch {
@@ -172,7 +194,9 @@ export async function loadNotebook(filePath: string): Promise<Notebook | null> {
 }
 
 export async function saveNotebook(notebook: Notebook): Promise<void> {
-  const content = serializeNoteBlocks(notebook.noteBlocks);
+  const content = notebook.format === 'blocks'
+    ? serializeNoteBlocks(notebook.noteBlocks)
+    : notebook.content;
   await storage().writeTextFile(notebook.path, content);
 }
 
@@ -200,12 +224,22 @@ export async function createGroup(parentPath: string, name: string): Promise<Gro
   };
 }
 
-export async function createNotebook(parentPath: string, name: string): Promise<Notebook> {
-  const fileName = name.endsWith('.md') ? name : `${name}.md`;
-  const filePath = joinPath(parentPath, fileName);
+function initialNotebookContent(format: NotebookFormatId, displayName: string): string {
+  if (format === 'markdown') {
+    return `# ${displayName}\n\n`;
+  }
   const now = new Date().toISOString();
-  const initialContent = `---\ntitle: ${name}\ntags: []\ncreatedAt: ${now}\nupdatedAt: ${now}\n---\n\n`;
-  await storage().writeTextFile(filePath, initialContent);
+  return `---\ntitle: ${displayName}\ntags: []\ncreatedAt: ${now}\nupdatedAt: ${now}\n---\n\n`;
+}
+
+export async function createNotebook(
+  parentPath: string,
+  name: string,
+  preferredFormat: NotebookFormatId = 'blocks',
+): Promise<Notebook> {
+  const { fileName, format, displayName } = resolveNotebookFileName(name, preferredFormat);
+  const filePath = joinPath(parentPath, fileName);
+  await storage().writeTextFile(filePath, initialNotebookContent(format, displayName));
   const notebook = await loadNotebook(filePath);
   if (!notebook) {
     throw new Error('Failed to load created notebook');
@@ -216,15 +250,19 @@ export async function createNotebook(parentPath: string, name: string): Promise<
 export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
   const normalizedSource = normalizePath(sourcePath);
   const parentPath = dirname(normalizedSource);
-  const sourceName = basename(normalizedSource).replace(/\.md$/, '');
+  const sourceFileName = basename(normalizedSource);
+  const format = detectNotebookFormat(sourceFileName);
+  const sourceName = getNotebookDisplayName(sourceFileName);
   const content = await storage().readTextFile(normalizedSource);
 
   let copyName = t('common.copySuffix', { name: sourceName });
-  let copyPath = joinPath(parentPath, `${copyName}.md`);
+  let { fileName } = resolveNotebookFileName(copyName, format);
+  let copyPath = joinPath(parentPath, fileName);
   let counter = 2;
   while (await storage().exists(copyPath)) {
     copyName = t('common.copySuffixN', { name: sourceName, n: counter });
-    copyPath = joinPath(parentPath, `${copyName}.md`);
+    fileName = resolveNotebookFileName(copyName, format).fileName;
+    copyPath = joinPath(parentPath, fileName);
     counter++;
   }
 
@@ -264,8 +302,13 @@ export async function renameGroup(oldPath: string, newName: string): Promise<str
 
 export async function renameNotebook(oldPath: string, newName: string): Promise<string> {
   const parentPath = dirname(oldPath);
-  const newFileName = newName.endsWith('.md') ? newName : `${newName}.md`;
-  const newPath = joinPath(parentPath, newFileName);
+  const oldFileName = basename(oldPath);
+  const currentFormat = detectNotebookFormat(oldFileName);
+  // Keep legacy plain `.md` (and other aliases) on rename; only new creates use `.blk.md`.
+  const { fileName } = resolveNotebookFileName(newName, currentFormat, {
+    preserveExtension: getMatchedNotebookSuffix(oldFileName),
+  });
+  const newPath = joinPath(parentPath, fileName);
   await storage().rename(oldPath, newPath);
   return newPath;
 }
