@@ -98,6 +98,17 @@ export function configPathsToRelative(
     result.spaceIcons = icons;
   }
 
+  if (result.spaceGroupAssignments) {
+    const assignments: Record<string, string[]> = {};
+    for (const [key, groupIds] of Object.entries(result.spaceGroupAssignments)) {
+      const relativeKey = toRelativeConfigPath(workspaceRoot, key);
+      if (relativeKey) {
+        assignments[relativeKey] = groupIds;
+      }
+    }
+    result.spaceGroupAssignments = assignments;
+  }
+
   if (result.groupOrder) {
     const groupOrder: Record<string, string[]> = {};
     for (const [parentPath, childPaths] of Object.entries(result.groupOrder)) {
@@ -146,6 +157,17 @@ export function configPathsToAbsolute(
       }
     }
     result.spaceIcons = icons;
+  }
+
+  if (result.spaceGroupAssignments) {
+    const assignments: Record<string, string[]> = {};
+    for (const [key, groupIds] of Object.entries(result.spaceGroupAssignments)) {
+      const absoluteKey = toAbsoluteConfigPath(workspaceRoot, key);
+      if (absoluteKey) {
+        assignments[absoluteKey] = groupIds;
+      }
+    }
+    result.spaceGroupAssignments = assignments;
   }
 
   if (result.groupOrder) {

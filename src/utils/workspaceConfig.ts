@@ -78,6 +78,7 @@ function workspaceFileNeedsRelativization(partial: Partial<WorkspaceConfigFile>)
     return true;
   }
   if (partial.spaceIcons && Object.keys(partial.spaceIcons).some(hasAbsolute)) return true;
+  if (partial.spaceGroupAssignments && Object.keys(partial.spaceGroupAssignments).some(hasAbsolute)) return true;
   if (partial.groupOrder) {
     for (const [parent, children] of Object.entries(partial.groupOrder)) {
       if (hasAbsolute(parent) || children.some(hasAbsolute)) return true;

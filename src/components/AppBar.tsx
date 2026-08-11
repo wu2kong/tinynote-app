@@ -1,8 +1,9 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '@/store/useStore';
-import { Space } from '@/types';
+import { Space, SpaceGroupDef } from '@/types';
 import * as config from '@/utils/config';
+import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
 
 const DEFAULT_APP_BAR_WIDTH = 200;
 const MIN_APP_BAR_WIDTH = 120;
@@ -10,7 +11,8 @@ const MAX_APP_BAR_WIDTH = 400;
 const COLLAPSED_APP_BAR_WIDTH = 52;
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
-  Edit3, Trash2, Smile, GripVertical, FolderOpen, Search, Copy
+  Edit3, Trash2, Smile, GripVertical, FolderOpen, Search, Copy,
+  Tags, Check, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -31,26 +33,25 @@ import { showToast } from './Toast';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 import { useI18n } from '@/i18n/useI18n';
 
-interface SortableSpaceItemProps {
+interface SpaceItemProps {
   space: Space;
   isActive: boolean;
   isCollapsed: boolean;
   onSelect: (space: Space) => void;
   onContextMenu: (e: React.MouseEvent, space: Space) => void;
+  dragHandle?: {
+    attributes: React.HTMLAttributes<HTMLElement>;
+    listeners?: Record<string, Function>;
+    setNodeRef: (node: HTMLElement | null) => void;
+    style?: React.CSSProperties;
+  };
 }
 
-const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
-  space, isActive, isCollapsed, onSelect, onContextMenu
+const SpaceItem: React.FC<SpaceItemProps> = ({
+  space, isActive, isCollapsed, onSelect, onContextMenu, dragHandle,
 }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: space.id });
   const icon = space.icon || space.name.charAt(0).toUpperCase();
   const [tooltipRect, setTooltipRect] = useState<DOMRect | null>(null);
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
 
   const handleMouseEnter = useCallback((e: React.MouseEvent) => {
     if (isCollapsed) {
@@ -65,8 +66,8 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
   return (
     <>
       <div
-        ref={setNodeRef}
-        style={style}
+        ref={dragHandle?.setNodeRef}
+        style={dragHandle?.style}
         className={`app-bar-space ${isActive ? 'active' : ''}`}
         onClick={() => onSelect(space)}
         onContextMenu={(e) => onContextMenu(e, space)}
@@ -74,9 +75,11 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
         onMouseLeave={handleMouseLeave}
       >
         <div className="app-bar-space-icon-row">
-          <span className="app-bar-drag-handle" {...attributes} {...listeners}>
-            <GripVertical size={12} />
-          </span>
+          {dragHandle && (
+            <span className="app-bar-drag-handle" {...dragHandle.attributes} {...dragHandle.listeners}>
+              <GripVertical size={12} />
+            </span>
+          )}
           <span className="app-bar-space-icon">{icon}</span>
         </div>
         {!isCollapsed && <span className="app-bar-space-name">{space.name}</span>}
@@ -96,6 +99,39 @@ const SortableSpaceItem: React.FC<SortableSpaceItemProps> = ({
   );
 };
 
+interface SortableSpaceItemProps {
+  space: Space;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onSelect: (space: Space) => void;
+  onContextMenu: (e: React.MouseEvent, space: Space) => void;
+}
+
+const SortableSpaceItem: React.FC<SortableSpaceItemProps> = (props) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: props.space.id });
+
+  return (
+    <SpaceItem
+      {...props}
+      dragHandle={{
+        attributes,
+        listeners,
+        setNodeRef,
+        style: {
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.5 : 1,
+        },
+      }}
+    />
+  );
+};
+
+function spaceBelongsToGroup(space: Space, groupId: string): boolean {
+  if (groupId === ALL_SPACE_GROUP_ID) return true;
+  return (space.groupIds ?? []).includes(groupId);
+}
+
 interface AppBarProps {
   onOpenGlobalSearch: () => void;
 }
@@ -106,6 +142,9 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const currentSpace = useStore((s) => s.currentSpace);
   const isDarkTheme = useStore((s) => s.isDarkTheme);
   const isSidebarCollapsed = useStore((s) => s.isSidebarCollapsed);
+  const spaceGroups = useStore((s) => s.spaceGroups);
+  const currentSpaceGroupId = useStore((s) => s.currentSpaceGroupId);
+  const spaceGroupDisplayMode = useStore((s) => s.spaceGroupDisplayMode);
   const selectSpace = useStore((s) => s.selectSpace);
   const toggleTheme = useStore((s) => s.toggleTheme);
   const toggleSidebar = useStore((s) => s.toggleSidebar);
@@ -114,6 +153,10 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const renameSpaceAction = useStore((s) => s.renameSpace);
   const updateSpaceIconAction = useStore((s) => s.updateSpaceIcon);
   const reorderSpacesAction = useStore((s) => s.reorderSpaces);
+  const setCurrentSpaceGroup = useStore((s) => s.setCurrentSpaceGroup);
+  const toggleSpaceGroupMembership = useStore((s) => s.toggleSpaceGroupMembership);
+  const addSpaceGroup = useStore((s) => s.addSpaceGroup);
+  const renameSpaceGroup = useStore((s) => s.renameSpaceGroup);
 
   const [showAddSpace, setShowAddSpace] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; space: Space } | null>(null);
@@ -121,12 +164,56 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const [emojiPickerSpace, setEmojiPickerSpace] = useState<Space | null>(null);
   const [renameModal, setRenameModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
+  const [addGroupModal, setAddGroupModal] = useState<{ open: boolean; space: Space | null }>({ open: false, space: null });
+  const [renameGroupModal, setRenameGroupModal] = useState<{ open: boolean; group: SpaceGroupDef | null }>({
+    open: false,
+    group: null,
+  });
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [panelWidth, setPanelWidth] = useState(
     () => config.getConfig().appBarWidth ?? DEFAULT_APP_BAR_WIDTH
   );
   const [isResizingPanel, setIsResizingPanel] = useState(false);
   const panelWidthRef = useRef(panelWidth);
   panelWidthRef.current = panelWidth;
+
+  const groupingEnabled = spaceGroupDisplayMode !== 'disabled';
+  const useCollapseMode = groupingEnabled && spaceGroupDisplayMode === 'collapse';
+  const useDropdownMode = groupingEnabled && spaceGroupDisplayMode === 'dropdown';
+
+  const visibleSpaces = useMemo(() => {
+    if (!groupingEnabled || useCollapseMode || currentSpaceGroupId === ALL_SPACE_GROUP_ID) {
+      return spaces;
+    }
+    return spaces.filter((space) => spaceBelongsToGroup(space, currentSpaceGroupId));
+  }, [spaces, groupingEnabled, useCollapseMode, currentSpaceGroupId]);
+
+  const collapseSections = useMemo(() => {
+    if (!useCollapseMode) return [] as { id: string; name: string; spaces: Space[] }[];
+    const ungrouped = spaces.filter((space) => (space.groupIds ?? []).length === 0);
+    const sections: { id: string; name: string; spaces: Space[] }[] = [
+      {
+        id: ALL_SPACE_GROUP_ID,
+        name: t('appBar.allGroups'),
+        spaces: ungrouped,
+      },
+    ];
+    for (const group of spaceGroups) {
+      sections.push({
+        id: group.id,
+        name: group.name,
+        spaces: spaces.filter((space) => spaceBelongsToGroup(space, group.id)),
+      });
+    }
+    return sections;
+  }, [useCollapseMode, spaces, spaceGroups, t]);
+
+  useEffect(() => {
+    if (!groupingEnabled || useCollapseMode || currentSpaceGroupId === ALL_SPACE_GROUP_ID) return;
+    if (visibleSpaces.length === 0) return;
+    if (currentSpace && visibleSpaces.some((space) => space.id === currentSpace.id)) return;
+    void selectSpace(visibleSpaces[0]);
+  }, [groupingEnabled, useCollapseMode, currentSpaceGroupId, visibleSpaces, currentSpace, selectSpace]);
 
   const handlePanelResizeStart = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
@@ -207,6 +294,20 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     closeContextMenu();
   };
 
+  const handleToggleGroup = (space: Space, group: SpaceGroupDef) => {
+    toggleSpaceGroupMembership(space, group.id);
+  };
+
+  const handleAddGroupForSpace = (space: Space) => {
+    setAddGroupModal({ open: true, space });
+    closeContextMenu();
+  };
+
+  const handleRenameGroup = (group: SpaceGroupDef) => {
+    setRenameGroupModal({ open: true, group });
+    closeContextMenu();
+  };
+
   const handleDragEnd = (event: import('@dnd-kit/core').DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -216,6 +317,53 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
       reorderSpacesAction(oldIndex, newIndex);
     }
   };
+
+  const toggleSection = (sectionId: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }));
+  };
+
+  const renderSpaceList = (list: Space[], enableDnd: boolean) => {
+    if (!enableDnd) {
+      return list.map((space) => (
+        <SpaceItem
+          key={space.id}
+          space={space}
+          isActive={currentSpace?.id === space.id}
+          isCollapsed={isSidebarCollapsed}
+          onSelect={selectSpace}
+          onContextMenu={handleContextMenu}
+        />
+      ));
+    }
+
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={list.map((s) => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {list.map((space) => (
+            <SortableSpaceItem
+              key={space.id}
+              space={space}
+              isActive={currentSpace?.id === space.id}
+              isCollapsed={isSidebarCollapsed}
+              onSelect={selectSpace}
+              onContextMenu={handleContextMenu}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    );
+  };
+
+  const currentGroupLabel = currentSpaceGroupId === ALL_SPACE_GROUP_ID
+    ? t('appBar.allGroups')
+    : (spaceGroups.find((group) => group.id === currentSpaceGroupId)?.name ?? t('appBar.allGroups'));
 
   return (
     <div
@@ -234,28 +382,70 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         )}
       </div>
 
-      <div className="app-bar-spaces">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={spaces.map((s) => s.id)}
-            strategy={verticalListSortingStrategy}
+      {useDropdownMode && !isSidebarCollapsed && (
+        <div className="app-bar-group-switcher">
+          <select
+            className="app-bar-group-select"
+            value={currentSpaceGroupId}
+            onChange={(e) => setCurrentSpaceGroup(e.target.value)}
+            title={t('appBar.switchGroup')}
+            aria-label={t('appBar.switchGroup')}
           >
-            {spaces.map((space) => (
-              <SortableSpaceItem
-                key={space.id}
-                space={space}
-                isActive={currentSpace?.id === space.id}
-                isCollapsed={isSidebarCollapsed}
-                onSelect={selectSpace}
-                onContextMenu={handleContextMenu}
-              />
+            <option value={ALL_SPACE_GROUP_ID}>{t('appBar.allGroups')}</option>
+            {spaceGroups.map((group) => (
+              <option key={group.id} value={group.id}>{group.name}</option>
             ))}
-          </SortableContext>
-        </DndContext>
+          </select>
+        </div>
+      )}
+
+      {useDropdownMode && isSidebarCollapsed && (
+        <button
+          className="app-bar-btn app-bar-group-collapsed-btn"
+          title={`${t('appBar.switchGroup')}: ${currentGroupLabel}`}
+          onClick={() => {
+            const options = [ALL_SPACE_GROUP_ID, ...spaceGroups.map((group) => group.id)];
+            const index = options.indexOf(currentSpaceGroupId);
+            const next = options[(index + 1) % options.length] ?? ALL_SPACE_GROUP_ID;
+            setCurrentSpaceGroup(next);
+          }}
+        >
+          <Tags size={18} />
+        </button>
+      )}
+
+      <div className="app-bar-spaces">
+        {useCollapseMode ? (
+          collapseSections.map((section) => {
+            const isSectionCollapsed = Boolean(collapsedSections[section.id]);
+            return (
+              <div key={section.id} className="app-bar-group-section">
+                {!isSidebarCollapsed && (
+                  <button
+                    type="button"
+                    className="app-bar-group-section-header"
+                    onClick={() => toggleSection(section.id)}
+                    onContextMenu={(e) => {
+                      if (section.id === ALL_SPACE_GROUP_ID) return;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const group = spaceGroups.find((item) => item.id === section.id);
+                      if (group) handleRenameGroup(group);
+                    }}
+                    title={section.id === ALL_SPACE_GROUP_ID ? undefined : t('appBar.renameGroupHint')}
+                  >
+                    {isSectionCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                    <span className="app-bar-group-section-title">{section.name}</span>
+                    <span className="app-bar-group-section-count">{section.spaces.length}</span>
+                  </button>
+                )}
+                {!isSectionCollapsed && renderSpaceList(section.spaces, false)}
+              </div>
+            );
+          })
+        ) : (
+          renderSpaceList(visibleSpaces, true)
+        )}
         <button
           className="app-bar-space-add"
           onClick={() => setShowAddSpace(true)}
@@ -307,6 +497,55 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
               <Copy size={14} />
               {t('appBar.copyDirectory')}
             </button>
+            <div className="context-menu-divider" />
+            <div className="context-menu-submenu">
+              <button className="context-menu-item" onClick={(e) => { e.stopPropagation(); }}>
+                <span className="context-menu-item-inner"><Tags size={14} />{t('appBar.modifyGroups')}</span>
+              </button>
+              <div className="context-menu-sub">
+                <button
+                  className="context-menu-item"
+                  onClick={() => handleAddGroupForSpace(contextMenu.space)}
+                >
+                  <Plus size={14} />
+                  {t('appBar.addGroup')}
+                </button>
+                {spaceGroups.length > 0 && <div className="context-menu-divider" />}
+                {spaceGroups.map((group) => {
+                  const liveSpace = spaces.find((s) => s.id === contextMenu.space.id) ?? contextMenu.space;
+                  const checked = (liveSpace.groupIds ?? []).includes(group.id);
+                  return (
+                    <div key={group.id} className="context-menu-item-row">
+                      <button
+                        type="button"
+                        className="context-menu-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleGroup(liveSpace, group);
+                        }}
+                      >
+                        <span className="context-menu-check">{checked ? <Check size={14} /> : null}</span>
+                        <span className="context-menu-item-label">{group.name}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="context-menu-item-action"
+                        title={t('appBar.renameGroup')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRenameGroup(group);
+                        }}
+                      >
+                        <Edit3 size={13} />
+                      </button>
+                    </div>
+                  );
+                })}
+                {spaceGroups.length === 0 && (
+                  <div className="context-menu-empty">{t('appBar.noGroupsYet')}</div>
+                )}
+              </div>
+            </div>
             <div className="context-menu-divider" />
             <button className="context-menu-item danger" onClick={() => handleDelete(contextMenu.space)}>
               <Trash2 size={14} />
@@ -371,7 +610,41 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         placeholder={t('appBar.spaceName')}
       />
 
+      <InputModal
+        open={addGroupModal.open}
+        onClose={() => setAddGroupModal({ open: false, space: null })}
+        onSubmit={(name) => {
+          if (addGroupModal.space) {
+            const id = addSpaceGroup(name, addGroupModal.space);
+            if (id) {
+              showToast(t('appBar.groupAdded', { name: name.trim() }));
+            }
+          }
+          setAddGroupModal({ open: false, space: null });
+        }}
+        title={t('appBar.addGroup')}
+        placeholder={t('appBar.groupName')}
+      />
 
+      <InputModal
+        open={renameGroupModal.open}
+        onClose={() => setRenameGroupModal({ open: false, group: null })}
+        onSubmit={(name) => {
+          if (renameGroupModal.group) {
+            const ok = renameSpaceGroup(renameGroupModal.group.id, name);
+            if (ok) {
+              showToast(t('appBar.groupRenamed', { name: name.trim() }));
+            } else {
+              showToast(t('appBar.groupRenameFailed'));
+            }
+          }
+          setRenameGroupModal({ open: false, group: null });
+        }}
+        title={t('appBar.renameGroup')}
+        placeholder={t('appBar.groupName')}
+        defaultValue={renameGroupModal.group?.name || ''}
+        confirmLabel={t('common.save')}
+      />
 
       {!isSidebarCollapsed && (
         <div

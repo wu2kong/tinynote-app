@@ -5,7 +5,7 @@ import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
-import { ColorThemeId, ViewMode } from '@/types';
+import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
@@ -50,6 +50,12 @@ const VIEW_MODE_OPTIONS: { value: ViewMode; labelKey: string }[] = [
   { value: 'compact', labelKey: 'settings.general.viewCompact' },
 ];
 
+const SPACE_GROUP_DISPLAY_OPTIONS: { value: SpaceGroupDisplayMode; labelKey: string }[] = [
+  { value: 'disabled', labelKey: 'settings.general.spaceGroupDisabled' },
+  { value: 'dropdown', labelKey: 'settings.general.spaceGroupDropdown' },
+  { value: 'collapse', labelKey: 'settings.general.spaceGroupCollapse' },
+];
+
 const SettingsToggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => (
   <button
     type="button"
@@ -69,12 +75,14 @@ const GeneralSettings: React.FC = () => {
   const showAppBar = useStore((s) => s.showAppBar);
   const hideElementBorders = useStore((s) => s.hideElementBorders);
   const viewMode = useStore((s) => s.viewMode);
+  const spaceGroupDisplayMode = useStore((s) => s.spaceGroupDisplayMode);
   const zoomLevel = useStore((s) => s.zoomLevel);
   const toggleTheme = useStore((s) => s.toggleTheme);
   const setColorTheme = useStore((s) => s.setColorTheme);
   const toggleAppBar = useStore((s) => s.toggleAppBar);
   const toggleHideElementBorders = useStore((s) => s.toggleHideElementBorders);
   const setViewMode = useStore((s) => s.setViewMode);
+  const setSpaceGroupDisplayMode = useStore((s) => s.setSpaceGroupDisplayMode);
   const zoomIn = useStore((s) => s.zoomIn);
   const zoomOut = useStore((s) => s.zoomOut);
   const resetZoom = useStore((s) => s.resetZoom);
@@ -131,6 +139,22 @@ const GeneralSettings: React.FC = () => {
           <span className="settings-row-desc">{t('settings.general.showAppBarDesc')}</span>
         </div>
         <SettingsToggle checked={showAppBar} onChange={toggleAppBar} />
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.general.spaceGroupDisplay')}</span>
+          <span className="settings-row-desc">{t('settings.general.spaceGroupDisplayDesc')}</span>
+        </div>
+        <select
+          className="settings-select"
+          value={spaceGroupDisplayMode}
+          onChange={(e) => setSpaceGroupDisplayMode(e.target.value as SpaceGroupDisplayMode)}
+        >
+          {SPACE_GROUP_DISPLAY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+          ))}
+        </select>
       </div>
 
       <div className="settings-row">

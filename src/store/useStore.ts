@@ -1,12 +1,17 @@
 import { create } from 'zustand';
-import { AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId, RecentNotebookHistoryItem, ContentType, AppLocale } from '@/types';
+import {
+  AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId,
+  RecentNotebookHistoryItem, ContentType, AppLocale, SpaceGroupDisplayMode,
+} from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
+import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
 import { createNoteBlock } from '@/utils/noteParser';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
+import { stableIdFromParts } from '@/utils/stableId';
 import { GlobalSearchResult } from '@/utils/globalSearch';
 import { DEFAULT_LOCALE, resolveAppLocale, setI18nLocale, t } from '@/i18n';
 import { isTauri } from '@/platform/detect';
@@ -39,6 +44,11 @@ interface AppActions {
   renameSpace: (space: Space, newName: string) => Promise<void>;
   updateSpaceIcon: (space: Space, icon: string) => Promise<void>;
   reorderSpaces: (fromIndex: number, toIndex: number) => Promise<void>;
+  setCurrentSpaceGroup: (groupId: string) => void;
+  setSpaceGroupDisplayMode: (mode: SpaceGroupDisplayMode) => void;
+  toggleSpaceGroupMembership: (space: Space, groupId: string) => void;
+  addSpaceGroup: (name: string, assignToSpace?: Space) => string | null;
+  renameSpaceGroup: (groupId: string, newName: string) => boolean;
   addGroup: (parentPath: string, name: string) => Promise<void>;
   deleteGroup: (group: Group) => Promise<void>;
   renameGroup: (group: Group, newName: string) => Promise<void>;
@@ -158,6 +168,59 @@ function applyIconsToSpaces(spaces: Space[], icons: Record<string, string>): Spa
   }));
 }
 
+function getSpaceGroupIds(
+  assignments: Record<string, string[]>,
+  spacePath: string,
+): string[] {
+  return assignments[spacePath]
+    ?? assignments[normalizePath(spacePath)]
+    ?? [];
+}
+
+function applyGroupIdsToSpaces(
+  spaces: Space[],
+  assignments: Record<string, string[]>,
+): Space[] {
+  return spaces.map((s) => ({
+    ...s,
+    groupIds: getSpaceGroupIds(assignments, s.path),
+  }));
+}
+
+function remapSpaceGroupAssignmentKey(
+  assignments: Record<string, string[]>,
+  oldPath: string,
+  newPath: string,
+): Record<string, string[]> {
+  const next = { ...assignments };
+  const value = next[oldPath] ?? next[normalizePath(oldPath)];
+  delete next[oldPath];
+  delete next[normalizePath(oldPath)];
+  if (value && value.length > 0) {
+    next[newPath] = value;
+  }
+  return next;
+}
+
+function removeSpaceGroupAssignment(
+  assignments: Record<string, string[]>,
+  spacePath: string,
+): Record<string, string[]> {
+  const next = { ...assignments };
+  delete next[spacePath];
+  delete next[normalizePath(spacePath)];
+  return next;
+}
+
+function enrichSpaces(
+  spaces: Space[],
+  cfg: Pick<config.AppConfig, 'spaceIcons' | 'spaceOrder' | 'spaceGroupAssignments'>,
+): Space[] {
+  let next = applyIconsToSpaces(spaces, cfg.spaceIcons);
+  next = applyGroupIdsToSpaces(next, cfg.spaceGroupAssignments ?? {});
+  return sortSpacesByOrder(next, cfg.spaceOrder);
+}
+
 function needsSpaceConfigInit(spaces: Space[], spaceOrder: string[]): boolean {
   if (spaces.length === 0) return false;
   const spacePaths = new Set(spaces.map((s) => normalizePath(s.path)));
@@ -205,6 +268,9 @@ export const useStore = create<AppStore>((set, get) => ({
   searchQuery: '',
   storagePath: null,
   expandedGroupPaths: [],
+  spaceGroups: [],
+  currentSpaceGroupId: ALL_SPACE_GROUP_ID,
+  spaceGroupDisplayMode: 'dropdown',
 
   setSpace: (space) => set({ currentSpace: space, currentGroup: null, currentNotebook: null, currentNoteBlock: null }),
   setGroup: (group) => set({ currentGroup: group, currentNotebook: null, currentNoteBlock: null }),
@@ -319,8 +385,7 @@ export const useStore = create<AppStore>((set, get) => ({
         const { spaceOrder, spaceIcons } = initializeSpaceConfig(spaces, activeCfg.spaceIcons);
         activeCfg = await config.saveConfig({ spaceOrder, spaceIcons });
       }
-      spaces = applyIconsToSpaces(spaces, activeCfg.spaceIcons);
-      spaces = sortSpacesByOrder(spaces, activeCfg.spaceOrder);
+      spaces = enrichSpaces(spaces, activeCfg);
 
       let currentSpace: Space | null = null;
       let currentGroup: Group | null = null;
@@ -377,6 +442,9 @@ export const useStore = create<AppStore>((set, get) => ({
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
+          spaceGroups: activeCfg.spaceGroups ?? [],
+          currentSpaceGroupId: activeCfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+          spaceGroupDisplayMode: activeCfg.spaceGroupDisplayMode ?? 'dropdown',
         });
       } else {
         set({
@@ -391,6 +459,9 @@ export const useStore = create<AppStore>((set, get) => ({
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
+          spaceGroups: activeCfg.spaceGroups ?? [],
+          currentSpaceGroupId: activeCfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+          spaceGroupDisplayMode: activeCfg.spaceGroupDisplayMode ?? 'dropdown',
         });
       }
     } else {
@@ -405,6 +476,9 @@ export const useStore = create<AppStore>((set, get) => ({
         showDirectoryPanel: cfg.showDirectoryPanel ?? true,
         hideElementBorders: cfg.hideElementBorders ?? false,
         viewMode: cfg.viewMode as ViewMode,
+        spaceGroups: cfg.spaceGroups ?? [],
+        currentSpaceGroupId: cfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+        spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',
       });
     }
   },
@@ -545,14 +619,22 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   addSpace: async (name) => {
-    const { storagePath, spaces } = get();
+    const { storagePath, spaces, currentSpaceGroupId } = get();
     if (!storagePath) return;
     const space = await fs.createSpace(storagePath, name);
     const cfg = config.getConfig();
     const usedIcons = new Set(Object.values(cfg.spaceIcons));
     const icon = pickRandomSpaceIcon(usedIcons);
-    const spaceWithIcon = { ...space, icon };
+    const groupIds = currentSpaceGroupId !== ALL_SPACE_GROUP_ID
+      && (cfg.spaceGroups ?? []).some((group) => group.id === currentSpaceGroupId)
+      ? [currentSpaceGroupId]
+      : [];
+    const spaceWithIcon = { ...space, icon, groupIds };
     const newSpaces = [...spaces, spaceWithIcon];
+    const spaceGroupAssignments = { ...(cfg.spaceGroupAssignments ?? {}) };
+    if (groupIds.length > 0) {
+      spaceGroupAssignments[space.path] = groupIds;
+    }
     set({
       spaces: newSpaces,
       currentSpace: spaceWithIcon,
@@ -566,6 +648,7 @@ export const useStore = create<AppStore>((set, get) => ({
       currentNotebookPath: null,
       spaceIcons: { ...cfg.spaceIcons, [space.path]: icon },
       spaceOrder: newSpaces.map((s) => s.path),
+      spaceGroupAssignments,
     });
   },
 
@@ -573,6 +656,11 @@ export const useStore = create<AppStore>((set, get) => ({
     await fs.deleteSpace(space.path);
     const newSpaces = get().spaces.filter((s) => s.id !== space.id);
     const isCurrentSpace = get().currentSpace?.id === space.id;
+    const cfg = config.getConfig();
+    const spaceGroupAssignments = removeSpaceGroupAssignment(
+      cfg.spaceGroupAssignments ?? {},
+      space.path,
+    );
     set((state) => ({
       spaces: newSpaces,
       currentSpace: isCurrentSpace ? null : state.currentSpace,
@@ -580,10 +668,16 @@ export const useStore = create<AppStore>((set, get) => ({
       currentNotebook: isCurrentSpace ? null : state.currentNotebook,
       currentNoteBlock: isCurrentSpace ? null : state.currentNoteBlock,
     }));
-    config.saveConfig({ spaceOrder: newSpaces.map((s) => s.path) });
+    const updatedConfig: Partial<config.AppConfig> = {
+      spaceOrder: newSpaces.map((s) => s.path),
+      spaceGroupAssignments,
+    };
     if (isCurrentSpace) {
-      config.saveConfig({ currentSpacePath: null, currentGroupPath: null, currentNotebookPath: null });
+      updatedConfig.currentSpacePath = null;
+      updatedConfig.currentGroupPath = null;
+      updatedConfig.currentNotebookPath = null;
     }
+    config.saveConfig(updatedConfig);
   },
 
   renameSpace: async (space, newName) => {
@@ -600,7 +694,16 @@ export const useStore = create<AppStore>((set, get) => ({
       delete newIcons[space.path];
     }
     const newOrder = get().spaces.map((s) => s.id === space.id ? newPath : s.path);
-    const updatedConfig: Partial<config.AppConfig> = { spaceIcons: newIcons, spaceOrder: newOrder };
+    const spaceGroupAssignments = remapSpaceGroupAssignmentKey(
+      cfg.spaceGroupAssignments ?? {},
+      space.path,
+      newPath,
+    );
+    const updatedConfig: Partial<config.AppConfig> = {
+      spaceIcons: newIcons,
+      spaceOrder: newOrder,
+      spaceGroupAssignments,
+    };
     if (cfg.currentSpacePath === space.path) {
       updatedConfig.currentSpacePath = newPath;
     }
@@ -627,6 +730,103 @@ export const useStore = create<AppStore>((set, get) => ({
     });
     const { spaces } = get();
     config.saveConfig({ spaceOrder: spaces.map((s) => s.path) });
+  },
+
+  setCurrentSpaceGroup: (groupId) => {
+    const { spaceGroups } = get();
+    const validId = groupId === ALL_SPACE_GROUP_ID
+      || spaceGroups.some((group) => group.id === groupId)
+      ? groupId
+      : ALL_SPACE_GROUP_ID;
+    set({ currentSpaceGroupId: validId });
+    config.saveConfig({ currentSpaceGroupId: validId });
+  },
+
+  setSpaceGroupDisplayMode: (mode) => {
+    set({ spaceGroupDisplayMode: mode });
+    config.saveConfig({ spaceGroupDisplayMode: mode });
+  },
+
+  toggleSpaceGroupMembership: (space, groupId) => {
+    const cfg = config.getConfig();
+    const assignments = { ...(cfg.spaceGroupAssignments ?? {}) };
+    const current = new Set(getSpaceGroupIds(assignments, space.path));
+    if (current.has(groupId)) {
+      current.delete(groupId);
+    } else {
+      current.add(groupId);
+    }
+    const nextIds = Array.from(current);
+    if (nextIds.length === 0) {
+      delete assignments[space.path];
+      delete assignments[normalizePath(space.path)];
+    } else {
+      assignments[space.path] = nextIds;
+    }
+    set((state) => ({
+      spaces: state.spaces.map((s) => (
+        s.id === space.id ? { ...s, groupIds: nextIds } : s
+      )),
+      currentSpace: state.currentSpace?.id === space.id
+        ? { ...state.currentSpace, groupIds: nextIds }
+        : state.currentSpace,
+    }));
+    config.saveConfig({ spaceGroupAssignments: assignments });
+  },
+
+  addSpaceGroup: (name, assignToSpace) => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const cfg = config.getConfig();
+    const existing = cfg.spaceGroups ?? [];
+    if (existing.some((group) => group.name === trimmed)) {
+      return existing.find((group) => group.name === trimmed)?.id ?? null;
+    }
+    const id = stableIdFromParts('space-group', trimmed, String(Date.now()));
+    const spaceGroups = [...existing, { id, name: trimmed }];
+    const assignments = { ...(cfg.spaceGroupAssignments ?? {}) };
+    let nextIds: string[] | undefined;
+    if (assignToSpace) {
+      nextIds = Array.from(new Set([
+        ...getSpaceGroupIds(assignments, assignToSpace.path),
+        id,
+      ]));
+      assignments[assignToSpace.path] = nextIds;
+    }
+    set((state) => ({
+      spaceGroups,
+      spaces: assignToSpace && nextIds
+        ? state.spaces.map((s) => (
+          s.id === assignToSpace.id ? { ...s, groupIds: nextIds } : s
+        ))
+        : state.spaces,
+      currentSpace: assignToSpace && nextIds && state.currentSpace?.id === assignToSpace.id
+        ? { ...state.currentSpace, groupIds: nextIds }
+        : state.currentSpace,
+    }));
+    config.saveConfig({
+      spaceGroups,
+      spaceGroupAssignments: assignments,
+    });
+    return id;
+  },
+
+  renameSpaceGroup: (groupId, newName) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return false;
+    const cfg = config.getConfig();
+    const existing = cfg.spaceGroups ?? [];
+    const index = existing.findIndex((group) => group.id === groupId);
+    if (index === -1) return false;
+    if (existing.some((group) => group.id !== groupId && group.name === trimmed)) {
+      return false;
+    }
+    const spaceGroups = existing.map((group) => (
+      group.id === groupId ? { ...group, name: trimmed } : group
+    ));
+    set({ spaceGroups });
+    config.saveConfig({ spaceGroups });
+    return true;
   },
 
   addGroup: async (parentPath, name) => {
@@ -1163,8 +1363,7 @@ export const useStore = create<AppStore>((set, get) => ({
     if (!storagePath) return;
     const cfg = config.getConfig();
     let spaces = await fs.loadSpaces(storagePath);
-    spaces = applyIconsToSpaces(spaces, cfg.spaceIcons);
-    spaces = sortSpacesByOrder(spaces, cfg.spaceOrder);
+    spaces = enrichSpaces(spaces, cfg);
 
     if (currentSpace) {
       const freshSpace = spaces.find((s) => normalizePath(s.path) === normalizePath(currentSpace.path)) || null;
@@ -1196,12 +1395,29 @@ export const useStore = create<AppStore>((set, get) => ({
           currentGroup,
           currentNotebook,
           currentNoteBlock: currentNotebook ? get().currentNoteBlock : null,
+          spaceGroups: cfg.spaceGroups ?? [],
+          currentSpaceGroupId: cfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+          spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',
         });
       } else {
-        set({ spaces, currentSpace: null, currentGroup: null, currentNotebook: null, currentNoteBlock: null });
+        set({
+          spaces,
+          currentSpace: null,
+          currentGroup: null,
+          currentNotebook: null,
+          currentNoteBlock: null,
+          spaceGroups: cfg.spaceGroups ?? [],
+          currentSpaceGroupId: cfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+          spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',
+        });
       }
     } else {
-      set({ spaces });
+      set({
+        spaces,
+        spaceGroups: cfg.spaceGroups ?? [],
+        currentSpaceGroupId: cfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
+        spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',
+      });
     }
   },
 }));

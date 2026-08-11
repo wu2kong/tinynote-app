@@ -40,12 +40,21 @@ export interface Space {
   name: string;
   path: string;
   icon?: string;
+  /** Space-group ids this space belongs to. Empty means only visible under "All". */
+  groupIds?: string[];
   groups: (Group | Notebook)[];
 }
 
 export type ViewMode = 'list' | 'card' | 'compact';
 
 export type ColorThemeId = 'default' | 'qinglan' | 'sunset' | 'paper' | 'matcha';
+
+export type SpaceGroupDisplayMode = 'disabled' | 'dropdown' | 'collapse';
+
+export interface SpaceGroupDef {
+  id: string;
+  name: string;
+}
 
 export type { AppLocale };
 
@@ -69,4 +78,7 @@ export interface AppState {
   searchQuery: string;
   storagePath: string | null;
   expandedGroupPaths: string[];
+  spaceGroups: SpaceGroupDef[];
+  currentSpaceGroupId: string;
+  spaceGroupDisplayMode: SpaceGroupDisplayMode;
 }

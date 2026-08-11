@@ -1,7 +1,12 @@
-import type { RecentNotebookHistoryItem } from '@/types';
+import type { RecentNotebookHistoryItem, SpaceGroupDef, SpaceGroupDisplayMode } from '@/types';
 import type { AppLocale } from '@/i18n';
 
 export type LLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek' | 'custom';
+
+/** Built-in virtual group that always shows every space. */
+export const ALL_SPACE_GROUP_ID = '__all__';
+
+export type { SpaceGroupDef, SpaceGroupDisplayMode };
 
 export interface LLMModelConfig {
   id: string;
@@ -43,6 +48,14 @@ export interface AppConfig {
   backupDir: string | null;
   spaceOrder: string[];
   spaceIcons: Record<string, string>;
+  /** User-defined space groups (excludes the virtual "All" group). */
+  spaceGroups: SpaceGroupDef[];
+  /** spacePath -> group ids (a space may belong to multiple groups). */
+  spaceGroupAssignments: Record<string, string[]>;
+  /** Active space-group filter; `__all__` means show every space. */
+  currentSpaceGroupId: string;
+  /** How space groups are presented in the space bar. */
+  spaceGroupDisplayMode: SpaceGroupDisplayMode;
   groupOrder: Record<string, string[]>;
   currentSpacePath: string | null;
   currentGroupPath: string | null;
@@ -73,6 +86,10 @@ export const DEFAULT_CONFIG: AppConfig = {
   backupDir: null,
   spaceOrder: [],
   spaceIcons: {},
+  spaceGroups: [],
+  spaceGroupAssignments: {},
+  currentSpaceGroupId: ALL_SPACE_GROUP_ID,
+  spaceGroupDisplayMode: 'dropdown',
   groupOrder: {},
   currentSpacePath: null,
   currentGroupPath: null,
