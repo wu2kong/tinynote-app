@@ -311,6 +311,7 @@ export const zhHansMessages = {
   "directory": {
     "newNotebook": "新建笔记本",
     "newMarkdownNotebook": "新建 Markdown 笔记本",
+    "newWriterNotebook": "新建文章笔记本",
     "newGroup": "新建分组",
     "renameGroup": "重命名分组",
     "renameNotebook": "重命名笔记本",
@@ -319,7 +320,8 @@ export const zhHansMessages = {
     "notebookName": "笔记本名称",
     "formats": {
       "blocks": "块笔记",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "文章"
     },
     "groupName": "分组名称",
     "searchNotebook": "搜索笔记本...",
@@ -497,6 +499,12 @@ export const zhHansMessages = {
       "edit": "仅编辑",
       "preview": "仅预览",
       "split": "编辑和预览"
+    },
+    "pageWidth": "页宽",
+    "pageWidths": {
+      "narrow": "小宽",
+      "standard": "标宽",
+      "full": "全宽"
     }
   },
   "confirm": {

@@ -311,6 +311,7 @@ export const jaMessages = {
   "directory": {
     "newNotebook": "新しいノートブック",
     "newMarkdownNotebook": "新しい Markdown ノートブック",
+    "newWriterNotebook": "新しい記事ノートブック",
     "newGroup": "新しいグループ",
     "renameGroup": "グループ名を変更",
     "renameNotebook": "ノートブック名を変更",
@@ -319,7 +320,8 @@ export const jaMessages = {
     "notebookName": "ノートブック名",
     "formats": {
       "blocks": "ブロックノート",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "記事"
     },
     "groupName": "グループ名",
     "searchNotebook": "ノートブックを検索...",
@@ -497,6 +499,12 @@ export const jaMessages = {
       "edit": "編集のみ",
       "preview": "プレビューのみ",
       "split": "編集とプレビュー"
+    },
+    "pageWidth": "ページ幅",
+    "pageWidths": {
+      "narrow": "狭幅",
+      "standard": "標準",
+      "full": "全幅"
     }
   },
   "confirm": {

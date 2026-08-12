@@ -61,6 +61,9 @@ export default defineConfig(({ mode: viteMode }) => {
         '@codemirror/theme-one-dark',
         '@codemirror/legacy-modes/mode/properties',
         'marked',
+        '@milkdown/crepe',
+        '@milkdown/react',
+        '@milkdown/kit',
       ],
     },
     define: {

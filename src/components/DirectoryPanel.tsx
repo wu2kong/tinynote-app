@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook, NotebookFormatId } from '@/types';
 import {
-  Search, X, Folder, FileText, FileCode, ChevronRight, ChevronDown,
+  Search, X, Folder, FileText, FileCode, PenLine, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical
@@ -193,7 +193,9 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
       </span>
       {notebook.format === 'markdown'
         ? <FileCode size={14} className="tree-file-icon" />
-        : <FileText size={14} className="tree-file-icon" />}
+        : notebook.format === 'writer'
+          ? <PenLine size={14} className="tree-file-icon" />
+          : <FileText size={14} className="tree-file-icon" />}
       <span className="tree-name" title={notebook.name}>{notebook.name}</span>
     </div>
   );
@@ -439,10 +441,14 @@ const DirectoryPanel: React.FC = () => {
   }, [closeContextMenu]);
 
   const handleAddNotebookModal = useCallback((parentPath: string, format: NotebookFormatId = 'blocks') => {
-    const isMarkdown = format === 'markdown';
+    const title = format === 'markdown'
+      ? t('directory.newMarkdownNotebook')
+      : format === 'writer'
+        ? t('directory.newWriterNotebook')
+        : t('directory.newNotebook');
     setModalState({
       open: true,
-      title: isMarkdown ? t('directory.newMarkdownNotebook') : t('directory.newNotebook'),
+      title,
       placeholder: t('directory.notebookName'),
       defaultValue: '',
       confirmLabel: t('common.create'),
@@ -580,7 +586,9 @@ const DirectoryPanel: React.FC = () => {
           </span>
           {notebook.format === 'markdown'
             ? <FileCode size={14} className="tree-file-icon" />
-            : <FileText size={14} className="tree-file-icon" />}
+            : notebook.format === 'writer'
+              ? <PenLine size={14} className="tree-file-icon" />
+              : <FileText size={14} className="tree-file-icon" />}
           <span className="tree-name" title={notebook.name}>{notebook.name}</span>
         </div>
       );
@@ -713,6 +721,9 @@ const DirectoryPanel: React.FC = () => {
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'markdown'); closeContextMenu(); }}>
                   <FileCode size={14} />{t('directory.newMarkdownNotebook')}
                 </button>
+                <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'writer'); closeContextMenu(); }}>
+                  <PenLine size={14} />{t('directory.newWriterNotebook')}
+                </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
                 </button>
@@ -771,6 +782,9 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'markdown'); closeContextMenu(); }}>
               <FileCode size={14} />{t('directory.newMarkdownNotebook')}
+            </button>
+            <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'writer'); closeContextMenu(); }}>
+              <PenLine size={14} />{t('directory.newWriterNotebook')}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}

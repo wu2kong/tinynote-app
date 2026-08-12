@@ -311,6 +311,7 @@ export const ruMessages = {
   "directory": {
     "newNotebook": "Новый блокнот",
     "newMarkdownNotebook": "Новый Markdown-блокнот",
+    "newWriterNotebook": "Новый блокнот статьи",
     "newGroup": "Новая группа",
     "renameGroup": "Переименовать группу",
     "renameNotebook": "Переименовать блокнот",
@@ -319,7 +320,8 @@ export const ruMessages = {
     "notebookName": "Имя блокнота",
     "formats": {
       "blocks": "Блоки заметок",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "Статья"
     },
     "groupName": "Имя группы",
     "searchNotebook": "Поиск блокнотов...",
@@ -497,6 +499,12 @@ export const ruMessages = {
       "edit": "Только редактирование",
       "preview": "Только предпросмотр",
       "split": "Редактирование и предпросмотр"
+    },
+    "pageWidth": "Ширина страницы",
+    "pageWidths": {
+      "narrow": "Узкая",
+      "standard": "Обычная",
+      "full": "Полная"
     }
   },
   "confirm": {

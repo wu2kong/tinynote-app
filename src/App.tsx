@@ -5,6 +5,7 @@ import DirectoryPanel from '@/components/DirectoryPanel';
 import NotePanel from '@/components/NotePanel';
 import PropertyPanel from '@/components/PropertyPanel';
 import MarkdownNotebookPanel from '@/components/MarkdownNotebookPanel';
+import WriterNotebookPanel from '@/components/WriterNotebookPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -255,6 +256,7 @@ const App: React.FC = () => {
 
   const isSourceMode = currentNotebook?.isSourceMode;
   const isMarkdownNotebook = currentNotebook?.format === 'markdown';
+  const isWriterNotebook = currentNotebook?.format === 'writer';
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
@@ -267,7 +269,9 @@ const App: React.FC = () => {
           </div>
         }
       >
-        {isMarkdownNotebook ? (
+        {isWriterNotebook ? (
+          <WriterNotebookPanel />
+        ) : isMarkdownNotebook ? (
           <MarkdownNotebookPanel />
         ) : isSourceMode ? (
           <SourceEditorPanel />

@@ -311,6 +311,7 @@ export const frMessages = {
   "directory": {
     "newNotebook": "Nouveau carnet",
     "newMarkdownNotebook": "Nouveau carnet Markdown",
+    "newWriterNotebook": "Nouveau carnet article",
     "newGroup": "Nouveau groupe",
     "renameGroup": "Renommer le groupe",
     "renameNotebook": "Renommer le carnet",
@@ -319,7 +320,8 @@ export const frMessages = {
     "notebookName": "Nom du carnet",
     "formats": {
       "blocks": "Blocs de note",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "Article"
     },
     "groupName": "Nom du groupe",
     "searchNotebook": "Rechercher des carnets...",
@@ -497,6 +499,12 @@ export const frMessages = {
       "edit": "Édition seule",
       "preview": "Aperçu seul",
       "split": "Édition et aperçu"
+    },
+    "pageWidth": "Largeur de page",
+    "pageWidths": {
+      "narrow": "Étroite",
+      "standard": "Standard",
+      "full": "Pleine"
     }
   },
   "confirm": {

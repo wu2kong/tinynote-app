@@ -1,4 +1,4 @@
-export type NotebookFormatId = 'blocks' | 'markdown';
+export type NotebookFormatId = 'blocks' | 'markdown' | 'writer';
 
 export interface NotebookFormatDef {
   id: NotebookFormatId;
@@ -17,6 +17,7 @@ export interface NotebookFormatDef {
 export const NOTEBOOK_FORMATS: readonly NotebookFormatDef[] = [
   { id: 'blocks', extension: '.blk.md', aliases: ['.md'], labelKey: 'directory.formats.blocks' },
   { id: 'markdown', extension: '.mk.md', labelKey: 'directory.formats.markdown' },
+  { id: 'writer', extension: '.writer.md', labelKey: 'directory.formats.writer' },
 ] as const;
 
 const FORMAT_BY_ID = Object.fromEntries(

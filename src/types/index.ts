@@ -19,7 +19,7 @@ export interface Notebook {
   id: string;
   name: string;
   path: string;
-  /** Determined by filename suffix, e.g. `.blk.md` / legacy `.md` (blocks) or `.mk.md` (markdown). */
+  /** Determined by filename suffix, e.g. `.blk.md` / legacy `.md` (blocks), `.mk.md`, `.writer.md`. */
   format: NotebookFormatId;
   noteBlocks: NoteBlock[];
   /** Raw document body for non-block formats (markdown, future writer/treemind, …). */

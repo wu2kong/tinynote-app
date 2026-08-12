@@ -225,7 +225,7 @@ export async function createGroup(parentPath: string, name: string): Promise<Gro
 }
 
 function initialNotebookContent(format: NotebookFormatId, displayName: string): string {
-  if (format === 'markdown') {
+  if (format === 'markdown' || format === 'writer') {
     return `# ${displayName}\n\n`;
   }
   const now = new Date().toISOString();

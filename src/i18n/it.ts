@@ -311,6 +311,7 @@ export const itMessages = {
   "directory": {
     "newNotebook": "Nuovo taccuino",
     "newMarkdownNotebook": "Nuovo taccuino Markdown",
+    "newWriterNotebook": "Nuovo taccuino articolo",
     "newGroup": "Nuovo gruppo",
     "renameGroup": "Rinomina gruppo",
     "renameNotebook": "Rinomina taccuino",
@@ -319,7 +320,8 @@ export const itMessages = {
     "notebookName": "Nome taccuino",
     "formats": {
       "blocks": "Blocchi nota",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "Articolo"
     },
     "groupName": "Nome gruppo",
     "searchNotebook": "Cerca taccuini...",
@@ -497,6 +499,12 @@ export const itMessages = {
       "edit": "Solo modifica",
       "preview": "Solo anteprima",
       "split": "Modifica e anteprima"
+    },
+    "pageWidth": "Larghezza pagina",
+    "pageWidths": {
+      "narrow": "Stretta",
+      "standard": "Standard",
+      "full": "Intera"
     }
   },
   "confirm": {

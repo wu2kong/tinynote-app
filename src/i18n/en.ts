@@ -311,6 +311,7 @@ export const enMessages = {
   "directory": {
     "newNotebook": "New Notebook",
     "newMarkdownNotebook": "New Markdown Notebook",
+    "newWriterNotebook": "New Article Notebook",
     "newGroup": "New Group",
     "renameGroup": "Rename Group",
     "renameNotebook": "Rename Notebook",
@@ -319,7 +320,8 @@ export const enMessages = {
     "notebookName": "Notebook Name",
     "formats": {
       "blocks": "Block Notes",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "Article"
     },
     "groupName": "Group Name",
     "searchNotebook": "Search notebooks...",
@@ -497,6 +499,12 @@ export const enMessages = {
       "edit": "Edit Only",
       "preview": "Preview Only",
       "split": "Edit & Preview"
+    },
+    "pageWidth": "Page Width",
+    "pageWidths": {
+      "narrow": "Narrow",
+      "standard": "Standard",
+      "full": "Full"
     }
   },
   "confirm": {

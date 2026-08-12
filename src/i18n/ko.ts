@@ -311,6 +311,7 @@ export const koMessages = {
   "directory": {
     "newNotebook": "새 노트북",
     "newMarkdownNotebook": "새 Markdown 노트북",
+    "newWriterNotebook": "새 글 노트북",
     "newGroup": "새 그룹",
     "renameGroup": "그룹 이름 변경",
     "renameNotebook": "노트북 이름 변경",
@@ -319,7 +320,8 @@ export const koMessages = {
     "notebookName": "노트북 이름",
     "formats": {
       "blocks": "블록 노트",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "글"
     },
     "groupName": "그룹 이름",
     "searchNotebook": "노트북 검색...",
@@ -497,6 +499,12 @@ export const koMessages = {
       "edit": "편집만",
       "preview": "미리보기만",
       "split": "편집 및 미리보기"
+    },
+    "pageWidth": "페이지 너비",
+    "pageWidths": {
+      "narrow": "좁게",
+      "standard": "표준",
+      "full": "전체"
     }
   },
   "confirm": {

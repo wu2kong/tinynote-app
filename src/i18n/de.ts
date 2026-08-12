@@ -311,6 +311,7 @@ export const deMessages = {
   "directory": {
     "newNotebook": "Neues Notizbuch",
     "newMarkdownNotebook": "Neues Markdown-Notizbuch",
+    "newWriterNotebook": "Neues Artikel-Notizbuch",
     "newGroup": "Neue Gruppe",
     "renameGroup": "Gruppe umbenennen",
     "renameNotebook": "Notizbuch umbenennen",
@@ -319,7 +320,8 @@ export const deMessages = {
     "notebookName": "Notizbuchname",
     "formats": {
       "blocks": "Notizblöcke",
-      "markdown": "Markdown"
+      "markdown": "Markdown",
+      "writer": "Artikel"
     },
     "groupName": "Gruppenname",
     "searchNotebook": "Notizbücher suchen...",
@@ -497,6 +499,12 @@ export const deMessages = {
       "edit": "Nur Bearbeitung",
       "preview": "Nur Vorschau",
       "split": "Bearbeitung und Vorschau"
+    },
+    "pageWidth": "Seitenbreite",
+    "pageWidths": {
+      "narrow": "Schmal",
+      "standard": "Standard",
+      "full": "Voll"
     }
   },
   "confirm": {
