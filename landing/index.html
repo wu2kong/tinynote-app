@@ -42,6 +42,7 @@
           <li><a href="#features">功能</a></li>
           <li><a href="#showcase">界面</a></li>
           <li><a href="#sync">同步&备份</a></li>
+          <li><a href="#pricing">定价</a></li>
           <li><a href="#compare">模式对比</a></li>
         </ul>
       </nav>
@@ -66,6 +67,9 @@
           <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.085 1.84 1.236 1.84 1.236 1.07 1.834 2.809 1.304 3.495.997.107-.775.418-1.305.762-1.604-2.665-.305-5.466-1.334-5.466-5.93 0-1.31.468-2.38 1.236-3.22-.124-.303-.535-1.52.117-3.176 0 0 1.008-.322 3.3 1.23a11.5 11.5 0 0 1 3-.404c1.02.005 2.045.138 3 .404 2.29-1.552 3.297-1.23 3.297-1.23.653 1.656.242 2.873.12 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.807 5.665-5.476 5.92.43.37.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.694.825.576C20.565 21.795 24 17.297 24 12c0-6.63-5.37-12-12-12z"/></svg>
           GitHub
         </a>
+        <a href="#pricing" class="btn btn-ghost">
+          购买 Pro
+        </a>
         <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           下载
@@ -81,7 +85,9 @@
     <a href="#features">功能</a>
     <a href="#showcase">界面</a>
     <a href="#sync">同步备份</a>
+    <a href="#pricing">定价</a>
     <a href="#compare">模式对比</a>
+    <a href="#pricing">购买 Pro</a>
     <a href="https://github.com/wu2kong/tinynote-app/releases/latest" target="_blank" rel="noopener noreferrer">下载应用</a>
   </div>
 
@@ -122,8 +128,8 @@
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           免费下载
         </a>
-        <a href="https://github.com/wu2kong/tinynote-app" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">
-          查看源码
+        <a href="#pricing" class="btn btn-ghost btn-lg">
+          升级 Pro
         </a>
       </div>
       <div class="hero-meta reveal">
@@ -357,6 +363,71 @@
     </div>
   </section>
 
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <header class="section-header reveal">
+        <span class="section-label">定价</span>
+        <h2 class="section-title">基础免费，Pro 一次买断</h2>
+        <p class="section-desc">核心笔记与复制永久免费。需要更多空间、文章笔记与 Git 同步时，升级 Pro 即可。</p>
+      </header>
+
+      <div id="buy" class="buy-anchor" aria-hidden="true"></div>
+
+      <div id="buySuccess" class="buy-success reveal" hidden>
+        <div class="buy-success-card">
+          <h3>支付成功</h3>
+          <p id="buySuccessEmail" class="buy-success-desc">License Key 如下，也可在邮箱中查看。</p>
+          <code id="buyLicenseKey" class="buy-license-key"></code>
+          <div class="buy-success-actions">
+            <button type="button" class="btn btn-primary" id="copyLicenseBtn">复制 License Key</button>
+            <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-ghost" target="_blank" rel="noopener noreferrer">下载应用并激活</a>
+          </div>
+          <p class="buy-success-hint">打开 TinyNote → 设置 → 关于 → 粘贴密钥激活。支持最多 3 台设备。</p>
+        </div>
+      </div>
+
+      <div class="pricing-grid reveal">
+        <article class="pricing-card">
+          <div class="pricing-card-head">
+            <h3>基础版</h3>
+            <p class="pricing-card-desc">日常片段管理够用</p>
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-amount">$0</span>
+            <span class="pricing-period">永久免费</span>
+          </div>
+          <ul class="pricing-features">
+            <li>空间最多 5 个</li>
+            <li>每空间笔记本最多 100 个</li>
+            <li>一键复制、搜索、主题</li>
+            <li>本地 Markdown / 备份</li>
+          </ul>
+          <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-ghost btn-block" target="_blank" rel="noopener noreferrer">免费下载</a>
+        </article>
+
+        <article class="pricing-card is-pro">
+          <div class="pricing-badge">推荐</div>
+          <div class="pricing-card-head">
+            <h3>Pro 高级版</h3>
+            <p class="pricing-card-desc">解锁专业工作流</p>
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-amount" data-dodo-price>$14.99</span>
+            <span class="pricing-period" data-dodo-price-note>Early Bird · 一次买断</span>
+          </div>
+          <ul class="pricing-features">
+            <li>无限空间与笔记本</li>
+            <li>新建文章笔记（Markdown / 写作）</li>
+            <li>设置中心 Git 同步</li>
+            <li>三端通用 · 最多 3 台设备</li>
+          </ul>
+          <button type="button" class="btn btn-primary btn-block" data-dodo-checkout>购买 Pro</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <!-- Comparison -->
   <section class="section" id="compare">
     <div class="container">
@@ -443,15 +514,13 @@
     <div class="container">
       <div class="cta-card reveal">
         <h2>开始整理你的零碎知识</h2>
-        <p>免费开源，支持 macOS、Windows 与 Linux。下载即用，无需注册。</p>
+        <p>基础功能永久免费。需要 Pro 时一次买断，无需订阅。</p>
         <div class="cta-buttons">
           <a href="https://github.com/wu2kong/tinynote-app/releases/latest" class="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             下载最新版
           </a>
-          <a href="https://github.com/wu2kong/tinynote-app/issues" class="btn btn-ghost btn-lg" target="_blank" rel="noopener noreferrer">
-            反馈建议
-          </a>
+          <button type="button" class="btn btn-ghost btn-lg" data-dodo-checkout>购买 Pro</button>
         </div>
       </div>
     </div>
@@ -497,6 +566,8 @@
     </div>
   </footer>
 
+  <script src="js/dodo-config.js"></script>
+  <script src="js/checkout.js"></script>
   <script>
     (function () {
       const nav = document.getElementById('nav');
