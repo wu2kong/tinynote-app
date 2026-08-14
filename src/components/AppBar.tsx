@@ -27,11 +27,14 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
+import ProBadge from './ProBadge';
 import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
 import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
 import { SPACE_EMOJI_OPTIONS } from '@/utils/spaceIcons';
 import { useI18n } from '@/i18n/useI18n';
+import { FREE_MAX_SPACES } from '@/constants/pro';
+import { useLicenseStore } from '@/store/useLicenseStore';
 
 interface SpaceItemProps {
   space: Space;
@@ -157,6 +160,9 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const toggleSpaceGroupMembership = useStore((s) => s.toggleSpaceGroupMembership);
   const addSpaceGroup = useStore((s) => s.addSpaceGroup);
   const renameSpaceGroup = useStore((s) => s.renameSpaceGroup);
+  const isPro = useLicenseStore((s) => s.isPro);
+  const openGate = useLicenseStore((s) => s.openGate);
+  const spaceLimitReached = !isPro && spaces.length >= FREE_MAX_SPACES;
 
   const [showAddSpace, setShowAddSpace] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; space: Space } | null>(null);
@@ -520,11 +526,18 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         )}
         <button
           className="app-bar-space-add"
-          onClick={() => setShowAddSpace(true)}
-          title={t('appBar.newSpace')}
+          onClick={() => {
+            if (spaceLimitReached) {
+              openGate('spaceLimit');
+              return;
+            }
+            setShowAddSpace(true);
+          }}
+          title={spaceLimitReached ? t('pro.gate.spaceLimit') : t('appBar.newSpace')}
         >
           <Plus size={16} />
           {!isSidebarCollapsed && <span className="app-bar-space-name">{t('appBar.newSpace')}</span>}
+          {spaceLimitReached && <ProBadge title={t('pro.badge')} />}
         </button>
       </div>
 

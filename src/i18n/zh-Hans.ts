@@ -24,6 +24,37 @@ export const zhHansMessages = {
     "notSet": "未设置",
     "none": "无"
   },
+  "pro": {
+    "badge": "高级版",
+    "license": "许可证",
+    "licenseKey": "许可证密钥",
+    "licenseKeyPlaceholder": "粘贴你的 License Key",
+    "activating": "激活中...",
+    "activated": "已激活高级版",
+    "deactivate": "停用本机",
+    "deactivated": "已从本机移除许可证",
+    "statusActive": "本机已激活 TinyNote 高级版",
+    "statusFree": "基础版：最多 {spaces} 个空间，每个空间最多 {notebooks} 个笔记本。文章笔记与同步模块需高级版。",
+    "gate": {
+      "title": "TinyNote 高级版",
+      "hint": "购买高级版或激活许可证后即可使用此功能。",
+      "purchase": "购买高级版",
+      "activate": "激活许可证",
+      "generic": "此功能需要 TinyNote 高级版。",
+      "spaceLimit": "基础版最多 5 个空间。升级高级版可创建更多空间。",
+      "notebookLimit": "基础版每个空间最多 100 个笔记本。升级高级版可创建更多笔记本。",
+      "articleNotebook": "新建文章笔记（Markdown / 写作）需要 TinyNote 高级版。",
+      "sync": "设置中心的同步模块需要 TinyNote 高级版。"
+    },
+    "errors": {
+      "emptyKey": "请输入许可证密钥",
+      "network": "网络异常，请检查连接后重试",
+      "invalidKey": "许可证无效，请检查后重试",
+      "activationLimit": "已达到激活设备上限，请先在其他设备停用",
+      "activateFailed": "激活失败：{detail}",
+      "openPurchaseFailed": "无法打开购买页面"
+    }
+  },
   "settings": {
     "title": "设置中心",
     "modules": {

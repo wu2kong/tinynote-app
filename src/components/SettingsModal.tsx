@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save, ListRestart, Plus, Trash2 } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
-import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL } from '@/constants/app';
+import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, DODO_CHECKOUT_URL } from '@/constants/app';
+import { FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES } from '@/constants/pro';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
@@ -23,9 +24,11 @@ import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId
 import { resetSyncAdapterForTests } from '@/adapters/sync';
 import { getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
+import ProBadge from './ProBadge';
 import { showToast } from './Toast';
 import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
+import { useLicenseStore } from '@/store/useLicenseStore';
 
 type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'about';
 
@@ -816,6 +819,152 @@ const SyncDiffModal: React.FC<{
   );
 };
 
+const SyncSettingsGate: React.FC = () => {
+  const { t } = useI18n();
+  const isPro = useLicenseStore((s) => s.isPro);
+  const openGate = useLicenseStore((s) => s.openGate);
+
+  if (isPro) return <SyncSettings />;
+
+  return (
+    <div className="settings-panel">
+      <h4 className="settings-panel-title">
+        {t('settings.sync.panelTitle')}
+        <ProBadge className="settings-title-pro-badge" title={t('pro.badge')} />
+      </h4>
+      <div className="pro-locked-panel">
+        <Crown size={28} className="pro-locked-icon" />
+        <p className="pro-locked-title">{t('pro.gate.sync')}</p>
+        <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
+        <div className="pro-locked-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => openGate('sync')}>
+            <KeyRound size={14} />
+            {t('pro.gate.activate')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={async () => {
+              try {
+                await openUrl(DODO_CHECKOUT_URL);
+              } catch {
+                showToast(t('pro.errors.openPurchaseFailed'));
+              }
+            }}
+          >
+            <ExternalLink size={14} />
+            {t('pro.gate.purchase')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+function mapLicenseError(code: string, t: (key: string, params?: Record<string, string | number>) => string): string {
+  if (code === 'EMPTY_KEY') return t('pro.errors.emptyKey');
+  if (code === 'NETWORK') return t('pro.errors.network');
+  if (/activation/i.test(code) || /limit/i.test(code)) return t('pro.errors.activationLimit');
+  if (/invalid/i.test(code) || /not.?found/i.test(code) || /422/.test(code)) return t('pro.errors.invalidKey');
+  return t('pro.errors.activateFailed', { detail: code });
+}
+
+const LicenseSettings: React.FC = () => {
+  const { t } = useI18n();
+  const isPro = useLicenseStore((s) => s.isPro);
+  const license = useLicenseStore((s) => s.license);
+  const busy = useLicenseStore((s) => s.busy);
+  const error = useLicenseStore((s) => s.error);
+  const activate = useLicenseStore((s) => s.activate);
+  const deactivate = useLicenseStore((s) => s.deactivate);
+  const clearError = useLicenseStore((s) => s.clearError);
+  const [licenseKey, setLicenseKey] = useState('');
+
+  const handleActivate = async () => {
+    const ok = await activate(licenseKey);
+    if (ok) {
+      setLicenseKey('');
+      showToast(t('pro.activated'));
+    }
+  };
+
+  const handleDeactivate = async () => {
+    const ok = await deactivate();
+    if (ok) showToast(t('pro.deactivated'));
+  };
+
+  const handlePurchase = async () => {
+    try {
+      await openUrl(DODO_CHECKOUT_URL);
+    } catch {
+      showToast(t('pro.errors.openPurchaseFailed'));
+    }
+  };
+
+  return (
+    <div className="settings-section-block">
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">
+            {t('pro.license')}
+            {isPro && <ProBadge className="settings-inline-pro-badge" title={t('pro.badge')} />}
+          </span>
+          <span className="settings-row-desc">
+            {isPro
+              ? t('pro.statusActive')
+              : t('pro.statusFree', { spaces: FREE_MAX_SPACES, notebooks: FREE_MAX_NOTEBOOKS_PER_SPACE })}
+          </span>
+        </div>
+        {isPro ? (
+          <div className="settings-update-actions">
+            <code className="pro-license-mask" title={license?.licenseKey}>
+              {license?.licenseKey
+                ? `${license.licenseKey.slice(0, 8)}…${license.licenseKey.slice(-4)}`
+                : t('pro.badge')}
+            </code>
+            <button type="button" className="btn btn-secondary" onClick={() => void handleDeactivate()} disabled={busy}>
+              {busy ? <Loader2 size={14} className="settings-spin" /> : null}
+              {t('pro.deactivate')}
+            </button>
+          </div>
+        ) : (
+          <div className="pro-settings-activate">
+            <input
+              className="pro-activate-input"
+              value={licenseKey}
+              onChange={(e) => {
+                clearError();
+                setLicenseKey(e.target.value);
+              }}
+              placeholder={t('pro.licenseKeyPlaceholder')}
+              disabled={busy}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void handleActivate();
+              }}
+            />
+            <div className="settings-update-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => void handleActivate()}
+                disabled={busy || !licenseKey.trim()}
+              >
+                {busy ? <Loader2 size={14} className="settings-spin" /> : <KeyRound size={14} />}
+                {busy ? t('pro.activating') : t('pro.gate.activate')}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={() => void handlePurchase()}>
+                <ExternalLink size={14} />
+                {t('pro.gate.purchase')}
+              </button>
+            </div>
+            {error && <p className="pro-activate-error">{mapLicenseError(error, t)}</p>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const SyncSettings: React.FC = () => {
   const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
@@ -1408,6 +1557,8 @@ const AboutSettings: React.FC = () => {
     <div className="settings-panel">
       <h4 className="settings-panel-title">{t('settings.about.panelTitle')}</h4>
 
+      <LicenseSettings />
+
       <div className="settings-about-card">
         <div className="settings-about-logo">📝</div>
         <div className="settings-about-info">
@@ -1498,6 +1649,7 @@ const AboutSettings: React.FC = () => {
 const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
   const { t } = useI18n();
   const [activeModule, setActiveModule] = useState<SettingsModule>('general');
+  const isPro = useLicenseStore((s) => s.isPro);
 
   if (!open) return null;
 
@@ -1522,6 +1674,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
               >
                 {mod.icon}
                 <span>{t(`settings.modules.${mod.id}`)}</span>
+                {mod.id === 'sync' && !isPro && <ProBadge title={t('pro.badge')} />}
               </button>
             ))}
           </nav>
@@ -1530,7 +1683,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'general' && <GeneralSettings />}
             {activeModule === 'ai' && <AISettings />}
             {activeModule === 'data' && <DataSettings />}
-            {activeModule === 'sync' && <SyncSettings />}
+            {activeModule === 'sync' && <SyncSettingsGate />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}
             {activeModule === 'about' && <AboutSettings />}

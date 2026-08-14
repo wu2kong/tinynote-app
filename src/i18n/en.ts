@@ -24,6 +24,37 @@ export const enMessages = {
     "notSet": "Not set",
     "none": "None"
   },
+  "pro": {
+    "badge": "Pro",
+    "license": "License",
+    "licenseKey": "License Key",
+    "licenseKeyPlaceholder": "Paste your license key",
+    "activating": "Activating...",
+    "activated": "Pro activated",
+    "deactivate": "Deactivate This Device",
+    "deactivated": "License removed from this device",
+    "statusActive": "TinyNote Pro is active on this device",
+    "statusFree": "Free plan: up to {spaces} spaces, {notebooks} notebooks per space. Article notebooks and Sync require Pro.",
+    "gate": {
+      "title": "TinyNote Pro",
+      "hint": "Purchase Pro or activate a license key to unlock this feature.",
+      "purchase": "Purchase Pro",
+      "activate": "Activate License",
+      "generic": "This feature requires TinyNote Pro.",
+      "spaceLimit": "Free plan supports up to 5 spaces. Upgrade to Pro for unlimited spaces.",
+      "notebookLimit": "Free plan supports up to 100 notebooks per space. Upgrade to Pro for unlimited notebooks.",
+      "articleNotebook": "Creating article notebooks (Markdown / Writer) requires TinyNote Pro.",
+      "sync": "Git Sync in Settings requires TinyNote Pro."
+    },
+    "errors": {
+      "emptyKey": "Please enter a license key",
+      "network": "Network error. Check your connection and try again.",
+      "invalidKey": "Invalid license key. Check for typos and try again.",
+      "activationLimit": "Activation limit reached. Deactivate another device first.",
+      "activateFailed": "Activation failed: {detail}",
+      "openPurchaseFailed": "Unable to open the purchase page"
+    }
+  },
   "settings": {
     "title": "Settings Center",
     "modules": {

@@ -12,6 +12,7 @@ import GlobalSearchModal from '@/components/GlobalSearchModal';
 import RecentNotebooksModal from '@/components/RecentNotebooksModal';
 import AIChatModal from '@/components/AIChatModal';
 import Toast from '@/components/Toast';
+import ProUpgradeModal from '@/components/ProUpgradeModal';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
@@ -20,6 +21,7 @@ import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
+import { useLicenseStore } from '@/store/useLicenseStore';
 
 class EditorAreaErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -153,6 +155,7 @@ const App: React.FC = () => {
           await refreshDesktopMenu();
         }
       });
+    void useLicenseStore.getState().hydrate();
   }, []);
 
   useEffect(() => {
@@ -228,6 +231,14 @@ const App: React.FC = () => {
     <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
   );
   const aiChatModal = <AIChatModal open={showAIChat} onClose={() => setShowAIChat(false)} />;
+  const sharedOverlays = (
+    <>
+      <Toast />
+      <ProUpgradeModal />
+      {settingsModal}
+      {aiChatModal}
+    </>
+  );
 
   if (loading) {
     return (
@@ -238,8 +249,7 @@ const App: React.FC = () => {
             <div className="loading-text">{t('app.loading')}</div>
           </div>
         </div>
-        {settingsModal}
-        {aiChatModal}
+        {sharedOverlays}
       </>
     );
   }
@@ -248,8 +258,7 @@ const App: React.FC = () => {
     return (
       <>
         <WelcomeScreen onSelectStorage={handleSelectStorage} />
-        {settingsModal}
-        {aiChatModal}
+        {sharedOverlays}
       </>
     );
   }
@@ -282,11 +291,9 @@ const App: React.FC = () => {
           </>
         )}
       </EditorAreaErrorBoundary>
-      <Toast />
-      {settingsModal}
       <GlobalSearchModal open={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} />
       <RecentNotebooksModal open={showRecentNotebooks} onClose={() => setShowRecentNotebooks(false)} />
-      {aiChatModal}
+      {sharedOverlays}
     </div>
   );
 };

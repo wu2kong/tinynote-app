@@ -27,11 +27,15 @@ import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import ContextMenuPortal from './ContextMenuPortal';
+import ProBadge from './ProBadge';
 import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import * as config from '@/utils/config';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
+import { FREE_MAX_NOTEBOOKS_PER_SPACE, isArticleNotebookFormat } from '@/constants/pro';
+import { countSpaceNotebooks } from '@/utils/fileSystem';
+import { useLicenseStore } from '@/store/useLicenseStore';
 
 const DEFAULT_PANEL_WIDTH = 300;
 const MIN_PANEL_WIDTH = 200;
@@ -228,6 +232,11 @@ const DirectoryPanel: React.FC = () => {
   const spaces = useStore((s) => s.spaces);
   const showAppBar = useStore((s) => s.showAppBar);
   const toggleAppBar = useStore((s) => s.toggleAppBar);
+  const isPro = useLicenseStore((s) => s.isPro);
+  const openGate = useLicenseStore((s) => s.openGate);
+  const notebookLimitReached = !!currentSpace
+    && !isPro
+    && countSpaceNotebooks(currentSpace) >= FREE_MAX_NOTEBOOKS_PER_SPACE;
 
   const [dragItem, setDragItem] = useState<DragItemInfo | null>(null);
   const [dropTarget, setDropTarget] = useState<string | null>(null);
@@ -441,6 +450,14 @@ const DirectoryPanel: React.FC = () => {
   }, [closeContextMenu]);
 
   const handleAddNotebookModal = useCallback((parentPath: string, format: NotebookFormatId = 'blocks') => {
+    if (!isPro && isArticleNotebookFormat(format)) {
+      openGate('articleNotebook');
+      return;
+    }
+    if (notebookLimitReached) {
+      openGate('notebookLimit');
+      return;
+    }
     const title = format === 'markdown'
       ? t('directory.newMarkdownNotebook')
       : format === 'writer'
@@ -454,7 +471,7 @@ const DirectoryPanel: React.FC = () => {
       confirmLabel: t('common.create'),
       onSubmit: (name) => { addNotebook(parentPath, name, format); setModalState((p) => ({ ...p, open: false })); },
     });
-  }, [addNotebook, t]);
+  }, [addNotebook, isPro, notebookLimitReached, openGate, t]);
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
@@ -720,9 +737,11 @@ const DirectoryPanel: React.FC = () => {
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'markdown'); closeContextMenu(); }}>
                   <FileCode size={14} />{t('directory.newMarkdownNotebook')}
+                  {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'writer'); closeContextMenu(); }}>
                   <PenLine size={14} />{t('directory.newWriterNotebook')}
+                  {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
@@ -782,9 +801,11 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'markdown'); closeContextMenu(); }}>
               <FileCode size={14} />{t('directory.newMarkdownNotebook')}
+              {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'writer'); closeContextMenu(); }}>
               <PenLine size={14} />{t('directory.newWriterNotebook')}
+              {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}

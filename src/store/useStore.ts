@@ -17,6 +17,8 @@ import { stableIdFromParts } from '@/utils/stableId';
 import { GlobalSearchResult } from '@/utils/globalSearch';
 import { DEFAULT_LOCALE, resolveAppLocale, setI18nLocale, t } from '@/i18n';
 import { isTauri } from '@/platform/detect';
+import { FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES, isArticleNotebookFormat } from '@/constants/pro';
+import { useLicenseStore } from '@/store/useLicenseStore';
 
 interface AppActions {
   setSpace: (space: Space | null) => void;
@@ -624,6 +626,11 @@ export const useStore = create<AppStore>((set, get) => ({
   addSpace: async (name) => {
     const { storagePath, spaces, currentSpaceGroupId } = get();
     if (!storagePath) return;
+    const { isPro, openGate } = useLicenseStore.getState();
+    if (!isPro && spaces.length >= FREE_MAX_SPACES) {
+      openGate('spaceLimit');
+      return;
+    }
     const space = await fs.createSpace(storagePath, name);
     const cfg = config.getConfig();
     const usedIcons = new Set(Object.values(cfg.spaceIcons));
@@ -929,8 +936,20 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   addNotebook: async (parentPath, name, format = 'blocks') => {
-    const notebook = await fs.createNotebook(parentPath, name, format);
     const { currentSpace } = get();
+    const { isPro, openGate } = useLicenseStore.getState();
+    if (!isPro && isArticleNotebookFormat(format)) {
+      openGate('articleNotebook');
+      return;
+    }
+    if (currentSpace && !isPro) {
+      const notebookCount = fs.countSpaceNotebooks(currentSpace);
+      if (notebookCount >= FREE_MAX_NOTEBOOKS_PER_SPACE) {
+        openGate('notebookLimit');
+        return;
+      }
+    }
+    const notebook = await fs.createNotebook(parentPath, name, format);
     if (currentSpace) {
       const addNotebookToTree = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
         return children.map((child) => {
@@ -969,9 +988,22 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   duplicateNotebook: async (notebook) => {
+    const { currentSpace } = get();
+    const { isPro, openGate } = useLicenseStore.getState();
+    const format = notebook.format || detectNotebookFormat(notebook.path);
+    if (!isPro && isArticleNotebookFormat(format)) {
+      openGate('articleNotebook');
+      return null;
+    }
+    if (currentSpace && !isPro) {
+      const notebookCount = fs.countSpaceNotebooks(currentSpace);
+      if (notebookCount >= FREE_MAX_NOTEBOOKS_PER_SPACE) {
+        openGate('notebookLimit');
+        return null;
+      }
+    }
     const duplicated = await fs.duplicateNotebook(notebook.path);
     const parentPath = dirname(notebook.path);
-    const { currentSpace } = get();
     if (currentSpace) {
       const insertAfterNotebook = (
         children: (Group | Notebook)[]

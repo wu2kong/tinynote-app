@@ -6,3 +6,27 @@ export const AUTHOR_URL = 'https://wu2kong.com';
 export const GITHUB_RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
 /** Mirror download page for users who cannot access GitHub. */
 export const MIRROR_DOWNLOAD_URL = 'https://www.ilanzou.com/s/B6uXlvhu';
+
+/**
+ * Live Dodo product id (Products → Live → copy ID).
+ * Keep in sync with landing/js/dodo-config.js
+ */
+export const DODO_PRODUCT_ID =
+  (import.meta.env.VITE_DODO_PRODUCT_ID as string | undefined)?.trim()
+  || 'pdt_0NlM2WA3UNj0dcg3HeQvo';
+
+/** Direct Live checkout link (fallback if homepage purchase section is unavailable). */
+export const DODO_CHECKOUT_URL =
+  (import.meta.env.VITE_DODO_CHECKOUT_URL as string | undefined)?.trim()
+  || 'https://checkout.dodopayments.com/buy/pdt_0NlM2WA3UNj0dcg3HeQvo?quantity=1';
+
+/** Pro purchase page on the marketing site. */
+export const PURCHASE_URL = `${HOMEPAGE_URL}#pricing`;
+
+/**
+ * Dodo Payments public license API host (Live by default).
+ * Override with VITE_DODO_API_BASE=https://test.dodopayments.com for local testing.
+ */
+export const DODO_API_BASE =
+  (import.meta.env.VITE_DODO_API_BASE as string | undefined)?.replace(/\/+$/, '')
+  || 'https://live.dodopayments.com';
