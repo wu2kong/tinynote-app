@@ -2,6 +2,13 @@
   var cfg = window.TINYNOTE_DODO || {};
   var CHECKOUT_BUY_BASE = 'https://checkout.dodopayments.com/buy/';
 
+  function t(key, params, fallback) {
+    if (window.TinyNoteI18n && typeof window.TinyNoteI18n.t === 'function') {
+      return window.TinyNoteI18n.t(key, params);
+    }
+    return fallback || key;
+  }
+
   function getReturnUrl() {
     var hash = (cfg.returnHash || 'buy').replace(/^#/, '');
     var url = new URL(window.location.href);
@@ -30,7 +37,7 @@
     if (event) event.preventDefault();
     var url = buildCheckoutUrl();
     if (!url) {
-      window.alert('尚未配置 Live 商品。请在 landing/js/dodo-config.js 填写 productId 或 paymentLink。');
+      window.alert(t('pricing.configMissing', null, '尚未配置 Live 商品。请在 landing/js/dodo-config.js 填写 productId 或 paymentLink。'));
       return;
     }
     window.location.href = url;
@@ -48,8 +55,8 @@
     keyEl.textContent = licenseKey;
     if (emailEl) {
       emailEl.textContent = email
-        ? ('收据已发送至 ' + email)
-        : '请同时查收邮箱中的 License Key';
+        ? t('pricing.successDescWithEmail', { email: email }, '收据已发送至 ' + email)
+        : t('pricing.successDesc', null, '请同时查收邮箱中的 License Key');
     }
     panel.hidden = false;
     panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -64,7 +71,7 @@
         var btn = document.getElementById('copyLicenseBtn');
         if (btn) {
           var old = btn.textContent;
-          btn.textContent = '已复制';
+          btn.textContent = t('pricing.copied', null, '已复制');
           setTimeout(function () { btn.textContent = old; }, 1600);
         }
       });
@@ -80,11 +87,13 @@
 
     var priceEls = document.querySelectorAll('[data-dodo-price]');
     priceEls.forEach(function (el) {
-      el.textContent = cfg.priceLabel || '$14.99';
+      if (cfg.priceLabel) el.textContent = cfg.priceLabel;
     });
     var noteEls = document.querySelectorAll('[data-dodo-price-note]');
     noteEls.forEach(function (el) {
-      el.textContent = cfg.priceNote || '';
+      if (cfg.priceNote && String(cfg.priceNote).trim()) {
+        el.textContent = cfg.priceNote;
+      }
     });
   }
 
@@ -101,11 +110,11 @@
         var keyEl = document.getElementById('buyLicenseKey');
         var emailEl = document.getElementById('buySuccessEmail');
         if (panel && keyEl) {
-          keyEl.textContent = '请查收邮箱中的 License Key';
+          keyEl.textContent = t('pricing.successPaidNoKey', null, '请查收邮箱中的 License Key');
           if (emailEl) {
             emailEl.textContent = email
-              ? ('支付成功，收据已发送至 ' + email)
-              : '支付成功。License Key 已发送到你的邮箱。';
+              ? t('pricing.successPaidNoKeyWithEmail', { email: email }, '支付成功，收据已发送至 ' + email)
+              : t('pricing.successPaidNoKey', null, '支付成功。License Key 已发送到你的邮箱。');
           }
           panel.hidden = false;
         }
