@@ -26,6 +26,7 @@ export const zhHansMessages = {
   },
   "pro": {
     "badge": "高级版",
+    "planFree": "基础版",
     "license": "许可证",
     "licenseKey": "许可证密钥",
     "licenseKeyPlaceholder": "粘贴你的 License Key",

@@ -24,6 +24,9 @@ export const zhHantMessages = {
     "notSet": "未設定",
     "none": "無"
   },
+  "pro": {
+    "planFree": "基礎版"
+  },
   "settings": {
     "title": "設定中心",
     "modules": {

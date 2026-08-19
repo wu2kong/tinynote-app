@@ -26,6 +26,7 @@ export const enMessages = {
   },
   "pro": {
     "badge": "Pro",
+    "planFree": "Free",
     "license": "License",
     "licenseKey": "License Key",
     "licenseKeyPlaceholder": "Paste your license key",

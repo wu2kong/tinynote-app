@@ -8,7 +8,6 @@ import { useStore } from '@/store/useStore';
 import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
-import { FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES } from '@/constants/pro';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
@@ -943,11 +942,13 @@ const LicenseSettings: React.FC = () => {
     <div className="settings-row settings-row-vertical">
       <div className="settings-row-info">
         <span className="settings-row-label">{t('pro.license')}</span>
-        <span className="settings-row-desc">
-          {isPro
-            ? t('pro.statusActive')
-            : t('pro.statusFree', { spaces: FREE_MAX_SPACES, notebooks: FREE_MAX_NOTEBOOKS_PER_SPACE })}
+        <span className={`pro-plan-status ${isPro ? 'is-pro' : 'is-free'}`}>
+          {isPro && <Crown size={15} strokeWidth={2.25} className="pro-plan-crown" />}
+          <span className="pro-plan-name">{isPro ? t('pro.badge') : t('pro.planFree')}</span>
         </span>
+        {!isPro && (
+          <span className="settings-row-desc">{t('pro.statusFree')}</span>
+        )}
       </div>
       {isPro ? (
         <div className="pro-settings-active">

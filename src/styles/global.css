@@ -4081,6 +4081,29 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
   width: 100%;
 }
 
+.pro-plan-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pro-plan-status.is-pro {
+  color: #c9922a;
+}
+
+.pro-plan-crown {
+  flex-shrink: 0;
+  color: #c9922a;
+}
+
+.pro-plan-name {
+  line-height: 1.2;
+}
+
 .pro-settings-active {
   display: flex;
   flex-direction: column;
