@@ -15,9 +15,8 @@ jobs:
         include:
           - platform: 'macos-latest'
             args: '--target universal-apple-darwin'
-          # Linux 平台暂未经过充分测试，暂不构建
-          # - platform: 'ubuntu-22.04'
-          #   args: ''
+          - platform: 'ubuntu-22.04'
+            args: ''
           - platform: 'windows-latest'
             args: ''
 
@@ -26,12 +25,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Linux 平台暂未经过充分测试，暂不构建
-      # - name: Install dependencies (ubuntu only)
-      #   if: matrix.platform == 'ubuntu-22.04'
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libgtk-3-dev
 
       - name: Setup Node
         uses: actions/setup-node@v4
