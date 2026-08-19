@@ -255,7 +255,7 @@ export const zhHantMessages = {
     },
     "pro": {
       "panelTitle": "高級版",
-      "panelDesc": "查看會員狀態，購買或啟用授權以解鎖高級功能。"
+      "panelDesc": "基礎版永久免費，可滿足日常需求；專業用戶，推薦購買高級版。"
     },
     "feedback": {
       "panelTitle": "回饋",

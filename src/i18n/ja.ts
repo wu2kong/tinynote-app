@@ -255,7 +255,7 @@ export const jaMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "メンバーシップ状態を確認し、ライセンスを購入または有効化して Pro 機能を解放します。"
+      "panelDesc": "無料プランは永久無料で日常利用に十分です。より高度な用途には Pro の購入をおすすめします。"
     },
     "feedback": {
       "panelTitle": "フィードバック",

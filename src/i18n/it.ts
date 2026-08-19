@@ -255,7 +255,7 @@ export const itMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "Visualizza lo stato dell'abbonamento, acquista o attiva una licenza per sbloccare le funzioni Pro."
+      "panelDesc": "Il piano Free è gratis per sempre e basta per l'uso quotidiano; agli utenti avanzati consigliamo di acquistare Pro."
     },
     "feedback": {
       "panelTitle": "Feedback",

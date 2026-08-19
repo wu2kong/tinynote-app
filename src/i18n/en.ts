@@ -34,7 +34,7 @@ export const enMessages = {
     "deactivate": "Revoke Activation",
     "deactivated": "Activation revoked",
     "statusActive": "TinyNote Pro is active on this device",
-    "statusFree": "Free plan: up to {spaces} spaces, {notebooks} notes per space. Article notes and Sync require Pro.",
+    "statusFree": "Unlock Pro for more spaces, advanced features, and additional note formats.",
     "validity": "Validity",
     "validityPermanent": "Lifetime",
     "gate": {
@@ -46,7 +46,7 @@ export const enMessages = {
       "spaceLimit": "Free plan supports up to 5 spaces. Upgrade to Pro for unlimited spaces.",
       "notebookLimit": "Free plan supports up to 100 notes per space. Upgrade to Pro for unlimited notes.",
       "articleNotebook": "Creating article notes (Markdown / Writer) requires TinyNote Pro.",
-      "sync": "Git Sync in Settings requires TinyNote Pro."
+      "sync": "Note sync requires TinyNote Pro."
     },
     "errors": {
       "emptyKey": "Please enter a license key",
@@ -288,7 +288,7 @@ export const enMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "View membership status, purchase or activate a license to unlock Pro features."
+      "panelDesc": "The Free plan is free forever and covers everyday use; power users are recommended to purchase Pro."
     },
     "feedback": {
       "panelTitle": "Feedback",

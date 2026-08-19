@@ -255,7 +255,7 @@ export const koMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "멤버십 상태를 확인하고, 라이선스를 구매하거나 활성화하여 Pro 기능을 잠금 해제하세요."
+      "panelDesc": "무료 플랜은 영구 무료로 일상 사용에 충분합니다. 전문 사용자는 Pro 구매를 권장합니다."
     },
     "feedback": {
       "panelTitle": "피드백",

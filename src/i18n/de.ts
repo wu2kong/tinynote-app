@@ -255,7 +255,7 @@ export const deMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "Mitgliedschaftsstatus anzeigen, Lizenz kaufen oder aktivieren, um Pro-Funktionen freizuschalten."
+      "panelDesc": "Der Free-Plan ist für immer kostenlos und reicht für den Alltag; Power-Usern empfehlen wir den Kauf von Pro."
     },
     "feedback": {
       "panelTitle": "Feedback",

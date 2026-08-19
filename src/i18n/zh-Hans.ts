@@ -34,7 +34,7 @@ export const zhHansMessages = {
     "deactivate": "撤销激活",
     "deactivated": "已撤销激活",
     "statusActive": "本机已激活 TinyNote 高级版",
-    "statusFree": "基础版：最多 {spaces} 个空间，每个空间最多 {notebooks} 个笔记。文章笔记与同步模块需高级版。",
+    "statusFree": "解锁高级版，拥有更多空间和高级功能，并支持更多笔记格式可选择。",
     "validity": "有效期",
     "validityPermanent": "永久",
     "gate": {
@@ -46,7 +46,7 @@ export const zhHansMessages = {
       "spaceLimit": "基础版最多 5 个空间。升级高级版可创建更多空间。",
       "notebookLimit": "基础版每个空间最多 100 个笔记。升级高级版可创建更多笔记。",
       "articleNotebook": "新建文章笔记（Markdown / 写作）需要 TinyNote 高级版。",
-      "sync": "设置中心的同步模块需要 TinyNote 高级版。"
+      "sync": "笔记同步模块需要 TinyNote 高级版。"
     },
     "errors": {
       "emptyKey": "请输入许可证密钥",
@@ -288,7 +288,7 @@ export const zhHansMessages = {
     },
     "pro": {
       "panelTitle": "高级版",
-      "panelDesc": "查看会员状态，购买或激活许可证以解锁高级功能。"
+      "panelDesc": "基础版永久免费，可满足日常需求；专业用户，推荐购买高级版。"
     },
     "feedback": {
       "panelTitle": "反馈",

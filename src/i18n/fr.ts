@@ -255,7 +255,7 @@ export const frMessages = {
     },
     "pro": {
       "panelTitle": "Pro",
-      "panelDesc": "Consultez l'état de l'abonnement, achetez ou activez une licence pour débloquer les fonctions Pro."
+      "panelDesc": "Le plan gratuit est gratuit pour toujours et suffit au quotidien ; les utilisateurs avancés sont invités à acheter Pro."
     },
     "feedback": {
       "panelTitle": "Commentaires",
