@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "preview:web": "vite preview --outDir dist-web",
     "tauri": "tauri",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.mjs",
+    "build:packages": "node scripts/build-packages.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",

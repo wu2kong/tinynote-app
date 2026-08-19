@@ -11,6 +11,7 @@ pnpm-lock.yaml
 dist
 dist-web
 dist-ssr
+dist-packages
 *.local
 
 # Tauri build outputs
