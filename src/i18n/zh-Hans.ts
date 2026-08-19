@@ -34,7 +34,7 @@ export const zhHansMessages = {
     "deactivate": "撤销激活",
     "deactivated": "已撤销激活",
     "statusActive": "本机已激活 TinyNote 高级版",
-    "statusFree": "基础版：最多 {spaces} 个空间，每个空间最多 {notebooks} 个笔记本。文章笔记与同步模块需高级版。",
+    "statusFree": "基础版：最多 {spaces} 个空间，每个空间最多 {notebooks} 个笔记。文章笔记与同步模块需高级版。",
     "validity": "有效期",
     "validityPermanent": "永久",
     "gate": {
@@ -44,7 +44,7 @@ export const zhHansMessages = {
       "activate": "激活许可证",
       "generic": "此功能需要 TinyNote 高级版。",
       "spaceLimit": "基础版最多 5 个空间。升级高级版可创建更多空间。",
-      "notebookLimit": "基础版每个空间最多 100 个笔记本。升级高级版可创建更多笔记本。",
+      "notebookLimit": "基础版每个空间最多 100 个笔记。升级高级版可创建更多笔记。",
       "articleNotebook": "新建文章笔记（Markdown / 写作）需要 TinyNote 高级版。",
       "sync": "设置中心的同步模块需要 TinyNote 高级版。"
     },
@@ -339,7 +339,7 @@ export const zhHansMessages = {
     "showSidebar": "显示侧边栏"
   },
   "appBar": {
-    "slogan": "整理零散笔记",
+    "slogan": "零碎笔记管理",
     "newSpace": "新建空间",
     "globalSearch": "全局搜索",
     "globalSearchShortcut": "全局搜索（⌘⇧F / Ctrl+Shift+F）",
@@ -373,22 +373,22 @@ export const zhHansMessages = {
     "groupRenameFailed": "重命名失败，名称可能已存在"
   },
   "directory": {
-    "newNotebook": "新建笔记本",
-    "newMarkdownNotebook": "新建 Markdown 笔记本",
-    "newWriterNotebook": "新建文章笔记本",
-    "newGroup": "新建分组",
-    "renameGroup": "重命名分组",
-    "renameNotebook": "重命名笔记本",
-    "deleteGroup": "删除分组",
-    "deleteNotebook": "删除笔记本",
-    "notebookName": "笔记本名称",
+    "newNotebook": "新建块笔记本",
+    "newMarkdownNotebook": "新建 Markdown 笔记",
+    "newWriterNotebook": "新建文章笔记",
+    "newGroup": "新建目录",
+    "renameGroup": "重命名目录",
+    "renameNotebook": "重命名",
+    "deleteGroup": "删除目录",
+    "deleteNotebook": "删除",
+    "notebookName": "名称",
     "formats": {
-      "blocks": "块笔记",
+      "blocks": "块笔记本",
       "markdown": "Markdown",
       "writer": "文章"
     },
-    "groupName": "分组名称",
-    "searchNotebook": "搜索笔记本...",
+    "groupName": "目录名称",
+    "searchNotebook": "搜索笔记...",
     "clearSearch": "清空搜索",
     "selectSpace": "选择一个空间以浏览",
     "createCopy": "创建副本",
@@ -396,8 +396,8 @@ export const zhHansMessages = {
     "createCopyFailed": "创建副本失败",
     "blockMode": "笔记块模式",
     "sourceMode": "源码模式",
-    "newChildGroup": "新建子分组",
-    "addGroup": "添加分组",
+    "newChildGroup": "新建子目录",
+    "addGroup": "添加目录",
     "moveTo": "移动到...",
     "movedTo": "已移动到 \"{name}\"",
     "openInEditor": "在编辑器中打开",
@@ -405,7 +405,7 @@ export const zhHansMessages = {
     "collapseAll": "全部折叠",
     "refreshCache": "刷新缓存",
     "cacheRefreshed": "缓存已刷新",
-    "deleteGroupConfirm": "删除 \"{name}\"？",
+    "deleteGroupConfirm": "删除目录 \"{name}\"？",
     "deleteNotebookConfirm": "删除 \"{name}\"？",
     "copyDirectory": "复制目录位置",
     "directoryCopied": "目录位置已复制",
@@ -418,7 +418,7 @@ export const zhHansMessages = {
   "note": {
     "addNote": "添加笔记",
     "pasteNote": "粘贴笔记",
-    "selectNotebook": "选择一个笔记本以查看笔记",
+    "selectNotebook": "选择一个笔记以查看内容",
     "searchNote": "搜索笔记...",
     "listView": "列表视图",
     "cardView": "卡片视图",
@@ -494,7 +494,7 @@ export const zhHansMessages = {
     "escClose": "Esc 关闭对话框",
     "filters": {
       "spaceName": "空间名称",
-      "notebookName": "笔记本名称",
+      "notebookName": "笔记名称",
       "blockTitle": "笔记块标题",
       "blockContent": "笔记块内容"
     }
@@ -532,7 +532,7 @@ export const zhHansMessages = {
   },
   "welcome": {
     "title": "欢迎使用 TinyNote",
-    "description": "轻量级笔记管理与快捷复制工具。用空间、分组和笔记本整理命令、代码片段和笔记。",
+    "description": "轻量级笔记管理与快捷复制工具。用空间、目录和笔记整理命令、代码片段和笔记。",
     "selectStorage": "选择存储文件夹"
   },
   "links": {
@@ -579,7 +579,7 @@ export const zhHansMessages = {
     "irreversible": "此操作无法撤销。"
   },
   "recent": {
-    "title": "最近打开的笔记本",
+    "title": "最近打开的笔记",
     "subtitle": "按最近打开时间排序",
     "empty": "暂无打开历史",
     "closeShortcut": "Esc 关闭",
@@ -588,7 +588,7 @@ export const zhHansMessages = {
   "utils": {
     "globalSearch": {
       "spaceName": "空间名称",
-      "notebookName": "笔记本名称",
+      "notebookName": "笔记名称",
       "blockTitle": "笔记块标题",
       "blockContent": "笔记块内容"
     },
@@ -614,7 +614,7 @@ export const zhHansMessages = {
       "untitled": "未命名会话"
     },
     "app": {
-      "description": "TinyNote - 零散笔记管理",
+      "description": "TinyNote - 高效管理零碎笔记和文章",
       "author": "悟二空"
     }
   }

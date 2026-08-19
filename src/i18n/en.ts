@@ -34,7 +34,7 @@ export const enMessages = {
     "deactivate": "Revoke Activation",
     "deactivated": "Activation revoked",
     "statusActive": "TinyNote Pro is active on this device",
-    "statusFree": "Free plan: up to {spaces} spaces, {notebooks} notebooks per space. Article notebooks and Sync require Pro.",
+    "statusFree": "Free plan: up to {spaces} spaces, {notebooks} notes per space. Article notes and Sync require Pro.",
     "validity": "Validity",
     "validityPermanent": "Lifetime",
     "gate": {
@@ -44,8 +44,8 @@ export const enMessages = {
       "activate": "Activate License",
       "generic": "This feature requires TinyNote Pro.",
       "spaceLimit": "Free plan supports up to 5 spaces. Upgrade to Pro for unlimited spaces.",
-      "notebookLimit": "Free plan supports up to 100 notebooks per space. Upgrade to Pro for unlimited notebooks.",
-      "articleNotebook": "Creating article notebooks (Markdown / Writer) requires TinyNote Pro.",
+      "notebookLimit": "Free plan supports up to 100 notes per space. Upgrade to Pro for unlimited notes.",
+      "articleNotebook": "Creating article notes (Markdown / Writer) requires TinyNote Pro.",
       "sync": "Git Sync in Settings requires TinyNote Pro."
     },
     "errors": {
@@ -373,22 +373,22 @@ export const enMessages = {
     "groupRenameFailed": "Rename failed; the name may already exist"
   },
   "directory": {
-    "newNotebook": "New Notebook",
-    "newMarkdownNotebook": "New Markdown Notebook",
-    "newWriterNotebook": "New Article Notebook",
-    "newGroup": "New Group",
-    "renameGroup": "Rename Group",
-    "renameNotebook": "Rename Notebook",
-    "deleteGroup": "Delete Group",
-    "deleteNotebook": "Delete Notebook",
-    "notebookName": "Notebook Name",
+    "newNotebook": "New Block Notebook",
+    "newMarkdownNotebook": "New Markdown Note",
+    "newWriterNotebook": "New Article Note",
+    "newGroup": "New Directory",
+    "renameGroup": "Rename Directory",
+    "renameNotebook": "Rename",
+    "deleteGroup": "Delete Directory",
+    "deleteNotebook": "Delete",
+    "notebookName": "Name",
     "formats": {
-      "blocks": "Block Notes",
+      "blocks": "Block Notebook",
       "markdown": "Markdown",
       "writer": "Article"
     },
-    "groupName": "Group Name",
-    "searchNotebook": "Search notebooks...",
+    "groupName": "Directory Name",
+    "searchNotebook": "Search notes...",
     "clearSearch": "Clear search",
     "selectSpace": "Select a space to browse",
     "createCopy": "Create Copy",
@@ -396,8 +396,8 @@ export const enMessages = {
     "createCopyFailed": "Failed to create copy",
     "blockMode": "Note Block Mode",
     "sourceMode": "Source Mode",
-    "newChildGroup": "New Subgroup",
-    "addGroup": "Add Group",
+    "newChildGroup": "New Subdirectory",
+    "addGroup": "Add Directory",
     "moveTo": "Move to...",
     "movedTo": "Moved to \"{name}\"",
     "openInEditor": "Open in Editor",
@@ -405,7 +405,7 @@ export const enMessages = {
     "collapseAll": "Collapse All",
     "refreshCache": "Refresh Cache",
     "cacheRefreshed": "Cache refreshed",
-    "deleteGroupConfirm": "Delete \"{name}\"?",
+    "deleteGroupConfirm": "Delete directory \"{name}\"?",
     "deleteNotebookConfirm": "Delete \"{name}\"?",
     "copyDirectory": "Copy Directory Location",
     "directoryCopied": "Directory location copied",
@@ -418,7 +418,7 @@ export const enMessages = {
   "note": {
     "addNote": "Add Note",
     "pasteNote": "Paste Note",
-    "selectNotebook": "Select a notebook to view notes",
+    "selectNotebook": "Select a note to view its content",
     "searchNote": "Search notes...",
     "listView": "List View",
     "cardView": "Card View",
@@ -494,7 +494,7 @@ export const enMessages = {
     "escClose": "Esc closes the dialog",
     "filters": {
       "spaceName": "Space Name",
-      "notebookName": "Notebook Name",
+      "notebookName": "Note Name",
       "blockTitle": "Note Block Title",
       "blockContent": "Note Block Content"
     }
@@ -532,7 +532,7 @@ export const enMessages = {
   },
   "welcome": {
     "title": "Welcome to TinyNote",
-    "description": "A lightweight note manager and quick copy tool. Organize your commands, code snippets, and notes in spaces, groups, and notebooks.",
+    "description": "A lightweight note manager and quick copy tool. Organize your commands, code snippets, and notes in spaces, directories, and notes.",
     "selectStorage": "Select Storage Folder"
   },
   "links": {
@@ -579,7 +579,7 @@ export const enMessages = {
     "irreversible": "This action cannot be undone."
   },
   "recent": {
-    "title": "Recently Opened Notebooks",
+    "title": "Recently Opened Notes",
     "subtitle": "Sorted by most recent open time",
     "empty": "No open history yet",
     "closeShortcut": "Esc closes",
@@ -588,7 +588,7 @@ export const enMessages = {
   "utils": {
     "globalSearch": {
       "spaceName": "Space Name",
-      "notebookName": "Notebook Name",
+      "notebookName": "Note Name",
       "blockTitle": "Note Block Title",
       "blockContent": "Note Block Content"
     },

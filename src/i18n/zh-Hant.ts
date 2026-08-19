@@ -340,22 +340,22 @@ export const zhHantMessages = {
     "groupRenameFailed": "重新命名失敗，名稱可能已存在"
   },
   "directory": {
-    "newNotebook": "新增筆記本",
-    "newMarkdownNotebook": "新增 Markdown 筆記本",
-    "newWriterNotebook": "新增文章筆記本",
-    "newGroup": "新增分組",
-    "renameGroup": "重新命名分組",
-    "renameNotebook": "重新命名筆記本",
-    "deleteGroup": "刪除分組",
-    "deleteNotebook": "刪除筆記本",
-    "notebookName": "筆記本名稱",
+    "newNotebook": "新增塊筆記本",
+    "newMarkdownNotebook": "新增 Markdown 筆記",
+    "newWriterNotebook": "新增文章筆記",
+    "newGroup": "新增目錄",
+    "renameGroup": "重新命名目錄",
+    "renameNotebook": "重新命名",
+    "deleteGroup": "刪除目錄",
+    "deleteNotebook": "刪除",
+    "notebookName": "名稱",
     "formats": {
-      "blocks": "區塊筆記",
+      "blocks": "塊筆記本",
       "markdown": "Markdown",
       "writer": "文章"
     },
-    "groupName": "分組名稱",
-    "searchNotebook": "搜尋筆記本...",
+    "groupName": "目錄名稱",
+    "searchNotebook": "搜尋筆記...",
     "clearSearch": "清除搜尋",
     "selectSpace": "選擇一個空間以瀏覽",
     "createCopy": "建立副本",
@@ -363,8 +363,8 @@ export const zhHantMessages = {
     "createCopyFailed": "建立副本失敗",
     "blockMode": "筆記區塊模式",
     "sourceMode": "原始碼模式",
-    "newChildGroup": "新增子分組",
-    "addGroup": "新增分組",
+    "newChildGroup": "新增子目錄",
+    "addGroup": "新增目錄",
     "moveTo": "移動到...",
     "movedTo": "已移動到 \"{name}\"",
     "openInEditor": "在編輯器中開啟",
@@ -372,7 +372,7 @@ export const zhHantMessages = {
     "collapseAll": "全部摺疊",
     "refreshCache": "重新整理快取",
     "cacheRefreshed": "快取已重新整理",
-    "deleteGroupConfirm": "刪除 \"{name}\"？",
+    "deleteGroupConfirm": "刪除目錄 \"{name}\"？",
     "deleteNotebookConfirm": "刪除 \"{name}\"？",
     "copyDirectory": "複製目錄位置",
     "directoryCopied": "目錄位置已複製",
@@ -385,7 +385,7 @@ export const zhHantMessages = {
   "note": {
     "addNote": "新增筆記",
     "pasteNote": "貼上筆記",
-    "selectNotebook": "選擇一個筆記本以檢視筆記",
+    "selectNotebook": "選擇一個筆記以檢視內容",
     "searchNote": "搜尋筆記...",
     "listView": "列表檢視",
     "cardView": "卡片檢視",
@@ -461,7 +461,7 @@ export const zhHantMessages = {
     "escClose": "Esc 關閉對話框",
     "filters": {
       "spaceName": "空間名稱",
-      "notebookName": "筆記本名稱",
+      "notebookName": "筆記名稱",
       "blockTitle": "筆記區塊標題",
       "blockContent": "筆記區塊內容"
     }
@@ -499,7 +499,7 @@ export const zhHantMessages = {
   },
   "welcome": {
     "title": "歡迎使用 TinyNote",
-    "description": "輕量級筆記管理與快速複製工具。用空間、分組和筆記本整理命令、程式碼片段和筆記。",
+    "description": "輕量級筆記管理與快速複製工具。用空間、目錄和筆記整理命令、程式碼片段和筆記。",
     "selectStorage": "選擇儲存資料夾"
   },
   "links": {
@@ -546,7 +546,7 @@ export const zhHantMessages = {
     "irreversible": "此操作無法復原。"
   },
   "recent": {
-    "title": "最近開啟的筆記本",
+    "title": "最近開啟的筆記",
     "subtitle": "依最近開啟時間排序",
     "empty": "暫無開啟歷史",
     "closeShortcut": "Esc 關閉",
@@ -555,7 +555,7 @@ export const zhHantMessages = {
   "utils": {
     "globalSearch": {
       "spaceName": "空間名稱",
-      "notebookName": "筆記本名稱",
+      "notebookName": "筆記名稱",
       "blockTitle": "筆記區塊標題",
       "blockContent": "筆記區塊內容"
     },

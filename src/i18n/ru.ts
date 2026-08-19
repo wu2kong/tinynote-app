@@ -340,22 +340,22 @@ export const ruMessages = {
     "groupRenameFailed": "Не удалось переименовать; такое имя уже может существовать"
   },
   "directory": {
-    "newNotebook": "Новый блокнот",
-    "newMarkdownNotebook": "Новый Markdown-блокнот",
-    "newWriterNotebook": "Новый блокнот статьи",
-    "newGroup": "Новая группа",
-    "renameGroup": "Переименовать группу",
-    "renameNotebook": "Переименовать блокнот",
-    "deleteGroup": "Удалить группу",
-    "deleteNotebook": "Удалить блокнот",
-    "notebookName": "Имя блокнота",
+    "newNotebook": "Новый блочный блокнот",
+    "newMarkdownNotebook": "Новая Markdown-заметка",
+    "newWriterNotebook": "Новая заметка-статья",
+    "newGroup": "Новый каталог",
+    "renameGroup": "Переименовать каталог",
+    "renameNotebook": "Переименовать",
+    "deleteGroup": "Удалить каталог",
+    "deleteNotebook": "Удалить",
+    "notebookName": "Название",
     "formats": {
-      "blocks": "Блоки заметок",
+      "blocks": "Блочный блокнот",
       "markdown": "Markdown",
       "writer": "Статья"
     },
-    "groupName": "Имя группы",
-    "searchNotebook": "Поиск блокнотов...",
+    "groupName": "Название каталога",
+    "searchNotebook": "Поиск заметок...",
     "clearSearch": "Очистить поиск",
     "selectSpace": "Выберите пространство для просмотра",
     "createCopy": "Создать копию",
@@ -363,8 +363,8 @@ export const ruMessages = {
     "createCopyFailed": "Не удалось создать копию",
     "blockMode": "Режим блоков заметки",
     "sourceMode": "Режим исходного кода",
-    "newChildGroup": "Новая подгруппа",
-    "addGroup": "Добавить группу",
+    "newChildGroup": "Новый подкаталог",
+    "addGroup": "Добавить каталог",
     "moveTo": "Переместить в...",
     "movedTo": "Перемещено в \"{name}\"",
     "openInEditor": "Открыть в редакторе",
@@ -372,7 +372,7 @@ export const ruMessages = {
     "collapseAll": "Свернуть все",
     "refreshCache": "Обновить кэш",
     "cacheRefreshed": "Кэш обновлен",
-    "deleteGroupConfirm": "Удалить \"{name}\"?",
+    "deleteGroupConfirm": "Удалить каталог \"{name}\"?",
     "deleteNotebookConfirm": "Удалить \"{name}\"?",
     "copyDirectory": "Копировать расположение каталога",
     "directoryCopied": "Расположение каталога скопировано",
@@ -385,7 +385,7 @@ export const ruMessages = {
   "note": {
     "addNote": "Добавить заметку",
     "pasteNote": "Вставить заметку",
-    "selectNotebook": "Выберите блокнот, чтобы просмотреть заметки",
+    "selectNotebook": "Выберите заметку, чтобы просмотреть содержимое",
     "searchNote": "Поиск заметок...",
     "listView": "Вид списком",
     "cardView": "Вид карточками",
@@ -461,7 +461,7 @@ export const ruMessages = {
     "escClose": "Esc закрывает диалог",
     "filters": {
       "spaceName": "Имя пространства",
-      "notebookName": "Имя блокнота",
+      "notebookName": "Название заметки",
       "blockTitle": "Заголовок блока заметки",
       "blockContent": "Содержимое блока заметки"
     }
@@ -555,7 +555,7 @@ export const ruMessages = {
   "utils": {
     "globalSearch": {
       "spaceName": "Имя пространства",
-      "notebookName": "Имя блокнота",
+      "notebookName": "Название заметки",
       "blockTitle": "Заголовок блока заметки",
       "blockContent": "Содержимое блока заметки"
     },
