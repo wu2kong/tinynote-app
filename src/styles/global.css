@@ -2196,20 +2196,26 @@ body.directory-panel-resizing {
 }
 
 .writer-notebook-body.page-width-narrow .milkdown .ProseMirror {
-  max-width: 640px;
-}
-
-.writer-notebook-body.page-width-standard .milkdown .ProseMirror {
   max-width: 800px;
 }
 
+.writer-notebook-body.page-width-standard .milkdown .ProseMirror {
+  max-width: 1024px;
+}
+
 .writer-notebook-body.page-width-full .milkdown .ProseMirror {
-  max-width: none;
+  /* Keep a slim side margin so text doesn't hug the panel edges. */
+  width: 94%;
+  max-width: 94%;
 }
 
 .writer-notebook-body .milkdown {
+  width: 100%;
   height: 100%;
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   --crepe-color-background: var(--bg-primary);
   --crepe-color-on-background: var(--text-primary);
   --crepe-color-surface: var(--bg-secondary);
@@ -2235,14 +2241,24 @@ body.directory-panel-resizing {
 }
 
 .writer-notebook-body .milkdown .ProseMirror {
+  width: 100%;
+  min-width: 0;
   min-height: 100%;
+  flex: 1 1 auto;
   outline: none;
   box-sizing: border-box;
   caret-color: var(--text-primary);
 }
 
 .writer-notebook-body .milkdown .editor {
+  width: 100%;
+  min-width: 0;
   height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 auto;
 }
 
 /* Fallback if CodeMirror theme still paints active-line gutter. */

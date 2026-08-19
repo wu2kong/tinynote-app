@@ -7,6 +7,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { writerListContinuationPlugin } from '@/utils/writerListContinuationPlugin';
+import { writerEmptyClickPlugin } from '@/utils/writerEmptyClickPlugin';
 import '@milkdown/crepe/theme/common/style.css';
 
 /** Light code theme: Crepe defaults to oneDark, which leaves a black active-line gutter. */
@@ -74,6 +75,7 @@ const WriterEditor: React.FC<WriterEditorProps> = ({
     });
 
     crepe.editor.use(writerListContinuationPlugin);
+    crepe.editor.use(writerEmptyClickPlugin);
 
     crepe.on((listener) => {
       listener.markdownUpdated((_ctx, markdown, prevMarkdown) => {
