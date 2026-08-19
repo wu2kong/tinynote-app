@@ -1989,6 +1989,10 @@ body.directory-panel-resizing {
   z-index: 200;
 }
 
+.modal-overlay.pro-upgrade-overlay {
+  z-index: 300;
+}
+
 .modal {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
@@ -3989,17 +3993,6 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
   margin-bottom: 4px;
 }
 
-.pro-upgrade-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.pro-upgrade-crown {
-  color: #c9922a;
-  flex-shrink: 0;
-}
-
 .pro-upgrade-hint {
   margin: 0 0 16px;
   font-size: 12px;
@@ -4088,18 +4081,86 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
   width: 100%;
 }
 
-.pro-license-mask {
-  font-size: 12px;
-  padding: 4px 8px;
+.pro-settings-active {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.pro-active-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.pro-active-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+
+.pro-active-meta-label {
+  flex-shrink: 0;
+  font-size: 12px;
   color: var(--text-secondary);
+}
+
+.pro-active-meta-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.pro-license-mask {
+  font-size: 12px;
+  padding: 2px 0;
+  background: transparent;
+  color: var(--text-primary);
+  word-break: break-all;
+  text-align: right;
+}
+
+.pro-revoke-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .settings-section-block {
   margin-bottom: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.settings-feedback-info {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.settings-feedback-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary, var(--text-secondary));
+  line-height: 1.5;
 }
 
 .app-bar-space-add .pro-badge {

@@ -33,6 +33,8 @@ export const jaMessages = {
       "backup": "バックアップ",
       "ai": "AI モデル",
       "shortcuts": "ショートカット",
+      "pro": "Pro",
+      "feedback": "フィードバック",
       "about": "概要"
     },
     "general": {
@@ -250,6 +252,35 @@ export const jaMessages = {
       "openAuthorFailed": "作者ホームページを開けません",
       "downloadFailed": "アップデートのダウンロードに失敗しました。ネットワーク接続を確認してください",
       "checkFailed": "アップデートの確認に失敗しました"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "メンバーシップ状態を確認し、ライセンスを購入または有効化して Pro 機能を解放します。"
+    },
+    "feedback": {
+      "panelTitle": "フィードバック",
+      "panelDesc": "メールで問題やご意見をお送りください。バグ報告時は、下のバージョン情報を添付してください。",
+      "platform": "プラットフォーム",
+      "version": "バージョン",
+      "diagnosticInfo": "バージョン情報",
+      "diagnosticInfoDesc": "問題調査のためのプラットフォームとバージョン情報を含みます",
+      "copyInfo": "コピー",
+      "copied": "コピー済み",
+      "infoCopied": "バージョン情報をコピーしました",
+      "email": "フィードバック用メール",
+      "emailDesc": "このアドレスへフィードバックを送信してください",
+      "writeEmail": "メールを作成",
+      "copyEmail": "メールをコピー",
+      "emailCopied": "メールアドレスをコピーしました",
+      "bugHint": "バグ報告の場合は、コピーしたバージョン情報をメールに貼り付けてください。",
+      "mailSubject": "TinyNote フィードバック",
+      "mailBodyHint": "上に問題やご意見をご記入ください。バグ報告の場合は、下のバージョン情報を残してください。",
+      "openMailFailed": "メールクライアントを開けません",
+      "runtime": {
+        "desktop": "デスクトップ",
+        "mobile": "モバイル",
+        "web": "Web"
+      }
     }
   },
   "menu": {

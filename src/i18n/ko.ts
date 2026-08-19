@@ -33,6 +33,8 @@ export const koMessages = {
       "backup": "백업",
       "ai": "AI 모델",
       "shortcuts": "단축키",
+      "pro": "Pro",
+      "feedback": "피드백",
       "about": "정보"
     },
     "general": {
@@ -250,6 +252,35 @@ export const koMessages = {
       "openAuthorFailed": "작성자 홈페이지를 열 수 없습니다",
       "downloadFailed": "업데이트를 다운로드하지 못했습니다. 네트워크 연결이 정상인지 확인하세요",
       "checkFailed": "업데이트를 확인하지 못했습니다"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "멤버십 상태를 확인하고, 라이선스를 구매하거나 활성화하여 Pro 기능을 잠금 해제하세요."
+    },
+    "feedback": {
+      "panelTitle": "피드백",
+      "panelDesc": "이메일로 문제와 제안을 보내 주세요. 버그 제보 시 아래 복사한 버전 정보를 함께 첨부해 주세요.",
+      "platform": "플랫폼",
+      "version": "버전",
+      "diagnosticInfo": "버전 정보",
+      "diagnosticInfoDesc": "문제 진단에 도움이 되는 플랫폼 및 버전 정보를 포함합니다",
+      "copyInfo": "복사",
+      "copied": "복사됨",
+      "infoCopied": "버전 정보가 복사되었습니다",
+      "email": "피드백 이메일",
+      "emailDesc": "이 주소로 피드백을 보내 주세요",
+      "writeEmail": "메일 작성",
+      "copyEmail": "이메일 복사",
+      "emailCopied": "이메일이 복사되었습니다",
+      "bugHint": "버그를 제보하는 경우, 복사한 버전 정보를 메일에 붙여넣어 주세요.",
+      "mailSubject": "TinyNote 피드백",
+      "mailBodyHint": "위에 문제나 제안을 적어 주세요. 버그 제보 시 아래 버전 정보를 남겨 주세요.",
+      "openMailFailed": "메일 클라이언트를 열 수 없습니다",
+      "runtime": {
+        "desktop": "데스크톱",
+        "mobile": "모바일",
+        "web": "웹"
+      }
     }
   },
   "menu": {

@@ -33,6 +33,8 @@ export const frMessages = {
       "backup": "Sauvegarde",
       "ai": "Modèles IA",
       "shortcuts": "Raccourcis",
+      "pro": "Pro",
+      "feedback": "Commentaires",
       "about": "À propos"
     },
     "general": {
@@ -250,6 +252,35 @@ export const frMessages = {
       "openAuthorFailed": "Impossible d'ouvrir la page d'accueil de l'auteur",
       "downloadFailed": "Impossible de télécharger la mise à jour. Vérifiez que la connexion réseau fonctionne",
       "checkFailed": "Échec de la recherche de mises à jour"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "Consultez l'état de l'abonnement, achetez ou activez une licence pour débloquer les fonctions Pro."
+    },
+    "feedback": {
+      "panelTitle": "Commentaires",
+      "panelDesc": "Envoyez vos commentaires par e-mail. Pour signaler un bug, veuillez joindre les informations de version copiées ci-dessous.",
+      "platform": "Plateforme",
+      "version": "Version",
+      "diagnosticInfo": "Informations de version",
+      "diagnosticInfoDesc": "Inclut les détails de plateforme et de version pour faciliter le diagnostic",
+      "copyInfo": "Copier",
+      "copied": "Copié",
+      "infoCopied": "Informations de version copiées",
+      "email": "E-mail de feedback",
+      "emailDesc": "Veuillez envoyer vos commentaires à cette adresse",
+      "writeEmail": "Écrire un e-mail",
+      "copyEmail": "Copier l'e-mail",
+      "emailCopied": "E-mail copié",
+      "bugHint": "Si vous signalez un bug, collez les informations de version copiées dans votre e-mail.",
+      "mailSubject": "Commentaires TinyNote",
+      "mailBodyHint": "Décrivez votre problème ou suggestion ci-dessus. Pour un bug, conservez les informations de version ci-dessous.",
+      "openMailFailed": "Impossible d'ouvrir le client mail",
+      "runtime": {
+        "desktop": "Bureau",
+        "mobile": "Mobile",
+        "web": "Web"
+      }
     }
   },
   "menu": {

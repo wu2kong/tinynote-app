@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['ko'] = {
   "pricing.copyKey": "라이선스 키 복사",
   "pricing.copied": "복사됨",
   "pricing.downloadActivate": "앱 다운로드 및 활성화",
-  "pricing.successHint": "TinyNote 실행 → 설정 → 정보 → 키 붙여넣기로 활성화. 최대 3대 기기 지원.",
+  "pricing.successHint": "TinyNote 실행 → 설정 → Pro → 키 붙여넣기로 활성화. 최대 3대 기기 지원.",
   "pricing.freeTitle": "무료 버전",
   "pricing.freeDesc": "일상적인 스니펫 관리에 충분한 기능",
   "pricing.freePeriod": "영구 무료",

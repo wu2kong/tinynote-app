@@ -33,6 +33,8 @@ export const itMessages = {
       "backup": "Backup",
       "ai": "Modelli AI",
       "shortcuts": "Scorciatoie",
+      "pro": "Pro",
+      "feedback": "Feedback",
       "about": "Informazioni"
     },
     "general": {
@@ -250,6 +252,35 @@ export const itMessages = {
       "openAuthorFailed": "Impossibile aprire la homepage dell'autore",
       "downloadFailed": "Impossibile scaricare l'aggiornamento. Verifica che la connessione di rete funzioni",
       "checkFailed": "Controllo aggiornamenti non riuscito"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "Visualizza lo stato dell'abbonamento, acquista o attiva una licenza per sbloccare le funzioni Pro."
+    },
+    "feedback": {
+      "panelTitle": "Feedback",
+      "panelDesc": "Invia feedback via e-mail. Quando segnali un bug, includi le informazioni di versione copiate qui sotto.",
+      "platform": "Piattaforma",
+      "version": "Versione",
+      "diagnosticInfo": "Informazioni di versione",
+      "diagnosticInfoDesc": "Include dettagli su piattaforma e versione per aiutare la diagnosi",
+      "copyInfo": "Copia",
+      "copied": "Copiato",
+      "infoCopied": "Informazioni di versione copiate",
+      "email": "Email di feedback",
+      "emailDesc": "Invia il tuo feedback a questo indirizzo",
+      "writeEmail": "Scrivi email",
+      "copyEmail": "Copia email",
+      "emailCopied": "Email copiata",
+      "bugHint": "Se stai segnalando un bug, incolla le informazioni di versione copiate nella tua email.",
+      "mailSubject": "Feedback TinyNote",
+      "mailBodyHint": "Descrivi il problema o il suggerimento sopra. Se segnali un bug, mantieni le informazioni di versione sotto.",
+      "openMailFailed": "Impossibile aprire il client di posta",
+      "runtime": {
+        "desktop": "Desktop",
+        "mobile": "Mobile",
+        "web": "Web"
+      }
     }
   },
   "menu": {

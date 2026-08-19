@@ -31,10 +31,12 @@ export const enMessages = {
     "licenseKeyPlaceholder": "Paste your license key",
     "activating": "Activating...",
     "activated": "Pro activated",
-    "deactivate": "Deactivate This Device",
-    "deactivated": "License removed from this device",
+    "deactivate": "Revoke Activation",
+    "deactivated": "Activation revoked",
     "statusActive": "TinyNote Pro is active on this device",
     "statusFree": "Free plan: up to {spaces} spaces, {notebooks} notebooks per space. Article notebooks and Sync require Pro.",
+    "validity": "Validity",
+    "validityPermanent": "Lifetime",
     "gate": {
       "title": "TinyNote Pro",
       "hint": "Purchase Pro or activate a license key to unlock this feature.",
@@ -64,6 +66,8 @@ export const enMessages = {
       "backup": "Backup",
       "ai": "AI Models",
       "shortcuts": "Shortcuts",
+      "pro": "Pro",
+      "feedback": "Feedback",
       "about": "About"
     },
     "general": {
@@ -281,6 +285,35 @@ export const enMessages = {
       "openAuthorFailed": "Unable to open the author homepage",
       "downloadFailed": "Failed to download update. Check whether the network connection is working",
       "checkFailed": "Failed to check for updates"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "View membership status, purchase or activate a license to unlock Pro features."
+    },
+    "feedback": {
+      "panelTitle": "Feedback",
+      "panelDesc": "Send feedback by email. When reporting a bug, please include the copied version info below.",
+      "platform": "Platform",
+      "version": "Version",
+      "diagnosticInfo": "Version Info",
+      "diagnosticInfoDesc": "Includes platform and version details to help diagnose issues",
+      "copyInfo": "Copy",
+      "copied": "Copied",
+      "infoCopied": "Version info copied",
+      "email": "Feedback Email",
+      "emailDesc": "Please send your feedback to this address",
+      "writeEmail": "Write Email",
+      "copyEmail": "Copy Email",
+      "emailCopied": "Email copied",
+      "bugHint": "If you are reporting a bug, paste the copied version info into your email.",
+      "mailSubject": "TinyNote Feedback",
+      "mailBodyHint": "Please describe your issue or suggestion above. If reporting a bug, keep the version info below.",
+      "openMailFailed": "Unable to open the mail client",
+      "runtime": {
+        "desktop": "Desktop",
+        "mobile": "Mobile",
+        "web": "Web"
+      }
     }
   },
   "menu": {

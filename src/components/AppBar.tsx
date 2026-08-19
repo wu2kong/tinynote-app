@@ -27,7 +27,6 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
-import ProBadge from './ProBadge';
 import { OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
 import ContextMenuPortal from './ContextMenuPortal';
 import { showToast } from './Toast';
@@ -537,7 +536,6 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
         >
           <Plus size={16} />
           {!isSidebarCollapsed && <span className="app-bar-space-name">{t('appBar.newSpace')}</span>}
-          {spaceLimitReached && <ProBadge title={t('pro.badge')} />}
         </button>
       </div>
 

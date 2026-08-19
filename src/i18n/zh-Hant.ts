@@ -33,6 +33,8 @@ export const zhHantMessages = {
       "backup": "備份",
       "ai": "AI 模型",
       "shortcuts": "快捷鍵",
+      "pro": "高級版",
+      "feedback": "回饋",
       "about": "關於"
     },
     "general": {
@@ -250,6 +252,35 @@ export const zhHantMessages = {
       "openAuthorFailed": "無法開啟作者首頁",
       "downloadFailed": "下載更新失敗，請檢查網路連線是否正常",
       "checkFailed": "檢查更新失敗"
+    },
+    "pro": {
+      "panelTitle": "高級版",
+      "panelDesc": "查看會員狀態，購買或啟用授權以解鎖高級功能。"
+    },
+    "feedback": {
+      "panelTitle": "回饋",
+      "panelDesc": "歡迎透過郵件回饋問題與建議。回報 Bug 時請附上下方複製的版本資訊。",
+      "platform": "平台",
+      "version": "版本",
+      "diagnosticInfo": "版本資訊",
+      "diagnosticInfoDesc": "包含平台與版本等診斷資訊，便於排查問題",
+      "copyInfo": "一鍵複製",
+      "copied": "已複製",
+      "infoCopied": "版本資訊已複製",
+      "email": "回饋信箱",
+      "emailDesc": "請將回饋傳送至該信箱",
+      "writeEmail": "寫郵件",
+      "copyEmail": "複製信箱",
+      "emailCopied": "信箱已複製",
+      "bugHint": "如果是回報 Bug，請在郵件中貼上已複製的版本資訊。",
+      "mailSubject": "TinyNote 回饋",
+      "mailBodyHint": "請在上方描述你的問題或建議。若回報 Bug，請保留下方版本資訊。",
+      "openMailFailed": "無法開啟郵件用戶端",
+      "runtime": {
+        "desktop": "桌面端",
+        "mobile": "行動端",
+        "web": "網頁端"
+      }
     }
   },
   "menu": {

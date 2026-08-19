@@ -33,6 +33,8 @@ export const deMessages = {
       "backup": "Sicherung",
       "ai": "KI-Modelle",
       "shortcuts": "Tastenkürzel",
+      "pro": "Pro",
+      "feedback": "Feedback",
       "about": "Über"
     },
     "general": {
@@ -250,6 +252,35 @@ export const deMessages = {
       "openAuthorFailed": "Autoren-Homepage kann nicht geöffnet werden",
       "downloadFailed": "Update konnte nicht heruntergeladen werden. Prüfe, ob die Netzwerkverbindung funktioniert",
       "checkFailed": "Updateprüfung fehlgeschlagen"
+    },
+    "pro": {
+      "panelTitle": "Pro",
+      "panelDesc": "Mitgliedschaftsstatus anzeigen, Lizenz kaufen oder aktivieren, um Pro-Funktionen freizuschalten."
+    },
+    "feedback": {
+      "panelTitle": "Feedback",
+      "panelDesc": "Sende Feedback per E-Mail. Bei Bug-Meldungen bitte die unten kopierten Versionsinformationen beifügen.",
+      "platform": "Plattform",
+      "version": "Version",
+      "diagnosticInfo": "Versionsinformationen",
+      "diagnosticInfoDesc": "Enthält Plattform- und Versionsdetails zur Problemdiagnose",
+      "copyInfo": "Kopieren",
+      "copied": "Kopiert",
+      "infoCopied": "Versionsinformationen kopiert",
+      "email": "Feedback-E-Mail",
+      "emailDesc": "Bitte sende dein Feedback an diese Adresse",
+      "writeEmail": "E-Mail schreiben",
+      "copyEmail": "E-Mail kopieren",
+      "emailCopied": "E-Mail kopiert",
+      "bugHint": "Wenn du einen Bug meldest, füge die kopierten Versionsinformationen in deine E-Mail ein.",
+      "mailSubject": "TinyNote Feedback",
+      "mailBodyHint": "Bitte beschreibe dein Problem oder deinen Vorschlag oben. Bei Bug-Meldungen behalte die Versionsinformationen unten bei.",
+      "openMailFailed": "E-Mail-Client konnte nicht geöffnet werden",
+      "runtime": {
+        "desktop": "Desktop",
+        "mobile": "Mobil",
+        "web": "Web"
+      }
     }
   },
   "menu": {

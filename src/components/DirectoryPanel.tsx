@@ -27,7 +27,6 @@ import { CSS } from '@dnd-kit/utilities';
 import InputModal from './InputModal';
 import ConfirmModal from './ConfirmModal';
 import ContextMenuPortal from './ContextMenuPortal';
-import ProBadge from './ProBadge';
 import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import * as config from '@/utils/config';
@@ -737,11 +736,9 @@ const DirectoryPanel: React.FC = () => {
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'markdown'); closeContextMenu(); }}>
                   <FileCode size={14} />{t('directory.newMarkdownNotebook')}
-                  {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'writer'); closeContextMenu(); }}>
                   <PenLine size={14} />{t('directory.newWriterNotebook')}
-                  {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
@@ -801,11 +798,9 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'markdown'); closeContextMenu(); }}>
               <FileCode size={14} />{t('directory.newMarkdownNotebook')}
-              {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'writer'); closeContextMenu(); }}>
               <PenLine size={14} />{t('directory.newWriterNotebook')}
-              {!isPro && <ProBadge className="context-menu-pro-badge" title={t('pro.badge')} />}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}

@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['ru'] = {
   "pricing.copyKey": "Скопировать License Key",
   "pricing.copied": "Скопировано",
   "pricing.downloadActivate": "Скачать приложение и активировать",
-  "pricing.successHint": "Откройте TinyNote → Настройки → О программе → Вставьте ключ для активации. Поддерживает до 3 устройств.",
+  "pricing.successHint": "Откройте TinyNote → Настройки → Pro → Вставьте ключ для активации. Поддерживает до 3 устройств.",
   "pricing.freeTitle": "Бесплатная версия",
   "pricing.freeDesc": "Достаточно для повседневного управления сниппетами",
   "pricing.freePeriod": "Бесплатно навсегда",

@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   "pricing.copyKey": "复制 License Key",
   "pricing.copied": "已复制",
   "pricing.downloadActivate": "下载应用并激活",
-  "pricing.successHint": "打开 TinyNote → 设置 → 关于 → 粘贴密钥激活。支持最多 3 台设备。",
+  "pricing.successHint": "打开 TinyNote → 设置 → 高级版 → 粘贴密钥激活。支持最多 3 台设备。",
   "pricing.freeTitle": "基础版",
   "pricing.freeDesc": "日常片段管理够用",
   "pricing.freePeriod": "永久免费",

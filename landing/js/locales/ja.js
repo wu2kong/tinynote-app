@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['ja'] = {
   "pricing.copyKey": "ライセンスキーをコピー",
   "pricing.copied": "コピーしました",
   "pricing.downloadActivate": "アプリをダウンロードして有効化",
-  "pricing.successHint": "TinyNote を開き → 設定 → 概要 → キーを貼り付けて有効化。最大3台のデバイスで利用可能。",
+  "pricing.successHint": "TinyNote を開き → 設定 → Pro → キーを貼り付けて有効化。最大3台のデバイスで利用可能。",
   "pricing.freeTitle": "Free（無料版）",
   "pricing.freeDesc": "日常のスニペット管理に十分な機能",
   "pricing.freePeriod": "永久無料",

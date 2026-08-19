@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['fr'] = {
   "pricing.copyKey": "Copier la clé de licence",
   "pricing.copied": "Copié",
   "pricing.downloadActivate": "Télécharger l'app & Activer",
-  "pricing.successHint": "Ouvrez TinyNote → Paramètres → À propos → Collez votre clé pour l'activer. Jusqu'à 3 appareils.",
+  "pricing.successHint": "Ouvrez TinyNote → Paramètres → Pro → Collez votre clé pour l'activer. Jusqu'à 3 appareils.",
   "pricing.freeTitle": "Version Gratuite",
   "pricing.freeDesc": "Idéal pour la gestion quotidienne de snippets",
   "pricing.freePeriod": "Gratuit pour toujours",

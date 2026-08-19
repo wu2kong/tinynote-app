@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, ArrowDownToLine, Upload, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown, Mail, MessageSquare } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
-import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, DODO_CHECKOUT_URL } from '@/constants/app';
+import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
 import { FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES } from '@/constants/pro';
 import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
@@ -22,15 +22,14 @@ import * as fs from '@/utils/fileSystem';
 import { loadConfig, saveConfig } from '@/utils/config';
 import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
 import { resetSyncAdapterForTests } from '@/adapters/sync';
-import { getSyncBackend, isTauri, isWeb } from '@/platform/detect';
+import { getPlatform, getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
-import ProBadge from './ProBadge';
 import { showToast } from './Toast';
 import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
 
-type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'about';
+type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -44,8 +43,52 @@ const MODULES: { id: SettingsModule; icon: React.ReactNode }[] = [
   { id: 'backup', icon: <Archive size={16} /> },
   { id: 'ai', icon: <Bot size={16} /> },
   { id: 'shortcuts', icon: <KeyRound size={16} /> },
+  { id: 'pro', icon: <Crown size={16} /> },
+  { id: 'feedback', icon: <MessageSquare size={16} /> },
   { id: 'about', icon: <Info size={16} /> },
 ];
+
+function detectOsLabel(): string {
+  if (typeof navigator === 'undefined') return 'Unknown';
+  const ua = navigator.userAgent;
+  const platform = navigator.platform || '';
+  if (/Win/i.test(platform) || /Windows/i.test(ua)) return 'Windows';
+  if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) return 'macOS';
+  if (/Linux/i.test(platform) || /Linux/i.test(ua)) return 'Linux';
+  if (/Android/i.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+  return platform || 'Unknown';
+}
+
+function buildDiagnosticInfo(version: string): string {
+  const runtime = getPlatform();
+  const os = detectOsLabel();
+  const lines = [
+    `App: TinyNote`,
+    `Version: ${version || 'unknown'}`,
+    `Runtime: ${runtime}`,
+    `OS: ${os}`,
+    `Tauri: ${isTauri() ? 'yes' : 'no'}`,
+  ];
+  if (typeof navigator !== 'undefined' && navigator.userAgent) {
+    lines.push(`User-Agent: ${navigator.userAgent}`);
+  }
+  return lines.join('\n');
+}
+
+async function copyTextToClipboard(text: string): Promise<boolean> {
+  try {
+    await writeText(text);
+    return true;
+  } catch {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
 
 const VIEW_MODE_OPTIONS: { value: ViewMode; labelKey: string }[] = [
   { value: 'list', labelKey: 'settings.general.viewList' },
@@ -819,25 +862,20 @@ const SyncDiffModal: React.FC<{
   );
 };
 
-const SyncSettingsGate: React.FC = () => {
+const SyncSettingsGate: React.FC<{ onGoToPro: () => void }> = ({ onGoToPro }) => {
   const { t } = useI18n();
   const isPro = useLicenseStore((s) => s.isPro);
-  const openGate = useLicenseStore((s) => s.openGate);
 
   if (isPro) return <SyncSettings />;
 
   return (
     <div className="settings-panel">
-      <h4 className="settings-panel-title">
-        {t('settings.sync.panelTitle')}
-        <ProBadge className="settings-title-pro-badge" title={t('pro.badge')} />
-      </h4>
+      <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
       <div className="pro-locked-panel">
-        <Crown size={28} className="pro-locked-icon" />
         <p className="pro-locked-title">{t('pro.gate.sync')}</p>
         <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
         <div className="pro-locked-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => openGate('sync')}>
+          <button type="button" className="btn btn-secondary" onClick={onGoToPro}>
             <KeyRound size={14} />
             {t('pro.gate.activate')}
           </button>
@@ -846,7 +884,7 @@ const SyncSettingsGate: React.FC = () => {
             className="btn btn-primary"
             onClick={async () => {
               try {
-                await openUrl(DODO_CHECKOUT_URL);
+                await openUrl(PURCHASE_URL);
               } catch {
                 showToast(t('pro.errors.openPurchaseFailed'));
               }
@@ -895,71 +933,201 @@ const LicenseSettings: React.FC = () => {
 
   const handlePurchase = async () => {
     try {
-      await openUrl(DODO_CHECKOUT_URL);
+      await openUrl(PURCHASE_URL);
     } catch {
       showToast(t('pro.errors.openPurchaseFailed'));
     }
   };
 
   return (
-    <div className="settings-section-block">
-      <div className="settings-row settings-row-vertical">
-        <div className="settings-row-info">
-          <span className="settings-row-label">
-            {t('pro.license')}
-            {isPro && <ProBadge className="settings-inline-pro-badge" title={t('pro.badge')} />}
-          </span>
-          <span className="settings-row-desc">
-            {isPro
-              ? t('pro.statusActive')
-              : t('pro.statusFree', { spaces: FREE_MAX_SPACES, notebooks: FREE_MAX_NOTEBOOKS_PER_SPACE })}
-          </span>
+    <div className="settings-row settings-row-vertical">
+      <div className="settings-row-info">
+        <span className="settings-row-label">{t('pro.license')}</span>
+        <span className="settings-row-desc">
+          {isPro
+            ? t('pro.statusActive')
+            : t('pro.statusFree', { spaces: FREE_MAX_SPACES, notebooks: FREE_MAX_NOTEBOOKS_PER_SPACE })}
+        </span>
+      </div>
+      {isPro ? (
+        <div className="pro-settings-active">
+          <div className="pro-active-meta">
+            <div className="pro-active-meta-row">
+              <span className="pro-active-meta-label">{t('pro.licenseKey')}</span>
+              <code className="pro-license-mask" title={license?.licenseKey}>
+                {license?.licenseKey
+                  ? `${license.licenseKey.slice(0, 8)}…${license.licenseKey.slice(-4)}`
+                  : t('pro.badge')}
+              </code>
+            </div>
+            <div className="pro-active-meta-row">
+              <span className="pro-active-meta-label">{t('pro.validity')}</span>
+              <span className="pro-active-meta-value">{t('pro.validityPermanent')}</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary pro-revoke-btn"
+            onClick={() => void handleDeactivate()}
+            disabled={busy}
+          >
+            {busy ? <Loader2 size={14} className="settings-spin" /> : null}
+            {t('pro.deactivate')}
+          </button>
         </div>
-        {isPro ? (
+      ) : (
+        <div className="pro-settings-activate">
+          <input
+            className="pro-activate-input"
+            value={licenseKey}
+            onChange={(e) => {
+              clearError();
+              setLicenseKey(e.target.value);
+            }}
+            placeholder={t('pro.licenseKeyPlaceholder')}
+            disabled={busy}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleActivate();
+            }}
+          />
           <div className="settings-update-actions">
-            <code className="pro-license-mask" title={license?.licenseKey}>
-              {license?.licenseKey
-                ? `${license.licenseKey.slice(0, 8)}…${license.licenseKey.slice(-4)}`
-                : t('pro.badge')}
-            </code>
-            <button type="button" className="btn btn-secondary" onClick={() => void handleDeactivate()} disabled={busy}>
-              {busy ? <Loader2 size={14} className="settings-spin" /> : null}
-              {t('pro.deactivate')}
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => void handleActivate()}
+              disabled={busy || !licenseKey.trim()}
+            >
+              {busy ? <Loader2 size={14} className="settings-spin" /> : <KeyRound size={14} />}
+              {busy ? t('pro.activating') : t('pro.gate.activate')}
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={() => void handlePurchase()}>
+              <ExternalLink size={14} />
+              {t('pro.gate.purchase')}
             </button>
           </div>
-        ) : (
-          <div className="pro-settings-activate">
-            <input
-              className="pro-activate-input"
-              value={licenseKey}
-              onChange={(e) => {
-                clearError();
-                setLicenseKey(e.target.value);
-              }}
-              placeholder={t('pro.licenseKeyPlaceholder')}
-              disabled={busy}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') void handleActivate();
-              }}
-            />
-            <div className="settings-update-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => void handleActivate()}
-                disabled={busy || !licenseKey.trim()}
-              >
-                {busy ? <Loader2 size={14} className="settings-spin" /> : <KeyRound size={14} />}
-                {busy ? t('pro.activating') : t('pro.gate.activate')}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={() => void handlePurchase()}>
-                <ExternalLink size={14} />
-                {t('pro.gate.purchase')}
-              </button>
-            </div>
-            {error && <p className="pro-activate-error">{mapLicenseError(error, t)}</p>}
-          </div>
-        )}
+          {error && <p className="pro-activate-error">{mapLicenseError(error, t)}</p>}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ProSettings: React.FC = () => {
+  const { t } = useI18n();
+
+  return (
+    <div className="settings-panel">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">{t('settings.pro.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.pro.panelDesc')}</p>
+      </div>
+      <LicenseSettings />
+    </div>
+  );
+};
+
+const FeedbackSettings: React.FC = () => {
+  const { t } = useI18n();
+  const [version, setVersion] = useState('');
+  const [copiedInfo, setCopiedInfo] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  useEffect(() => {
+    getAppVersion().then(setVersion);
+  }, []);
+
+  const runtime = getPlatform();
+  const osLabel = detectOsLabel();
+  const platformDisplay = t(`settings.feedback.runtime.${runtime}`);
+  const diagnosticInfo = buildDiagnosticInfo(version);
+
+  const handleCopyInfo = useCallback(async () => {
+    const ok = await copyTextToClipboard(diagnosticInfo);
+    if (!ok) {
+      showToast(t('settings.path.copyFailed'));
+      return;
+    }
+    setCopiedInfo(true);
+    showToast(t('settings.feedback.infoCopied'));
+    setTimeout(() => setCopiedInfo(false), 2000);
+  }, [diagnosticInfo, t]);
+
+  const handleCopyEmail = useCallback(async () => {
+    const ok = await copyTextToClipboard(FEEDBACK_EMAIL);
+    if (!ok) {
+      showToast(t('settings.path.copyFailed'));
+      return;
+    }
+    setCopiedEmail(true);
+    showToast(t('settings.feedback.emailCopied'));
+    setTimeout(() => setCopiedEmail(false), 2000);
+  }, [t]);
+
+  const handleOpenMail = useCallback(async () => {
+    const subject = encodeURIComponent(t('settings.feedback.mailSubject'));
+    const body = encodeURIComponent(`${t('settings.feedback.mailBodyHint')}\n\n---\n${diagnosticInfo}\n`);
+    try {
+      await openUrl(`mailto:${FEEDBACK_EMAIL}?subject=${subject}&body=${body}`);
+    } catch {
+      showToast(t('settings.feedback.openMailFailed'));
+    }
+  }, [diagnosticInfo, t]);
+
+  return (
+    <div className="settings-panel">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">{t('settings.feedback.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.feedback.panelDesc')}</p>
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.feedback.platform')}</span>
+          <span className="settings-row-desc">{platformDisplay} · {osLabel}</span>
+        </div>
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.feedback.version')}</span>
+          <span className="settings-row-desc">{version || '...'}</span>
+        </div>
+      </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.feedback.diagnosticInfo')}</span>
+          <span className="settings-row-desc">{t('settings.feedback.diagnosticInfoDesc')}</span>
+        </div>
+        <pre className="settings-feedback-info">{diagnosticInfo}</pre>
+        <div className="settings-update-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => void handleCopyInfo()}>
+            {copiedInfo ? <Check size={14} /> : <Copy size={14} />}
+            {copiedInfo ? t('settings.feedback.copied') : t('settings.feedback.copyInfo')}
+          </button>
+        </div>
+      </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.feedback.email')}</span>
+          <span className="settings-row-desc">{t('settings.feedback.emailDesc')}</span>
+        </div>
+        <button type="button" className="settings-link" onClick={() => void handleOpenMail()}>
+          {FEEDBACK_EMAIL}
+          <Mail size={14} />
+        </button>
+        <div className="settings-update-actions">
+          <button type="button" className="btn btn-primary" onClick={() => void handleOpenMail()}>
+            <Mail size={14} />
+            {t('settings.feedback.writeEmail')}
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => void handleCopyEmail()}>
+            {copiedEmail ? <Check size={14} /> : <Copy size={14} />}
+            {copiedEmail ? t('settings.feedback.copied') : t('settings.feedback.copyEmail')}
+          </button>
+        </div>
+        <p className="settings-feedback-hint">{t('settings.feedback.bugHint')}</p>
       </div>
     </div>
   );
@@ -1557,8 +1725,6 @@ const AboutSettings: React.FC = () => {
     <div className="settings-panel">
       <h4 className="settings-panel-title">{t('settings.about.panelTitle')}</h4>
 
-      <LicenseSettings />
-
       <div className="settings-about-card">
         <div className="settings-about-logo">📝</div>
         <div className="settings-about-info">
@@ -1649,7 +1815,6 @@ const AboutSettings: React.FC = () => {
 const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
   const { t } = useI18n();
   const [activeModule, setActiveModule] = useState<SettingsModule>('general');
-  const isPro = useLicenseStore((s) => s.isPro);
 
   if (!open) return null;
 
@@ -1674,7 +1839,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
               >
                 {mod.icon}
                 <span>{t(`settings.modules.${mod.id}`)}</span>
-                {mod.id === 'sync' && !isPro && <ProBadge title={t('pro.badge')} />}
               </button>
             ))}
           </nav>
@@ -1683,9 +1847,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'general' && <GeneralSettings />}
             {activeModule === 'ai' && <AISettings />}
             {activeModule === 'data' && <DataSettings />}
-            {activeModule === 'sync' && <SyncSettingsGate />}
+            {activeModule === 'sync' && <SyncSettingsGate onGoToPro={() => setActiveModule('pro')} />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}
+            {activeModule === 'pro' && <ProSettings />}
+            {activeModule === 'feedback' && <FeedbackSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>
         </div>

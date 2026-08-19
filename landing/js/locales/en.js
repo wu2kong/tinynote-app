@@ -116,7 +116,7 @@ window.TINYNOTE_LANDING_I18N.messages['en'] = {
   "pricing.copyKey": "Copy License Key",
   "pricing.copied": "Copied",
   "pricing.downloadActivate": "Download App & Activate",
-  "pricing.successHint": "Open TinyNote → Settings → About → Paste key to activate. Supports up to 3 devices.",
+  "pricing.successHint": "Open TinyNote → Settings → Pro → Paste key to activate. Supports up to 3 devices.",
   "pricing.freeTitle": "Free",
   "pricing.freeDesc": "Great for daily snippet management",
   "pricing.freePeriod": "Free Forever",

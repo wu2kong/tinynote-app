@@ -234,9 +234,9 @@ const App: React.FC = () => {
   const sharedOverlays = (
     <>
       <Toast />
-      <ProUpgradeModal />
       {settingsModal}
       {aiChatModal}
+      <ProUpgradeModal />
     </>
   );
 

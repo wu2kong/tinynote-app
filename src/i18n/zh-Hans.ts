@@ -31,10 +31,12 @@ export const zhHansMessages = {
     "licenseKeyPlaceholder": "粘贴你的 License Key",
     "activating": "激活中...",
     "activated": "已激活高级版",
-    "deactivate": "停用本机",
-    "deactivated": "已从本机移除许可证",
+    "deactivate": "撤销激活",
+    "deactivated": "已撤销激活",
     "statusActive": "本机已激活 TinyNote 高级版",
     "statusFree": "基础版：最多 {spaces} 个空间，每个空间最多 {notebooks} 个笔记本。文章笔记与同步模块需高级版。",
+    "validity": "有效期",
+    "validityPermanent": "永久",
     "gate": {
       "title": "TinyNote 高级版",
       "hint": "购买高级版或激活许可证后即可使用此功能。",
@@ -64,6 +66,8 @@ export const zhHansMessages = {
       "backup": "备份",
       "ai": "AI 模型",
       "shortcuts": "快捷键",
+      "pro": "高级版",
+      "feedback": "反馈",
       "about": "关于"
     },
     "general": {
@@ -281,6 +285,35 @@ export const zhHansMessages = {
       "openAuthorFailed": "无法打开作者主页",
       "downloadFailed": "下载更新失败，请检查网络连接是否正常",
       "checkFailed": "检查更新失败"
+    },
+    "pro": {
+      "panelTitle": "高级版",
+      "panelDesc": "查看会员状态，购买或激活许可证以解锁高级功能。"
+    },
+    "feedback": {
+      "panelTitle": "反馈",
+      "panelDesc": "欢迎通过邮件反馈问题与建议。反馈 Bug 时请附上下方复制的版本信息。",
+      "platform": "平台",
+      "version": "版本",
+      "diagnosticInfo": "版本信息",
+      "diagnosticInfoDesc": "包含平台与版本等诊断信息，便于排查问题",
+      "copyInfo": "一键复制",
+      "copied": "已复制",
+      "infoCopied": "版本信息已复制",
+      "email": "反馈邮箱",
+      "emailDesc": "请将反馈发送至该邮箱",
+      "writeEmail": "写邮件",
+      "copyEmail": "复制邮箱",
+      "emailCopied": "邮箱已复制",
+      "bugHint": "如果是反馈 Bug，请在邮件中粘贴已复制的版本信息。",
+      "mailSubject": "TinyNote 反馈",
+      "mailBodyHint": "请在上方描述你的问题或建议。若反馈 Bug，请保留下方版本信息。",
+      "openMailFailed": "无法打开邮件客户端",
+      "runtime": {
+        "desktop": "桌面端",
+        "mobile": "移动端",
+        "web": "网页端"
+      }
     }
   },
   "menu": {

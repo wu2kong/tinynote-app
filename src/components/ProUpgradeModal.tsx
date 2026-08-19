@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Crown, ExternalLink, KeyRound, Loader2, X } from 'lucide-react';
+import { ExternalLink, KeyRound, Loader2, X } from 'lucide-react';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { DODO_CHECKOUT_URL } from '@/constants/app';
+import { PURCHASE_URL } from '@/constants/app';
 import type { ProFeature } from '@/constants/pro';
 import { useLicenseStore } from '@/store/useLicenseStore';
 import { useI18n } from '@/i18n/useI18n';
@@ -54,7 +54,7 @@ const ProUpgradeModal: React.FC = () => {
 
   const handlePurchase = async () => {
     try {
-      await openUrl(DODO_CHECKOUT_URL);
+      await openUrl(PURCHASE_URL);
     } catch {
       showToast(t('pro.errors.openPurchaseFailed'));
     }
@@ -69,13 +69,10 @@ const ProUpgradeModal: React.FC = () => {
   };
 
   return (
-    <div className="modal-overlay" onClick={closeGate}>
+    <div className="modal-overlay pro-upgrade-overlay" onClick={closeGate}>
       <div className="modal pro-upgrade-modal" onClick={(e) => e.stopPropagation()}>
         <div className="pro-upgrade-header">
-          <div className="pro-upgrade-title-row">
-            <Crown size={18} className="pro-upgrade-crown" />
-            <h3 className="modal-title">{t('pro.gate.title')}</h3>
-          </div>
+          <h3 className="modal-title">{t('pro.gate.title')}</h3>
           <button type="button" className="icon-btn" onClick={closeGate} title={t('common.close')}>
             <X size={16} />
           </button>
