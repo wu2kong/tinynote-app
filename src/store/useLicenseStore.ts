@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ProFeature } from '@/constants/pro';
+import type { NotebookFormatId } from '@/types';
 import {
   activateLicenseKey,
   computeIsPro,
@@ -10,6 +11,11 @@ import {
   type StoredLicense,
 } from '@/utils/license';
 
+export interface GateContext {
+  parentPath: string;
+  format: NotebookFormatId;
+}
+
 interface LicenseState {
   hydrated: boolean;
   isPro: boolean;
@@ -18,12 +24,13 @@ interface LicenseState {
   error: string | null;
   gateOpen: boolean;
   gateFeature: ProFeature | null;
+  gateContext: GateContext | null;
   hydrate: () => Promise<void>;
   refreshValidation: () => Promise<void>;
   activate: (licenseKey: string) => Promise<boolean>;
   deactivate: () => Promise<boolean>;
   clearError: () => void;
-  openGate: (feature: ProFeature) => void;
+  openGate: (feature: ProFeature, context?: GateContext | null) => void;
   closeGate: () => void;
   /** Returns true if Pro or free-tier allows the action; otherwise opens gate. */
   requirePro: (feature: ProFeature) => boolean;
@@ -37,6 +44,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
   error: null,
   gateOpen: false,
   gateFeature: null,
+  gateContext: null,
 
   hydrate: async () => {
     const license = await loadStoredLicense();
@@ -74,6 +82,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
         error: null,
         gateOpen: false,
         gateFeature: null,
+        gateContext: null,
       });
       return true;
     } catch (error) {
@@ -110,13 +119,17 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
 
   clearError: () => set({ error: null }),
 
-  openGate: (feature) => set({ gateOpen: true, gateFeature: feature }),
+  openGate: (feature, context = null) => set({
+    gateOpen: true,
+    gateFeature: feature,
+    gateContext: context ?? null,
+  }),
 
-  closeGate: () => set({ gateOpen: false, gateFeature: null }),
+  closeGate: () => set({ gateOpen: false, gateFeature: null, gateContext: null }),
 
   requirePro: (feature) => {
     if (get().isPro) return true;
-    set({ gateOpen: true, gateFeature: feature });
+    set({ gateOpen: true, gateFeature: feature, gateContext: null });
     return false;
   },
 }));

@@ -24,6 +24,21 @@ export const frMessages = {
     "notSet": "Non défini",
     "none": "Aucun"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "La création de notes Markdown/Article est une fonctionnalité Pro.",
+      "sync": "Le module de synchronisation des notes est une fonctionnalité Pro."
+    },
+    "trial": {
+      "articleHint": "Vous pouvez aussi créer 1 note d’exemple de ce type dans l’espace actuel pour essayer et tester.",
+      "articleExists": "Cet espace a déjà un exemple de ce type « {name} ». Passez à Pro pour une utilisation illimitée.",
+      "createSample": "Créer un exemple",
+      "openSample": "Ouvrir la note d’exemple",
+      "sampleCreated": "Exemple « {name} » créé",
+      "sampleMarkdownName": "Exemple Markdown",
+      "sampleWriterName": "Exemple Article"
+    }
+  },
   "settings": {
     "title": "Centre de paramètres",
     "modules": {

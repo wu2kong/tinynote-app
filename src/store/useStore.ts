@@ -17,7 +17,7 @@ import { stableIdFromParts } from '@/utils/stableId';
 import { GlobalSearchResult } from '@/utils/globalSearch';
 import { DEFAULT_LOCALE, resolveAppLocale, setI18nLocale, t } from '@/i18n';
 import { isTauri } from '@/platform/detect';
-import { FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES, isArticleNotebookFormat } from '@/constants/pro';
+import { FREE_MAX_ARTICLE_NOTEBOOKS_PER_FORMAT, FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES, isArticleNotebookFormat } from '@/constants/pro';
 import { useLicenseStore } from '@/store/useLicenseStore';
 
 interface AppActions {
@@ -56,7 +56,7 @@ interface AppActions {
   addGroup: (parentPath: string, name: string) => Promise<void>;
   deleteGroup: (group: Group) => Promise<void>;
   renameGroup: (group: Group, newName: string) => Promise<void>;
-  addNotebook: (parentPath: string, name: string, format?: NotebookFormatId) => Promise<void>;
+  addNotebook: (parentPath: string, name: string, format?: NotebookFormatId) => Promise<Notebook | null>;
   duplicateNotebook: (notebook: Notebook) => Promise<Notebook | null>;
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
@@ -72,6 +72,10 @@ interface AppActions {
   reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
   toggleSourceMode: () => void;
   reloadSpaces: () => Promise<void>;
+  /** Reload current space children from disk and optionally expand ancestors of a path. */
+  refreshCurrentSpaceTree: (revealPath?: string | null) => Promise<void>;
+  /** Expand ancestor groups and open the notebook. */
+  revealNotebook: (notebook: Notebook) => Promise<void>;
   zoomIn: () => void;
   zoomOut: () => void;
   resetZoom: () => void;
@@ -938,53 +942,37 @@ export const useStore = create<AppStore>((set, get) => ({
   addNotebook: async (parentPath, name, format = 'blocks') => {
     const { currentSpace } = get();
     const { isPro, openGate } = useLicenseStore.getState();
+    const normalizedParent = normalizePath(parentPath);
     if (!isPro && isArticleNotebookFormat(format)) {
-      openGate('articleNotebook');
-      return;
+      if (currentSpace) {
+        const articleCount = fs.collectSpaceArticleNotebooks(currentSpace, format).length;
+        if (articleCount >= FREE_MAX_ARTICLE_NOTEBOOKS_PER_FORMAT) {
+          openGate('articleNotebook', { parentPath: normalizedParent, format });
+          return null;
+        }
+      }
     }
     if (currentSpace && !isPro) {
       const notebookCount = fs.countSpaceNotebooks(currentSpace);
       if (notebookCount >= FREE_MAX_NOTEBOOKS_PER_SPACE) {
         openGate('notebookLimit');
-        return;
+        return null;
       }
     }
-    const notebook = await fs.createNotebook(parentPath, name, format);
-    if (currentSpace) {
-      const addNotebookToTree = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
-        return children.map((child) => {
-          if (child.path === parentPath && 'children' in child) {
-            return {
-              ...child,
-              children: [...child.children, notebook],
-              notebookCount: child.notebookCount + 1,
-            };
-          }
-          if ('children' in child) {
-            return { ...child, children: addNotebookToTree(child.children) };
-          }
-          return child;
-        });
-      };
-      const isDirectChild = parentPath === currentSpace.path;
-      const updatedGroups = isDirectChild
-        ? [...currentSpace.groups, notebook]
-        : currentSpace.groups.map((item) => {
-            if ('children' in item && item.path === parentPath) {
-              return { ...item, children: [...item.children, notebook], notebookCount: item.notebookCount + 1 };
-            }
-            if ('children' in item) {
-              return { ...item, children: addNotebookToTree(item.children) };
-            }
-            return item;
-          });
-      const updatedSpace = { ...currentSpace, groups: updatedGroups };
-      set((state) => ({
-        currentSpace: updatedSpace,
-        spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
-      }));
-      config.saveConfig({ groupOrder: { ...config.getConfig().groupOrder, [currentSpace.path]: updatedGroups.map((g) => g.path) } });
+    const notebook = await fs.createNotebook(normalizedParent, name, format);
+    const space = get().currentSpace;
+    if (space) {
+      const cfg = config.getConfig();
+      const orderKey = Object.keys(cfg.groupOrder).find((key) => normalizePath(key) === normalizedParent)
+        ?? parentPath;
+      const parentOrder = [...(cfg.groupOrder[orderKey] ?? [])];
+      if (!parentOrder.some((path) => normalizePath(path) === normalizePath(notebook.path))) {
+        parentOrder.push(notebook.path);
+      }
+      await config.saveConfig({ groupOrder: { ...cfg.groupOrder, [orderKey]: parentOrder } });
+      await get().refreshCurrentSpaceTree(notebook.path);
     }
+    return notebook;
   },
 
   duplicateNotebook: async (notebook) => {
@@ -992,8 +980,13 @@ export const useStore = create<AppStore>((set, get) => ({
     const { isPro, openGate } = useLicenseStore.getState();
     const format = notebook.format || detectNotebookFormat(notebook.path);
     if (!isPro && isArticleNotebookFormat(format)) {
-      openGate('articleNotebook');
-      return null;
+      if (currentSpace) {
+        const articleCount = fs.collectSpaceArticleNotebooks(currentSpace, format).length;
+        if (articleCount >= FREE_MAX_ARTICLE_NOTEBOOKS_PER_FORMAT) {
+          openGate('articleNotebook', { parentPath: dirname(notebook.path), format });
+          return null;
+        }
+      }
     }
     if (currentSpace && !isPro) {
       const notebookCount = fs.countSpaceNotebooks(currentSpace);
@@ -1465,5 +1458,53 @@ export const useStore = create<AppStore>((set, get) => ({
         spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',
       });
     }
+  },
+
+  refreshCurrentSpaceTree: async (revealPath = null) => {
+    const { currentSpace } = get();
+    if (!currentSpace) return;
+
+    const cfg = config.getConfig();
+    let children = await fs.loadSpaceChildren(currentSpace.path);
+    children = sortTreeRecursively(children, cfg.groupOrder, currentSpace.path);
+    const updatedSpace = { ...currentSpace, groups: children };
+
+    let expandedGroupPaths = get().expandedGroupPaths;
+    if (revealPath) {
+      const nextExpanded = [...expandedGroupPaths];
+      for (const path of getAncestorPaths(children, revealPath)) {
+        if (!nextExpanded.some((item) => normalizePath(item) === normalizePath(path))) {
+          nextExpanded.push(path);
+        }
+      }
+      expandedGroupPaths = nextExpanded;
+      config.saveConfig({ expandedGroupPaths });
+    }
+
+    set((state) => ({
+      currentSpace: updatedSpace,
+      spaces: state.spaces.map((s) => (
+        normalizePath(s.path) === normalizePath(currentSpace.path) ? updatedSpace : s
+      )),
+      expandedGroupPaths,
+    }));
+  },
+
+  revealNotebook: async (notebook) => {
+    const { currentSpace } = get();
+    if (currentSpace) {
+      const ancestors = getAncestorPaths(currentSpace.groups, notebook.path);
+      if (ancestors.length > 0) {
+        const expandedGroupPaths = [...get().expandedGroupPaths];
+        for (const path of ancestors) {
+          if (!expandedGroupPaths.some((item) => normalizePath(item) === normalizePath(path))) {
+            expandedGroupPaths.push(path);
+          }
+        }
+        set({ expandedGroupPaths });
+        config.saveConfig({ expandedGroupPaths });
+      }
+    }
+    await get().selectNotebook(notebook);
   },
 }));

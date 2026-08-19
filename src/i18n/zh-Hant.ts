@@ -25,7 +25,20 @@ export const zhHantMessages = {
     "none": "無"
   },
   "pro": {
-    "planFree": "基礎版"
+    "planFree": "基礎版",
+    "gate": {
+      "articleNotebook": "新建Markdown/文章筆記屬於高級版功能。",
+      "sync": "筆記同步模組屬於高級版功能。"
+    },
+    "trial": {
+      "articleHint": "也可先在目前空間為該類型建立 1 篇樣例筆記，用於體驗和測試。",
+      "articleExists": "目前空間已有該類型樣例「{name}」，升級高級版可無限制使用。",
+      "createSample": "建立樣例體驗",
+      "openSample": "開啟樣例筆記",
+      "sampleCreated": "已建立樣例「{name}」",
+      "sampleMarkdownName": "Markdown 樣例",
+      "sampleWriterName": "文章樣例"
+    }
   },
   "settings": {
     "title": "設定中心",
@@ -344,7 +357,7 @@ export const zhHantMessages = {
   },
   "directory": {
     "newNotebook": "新增塊筆記本",
-    "newMarkdownNotebook": "新增 Markdown 筆記",
+    "newMarkdownNotebook": "新增Markdown筆記",
     "newWriterNotebook": "新增文章筆記",
     "newGroup": "新增目錄",
     "renameGroup": "重新命名目錄",

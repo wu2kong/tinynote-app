@@ -24,6 +24,21 @@ export const itMessages = {
     "notSet": "Non impostato",
     "none": "Nessuno"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "Creare note Markdown/Articolo è una funzione Pro.",
+      "sync": "Il modulo di sincronizzazione note è una funzione Pro."
+    },
+    "trial": {
+      "articleHint": "Puoi anche creare 1 nota di esempio di questo tipo nello spazio corrente per provarla e testarla.",
+      "articleExists": "Questo spazio ha già un esempio di questo tipo «{name}». Passa a Pro per usarlo senza limiti.",
+      "createSample": "Crea esempio",
+      "openSample": "Apri nota di esempio",
+      "sampleCreated": "Esempio «{name}» creato",
+      "sampleMarkdownName": "Esempio Markdown",
+      "sampleWriterName": "Esempio Articolo"
+    }
+  },
   "settings": {
     "title": "Centro impostazioni",
     "modules": {

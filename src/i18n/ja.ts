@@ -24,6 +24,21 @@ export const jaMessages = {
     "notSet": "未設定",
     "none": "なし"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "Markdown／記事ノートの新規作成は Pro 機能です。",
+      "sync": "ノート同期モジュールは Pro 機能です。"
+    },
+    "trial": {
+      "articleHint": "まずは現在のスペースで、この種類のサンプルノートを 1 つ作成して体験・テストできます。",
+      "articleExists": "現在のスペースにはこの種類のサンプル「{name}」があります。Pro にアップグレードすると制限なく利用できます。",
+      "createSample": "サンプルを作成",
+      "openSample": "サンプルノートを開く",
+      "sampleCreated": "サンプル「{name}」を作成しました",
+      "sampleMarkdownName": "Markdown サンプル",
+      "sampleWriterName": "記事サンプル"
+    }
+  },
   "settings": {
     "title": "設定センター",
     "modules": {
@@ -341,7 +356,7 @@ export const jaMessages = {
   },
   "directory": {
     "newNotebook": "新しいブロックノートブック",
-    "newMarkdownNotebook": "新しい Markdown ノート",
+    "newMarkdownNotebook": "新しいMarkdownノート",
     "newWriterNotebook": "新しい記事ノート",
     "newGroup": "新しいディレクトリ",
     "renameGroup": "ディレクトリ名を変更",

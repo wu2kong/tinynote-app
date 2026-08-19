@@ -1,5 +1,6 @@
 import { getStorageAdapter } from '@/adapters/storage';
 import { Space, Group, Notebook, NotebookFormatId } from '@/types';
+import { isArticleNotebookFormat } from '@/constants/pro';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
 import {
   detectNotebookFormat,
@@ -145,6 +146,28 @@ async function loadGroupChildren(groupPath: string): Promise<(Group | Notebook)[
 
 export function countSpaceNotebooks(space: Space): number {
   return countNotebooks(space.groups);
+}
+
+export function collectArticleNotebooks(
+  children: (Group | Notebook)[],
+  format?: NotebookFormatId,
+): Notebook[] {
+  const result: Notebook[] = [];
+  for (const child of children) {
+    if ('noteBlocks' in child) {
+      const notebookFormat = child.format || detectNotebookFormat(basename(child.path));
+      if (!isArticleNotebookFormat(notebookFormat)) continue;
+      if (format && notebookFormat !== format) continue;
+      result.push(child);
+    } else if ('children' in child) {
+      result.push(...collectArticleNotebooks(child.children, format));
+    }
+  }
+  return result;
+}
+
+export function collectSpaceArticleNotebooks(space: Space, format?: NotebookFormatId): Notebook[] {
+  return collectArticleNotebooks(space.groups, format);
 }
 
 function countNotebooks(children: (Group | Notebook)[]): number {

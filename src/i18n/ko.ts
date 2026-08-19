@@ -24,6 +24,21 @@ export const koMessages = {
     "notSet": "설정되지 않음",
     "none": "없음"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "Markdown/글 노트 만들기는 Pro 기능입니다.",
+      "sync": "노트 동기화 모듈은 Pro 기능입니다."
+    },
+    "trial": {
+      "articleHint": "현재 스페이스에서 해당 유형의 샘플 노트를 1개 만들어 체험하고 테스트할 수도 있습니다.",
+      "articleExists": "현재 스페이스에 해당 유형 샘플 「{name}」이(가) 있습니다. Pro로 업그레이드하면 제한 없이 사용할 수 있습니다.",
+      "createSample": "샘플 만들기",
+      "openSample": "샘플 노트 열기",
+      "sampleCreated": "샘플 「{name}」을(를) 만들었습니다",
+      "sampleMarkdownName": "Markdown 샘플",
+      "sampleWriterName": "글 샘플"
+    }
+  },
   "settings": {
     "title": "설정 센터",
     "modules": {
@@ -341,7 +356,7 @@ export const koMessages = {
   },
   "directory": {
     "newNotebook": "새 블록 노트북",
-    "newMarkdownNotebook": "새 Markdown 노트",
+    "newMarkdownNotebook": "새 Markdown노트",
     "newWriterNotebook": "새 글 노트",
     "newGroup": "새 디렉터리",
     "renameGroup": "디렉터리 이름 변경",

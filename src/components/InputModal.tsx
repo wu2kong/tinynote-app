@@ -9,9 +9,23 @@ interface InputModalProps {
   placeholder: string;
   defaultValue?: string;
   confirmLabel?: string;
+  /** Optional hint shown below the title. */
+  hint?: string;
+  /** When true, hide the input and only allow dismissing via confirm/cancel. */
+  readOnly?: boolean;
 }
 
-const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title, placeholder, defaultValue = '', confirmLabel }) => {
+const InputModal: React.FC<InputModalProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  title,
+  placeholder,
+  defaultValue = '',
+  confirmLabel,
+  hint,
+  readOnly = false,
+}) => {
   const [value, setValue] = useState(defaultValue);
   const { t } = useI18n();
 
@@ -25,6 +39,10 @@ const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title,
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (readOnly) {
+      onClose();
+      return;
+    }
     if (value.trim()) {
       onSubmit(value.trim());
       setValue('');
@@ -35,21 +53,28 @@ const InputModal: React.FC<InputModalProps> = ({ open, onClose, onSubmit, title,
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h3 className="modal-title">{title}</h3>
+        {hint && <p className="modal-hint">{hint}</p>}
         <form onSubmit={handleSubmit}>
-          <input
-            className="modal-input"
-            type="text"
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            autoFocus
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
-          />
+          {!readOnly && (
+            <input
+              className="modal-input"
+              type="text"
+              placeholder={placeholder}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              autoFocus
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
+            />
+          )}
           <div className="modal-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
-            <button type="submit" className="btn btn-primary">{confirmLabel ?? t('common.create')}</button>
+            {!readOnly && (
+              <button type="button" className="btn btn-secondary" onClick={onClose}>{t('common.cancel')}</button>
+            )}
+            <button type="submit" className="btn btn-primary">
+              {confirmLabel ?? (readOnly ? t('common.close') : t('common.create'))}
+            </button>
           </div>
         </form>
       </div>

@@ -24,6 +24,21 @@ export const ruMessages = {
     "notSet": "Не задано",
     "none": "Нет"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "Создание заметок Markdown/Статья — функция Pro.",
+      "sync": "Модуль синхронизации заметок — функция Pro."
+    },
+    "trial": {
+      "articleHint": "Также можно создать 1 пример заметки этого типа в текущем пространстве для знакомства и проверки.",
+      "articleExists": "В текущем пространстве уже есть пример этого типа «{name}». Обновитесь до Pro для безлимитного использования.",
+      "createSample": "Создать пример",
+      "openSample": "Открыть пример заметки",
+      "sampleCreated": "Создан пример «{name}»",
+      "sampleMarkdownName": "Пример Markdown",
+      "sampleWriterName": "Пример статьи"
+    }
+  },
   "settings": {
     "title": "Центр настроек",
     "modules": {

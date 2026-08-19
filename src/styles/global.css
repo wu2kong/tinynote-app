@@ -2014,6 +2014,13 @@ body.directory-panel-resizing {
   line-height: 1.5;
 }
 
+.modal-hint {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: -8px 0 16px;
+  line-height: 1.5;
+}
+
 .modal-input {
   width: 100%;
   padding: 10px 12px;
@@ -3997,6 +4004,17 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
   margin: 0 0 16px;
   font-size: 12px;
   color: var(--text-tertiary);
+}
+
+.pro-upgrade-trial-hint {
+  margin: -4px 0 16px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .pro-upgrade-actions {

@@ -450,7 +450,7 @@ const DirectoryPanel: React.FC = () => {
 
   const handleAddNotebookModal = useCallback((parentPath: string, format: NotebookFormatId = 'blocks') => {
     if (!isPro && isArticleNotebookFormat(format)) {
-      openGate('articleNotebook');
+      openGate('articleNotebook', { parentPath, format });
       return;
     }
     if (notebookLimitReached) {
@@ -468,7 +468,7 @@ const DirectoryPanel: React.FC = () => {
       placeholder: t('directory.notebookName'),
       defaultValue: '',
       confirmLabel: t('common.create'),
-      onSubmit: (name) => { addNotebook(parentPath, name, format); setModalState((p) => ({ ...p, open: false })); },
+      onSubmit: (name) => { void addNotebook(parentPath, name, format); setModalState((p) => ({ ...p, open: false })); },
     });
   }, [addNotebook, isPro, notebookLimitReached, openGate, t]);
 

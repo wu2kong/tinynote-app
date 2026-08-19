@@ -24,6 +24,21 @@ export const deMessages = {
     "notSet": "Nicht festgelegt",
     "none": "Keine"
   },
+  "pro": {
+    "gate": {
+      "articleNotebook": "Das Erstellen von Markdown-/Artikelnotizen ist eine Pro-Funktion.",
+      "sync": "Das Notiz-Synchronisationsmodul ist eine Pro-Funktion."
+    },
+    "trial": {
+      "articleHint": "Sie können in diesem Bereich auch 1 Beispielnotiz dieses Typs zum Ausprobieren erstellen.",
+      "articleExists": "In diesem Bereich gibt es bereits ein Beispiel dieses Typs „{name}“. Mit Pro nutzen Sie es ohne Limit.",
+      "createSample": "Beispiel erstellen",
+      "openSample": "Beispielnotiz öffnen",
+      "sampleCreated": "Beispiel „{name}“ erstellt",
+      "sampleMarkdownName": "Markdown-Beispiel",
+      "sampleWriterName": "Artikel-Beispiel"
+    }
+  },
   "settings": {
     "title": "Einstellungszentrale",
     "modules": {

@@ -46,8 +46,17 @@ export const enMessages = {
       "generic": "This feature requires TinyNote Pro.",
       "spaceLimit": "Free plan supports up to 5 spaces. Upgrade to Pro for unlimited spaces.",
       "notebookLimit": "Free plan supports up to 100 notes per space. Upgrade to Pro for unlimited notes.",
-      "articleNotebook": "Creating article notes (Markdown / Writer) requires TinyNote Pro.",
-      "sync": "Note sync requires TinyNote Pro."
+      "articleNotebook": "Creating Markdown/Article notes is a Pro feature.",
+      "sync": "Note sync is a Pro feature."
+    },
+    "trial": {
+      "articleHint": "You can also create 1 sample of this type in the current space for trial and testing.",
+      "articleExists": "This space already has a sample of this type \"{name}\". Upgrade to Pro for unlimited use.",
+      "createSample": "Create Sample",
+      "openSample": "Open Sample Note",
+      "sampleCreated": "Created sample \"{name}\"",
+      "sampleMarkdownName": "Markdown Sample",
+      "sampleWriterName": "Article Sample"
     },
     "errors": {
       "emptyKey": "Please enter a license key",

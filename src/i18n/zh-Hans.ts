@@ -46,8 +46,17 @@ export const zhHansMessages = {
       "generic": "此功能需要 TinyNote 高级版。",
       "spaceLimit": "基础版最多 5 个空间。升级高级版可创建更多空间。",
       "notebookLimit": "基础版每个空间最多 100 个笔记。升级高级版可创建更多笔记。",
-      "articleNotebook": "新建文章笔记（Markdown / 写作）需要 TinyNote 高级版。",
-      "sync": "笔记同步模块需要 TinyNote 高级版。"
+      "articleNotebook": "新建Markdown/文章笔记属于高级版功能。",
+      "sync": "笔记同步模块属于高级版功能。"
+    },
+    "trial": {
+      "articleHint": "也可先在当前空间为该类型创建 1 篇样例笔记，用于体验和测试。",
+      "articleExists": "当前空间已有该类型样例「{name}」，升级高级版可无限制使用。",
+      "createSample": "创建样例体验",
+      "openSample": "打开样例笔记",
+      "sampleCreated": "已创建样例「{name}」",
+      "sampleMarkdownName": "Markdown 样例",
+      "sampleWriterName": "文章样例"
     },
     "errors": {
       "emptyKey": "请输入许可证密钥",
@@ -375,7 +384,7 @@ export const zhHansMessages = {
   },
   "directory": {
     "newNotebook": "新建块笔记本",
-    "newMarkdownNotebook": "新建 Markdown 笔记",
+    "newMarkdownNotebook": "新建Markdown笔记",
     "newWriterNotebook": "新建文章笔记",
     "newGroup": "新建目录",
     "renameGroup": "重命名目录",
