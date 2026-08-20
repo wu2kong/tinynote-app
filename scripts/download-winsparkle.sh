@@ -14,6 +14,40 @@ if [ -f "$DLL" ]; then
   exit 0
 fi
 
+# Git Bash on Windows ships GNU tar, which cannot extract zip archives.
+extract_zip() {
+  local archive="$1"
+  local dest="$2"
+
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$archive" -d "$dest"
+    return
+  fi
+
+  local win_tar=""
+  if [ -x /c/Windows/System32/tar.exe ]; then
+    win_tar="/c/Windows/System32/tar.exe"
+  elif [ -x /mnt/c/Windows/System32/tar.exe ]; then
+    win_tar="/mnt/c/Windows/System32/tar.exe"
+  fi
+  if [ -n "$win_tar" ]; then
+    if command -v cygpath >/dev/null 2>&1; then
+      "$win_tar" -xf "$(cygpath -w "$archive")" -C "$(cygpath -w "$dest")"
+    else
+      "$win_tar" -xf "$archive" -C "$dest"
+    fi
+    return
+  fi
+
+  if command -v powershell.exe >/dev/null 2>&1 && command -v cygpath >/dev/null 2>&1; then
+    powershell.exe -NoProfile -Command \
+      "Expand-Archive -LiteralPath '$(cygpath -w "$archive")' -DestinationPath '$(cygpath -w "$dest")' -Force"
+    return
+  fi
+
+  tar -xf "$archive" -C "$dest"
+}
+
 TEMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TEMP_DIR"' EXIT
 
@@ -31,7 +65,7 @@ else
 fi
 
 echo "Extracting WinSparkle.dll..."
-tar -xf "$TEMP_DIR/winsparkle.zip" -C "$TEMP_DIR"
+extract_zip "$TEMP_DIR/winsparkle.zip" "$TEMP_DIR"
 
 mkdir -p "$DEST"
 cp "$TEMP_DIR/WinSparkle-${VERSION}/x64/Release/WinSparkle.dll" "$DLL"
