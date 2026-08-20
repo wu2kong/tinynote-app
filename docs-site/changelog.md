@@ -2,6 +2,15 @@
 
 完整安装包见 [下载页](https://tinynote.wu2kong.com/download.html)。
 
+## v1.2.1
+
+2026-08-20
+
+- 文章笔记与 Markdown 笔记可在右键菜单中互相转换（只改后缀与编辑视图，正文不变）
+- 新增帮助中心，并可从系统菜单打开
+- 修复笔记保存时因防抖动导致内容被覆盖的问题
+- macOS 使用 Sparkle、Windows 使用 WinSparkle 自动更新
+
 ## v1.2.0
 
 2026-08-19

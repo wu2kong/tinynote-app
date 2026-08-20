@@ -2,6 +2,15 @@
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.1
+
+2026-08-20
+
+- Convert between article notes and Markdown notes from the context menu (suffix and editor view only)
+- Help center, with a system menu entry
+- Fix note content being overwritten by save debounce
+- Sparkle auto-update on macOS and WinSparkle on Windows
+
 ## v1.2.0
 
 2026-08-19
