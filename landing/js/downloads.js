@@ -162,7 +162,7 @@
   }
 
   function isIgnorableAsset(name) {
-    return /\.(sig|json)$/i.test(name) || /\.app\.tar\.gz$/i.test(name) || /_updater/i.test(name);
+    return /\.(sig|json)$/i.test(name) || /\.app\.tar\.gz$/i.test(name) || /_updater/i.test(name) || /^appcast\.xml$/i.test(name);
   }
 
   function resolveSlots(assets) {

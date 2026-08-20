@@ -14,6 +14,7 @@ import {
   promptAndOpenWorkspaceInCurrentWindow,
   promptAndOpenWorkspaceInNewWindow,
 } from '@/utils/workspaceActions';
+import { checkWithSparkle } from '@/utils/updater';
 import { t } from '@/i18n';
 
 const APP_NAME = 'TinyNote';
@@ -127,6 +128,15 @@ async function buildAppSubmenu(): Promise<Submenu> {
         id: 'about',
         text: t('menu.aboutApp', { app: APP_NAME }),
         action: openSettingsFromMenu,
+      }),
+      await MenuItem.new({
+        id: 'check-for-updates',
+        text: t('menu.checkForUpdates'),
+        action: () => {
+          void checkWithSparkle().then((opened) => {
+            if (!opened) openSettingsFromMenu();
+          });
+        },
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({

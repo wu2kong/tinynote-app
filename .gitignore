@@ -18,6 +18,11 @@ dist-packages
 src-tauri/target
 src-tauri/Cargo.lock
 
+# Sparkle (downloaded by scripts/download-sparkle.sh)
+src-tauri/Sparkle.framework
+src-tauri/sparkle-bin
+src-tauri/sparkle_eddsa_private.key
+
 # Logs
 logs
 *.log
@@ -46,6 +51,7 @@ lerna-debug.log*
 # OS files
 Thumbs.db
 .release-notes.tmp
+appcast.xml
 .cursor
 .codegraph
 .flutter-sdk

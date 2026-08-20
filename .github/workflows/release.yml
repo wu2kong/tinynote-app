@@ -46,6 +46,10 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
+      - name: Download Sparkle
+        if: matrix.platform == 'macos-latest'
+        run: bash scripts/download-sparkle.sh
+
       - name: Install frontend dependencies
         run: npm ci
 
@@ -60,3 +64,22 @@ jobs:
           releaseDraft: false
           prerelease: ${{ github.event.release.prerelease }}
           args: ${{ matrix.args }}
+
+      - name: Publish Sparkle appcast
+        if: matrix.platform == 'macos-latest'
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+        run: |
+          if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
+            echo "Missing SPARKLE_PRIVATE_KEY secret. Add the EdDSA private key to GitHub Actions secrets."
+            exit 1
+          fi
+          NOTES_FILE="$RUNNER_TEMP/release-notes.txt"
+          printf '%s\n' "$RELEASE_BODY" > "$NOTES_FILE"
+          node scripts/generate-sparkle-appcast.mjs \
+            --tag "${{ github.event.release.tag_name }}" \
+            --notes-file "$NOTES_FILE" \
+            --out appcast.xml
+          gh release upload "${{ github.event.release.tag_name }}" appcast.xml --clobber

@@ -8,7 +8,7 @@ import { useStore } from '@/store/useStore';
 import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
-import { checkForUpdate, downloadAndInstall, formatUpdateError, getAppVersion, openReleasePage, UpdateInfo } from '@/utils/updater';
+import { checkForUpdate, checkWithSparkle, downloadAndInstall, formatUpdateError, getAppVersion, isMacOS, openReleasePage, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import {
@@ -1654,6 +1654,10 @@ const AboutSettings: React.FC = () => {
     setCheckMessage('');
     setUpdateInfo(null);
     try {
+      if (await checkWithSparkle()) {
+        setCheckMessage(t('settings.about.sparkleOpened'));
+        return;
+      }
       const info = await checkForUpdate();
       if (info) {
         setUpdateInfo(info);
@@ -1759,7 +1763,7 @@ const AboutSettings: React.FC = () => {
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.about.softwareUpdate')}</span>
-          <span className="settings-row-desc">{t('settings.about.softwareUpdateDesc')}</span>
+          <span className="settings-row-desc">{t(isMacOS() ? 'settings.about.softwareUpdateDescMacos' : 'settings.about.softwareUpdateDesc')}</span>
         </div>
         <div className="settings-update-actions">
           <button

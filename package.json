@@ -54,6 +54,7 @@
     "remark-gfm": "^4.0.1",
     "sql-formatter": "^15.8.2",
     "tailwindcss": "^4.2.2",
+    "tauri-plugin-sparkle-updater-api": "^0.2.2",
     "zustand": "^5"
   },
   "devDependencies": {

@@ -32,3 +32,6 @@ zip = "2"
 walkdir = "2"
 chrono = "0.4"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+tauri-plugin-sparkle-updater = "0.2"

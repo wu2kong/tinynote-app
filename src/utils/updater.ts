@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
 import { GITHUB_RELEASES_API } from '@/constants/app';
+import { isTauri } from '@/platform/detect';
 import { t } from '@/i18n';
 
 export interface GitHubReleaseAsset {
@@ -19,11 +20,30 @@ export interface UpdateInfo {
 
 type Platform = 'windows' | 'macos' | 'linux';
 
+export function isMacOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent;
+  return /Mac|Macintosh/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua);
+}
+
 function detectPlatform(): Platform {
   const platform = navigator.platform.toLowerCase();
   if (platform.includes('win')) return 'windows';
   if (platform.includes('mac')) return 'macos';
   return 'linux';
+}
+
+/** macOS 正式包走 Sparkle 原生对话框；dev / 非 macOS 返回 false。 */
+export async function checkWithSparkle(): Promise<boolean> {
+  if (!isTauri() || !isMacOS()) return false;
+  try {
+    const sparkle = await import('tauri-plugin-sparkle-updater-api');
+    if (!(await sparkle.canCheckForUpdates())) return false;
+    await sparkle.checkForUpdates();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function parseVersion(version: string): number[] {

@@ -201,6 +201,8 @@ function ensurePrerequisites(jobs) {
     } catch {
       throw new Error('未找到 Xcode Command Line Tools。请执行：xcode-select --install');
     }
+    console.log('\n⬇️  准备 Sparkle 框架...\n');
+    run('bash scripts/download-sparkle.sh', { inherit: true });
   }
 
   if (jobs.some((job) => job.useDocker) && !commandExists('docker')) {
@@ -318,6 +320,33 @@ function collectInstallers(jobs) {
   return copied;
 }
 
+function generateSparkleAppcast(version, files) {
+  const dmg = files.find((file) => /\.dmg$/i.test(file.name));
+  if (!dmg) return files;
+
+  const out = join(OUT_DIR, 'appcast.xml');
+  console.log('\n🔏 生成 Sparkle appcast...\n');
+  try {
+    run(
+      `node scripts/generate-sparkle-appcast.mjs "${dmg.dest}" --version ${version} --out "${out}"`,
+      { inherit: true },
+    );
+  } catch (error) {
+    console.warn('⚠️  未能生成 Sparkle appcast，macOS 自动更新将不可用。');
+    console.warn(`   ${error.message || error}`);
+    return files;
+  }
+
+  return [
+    ...files,
+    {
+      name: 'appcast.xml',
+      dest: out,
+      size: statSync(out).size,
+    },
+  ];
+}
+
 function uploadRelease(tag, files) {
   if (!commandExists('gh')) {
     throw new Error('未找到 GitHub CLI (gh)。安装后才可 --upload：https://cli.github.com/');
@@ -369,7 +398,7 @@ async function main() {
     else buildNative(job);
   }
 
-  const files = collectInstallers(jobs);
+  const files = generateSparkleAppcast(version, collectInstallers(jobs));
   if (!files.length) {
     throw new Error('构建完成，但未找到安装包。请检查 src-tauri/target/**/release/bundle/');
   }
