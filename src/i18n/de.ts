@@ -253,6 +253,7 @@ export const deMessages = {
       "softwareUpdate": "Softwareupdate",
       "softwareUpdateDesc": "Neueste Version über GitHub Releases prüfen und herunterladen; den Lanzou-Cloud-Spiegel verwenden, falls GitHub nicht erreichbar ist",
       "softwareUpdateDescMacos": "Updates mit dem nativen macOS-Updater prüfen und installieren. Den Lanzou-Cloud-Spiegel verwenden, falls GitHub nicht erreichbar ist",
+      "softwareUpdateDescWindows": "Updates mit dem nativen Windows-Updater prüfen und installieren. Den Lanzou-Cloud-Spiegel verwenden, falls GitHub nicht erreichbar ist",
       "checkUpdate": "Nach Updates suchen",
       "checking": "Wird geprüft...",
       "sparkleOpened": "Systemweiter Updatedialog geöffnet",

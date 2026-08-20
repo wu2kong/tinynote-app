@@ -1,6 +1,8 @@
 mod backup;
 mod sync;
 mod updater;
+#[cfg(windows)]
+mod winsparkle;
 
 use std::collections::HashMap;
 use std::io::Read;
@@ -79,6 +81,30 @@ fn revert_file_change(storage_path: String, file_path: String) -> Result<(), Str
 #[tauri::command]
 fn download_release_asset(url: String, filename: String) -> Result<String, String> {
     updater::download_release_asset(&url, &filename)
+}
+
+#[tauri::command]
+fn winsparkle_available() -> bool {
+    #[cfg(windows)]
+    {
+        winsparkle::is_available()
+    }
+    #[cfg(not(windows))]
+    {
+        false
+    }
+}
+
+#[tauri::command]
+fn winsparkle_check_for_updates() -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        winsparkle::check_for_updates()
+    }
+    #[cfg(not(windows))]
+    {
+        Err("WinSparkle 仅在 Windows 上可用".to_string())
+    }
 }
 
 /// Fetch a provider model list outside the webview so OpenAI-compatible APIs
@@ -363,7 +389,7 @@ fn chat_with_llm(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let mut builder = tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -371,11 +397,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init());
 
     #[cfg(target_os = "macos")]
-    {
-        builder = builder.plugin(tauri_plugin_sparkle_updater::init());
-    }
+    let builder = builder.plugin(tauri_plugin_sparkle_updater::init());
 
-    builder
+    let app = builder
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -396,11 +420,33 @@ pub fn run() {
             get_file_diff,
             revert_file_change,
             download_release_asset,
+            winsparkle_available,
+            winsparkle_check_for_updates,
             fetch_llm_models,
             chat_with_llm,
             chat_with_llm_stream,
             stop_llm_generation,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        #[cfg(not(windows))]
+        let _ = &app_handle;
+        match event {
+            tauri::RunEvent::Ready => {
+                #[cfg(windows)]
+                {
+                    if let Err(error) = winsparkle::init(app_handle) {
+                        log::warn!("WinSparkle init failed: {error}");
+                    }
+                }
+            }
+            tauri::RunEvent::Exit => {
+                #[cfg(windows)]
+                winsparkle::cleanup();
+            }
+            _ => {}
+        }
+    });
 }

@@ -50,6 +50,10 @@ jobs:
         if: matrix.platform == 'macos-latest'
         run: bash scripts/download-sparkle.sh
 
+      - name: Download WinSparkle
+        if: matrix.platform == 'windows-latest'
+        run: bash scripts/download-winsparkle.sh
+
       - name: Install frontend dependencies
         run: npm ci
 
@@ -65,21 +69,47 @@ jobs:
           prerelease: ${{ github.event.release.prerelease }}
           args: ${{ matrix.args }}
 
-      - name: Publish Sparkle appcast
-        if: matrix.platform == 'macos-latest'
+  appcast:
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download Sparkle tools
+        run: bash scripts/download-sparkle.sh
+
+      - name: Publish Sparkle/WinSparkle appcast
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_BODY: ${{ github.event.release.body }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
           if [ -z "$SPARKLE_PRIVATE_KEY" ]; then
             echo "Missing SPARKLE_PRIVATE_KEY secret. Add the EdDSA private key to GitHub Actions secrets."
             exit 1
           fi
+          mkdir -p release-assets
+          gh release download "$TAG" --dir release-assets --pattern "*.dmg" || true
+          gh release download "$TAG" --dir release-assets --pattern "*x64-setup.exe" || true
+          shopt -s nullglob
+          files=(release-assets/*.dmg release-assets/*x64-setup.exe)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No macOS DMG or Windows NSIS installer found on the release."
+            exit 1
+          fi
           NOTES_FILE="$RUNNER_TEMP/release-notes.txt"
           printf '%s\n' "$RELEASE_BODY" > "$NOTES_FILE"
           node scripts/generate-sparkle-appcast.mjs \
-            --tag "${{ github.event.release.tag_name }}" \
+            --tag "$TAG" \
             --notes-file "$NOTES_FILE" \
-            --out appcast.xml
-          gh release upload "${{ github.event.release.tag_name }}" appcast.xml --clobber
+            --out appcast.xml \
+            "${files[@]}"
+          gh release upload "$TAG" appcast.xml --clobber

@@ -253,6 +253,7 @@ export const frMessages = {
       "softwareUpdate": "Mise à jour logicielle",
       "softwareUpdateDesc": "Vérifier et télécharger la dernière version depuis GitHub Releases; utiliser le miroir Lanzou Cloud si GitHub est indisponible",
       "softwareUpdateDescMacos": "Vérifier et installer les mises à jour via le gestionnaire natif macOS. Utiliser le miroir Lanzou Cloud si GitHub est indisponible",
+      "softwareUpdateDescWindows": "Vérifier et installer les mises à jour via le gestionnaire natif Windows. Utiliser le miroir Lanzou Cloud si GitHub est indisponible",
       "checkUpdate": "Rechercher des mises à jour",
       "checking": "Vérification...",
       "sparkleOpened": "Boîte de dialogue de mise à jour système ouverte",

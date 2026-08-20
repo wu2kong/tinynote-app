@@ -253,6 +253,7 @@ export const itMessages = {
       "softwareUpdate": "Aggiornamento software",
       "softwareUpdateDesc": "Controlla e scarica l'ultima versione da GitHub Releases; usa il mirror Lanzou Cloud se GitHub non è disponibile",
       "softwareUpdateDescMacos": "Controlla e installa gli aggiornamenti con l'updater nativo di macOS. Usa il mirror Lanzou Cloud se GitHub non è disponibile",
+      "softwareUpdateDescWindows": "Controlla e installa gli aggiornamenti con l'updater nativo di Windows. Usa il mirror Lanzou Cloud se GitHub non è disponibile",
       "checkUpdate": "Controlla aggiornamenti",
       "checking": "Controllo in corso...",
       "sparkleOpened": "Aperta la finestra di aggiornamento di sistema",

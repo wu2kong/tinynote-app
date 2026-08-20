@@ -281,6 +281,7 @@ export const zhHansMessages = {
       "softwareUpdate": "软件更新",
       "softwareUpdateDesc": "从 GitHub Releases 检查并下载最新版本；如 GitHub 不可用，可使用蓝奏云镜像",
       "softwareUpdateDescMacos": "通过 macOS 原生更新对话框检查并安装新版本；如 GitHub 不可用，可使用蓝奏云镜像手动下载",
+      "softwareUpdateDescWindows": "通过 Windows 原生更新对话框检查并安装新版本；如 GitHub 不可用，可使用蓝奏云镜像手动下载",
       "checkUpdate": "检查更新",
       "checking": "正在检查...",
       "sparkleOpened": "已打开系统更新对话框",

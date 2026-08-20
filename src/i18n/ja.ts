@@ -253,6 +253,7 @@ export const jaMessages = {
       "softwareUpdate": "ソフトウェアアップデート",
       "softwareUpdateDesc": "GitHub Releases で最新バージョンを確認してダウンロードします。GitHub が利用できない場合は Lanzou Cloud ミラーを使用してください",
       "softwareUpdateDescMacos": "macOS 標準のアップデーターで更新を確認・インストールします。GitHub が利用できない場合は Lanzou Cloud ミラーを使用してください",
+      "softwareUpdateDescWindows": "Windows 標準のアップデーターで更新を確認・インストールします。GitHub が利用できない場合は Lanzou Cloud ミラーを使用してください",
       "checkUpdate": "アップデートを確認",
       "checking": "確認中...",
       "sparkleOpened": "システムのアップデートダイアログを開きました",

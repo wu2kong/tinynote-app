@@ -281,6 +281,7 @@ export const enMessages = {
       "softwareUpdate": "Software Update",
       "softwareUpdateDesc": "Check and download the latest version from GitHub Releases; use the Lanzou Cloud mirror if GitHub is unavailable",
       "softwareUpdateDescMacos": "Check and install updates with the native macOS updater. Use the Lanzou Cloud mirror if GitHub is unavailable",
+      "softwareUpdateDescWindows": "Check and install updates with the native Windows updater. Use the Lanzou Cloud mirror if GitHub is unavailable",
       "checkUpdate": "Check for Updates",
       "checking": "Checking...",
       "sparkleOpened": "Opened the system update dialog",

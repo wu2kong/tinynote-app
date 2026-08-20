@@ -254,6 +254,7 @@ export const zhHantMessages = {
       "softwareUpdate": "軟體更新",
       "softwareUpdateDesc": "從 GitHub Releases 檢查並下載最新版本；如 GitHub 無法使用，可使用藍奏雲鏡像",
       "softwareUpdateDescMacos": "透過 macOS 原生更新對話框檢查並安裝新版本；如 GitHub 無法使用，可使用藍奏雲鏡像手動下載",
+      "softwareUpdateDescWindows": "透過 Windows 原生更新對話框檢查並安裝新版本；如 GitHub 無法使用，可使用藍奏雲鏡像手動下載",
       "checkUpdate": "檢查更新",
       "checking": "正在檢查...",
       "sparkleOpened": "已打開系統更新對話框",

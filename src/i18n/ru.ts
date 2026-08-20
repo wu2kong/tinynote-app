@@ -253,6 +253,7 @@ export const ruMessages = {
       "softwareUpdate": "Обновление ПО",
       "softwareUpdateDesc": "Проверьте и скачайте последнюю версию из GitHub Releases; если GitHub недоступен, используйте зеркало Lanzou Cloud",
       "softwareUpdateDescMacos": "Проверяйте и устанавливайте обновления через системный установщик macOS. Если GitHub недоступен, используйте зеркало Lanzou Cloud",
+      "softwareUpdateDescWindows": "Проверяйте и устанавливайте обновления через системный установщик Windows. Если GitHub недоступен, используйте зеркало Lanzou Cloud",
       "checkUpdate": "Проверить обновления",
       "checking": "Проверка...",
       "sparkleOpened": "Открыт системный диалог обновления",

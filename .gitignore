@@ -23,6 +23,9 @@ src-tauri/Sparkle.framework
 src-tauri/sparkle-bin
 src-tauri/sparkle_eddsa_private.key
 
+# WinSparkle (downloaded by scripts/download-winsparkle.sh)
+src-tauri/winsparkle/
+
 # Logs
 logs
 *.log

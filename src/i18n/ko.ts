@@ -253,6 +253,7 @@ export const koMessages = {
       "softwareUpdate": "소프트웨어 업데이트",
       "softwareUpdateDesc": "GitHub Releases에서 최신 버전을 확인하고 다운로드합니다. GitHub에 접속할 수 없으면 Lanzou Cloud 미러를 사용하세요",
       "softwareUpdateDescMacos": "macOS 기본 업데이터로 업데이트를 확인하고 설치합니다. GitHub에 접속할 수 없으면 Lanzou Cloud 미러를 사용하세요",
+      "softwareUpdateDescWindows": "Windows 기본 업데이터로 업데이트를 확인하고 설치합니다. GitHub에 접속할 수 없으면 Lanzou Cloud 미러를 사용하세요",
       "checkUpdate": "업데이트 확인",
       "checking": "확인 중...",
       "sparkleOpened": "시스템 업데이트 대화 상자를 열었습니다",

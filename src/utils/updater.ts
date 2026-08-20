@@ -26,6 +26,11 @@ export function isMacOS(): boolean {
   return /Mac|Macintosh/i.test(ua) && !/iPhone|iPad|iPod/i.test(ua);
 }
 
+export function isWindows(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Win/i.test(navigator.userAgent);
+}
+
 function detectPlatform(): Platform {
   const platform = navigator.platform.toLowerCase();
   if (platform.includes('win')) return 'windows';
@@ -44,6 +49,24 @@ export async function checkWithSparkle(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/** Windows 正式包走 WinSparkle 原生对话框；未初始化时返回 false。 */
+export async function checkWithWinSparkle(): Promise<boolean> {
+  if (!isTauri() || !isWindows()) return false;
+  try {
+    const available = await invoke<boolean>('winsparkle_available');
+    if (!available) return false;
+    await invoke('winsparkle_check_for_updates');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function checkWithNativeUpdater(): Promise<boolean> {
+  if (await checkWithSparkle()) return true;
+  return checkWithWinSparkle();
 }
 
 function parseVersion(version: string): number[] {

@@ -205,6 +205,11 @@ function ensurePrerequisites(jobs) {
     run('bash scripts/download-sparkle.sh', { inherit: true });
   }
 
+  if (jobs.some((job) => job.id === 'windows')) {
+    console.log('\n⬇️  准备 WinSparkle...\n');
+    run('bash scripts/download-winsparkle.sh', { inherit: true });
+  }
+
   if (jobs.some((job) => job.useDocker) && !commandExists('docker')) {
     throw new Error('未找到 Docker。打包 Linux 请先安装 Docker Desktop，或在 Linux 机器上直接构建。');
   }
@@ -321,18 +326,19 @@ function collectInstallers(jobs) {
 }
 
 function generateSparkleAppcast(version, files) {
-  const dmg = files.find((file) => /\.dmg$/i.test(file.name));
-  if (!dmg) return files;
+  const updaters = files.filter((file) => /\.dmg$/i.test(file.name) || /x64-setup\.exe$/i.test(file.name));
+  if (!updaters.length) return files;
 
   const out = join(OUT_DIR, 'appcast.xml');
-  console.log('\n🔏 生成 Sparkle appcast...\n');
+  console.log('\n🔏 生成 Sparkle / WinSparkle appcast...\n');
   try {
+    const paths = updaters.map((file) => `"${file.dest}"`).join(' ');
     run(
-      `node scripts/generate-sparkle-appcast.mjs "${dmg.dest}" --version ${version} --out "${out}"`,
+      `node scripts/generate-sparkle-appcast.mjs ${paths} --version ${version} --out "${out}"`,
       { inherit: true },
     );
   } catch (error) {
-    console.warn('⚠️  未能生成 Sparkle appcast，macOS 自动更新将不可用。');
+    console.warn('⚠️  未能生成 Sparkle appcast，自动更新将不可用。');
     console.warn(`   ${error.message || error}`);
     return files;
   }
