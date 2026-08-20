@@ -6,6 +6,8 @@ import {
   detectNotebookFormat,
   getMatchedNotebookSuffix,
   getNotebookDisplayName,
+  getSwappableArticleFormat,
+  replaceNotebookFormatSuffix,
   resolveNotebookFileName,
 } from './notebookFormat';
 import { stableIdFromPath } from './stableId';
@@ -332,6 +334,31 @@ export async function renameNotebook(oldPath: string, newName: string): Promise<
     preserveExtension: getMatchedNotebookSuffix(oldFileName),
   });
   const newPath = joinPath(parentPath, fileName);
+  await storage().rename(oldPath, newPath);
+  return newPath;
+}
+
+export const NOTEBOOK_TARGET_EXISTS = 'NOTEBOOK_TARGET_EXISTS';
+export const NOTEBOOK_FORMAT_NOT_SWAPPABLE = 'NOTEBOOK_FORMAT_NOT_SWAPPABLE';
+
+/** Switch markdown ↔ writer by renaming the suffix; document body is unchanged. */
+export async function convertNotebookFormat(
+  oldPath: string,
+  targetFormat: NotebookFormatId,
+): Promise<string> {
+  const parentPath = dirname(oldPath);
+  const oldFileName = basename(oldPath);
+  const currentFormat = detectNotebookFormat(oldFileName);
+  if (currentFormat === targetFormat) return oldPath;
+  if (getSwappableArticleFormat(currentFormat) !== targetFormat) {
+    throw new Error(NOTEBOOK_FORMAT_NOT_SWAPPABLE);
+  }
+  const fileName = replaceNotebookFormatSuffix(oldFileName, targetFormat);
+  const newPath = joinPath(parentPath, fileName);
+  if (normalizePath(oldPath) === normalizePath(newPath)) return oldPath;
+  if (await storage().exists(newPath)) {
+    throw new Error(NOTEBOOK_TARGET_EXISTS);
+  }
   await storage().rename(oldPath, newPath);
   return newPath;
 }

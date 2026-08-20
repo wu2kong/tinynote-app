@@ -10,7 +10,8 @@ import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
 import { createNoteBlock } from '@/utils/noteParser';
-import { detectNotebookFormat, getNotebookDisplayName } from '@/utils/notebookFormat';
+import { detectNotebookFormat, getNotebookDisplayName, getSwappableArticleFormat } from '@/utils/notebookFormat';
+import { flushPendingDocumentSaves } from '@/utils/documentSaveFlush';
 import { isSubPath, normalizePath, dirname, basename } from '@/utils/path';
 import { pickRandomSpaceIcon } from '@/utils/spaceIcons';
 import { stableIdFromParts } from '@/utils/stableId';
@@ -60,6 +61,7 @@ interface AppActions {
   duplicateNotebook: (notebook: Notebook) => Promise<Notebook | null>;
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
+  convertNotebookFormat: (notebook: Notebook, targetFormat: NotebookFormatId) => Promise<void>;
   addNoteBlock: (contentType?: ContentType) => Promise<void>;
   addNoteBlockAtIndex: (index: number, contentType?: ContentType) => Promise<void>;
   duplicateNoteBlock: (id: string, index: number) => Promise<void>;
@@ -1109,6 +1111,77 @@ export const useStore = create<AppStore>((set, get) => ({
         config.saveConfig({ currentNotebookPath: newPath });
       }
     }
+  },
+
+  convertNotebookFormat: async (notebook, targetFormat) => {
+    if (notebook.format === targetFormat) return;
+    if (getSwappableArticleFormat(notebook.format) !== targetFormat) {
+      throw new Error(fs.NOTEBOOK_FORMAT_NOT_SWAPPABLE);
+    }
+
+    if (get().currentNotebook && normalizePath(get().currentNotebook!.path) === normalizePath(notebook.path)) {
+      await flushPendingDocumentSaves();
+    }
+
+    const newPath = await fs.convertNotebookFormat(notebook.path, targetFormat);
+    const fileName = basename(newPath);
+    const displayName = getNotebookDisplayName(fileName);
+    const format = detectNotebookFormat(fileName);
+    const { currentSpace } = get();
+    if (!currentSpace) return;
+
+    const renameInTree = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
+      return children.map((child) => {
+        if (child.id === notebook.id) {
+          return { ...child, name: displayName, path: newPath, format };
+        }
+        if ('children' in child) {
+          return { ...child, children: renameInTree(child.children) };
+        }
+        return child;
+      });
+    };
+    const updatedGroups = renameInTree(currentSpace.groups);
+    const updatedSpace = { ...currentSpace, groups: updatedGroups };
+    const isCurrent = !!get().currentNotebook
+      && (get().currentNotebook!.id === notebook.id
+        || normalizePath(get().currentNotebook!.path) === normalizePath(notebook.path));
+    const updatedCurrentNotebook = isCurrent
+      ? { ...get().currentNotebook!, name: displayName, path: newPath, format }
+      : get().currentNotebook;
+    const nextHistory = get().recentNotebookHistory.map((item) => (
+      normalizePath(item.path) === normalizePath(notebook.path)
+        ? { ...item, path: newPath }
+        : item
+    ));
+
+    set((state) => ({
+      currentSpace: updatedSpace,
+      currentNotebook: updatedCurrentNotebook,
+      recentNotebookHistory: nextHistory,
+      spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
+    }));
+
+    const cfg = config.getConfig();
+    const parentPath = dirname(notebook.path);
+    const orderKey = Object.keys(cfg.groupOrder).find((key) => normalizePath(key) === normalizePath(parentPath))
+      ?? parentPath;
+    const existingOrder = cfg.groupOrder[orderKey];
+    const configUpdate: Partial<config.AppConfig> = {
+      recentNotebookHistory: nextHistory,
+    };
+    if (existingOrder?.some((p) => normalizePath(p) === normalizePath(notebook.path))) {
+      configUpdate.groupOrder = {
+        ...cfg.groupOrder,
+        [orderKey]: existingOrder.map((p) => (
+          normalizePath(p) === normalizePath(notebook.path) ? newPath : p
+        )),
+      };
+    }
+    if (cfg.currentNotebookPath && normalizePath(cfg.currentNotebookPath) === normalizePath(notebook.path)) {
+      configUpdate.currentNotebookPath = newPath;
+    }
+    config.saveConfig(configUpdate);
   },
 
   addNoteBlock: async (contentType = 'text') => {

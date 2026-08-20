@@ -5,6 +5,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { getMarkdownNotebookExtensions } from '@/utils/codemirrorExtensions';
+import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
 import MarkdownPreview from './MarkdownPreview';
 
 const SAVE_DEBOUNCE_MS = 400;
@@ -31,8 +32,24 @@ const MarkdownNotebookPanel: React.FC = () => {
   const [modeSelectWidth, setModeSelectWidth] = useState<number | undefined>(undefined);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notebookPathRef = useRef<string | null>(null);
+  const localContentRef = useRef(localContent);
+  localContentRef.current = localContent;
   const modeSelectRef = useRef<HTMLSelectElement>(null);
   const modeMeasureRef = useRef<HTMLSpanElement>(null);
+  const updateNotebookContentRef = useRef(updateNotebookContent);
+  updateNotebookContentRef.current = updateNotebookContent;
+
+  const flushPendingSave = (): Promise<void> => {
+    if (!saveTimerRef.current) return Promise.resolve();
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = null;
+    const path = notebookPathRef.current;
+    if (!path) return Promise.resolve();
+    return updateNotebookContentRef.current(localContentRef.current, path);
+  };
+
+  const flushPendingSaveRef = useRef(flushPendingSave);
+  flushPendingSaveRef.current = flushPendingSave;
 
   useEffect(() => {
     if (!currentNotebook || currentNotebook.format !== 'markdown') return;
@@ -50,9 +67,11 @@ const MarkdownNotebookPanel: React.FC = () => {
     }
   }, [currentNotebook?.path, currentNotebook?.content, currentNotebook?.format, localContent]);
 
+  useEffect(() => registerDocumentSaveFlusher(() => flushPendingSaveRef.current()), []);
+
   useEffect(() => () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-  }, []);
+    void flushPendingSaveRef.current();
+  }, [currentNotebook?.path]);
 
   useEffect(() => {
     const measure = modeMeasureRef.current;

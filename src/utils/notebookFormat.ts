@@ -69,6 +69,26 @@ export function isDocumentNotebookFormat(format: NotebookFormatId): boolean {
   return format !== 'blocks';
 }
 
+/**
+ * Markdown and writer notes share the same document body.
+ * Only the filename suffix (and therefore the editor view) differs.
+ */
+export function getSwappableArticleFormat(
+  format: NotebookFormatId,
+): Extract<NotebookFormatId, 'markdown' | 'writer'> | null {
+  if (format === 'markdown') return 'writer';
+  if (format === 'writer') return 'markdown';
+  return null;
+}
+
+/** Rebuild a notebook filename with a different format suffix, keeping the display name. */
+export function replaceNotebookFormatSuffix(
+  fileName: string,
+  targetFormat: NotebookFormatId,
+): string {
+  return buildNotebookFileName(getNotebookDisplayName(fileName), targetFormat);
+}
+
 export interface ResolvedNotebookFileName {
   fileName: string;
   format: NotebookFormatId;

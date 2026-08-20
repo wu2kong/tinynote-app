@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { writerListContinuationPlugin } from '@/utils/writerListContinuationPlugin';
 import { writerEmptyClickPlugin } from '@/utils/writerEmptyClickPlugin';
+import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
 import '@milkdown/crepe/theme/common/style.css';
 
 /** Light code theme: Crepe defaults to oneDark, which leaves a black active-line gutter. */
@@ -107,20 +108,27 @@ const WriterNotebookPanel: React.FC = () => {
   const widthSelectRef = useRef<HTMLSelectElement>(null);
   const widthMeasureRef = useRef<HTMLSpanElement>(null);
 
-  const flushPendingSave = () => {
+  const updateNotebookContentRef = useRef(updateNotebookContent);
+  updateNotebookContentRef.current = updateNotebookContent;
+
+  const flushPendingSave = (): Promise<void> => {
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
       saveTimerRef.current = null;
     }
     const pending = pendingSaveRef.current;
     pendingSaveRef.current = null;
-    if (pending) {
-      void updateNotebookContent(pending.markdown, pending.path);
-    }
+    if (!pending) return Promise.resolve();
+    return updateNotebookContentRef.current(pending.markdown, pending.path);
   };
 
+  const flushPendingSaveRef = useRef(flushPendingSave);
+  flushPendingSaveRef.current = flushPendingSave;
+
+  useEffect(() => registerDocumentSaveFlusher(() => flushPendingSaveRef.current()), []);
+
   useEffect(() => () => {
-    flushPendingSave();
+    void flushPendingSaveRef.current();
   }, [currentNotebook?.path]);
 
   useEffect(() => {

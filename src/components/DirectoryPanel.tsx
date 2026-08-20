@@ -33,7 +33,8 @@ import * as config from '@/utils/config';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
 import { FREE_MAX_NOTEBOOKS_PER_SPACE, isArticleNotebookFormat } from '@/constants/pro';
-import { countSpaceNotebooks } from '@/utils/fileSystem';
+import { countSpaceNotebooks, NOTEBOOK_TARGET_EXISTS } from '@/utils/fileSystem';
+import { getSwappableArticleFormat } from '@/utils/notebookFormat';
 import { useLicenseStore } from '@/store/useLicenseStore';
 
 const DEFAULT_PANEL_WIDTH = 300;
@@ -220,6 +221,7 @@ const DirectoryPanel: React.FC = () => {
   const storeDeleteNotebook = useStore((s) => s.deleteNotebook);
   const storeRenameGroup = useStore((s) => s.renameGroup);
   const storeRenameNotebook = useStore((s) => s.renameNotebook);
+  const storeConvertNotebookFormat = useStore((s) => s.convertNotebookFormat);
   const setSearchQuery = useStore((s) => s.setSearchQuery);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
   const moveItem = useStore((s) => s.moveItem);
@@ -493,6 +495,19 @@ const DirectoryPanel: React.FC = () => {
     });
   };
 
+  const handleConvertNotebookFormat = async (notebook: Notebook) => {
+    const target = getSwappableArticleFormat(notebook.format);
+    if (!target) return;
+    closeContextMenu();
+    try {
+      await storeConvertNotebookFormat(notebook, target);
+    } catch (e) {
+      console.error('Failed to convert notebook format:', e);
+      const exists = e instanceof Error && e.message === NOTEBOOK_TARGET_EXISTS;
+      showToast(exists ? t('directory.convertFormatExists') : t('directory.convertFormatFailed'));
+    }
+  };
+
   const handleDeleteGroup = (group: Group) => {
     setConfirmState({
       open: true, title: t('directory.deleteGroup'), message: t('directory.deleteGroupConfirm', { name: group.name }),
@@ -719,6 +734,16 @@ const DirectoryPanel: React.FC = () => {
                 }
               }}>
                 <Copy size={14} />{t('directory.createCopy')}
+              </button>
+            )}
+            {isNotebook(contextMenu.item) && getSwappableArticleFormat((contextMenu.item as Notebook).format) === 'writer' && (
+              <button className="context-menu-item" onClick={() => handleConvertNotebookFormat(contextMenu.item as Notebook)}>
+                <PenLine size={14} />{t('directory.convertToWriter')}
+              </button>
+            )}
+            {isNotebook(contextMenu.item) && getSwappableArticleFormat((contextMenu.item as Notebook).format) === 'markdown' && (
+              <button className="context-menu-item" onClick={() => handleConvertNotebookFormat(contextMenu.item as Notebook)}>
+                <FileCode size={14} />{t('directory.convertToMarkdown')}
               </button>
             )}
             {isNotebook(contextMenu.item)
