@@ -341,6 +341,9 @@ export const zhHansMessages = {
     "view": "视图",
     "toggleSidebar": "切换侧边栏",
     "toggleDirectory": "切换目录面板",
+    "help": "帮助",
+    "homepage": "产品主页",
+    "helpDocs": "帮助文档",
     "recentWorkspaces": "最近工作区",
     "noRecentWorkspaces": "（暂无最近工作区）"
   },

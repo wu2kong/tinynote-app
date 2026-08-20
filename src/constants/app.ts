@@ -1,5 +1,6 @@
 export const GITHUB_REPO = 'wu2kong/tinynote-app';
 export const HOMEPAGE_URL = 'https://tinynote.wu2kong.com/';
+export const DOCS_URL = `${HOMEPAGE_URL}docs`;
 export const APP_DESCRIPTION = 'TinyNote - scattered note management';
 export const AUTHOR_NAME = '悟二空';
 export const AUTHOR_URL = 'https://wu2kong.com';

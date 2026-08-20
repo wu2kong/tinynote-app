@@ -313,6 +313,9 @@ export const koMessages = {
     "view": "보기",
     "toggleSidebar": "사이드바 전환",
     "toggleDirectory": "디렉터리 패널 전환",
+    "help": "도움말",
+    "homepage": "제품 홈페이지",
+    "helpDocs": "도움말 문서",
     "recentWorkspaces": "최근 작업 공간",
     "noRecentWorkspaces": "(최근 작업 공간 없음)"
   },

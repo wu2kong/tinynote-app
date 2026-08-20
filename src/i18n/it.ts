@@ -313,6 +313,9 @@ export const itMessages = {
     "view": "Vista",
     "toggleSidebar": "Mostra/nascondi barra laterale",
     "toggleDirectory": "Mostra/nascondi pannello directory",
+    "help": "Guida",
+    "homepage": "Sito del prodotto",
+    "helpDocs": "Documentazione",
     "recentWorkspaces": "Workspace recenti",
     "noRecentWorkspaces": "(Nessun workspace recente)"
   },

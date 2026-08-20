@@ -313,6 +313,9 @@ export const jaMessages = {
     "view": "表示",
     "toggleSidebar": "サイドバーを切り替え",
     "toggleDirectory": "ディレクトリパネルを切り替え",
+    "help": "ヘルプ",
+    "homepage": "製品ホームページ",
+    "helpDocs": "ヘルプドキュメント",
     "recentWorkspaces": "最近のワークスペース",
     "noRecentWorkspaces": "（最近のワークスペースはありません）"
   },

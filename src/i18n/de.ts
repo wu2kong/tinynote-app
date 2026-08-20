@@ -313,6 +313,9 @@ export const deMessages = {
     "view": "Ansicht",
     "toggleSidebar": "Seitenleiste ein-/ausblenden",
     "toggleDirectory": "Verzeichnisbereich ein-/ausblenden",
+    "help": "Hilfe",
+    "homepage": "Produkt-Website",
+    "helpDocs": "Hilfedokumentation",
     "recentWorkspaces": "Zuletzt verwendete Workspaces",
     "noRecentWorkspaces": "(Keine zuletzt verwendeten Workspaces)"
   },

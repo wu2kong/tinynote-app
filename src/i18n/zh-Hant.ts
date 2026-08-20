@@ -314,6 +314,9 @@ export const zhHantMessages = {
     "view": "檢視",
     "toggleSidebar": "切換側邊欄",
     "toggleDirectory": "切換目錄面板",
+    "help": "說明",
+    "homepage": "產品主頁",
+    "helpDocs": "說明文件",
     "recentWorkspaces": "最近工作區",
     "noRecentWorkspaces": "（暫無最近工作區）"
   },

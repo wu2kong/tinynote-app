@@ -15,7 +15,9 @@ import {
   promptAndOpenWorkspaceInNewWindow,
 } from '@/utils/workspaceActions';
 import { checkWithNativeUpdater } from '@/utils/updater';
+import { HOMEPAGE_URL, DOCS_URL } from '@/constants/app';
 import { t } from '@/i18n';
+import { openUrl } from '@tauri-apps/plugin-opener';
 
 const APP_NAME = 'TinyNote';
 const MAX_RECENT = 10;
@@ -207,14 +209,42 @@ async function buildViewSubmenu(): Promise<Submenu> {
   });
 }
 
+async function buildHelpSubmenu(): Promise<Submenu> {
+  return Submenu.new({
+    id: 'help-menu',
+    text: t('menu.help'),
+    items: [
+      await MenuItem.new({
+        id: 'open-homepage',
+        text: t('menu.homepage'),
+        action: () => {
+          void openUrl(HOMEPAGE_URL).catch((error) => {
+            console.error('Failed to open homepage:', error);
+          });
+        },
+      }),
+      await MenuItem.new({
+        id: 'open-help-docs',
+        text: t('menu.helpDocs'),
+        action: () => {
+          void openUrl(DOCS_URL).catch((error) => {
+            console.error('Failed to open help docs:', error);
+          });
+        },
+      }),
+    ],
+  });
+}
+
 async function buildMenu(): Promise<Menu> {
   const fileSubmenu = await buildFileSubmenu();
   const editSubmenu = await buildEditSubmenu();
   const viewSubmenu = await buildViewSubmenu();
+  const helpSubmenu = await buildHelpSubmenu();
 
   const items = isMacOS()
-    ? [await buildAppSubmenu(), fileSubmenu, editSubmenu, viewSubmenu]
-    : [fileSubmenu, editSubmenu, viewSubmenu];
+    ? [await buildAppSubmenu(), fileSubmenu, editSubmenu, viewSubmenu, helpSubmenu]
+    : [fileSubmenu, editSubmenu, viewSubmenu, helpSubmenu];
 
   return Menu.new({ items });
 }

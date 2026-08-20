@@ -313,6 +313,9 @@ export const frMessages = {
     "view": "Affichage",
     "toggleSidebar": "Afficher/masquer la barre latérale",
     "toggleDirectory": "Afficher/masquer le panneau de répertoires",
+    "help": "Aide",
+    "homepage": "Site du produit",
+    "helpDocs": "Documentation",
     "recentWorkspaces": "Workspaces récents",
     "noRecentWorkspaces": "(Aucun workspace récent)"
   },

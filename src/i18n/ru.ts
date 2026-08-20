@@ -313,6 +313,9 @@ export const ruMessages = {
     "view": "Вид",
     "toggleSidebar": "Переключить боковую панель",
     "toggleDirectory": "Переключить панель каталогов",
+    "help": "Справка",
+    "homepage": "Сайт продукта",
+    "helpDocs": "Документация",
     "recentWorkspaces": "Недавние рабочие пространства",
     "noRecentWorkspaces": "(Недавних рабочих пространств нет)"
   },

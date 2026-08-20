@@ -341,6 +341,9 @@ export const enMessages = {
     "view": "View",
     "toggleSidebar": "Toggle Sidebar",
     "toggleDirectory": "Toggle Directory Panel",
+    "help": "Help",
+    "homepage": "Product Homepage",
+    "helpDocs": "Help Documentation",
     "recentWorkspaces": "Recent Workspaces",
     "noRecentWorkspaces": "(No recent workspaces)"
   },
