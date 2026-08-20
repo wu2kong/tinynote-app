@@ -3,11 +3,13 @@ import { defineConfig } from 'vitepress'
 const GITHUB_REPO = 'https://github.com/wu2kong/tinynote-app'
 const DOWNLOAD = 'https://tinynote.wu2kong.com/download.html'
 const HOMEPAGE = 'https://tinynote.wu2kong.com/'
+const SITE_URL = 'https://tinynote.wu2kong.com'
 const BASE = '/docs/'
 
 export default defineConfig({
-  title: 'TinyNote',
-  description: '零碎笔记，一键复制。轻量级笔记管理与快捷复制工具。',
+  title: 'TinyNote 轻记帮助文档',
+  titleTemplate: ':title | TinyNote 轻记',
+  description: 'TinyNote 轻记帮助文档：安装、组织笔记、同步备份与高级功能说明。',
   base: BASE,
   outDir: '../landing/docs',
   srcExclude: ['README.md'],
@@ -17,9 +19,18 @@ export default defineConfig({
     ['link', { rel: 'icon', href: `${BASE}favicon.png` }],
     ['meta', { name: 'theme-color', content: '#3d8fd4' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:site_name', content: 'TinyNote Help' }],
+    ['meta', { property: 'og:site_name', content: 'TinyNote 轻记' }],
     ['meta', { property: 'og:image', content: `${BASE}icon.png` }],
   ],
+  transformHead({ page }) {
+    if (!page || page === '404.md') return
+    const route = page.replace(/\.md$/, '').replace(/\/index$/, '')
+    const canonical = `${SITE_URL}${BASE}${route}`
+    return [
+      ['link', { rel: 'canonical', href: canonical }],
+      ['meta', { property: 'og:url', content: canonical }],
+    ]
+  },
   themeConfig: {
     logo: { src: '/favicon.png', alt: 'TinyNote' },
     logoLink: '/docs/app',

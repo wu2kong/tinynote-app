@@ -1,3 +1,8 @@
+---
+title: TinyNote Overview
+description: TinyNote is a lightweight notes and quick-copy tool for commands, code snippets, configuration templates, and short memos.
+---
+
 # TinyNote
 
 TinyNote is a lightweight notes and quick-copy tool for commands, code snippets, config templates, and short memos. It is built for high-frequency reuse of small fragments, not as a replacement for long-form apps like Notion.

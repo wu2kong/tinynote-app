@@ -1,3 +1,8 @@
+---
+title: TinyNote FAQ
+description: Answers about TinyNote storage, sync, device migration, Git, backup, updates, and macOS usage.
+---
+
 # FAQ
 
 ## Where are my notes? Are they uploaded?

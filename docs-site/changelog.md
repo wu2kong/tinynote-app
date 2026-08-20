@@ -1,3 +1,8 @@
+---
+title: TinyNote 更新日志
+description: 查看 TinyNote 轻记各版本的功能更新、问题修复和改进内容。
+---
+
 # 更新日志
 
 完整安装包见 [下载页](https://tinynote.wu2kong.com/download.html)。

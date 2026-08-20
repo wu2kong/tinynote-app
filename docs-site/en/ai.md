@@ -1,3 +1,8 @@
+---
+title: TinyNote AI Chat Configuration
+description: Configure OpenAI-compatible models in TinyNote and use AI to organize or explain notes and commands.
+---
+
 # AI chat
 
 TinyNote can talk to OpenAI-compatible models. Configuration is stored on this device only — it is not written into the library and is not Git-synced.

@@ -1,3 +1,8 @@
+---
+title: TinyNote Settings Guide
+description: Configure TinyNote language, themes, data paths, shortcuts, AI models, backup, sync, and Pro features.
+---
+
 # Settings
 
 Open the gear at the bottom of the space bar, or File → Settings….

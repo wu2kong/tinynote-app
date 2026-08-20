@@ -1,3 +1,8 @@
+---
+title: TinyNote Changelog
+description: See TinyNote feature updates, fixes, and improvements by version.
+---
+
 # Changelog
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).

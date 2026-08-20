@@ -1,3 +1,8 @@
+---
+title: TinyNote Git 同步教程
+description: 使用 TinyNote 高级版通过 Git 在多台设备之间同步笔记库，并查看变更和 Diff。
+---
+
 # Git 同步
 
 Git 同步属于 [TinyNote 高级版](/pro)。开通后，笔记库可以作为普通 Git 仓库，在应用内完成拉取、提交和推送。

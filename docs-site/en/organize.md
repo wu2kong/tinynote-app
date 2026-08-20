@@ -1,3 +1,8 @@
+---
+title: TinyNote Notes and Folder Organization
+description: Learn how TinyNote spaces, groups, notes, and note blocks map to real folders and files.
+---
+
 # Organize notes
 
 TinyNote maps to real folders: a space is a directory ending with `.tinynotes`, subfolders are groups, and `.md` files are notes.

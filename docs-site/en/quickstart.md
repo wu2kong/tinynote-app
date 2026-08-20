@@ -1,3 +1,8 @@
+---
+title: TinyNote Quick Start and Installation Guide
+description: Install TinyNote, launch it for the first time, and create your first note and copyable snippet.
+---
+
 # Quick Start
 
 About two minutes from install to your first copied snippet.

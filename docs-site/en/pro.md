@@ -1,3 +1,8 @@
+---
+title: TinyNote Pro Features and Pricing
+description: Learn about TinyNote Pro features including unlimited spaces, article notes, Git sync, and device limits.
+---
+
 # Pro
 
 Core features stay free forever. Pro is a one-time purchase for more spaces, article-style notes, and Git sync.

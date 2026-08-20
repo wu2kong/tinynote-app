@@ -3,7 +3,7 @@ window.TINYNOTE_LANDING_I18N.messages = window.TINYNOTE_LANDING_I18N.messages ||
 window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   // Meta
   "meta.title": "TinyNote 轻记 — 零碎笔记，一键复制",
-  "meta.description": "TinyNote 轻记 — 安装包仅 5~10MB，极速启动、快速检索、一键复制。告别鼠标框选，高效管理命令与代码片段。",
+  "meta.description": "由wu2kong（悟二空）开发的 TinyNote 轻记 — 安装包仅 5~10MB，极速启动、快速检索、一键复制。高效管理命令与代码片段。",
   "meta.keywords": "TinyNote, 笔记, 代码片段, 快捷复制, Tauri, 开发者工具",
   "meta.ogTitle": "TinyNote 轻记 — 零碎笔记，一键复制",
   "meta.ogDescription": "专为开发者与效率用户打造的轻量级笔记管理工具",
@@ -177,7 +177,7 @@ window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   "cta.desc": "基础功能永久免费。需要 Pro 时一次买断，无需订阅。",
   "cta.download": "下载最新版",
   "cta.buy": "购买 Pro",
-  "footer.tagline": "轻量级快捷笔记管理 + 快捷复制工具。Made with care by 悟二空。",
+  "footer.tagline": "轻量级快捷笔记管理 + 快捷复制工具。由 wu2kong（悟二空）开发维护。",
   "footer.project": "项目",
   "footer.repo": "GitHub 仓库",
   "footer.releases": "版本发布",

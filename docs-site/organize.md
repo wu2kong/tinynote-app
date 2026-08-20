@@ -1,3 +1,8 @@
+---
+title: TinyNote 组织目录与笔记教程
+description: 了解 TinyNote 的空间、目录、笔记和笔记块结构，以及如何快速复制内容。
+---
+
 # 组织与笔记
 
 TinyNote 用真实文件夹表达结构：空间是带 `.tinynotes` 后缀的目录，里面的子文件夹是目录，`.md` 文件是笔记。

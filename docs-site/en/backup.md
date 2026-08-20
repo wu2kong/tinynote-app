@@ -1,3 +1,8 @@
+---
+title: TinyNote Local Backup and Restore Guide
+description: Pack your TinyNote library and configuration into a zip archive and restore local data when needed.
+---
+
 # Backup
 
 Backup packs the library and config into a zip. Use it if you do not want Git, or as an extra archive. Available on the free plan.

@@ -1,3 +1,8 @@
+---
+title: TinyNote Git Sync Guide
+description: Use TinyNote Pro to sync a local note library across devices with Git, including pull, commit, push, and diff.
+---
+
 # Git sync
 
 Git sync is a [TinyNote Pro](/en/pro) feature. After you unlock it, the library can be a normal Git repository. Pull, commit, and push from the app.

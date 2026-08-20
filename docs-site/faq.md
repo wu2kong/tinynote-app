@@ -1,3 +1,8 @@
+---
+title: TinyNote 常见问题 FAQ
+description: TinyNote 笔记存储、云端同步、设备迁移、Git 同步、备份和 macOS 使用问题解答。
+---
+
 # 常见问题
 
 ## 笔记存在哪里？会不会上传到云端？

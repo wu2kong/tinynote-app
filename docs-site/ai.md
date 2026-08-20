@@ -1,3 +1,8 @@
+---
+title: TinyNote AI 问答配置说明
+description: 了解如何在 TinyNote 中配置 OpenAI 兼容模型，并在本地使用 AI 整理和解释笔记内容。
+---
+
 # AI 问答
 
 TinyNote 可以接入 OpenAI 兼容的大模型，在应用内提问、整理片段或解释命令。配置只保存在本机，不会写入笔记库，也不会随 Git 同步。
