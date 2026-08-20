@@ -15,6 +15,7 @@ window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   "nav.sync": "同步&备份",
   "nav.pricing": "定价",
   "nav.compare": "模式对比",
+  "nav.docs": "帮助中心",
   "nav.github": "GitHub",
   "nav.buyPro": "购买 Pro",
   "nav.download": "下载",

@@ -15,6 +15,7 @@ window.TINYNOTE_LANDING_I18N.messages['de'] = {
   "nav.sync": "Sync & Backup",
   "nav.pricing": "Preise",
   "nav.compare": "Vergleich",
+  "nav.docs": "Hilfe",
   "nav.github": "GitHub",
   "nav.buyPro": "Pro kaufen",
   "nav.download": "Herunterladen",

@@ -15,6 +15,7 @@ window.TINYNOTE_LANDING_I18N.messages['ko'] = {
   "nav.sync": "동기화 & 백업",
   "nav.pricing": "가격",
   "nav.compare": "비교",
+  "nav.docs": "도움말",
   "nav.github": "GitHub",
   "nav.buyPro": "Pro 구매",
   "nav.download": "다운로드",

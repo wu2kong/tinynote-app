@@ -15,6 +15,7 @@ window.TINYNOTE_LANDING_I18N.messages['ru'] = {
   "nav.sync": "Синхронизация и бэкап",
   "nav.pricing": "Цены",
   "nav.compare": "Сравнение",
+  "nav.docs": "Справка",
   "nav.github": "GitHub",
   "nav.buyPro": "Купить Pro",
   "nav.download": "Скачать",

@@ -1,0 +1,61 @@
+# Settings
+
+Open the gear at the bottom of the space bar, or File → Settings….
+
+Sections: General, Data, Sync, Backup, AI Models, Shortcuts, Pro, Feedback, About. Sync and backup have their own pages.
+
+## General
+
+| Option | Meaning |
+| --- | --- |
+| Display language | UI language; follows the system until you override it |
+| Color theme | Aurora Blue, Slate Teal, Sakura Pink, Paper Gray, Matcha |
+| Dark mode | Light / dark, remembered |
+| Show space bar | Hide for a calmer notes-focused layout |
+| Space group display | Disabled, dropdown, or collapse |
+| Hide element borders | Minimal chrome |
+| Default view | List / card / compact |
+| Interface zoom | Scale the UI |
+
+View menu can also toggle the sidebar and directory pane.
+
+## Data
+
+This page manages paths, not note content.
+
+- **Current library folder**: the storage root chosen on first launch
+- **Current app folder**: runtime directory
+- **Workspace registry**: which libraries this machine has opened; stored in the home directory, not in the library
+- **Current workspace config**: stored in the library and can sync with Git
+
+Changing the storage folder does not move files. Back up or copy the old folder first.
+
+You can copy a path or reveal it in the system file manager.
+
+## Shortcuts
+
+Modifier is <kbd>Cmd</kbd> on macOS and <kbd>Ctrl</kbd> on Windows / Linux.
+
+| Shortcut | Action |
+| --- | --- |
+| <kbd>Cmd/Ctrl</kbd> + <kbd>P</kbd> | Recent notes |
+| <kbd>Cmd/Ctrl</kbd> + <kbd>I</kbd> | AI chat |
+| <kbd>Cmd/Ctrl</kbd> + <kbd>F</kbd> | Search in workspace |
+| <kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd> | Global search |
+
+## Feedback
+
+Copy platform and version diagnostics, then email a report. Include that text when you file a bug.
+
+Email: `lihao317@foxmail.com`
+
+Or open a [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues).
+
+## About and updates
+
+The About page shows the version and can check for updates:
+
+- **macOS / Windows**: native updater dialog
+- **Otherwise**: get the installer from the [download page](https://tinynote.wu2kong.com/download.html)
+
+TinyNote → Check for Updates… is the same entry.

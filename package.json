@@ -12,7 +12,10 @@
     "preview:web": "vite preview --outDir dist-web",
     "tauri": "tauri",
     "release": "node scripts/release.mjs",
-    "build:packages": "node scripts/build-packages.mjs"
+    "build:packages": "node scripts/build-packages.mjs",
+    "docs:dev": "npm run dev --prefix docs-site",
+    "docs:build": "npm run build --prefix docs-site",
+    "docs:preview": "npm run preview --prefix docs-site"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",

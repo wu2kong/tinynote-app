@@ -49,7 +49,7 @@ TinyNote 专注「零碎片段的高频取用」，与 Notion、印象笔记等�
 
 👉 [国内用户可使用蓝奏云镜像下载最新版 - 速度更快](https://www.ilanzou.com/s/B6uXlvhu)
 
-更多介绍见项目 [官方主页](https://tinynote.wu2kong.com/)。
+更多介绍见项目 [官方主页](https://tinynote.wu2kong.com/)。使用说明见 [帮助中心](https://tinynote.wu2kong.com/docs/app)（源码在 [docs-site](docs-site/README.md)，本地执行 `npm run docs:dev`）。
 
 ## 反馈与贡献
 

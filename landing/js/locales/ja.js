@@ -15,6 +15,7 @@ window.TINYNOTE_LANDING_I18N.messages['ja'] = {
   "nav.sync": "同期・バックアップ",
   "nav.pricing": "料金",
   "nav.compare": "比較",
+  "nav.docs": "ヘルプ",
   "nav.github": "GitHub",
   "nav.buyPro": "Pro を購入",
   "nav.download": "ダウンロード",
