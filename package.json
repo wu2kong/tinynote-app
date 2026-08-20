@@ -15,7 +15,11 @@
     "build:packages": "node scripts/build-packages.mjs",
     "docs:dev": "npm run dev --prefix docs-site",
     "docs:build": "npm run build --prefix docs-site",
-    "docs:preview": "npm run preview --prefix docs-site"
+    "docs:preview": "npm run preview --prefix docs-site",
+    "landing:build": "node scripts/build-landing-seo.mjs",
+    "landing:verify": "node scripts/verify-landing-seo.mjs",
+    "indexnow:setup": "node scripts/setup-indexnow.mjs",
+    "indexnow:submit": "node scripts/submit-indexnow.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",

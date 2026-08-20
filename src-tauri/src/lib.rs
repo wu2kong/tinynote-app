@@ -79,6 +79,11 @@ fn revert_file_change(storage_path: String, file_path: String) -> Result<(), Str
 }
 
 #[tauri::command]
+fn fetch_latest_release() -> Result<updater::LatestRelease, String> {
+    updater::fetch_latest_release()
+}
+
+#[tauri::command]
 fn download_release_asset(url: String, filename: String) -> Result<String, String> {
     updater::download_release_asset(&url, &filename)
 }
@@ -420,6 +425,7 @@ pub fn run() {
             get_file_diff,
             revert_file_change,
             download_release_asset,
+            fetch_latest_release,
             winsparkle_available,
             winsparkle_check_for_updates,
             fetch_llm_models,

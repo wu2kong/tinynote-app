@@ -26,9 +26,16 @@ export default defineConfig({
     if (!page || page === '404.md') return
     const route = page.replace(/\.md$/, '').replace(/\/index$/, '')
     const canonical = `${SITE_URL}${BASE}${route}`
+    const isEnglish = route.startsWith('en/')
+    const localizedRoute = isEnglish ? route.slice(3) : route
+    const chineseUrl = `${SITE_URL}${BASE}${localizedRoute}`
+    const englishUrl = `${SITE_URL}${BASE}en/${localizedRoute}`
     return [
       ['link', { rel: 'canonical', href: canonical }],
       ['meta', { property: 'og:url', content: canonical }],
+      ['link', { rel: 'alternate', hreflang: 'zh-CN', href: chineseUrl }],
+      ['link', { rel: 'alternate', hreflang: 'en', href: englishUrl }],
+      ['link', { rel: 'alternate', hreflang: 'x-default', href: chineseUrl }],
     ]
   },
   themeConfig: {

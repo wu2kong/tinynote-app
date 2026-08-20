@@ -450,21 +450,29 @@
     state.error = false;
     renderMeta();
 
-    fetch(API_URL, {
-      headers: { Accept: 'application/vnd.github+json' },
-    })
+    var CACHE_KEY = 'tinynote.latestRelease';
+    var CACHE_MS = 30 * 60 * 1000;
+    try {
+      var cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        if (parsed && parsed.savedAt && Date.now() - parsed.savedAt < CACHE_MS && parsed.data) {
+          applyReleaseData(parsed.data);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    fetch(API_URL)
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       })
       .then(function (data) {
-        state.tagName = data.tag_name || data.name || '';
-        state.publishedAt = data.published_at || '';
-        state.htmlUrl = data.html_url || RELEASES_URL + '/latest';
-        state.assets = Array.isArray(data.assets) ? data.assets : [];
-        state.loading = false;
-        state.error = false;
-        renderAll();
+        try {
+          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: data }));
+        } catch (_) {}
+        applyReleaseData(data);
       })
       .catch(function () {
         applyFallbackAssets();
@@ -472,6 +480,16 @@
         state.error = true;
         renderAll();
       });
+  }
+
+  function applyReleaseData(data) {
+    state.tagName = data.tag_name || data.name || '';
+    state.publishedAt = data.published_at || '';
+    state.htmlUrl = data.html_url || RELEASES_URL + '/latest';
+    state.assets = Array.isArray(data.assets) ? data.assets : [];
+    state.loading = false;
+    state.error = false;
+    renderAll();
   }
 
   function init() {

@@ -16,6 +16,7 @@ landing-preview:
 # 将landing页面上传到服务器
 deploy-landing:
 	npm run docs:build
+	npm run landing:build
 # scp -r landing lihao@100.66.1.4:/Users/lihao/var/www/tinynote-app/
 # 	scp -r landing lihao-macmini.local:/Users/lihao/var/www/tinynote-app/
 	scp -r landing lihao-macmini.link:/Users/lihao/var/www/tinynote-app/

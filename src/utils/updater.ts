@@ -123,26 +123,7 @@ export async function getAppVersion(): Promise<string> {
 
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
   const currentVersion = await getAppVersion();
-  let response: Response;
-  try {
-    response = await fetch(GITHUB_RELEASES_API, {
-      headers: { Accept: 'application/vnd.github+json' },
-    });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : t('utils.updater.checkFailed');
-    throw new Error(formatNetworkError(msg));
-  }
-
-  if (!response.ok) {
-    throw new Error(t('utils.updater.checkFailedWithStatus', { status: response.status }));
-  }
-
-  const release = await response.json() as {
-    tag_name: string;
-    html_url: string;
-    assets: GitHubReleaseAsset[];
-  };
-
+  const release = await loadLatestRelease();
   const latestVersion = release.tag_name.replace(/^v/i, '');
   if (!isNewerVersion(latestVersion, currentVersion)) {
     return null;
@@ -159,6 +140,32 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
     releaseUrl: release.html_url,
     asset,
   };
+}
+
+interface LatestReleasePayload {
+  tag_name: string;
+  html_url: string;
+  assets: GitHubReleaseAsset[];
+}
+
+async function loadLatestRelease(): Promise<LatestReleasePayload> {
+  if (isTauri()) {
+    return invoke<LatestReleasePayload>('fetch_latest_release');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(GITHUB_RELEASES_API);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : t('utils.updater.checkFailed');
+    throw new Error(formatNetworkError(msg));
+  }
+
+  if (!response.ok) {
+    throw new Error(t('utils.updater.checkFailedWithStatus', { status: response.status }));
+  }
+
+  return await response.json() as LatestReleasePayload;
 }
 
 export async function downloadAndInstall(asset: GitHubReleaseAsset): Promise<void> {

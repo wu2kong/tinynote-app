@@ -10,6 +10,14 @@ pnpm-lock.yaml
 # VitePress
 docs-site/.vitepress/cache
 landing/docs
+landing/de
+landing/en
+landing/fr
+landing/it
+landing/ja
+landing/ko
+landing/ru
+landing/zh-hant
 
 # Build outputs
 dist

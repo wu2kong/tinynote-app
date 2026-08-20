@@ -2,6 +2,17 @@
   var STORAGE_KEY = 'tinynote-landing-locale';
   var catalog = window.TINYNOTE_LANDING_I18N || { locales: [], messages: {}, defaultLocale: 'zh-Hans' };
   var currentLocale = catalog.defaultLocale || 'zh-Hans';
+  var LOCALE_PATHS = {
+    'zh-Hans': '',
+    'zh-Hant': 'zh-hant',
+    en: 'en',
+    ja: 'ja',
+    ko: 'ko',
+    de: 'de',
+    fr: 'fr',
+    it: 'it',
+    ru: 'ru'
+  };
 
   function getMessages(locale) {
     var all = catalog.messages || {};
@@ -46,10 +57,32 @@
     return null;
   }
 
+  function localeFromPathname(pathname) {
+    var normalized = String(pathname || '/').replace(/^\/+|\/+$/g, '');
+    if (!normalized || normalized === 'index.html' || normalized === 'download.html') return 'zh-Hans';
+    var firstSegment = normalized.split('/')[0].toLowerCase();
+    for (var locale in LOCALE_PATHS) {
+      if (Object.prototype.hasOwnProperty.call(LOCALE_PATHS, locale) && LOCALE_PATHS[locale] === firstSegment) {
+        return locale;
+      }
+    }
+    return null;
+  }
+
+  function localePath(locale) {
+    var segment = LOCALE_PATHS[locale] || '';
+    var isDownload = document.documentElement.getAttribute('data-i18n-page') === 'download';
+    if (isDownload) return (segment ? '/' + segment : '') + '/download.html';
+    return segment ? '/' + segment + '/' : '/';
+  }
+
   function detectLocale() {
     var params = new URLSearchParams(window.location.search);
     var fromQuery = matchLocale(params.get('lang') || params.get('locale'));
     if (fromQuery) return fromQuery;
+
+    var fromPath = localeFromPathname(window.location.pathname);
+    if (fromPath) return fromPath;
 
     try {
       var stored = localStorage.getItem(STORAGE_KEY);
@@ -140,7 +173,13 @@
     if (!options || options.updateUrl !== false) {
       try {
         var url = new URL(window.location.href);
-        url.searchParams.set('lang', matched);
+        url.pathname = localePath(matched);
+        url.searchParams.delete('lang');
+        url.searchParams.delete('locale');
+        if (url.pathname !== window.location.pathname) {
+          window.location.assign(url.toString());
+          return;
+        }
         window.history.replaceState({}, document.title, url.toString());
       } catch (_) {}
     }
@@ -170,6 +209,17 @@
 
   function init() {
     currentLocale = detectLocale();
+    var params = new URLSearchParams(window.location.search);
+    if (matchLocale(params.get('lang') || params.get('locale'))) {
+      try {
+        var localizedUrl = new URL(window.location.href);
+        localizedUrl.pathname = localePath(currentLocale);
+        localizedUrl.searchParams.delete('lang');
+        localizedUrl.searchParams.delete('locale');
+        window.location.replace(localizedUrl.toString());
+        return;
+      } catch (_) {}
+    }
     buildLanguageSelect();
     applyTranslations(document);
   }
