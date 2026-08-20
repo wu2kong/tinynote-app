@@ -66,7 +66,7 @@ interface AppActions {
   pasteNoteBlock: (block: NoteBlock, index: number) => Promise<void>;
   pasteNoteBlockAtEnd: (block: NoteBlock) => Promise<void>;
   updateNoteBlock: (id: string, updates: Partial<NoteBlock>) => Promise<void>;
-  updateNotebookContent: (content: string) => Promise<void>;
+  updateNotebookContent: (content: string, notebookPath?: string) => Promise<void>;
   deleteNoteBlock: (id: string) => Promise<void>;
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
   reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
@@ -1202,12 +1202,22 @@ export const useStore = create<AppStore>((set, get) => ({
     });
   },
 
-  updateNotebookContent: async (content) => {
-    const { currentNotebook } = get();
-    if (!currentNotebook || currentNotebook.format === 'blocks') return;
-    const updated = { ...currentNotebook, content };
+  updateNotebookContent: async (content, notebookPath) => {
+    const current = get().currentNotebook;
+    const targetPath = notebookPath ?? current?.path;
+    if (!targetPath) return;
+
+    const isCurrent = !!current && normalizePath(current.path) === normalizePath(targetPath);
+    const notebook = isCurrent ? current : await fs.loadNotebook(targetPath);
+    if (!notebook || notebook.format === 'blocks') return;
+
+    const updated = { ...notebook, content };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated });
+
+    const stillCurrent = get().currentNotebook;
+    if (stillCurrent && normalizePath(stillCurrent.path) === normalizePath(targetPath)) {
+      set({ currentNotebook: { ...stillCurrent, content } });
+    }
   },
 
   deleteNoteBlock: async (id) => {

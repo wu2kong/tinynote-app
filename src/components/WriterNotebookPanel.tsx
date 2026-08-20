@@ -43,7 +43,7 @@ interface WriterEditorProps {
   notebookPath: string;
   defaultValue: string;
   isDarkTheme: boolean;
-  onMarkdownChange: (markdown: string) => void;
+  onMarkdownChange: (markdown: string, notebookPath: string) => void;
 }
 
 const WriterEditor: React.FC<WriterEditorProps> = ({
@@ -56,6 +56,7 @@ const WriterEditor: React.FC<WriterEditorProps> = ({
   onChangeRef.current = onMarkdownChange;
 
   useEditor((root) => {
+    const editorPath = notebookPath;
     const crepe = new Crepe({
       root,
       defaultValue,
@@ -80,7 +81,7 @@ const WriterEditor: React.FC<WriterEditorProps> = ({
     crepe.on((listener) => {
       listener.markdownUpdated((_ctx, markdown, prevMarkdown) => {
         if (markdown === prevMarkdown) return;
-        onChangeRef.current(markdown);
+        onChangeRef.current(markdown, editorPath);
       });
     });
 
@@ -102,13 +103,25 @@ const WriterNotebookPanel: React.FC = () => {
   const [pageWidth, setPageWidth] = useState<WriterPageWidth>(readStoredPageWidth);
   const [widthSelectWidth, setWidthSelectWidth] = useState<number | undefined>(undefined);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestMarkdownRef = useRef('');
+  const pendingSaveRef = useRef<{ path: string; markdown: string } | null>(null);
   const widthSelectRef = useRef<HTMLSelectElement>(null);
   const widthMeasureRef = useRef<HTMLSpanElement>(null);
 
+  const flushPendingSave = () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    const pending = pendingSaveRef.current;
+    pendingSaveRef.current = null;
+    if (pending) {
+      void updateNotebookContent(pending.markdown, pending.path);
+    }
+  };
+
   useEffect(() => () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-  }, []);
+    flushPendingSave();
+  }, [currentNotebook?.path]);
 
   useEffect(() => {
     const measure = widthMeasureRef.current;
@@ -148,12 +161,19 @@ const WriterNotebookPanel: React.FC = () => {
 
   const leftPanelVisible = showDirectoryPanel || showAppBar;
 
-  const handleMarkdownChange = (markdown: string) => {
-    latestMarkdownRef.current = markdown;
+  const handleMarkdownChange = (markdown: string, notebookPath: string) => {
+    if (pendingSaveRef.current && pendingSaveRef.current.path !== notebookPath) {
+      flushPendingSave();
+    }
+    pendingSaveRef.current = { path: notebookPath, markdown };
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       saveTimerRef.current = null;
-      void updateNotebookContent(latestMarkdownRef.current);
+      const pending = pendingSaveRef.current;
+      pendingSaveRef.current = null;
+      if (pending) {
+        void updateNotebookContent(pending.markdown, pending.path);
+      }
     }, SAVE_DEBOUNCE_MS);
   };
 

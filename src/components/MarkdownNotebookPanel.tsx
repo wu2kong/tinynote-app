@@ -89,7 +89,7 @@ const MarkdownNotebookPanel: React.FC = () => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       saveTimerRef.current = null;
-      void updateNotebookContent(value);
+      void updateNotebookContent(value, currentNotebook.path);
     }, SAVE_DEBOUNCE_MS);
   };
 
