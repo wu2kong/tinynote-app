@@ -440,7 +440,10 @@ export const jaMessages = {
     "noSpace": "先にノートスペースを選択してください",
     "noMarkdown": "読み込める Markdown ファイルがありません",
     "completed": "{imported} 件のノートを読み込みました（うち {converted} 件を記事ノートに変換）",
-    "failed": "ノートの読み込みに失敗しました"
+    "failed": "ノートの読み込みに失敗しました",
+    "ruleDrop": "アプリのウィンドウに .md ファイルやフォルダーをドラッグして読み込むこともできます。",
+    "dropHint": "ドロップして現在のノートスペースに読み込む",
+    "dropImporting": "ノートを読み込んでいます..."
   },
   "note": {
     "addNote": "ノートを追加",

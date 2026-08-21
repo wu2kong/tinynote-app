@@ -440,7 +440,10 @@ export const frMessages = {
     "noSpace": "Veuillez d'abord sélectionner un espace de notes",
     "noMarkdown": "Aucun fichier Markdown à importer",
     "completed": "{imported} notes importées ({converted} converties en notes article)",
-    "failed": "Échec de l'import des notes"
+    "failed": "Échec de l'import des notes",
+    "ruleDrop": "Vous pouvez aussi glisser des fichiers .md ou des dossiers dans la fenêtre de l'application pour les importer.",
+    "dropHint": "Relâchez pour importer dans l'espace de notes actuel",
+    "dropImporting": "Import des notes..."
   },
   "note": {
     "addNote": "Ajouter une note",

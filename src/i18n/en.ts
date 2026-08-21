@@ -468,7 +468,10 @@ export const enMessages = {
     "noSpace": "Please select a note space first",
     "noMarkdown": "No Markdown files to import",
     "completed": "Imported {imported} notes ({converted} converted to article notes)",
-    "failed": "Failed to import notes"
+    "failed": "Failed to import notes",
+    "ruleDrop": "You can also drag .md files or folders into the app window to import them.",
+    "dropHint": "Drop to import into the current note space",
+    "dropImporting": "Importing notes..."
   },
   "note": {
     "addNote": "Add Note",

@@ -441,7 +441,10 @@ export const zhHantMessages = {
     "noSpace": "請先選擇一個筆記空間",
     "noMarkdown": "沒有可匯入的 Markdown 檔案",
     "completed": "已匯入 {imported} 篇筆記（其中 {converted} 篇已轉換為文章筆記）",
-    "failed": "匯入筆記失敗"
+    "failed": "匯入筆記失敗",
+    "ruleDrop": "也可以把 .md 檔案或資料夾拖到應用程式視窗中匯入。",
+    "dropHint": "放開以匯入到目前筆記空間",
+    "dropImporting": "正在匯入筆記..."
   },
   "note": {
     "addNote": "新增筆記",

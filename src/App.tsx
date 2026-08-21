@@ -15,6 +15,7 @@ import Toast from '@/components/Toast';
 import ProUpgradeModal from '@/components/ProUpgradeModal';
 import OfficialSampleLibraryModal from '@/components/OfficialSampleLibraryModal';
 import ImportNotesModal from '@/components/ImportNotesModal';
+import ImportNotesDropOverlay from '@/components/ImportNotesDropOverlay';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
@@ -247,6 +248,7 @@ const App: React.FC = () => {
         open={showImportNotes}
         onClose={() => setShowImportNotes(false)}
       />
+      <ImportNotesDropOverlay enabled={Boolean(storagePath) && !loading} />
     </>
   );
 

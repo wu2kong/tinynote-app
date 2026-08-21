@@ -440,7 +440,10 @@ export const koMessages = {
     "noSpace": "먼저 노트 스페이스를 선택하세요",
     "noMarkdown": "가져올 Markdown 파일이 없습니다",
     "completed": "{imported}개의 노트를 가져왔습니다({converted}개는 글 노트로 변환됨)",
-    "failed": "노트를 가져오지 못했습니다"
+    "failed": "노트를 가져오지 못했습니다",
+    "ruleDrop": "앱 창으로 .md 파일이나 폴더를 끌어다 놓아 가져올 수도 있습니다.",
+    "dropHint": "놓으면 현재 노트 스페이스로 가져옵니다",
+    "dropImporting": "노트를 가져오는 중..."
   },
   "note": {
     "addNote": "노트 추가",

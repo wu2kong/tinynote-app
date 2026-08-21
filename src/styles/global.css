@@ -2067,6 +2067,46 @@ body.directory-panel-resizing {
   justify-content: center;
 }
 
+.import-notes-drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.import-notes-drop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: min(360px, calc(100vw - 48px));
+  padding: 28px 24px;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  color: var(--accent);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.import-notes-drop-card strong {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.import-notes-drop-card span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .modal-input {
   width: 100%;
   padding: 10px 12px;

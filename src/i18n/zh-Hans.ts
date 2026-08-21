@@ -468,7 +468,10 @@ export const zhHansMessages = {
     "noSpace": "请先选择一个笔记空间",
     "noMarkdown": "没有可导入的 Markdown 文件",
     "completed": "已导入 {imported} 篇笔记（其中 {converted} 篇已转换为文章笔记）",
-    "failed": "导入笔记失败"
+    "failed": "导入笔记失败",
+    "ruleDrop": "也可以把 .md 文件或文件夹拖到应用窗口中导入。",
+    "dropHint": "松开以导入到当前笔记空间",
+    "dropImporting": "正在导入笔记..."
   },
   "note": {
     "addNote": "添加笔记",

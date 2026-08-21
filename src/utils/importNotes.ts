@@ -97,6 +97,109 @@ async function walkMarkdownFiles(
   return results;
 }
 
+export async function collectSourcesFromDroppedPaths(paths: string[]): Promise<ImportNoteSource[]> {
+  const filePaths: string[] = [];
+  const dirPaths: string[] = [];
+  for (const path of paths) {
+    try {
+      const info = await storage().stat(path);
+      if (info.isDirectory) dirPaths.push(path);
+      else if (info.isFile) filePaths.push(path);
+    } catch {
+      // skip unreadable entries
+    }
+  }
+  const sources = await collectSourcesFromFilePaths(filePaths);
+  sources.push(...await collectSourcesFromDirectoryPaths(dirPaths));
+  return sources;
+}
+
+interface FileSystemEntryLike {
+  isFile: boolean;
+  isDirectory: boolean;
+  name: string;
+  file?: (success: (file: File) => void, error?: (err: DOMException) => void) => void;
+  createReader?: () => {
+    readEntries: (success: (entries: FileSystemEntryLike[]) => void, error?: (err: DOMException) => void) => void;
+  };
+}
+
+function readFileEntry(entry: FileSystemEntryLike): Promise<File | null> {
+  if (!entry.file) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    entry.file!(resolve, () => resolve(null));
+  });
+}
+
+function readDirectoryEntries(entry: FileSystemEntryLike): Promise<FileSystemEntryLike[]> {
+  const reader = entry.createReader?.();
+  if (!reader) return Promise.resolve([]);
+  return new Promise((resolve) => {
+    const collected: FileSystemEntryLike[] = [];
+    const readBatch = () => {
+      reader.readEntries((batch) => {
+        if (batch.length === 0) {
+          resolve(collected);
+          return;
+        }
+        collected.push(...batch);
+        readBatch();
+      }, () => resolve(collected));
+    };
+    readBatch();
+  });
+}
+
+async function collectSourcesFromFsEntry(
+  entry: FileSystemEntryLike,
+  parentRelative: string,
+  groupId: string | undefined,
+): Promise<ImportNoteSource[]> {
+  if (!entry.name || entry.name.startsWith('.') || isNoteSpaceDirectoryName(entry.name)) return [];
+
+  if (entry.isFile) {
+    const file = await readFileEntry(entry);
+    if (!file || !isMarkdownNotebookFileName(file.name)) return [];
+    const relativePath = parentRelative ? `${parentRelative}/${file.name}` : file.name;
+    if (isHiddenPath(relativePath)) return [];
+    return [{
+      relativePath,
+      groupId: parentRelative ? groupId : undefined,
+      readText: () => file.text(),
+    }];
+  }
+
+  if (entry.isDirectory) {
+    const relative = parentRelative ? `${parentRelative}/${entry.name}` : entry.name;
+    const nextGroupId = groupId ?? relative;
+    const children = await readDirectoryEntries(entry);
+    const sources: ImportNoteSource[] = [];
+    for (const child of children) {
+      sources.push(...await collectSourcesFromFsEntry(child, relative, nextGroupId));
+    }
+    return sources;
+  }
+
+  return [];
+}
+
+export async function collectSourcesFromDataTransfer(dataTransfer: DataTransfer): Promise<ImportNoteSource[]> {
+  const items = Array.from(dataTransfer.items ?? []);
+  const sources: ImportNoteSource[] = [];
+  let usedEntries = false;
+
+  for (const item of items) {
+    if (item.kind !== 'file') continue;
+    const entry = (item as DataTransferItem & { webkitGetAsEntry?: () => FileSystemEntryLike | null }).webkitGetAsEntry?.();
+    if (!entry) continue;
+    usedEntries = true;
+    sources.push(...await collectSourcesFromFsEntry(entry, '', undefined));
+  }
+
+  if (usedEntries) return sources;
+  return collectSourcesFromBrowserFiles(Array.from(dataTransfer.files ?? []), 'files');
+}
+
 export async function collectSourcesFromFilePaths(filePaths: string[]): Promise<ImportNoteSource[]> {
   const sources: ImportNoteSource[] = [];
   for (const filePath of filePaths) {

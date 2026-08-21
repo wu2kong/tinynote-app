@@ -7,11 +7,11 @@ import {
   collectSourcesFromBrowserFiles,
   collectSourcesFromDirectoryPaths,
   collectSourcesFromFilePaths,
-  importNotesToSpaceRoot,
   pickDirectories,
   pickMarkdownFiles,
   type ImportNoteSource,
 } from '@/utils/importNotes';
+import { runImportNotesToCurrentSpace } from '@/utils/runImportNotes';
 import { showToast } from './Toast';
 
 interface ImportNotesModalProps {
@@ -22,7 +22,6 @@ interface ImportNotesModalProps {
 const ImportNotesModal: React.FC<ImportNotesModalProps> = ({ open, onClose }) => {
   const { t } = useI18n();
   const currentSpace = useStore((s) => s.currentSpace);
-  const reloadSpaces = useStore((s) => s.reloadSpaces);
   const [importing, setImporting] = useState(false);
   const filesInputRef = useRef<HTMLInputElement>(null);
   const dirsInputRef = useRef<HTMLInputElement>(null);
@@ -46,24 +45,12 @@ const ImportNotesModal: React.FC<ImportNotesModalProps> = ({ open, onClose }) =>
 
     setImporting(true);
     try {
-      const result = await importNotesToSpaceRoot(currentSpace.path, sources);
-      await reloadSpaces();
-      if (result.imported === 0) {
-        showToast(t('importNotes.noMarkdown'));
-        return;
-      }
-      showToast(t('importNotes.completed', {
-        imported: result.imported,
-        converted: result.converted,
-      }));
-      onClose();
-    } catch (error) {
-      console.error('[tinynote] Failed to import notes:', error);
-      showToast(t('importNotes.failed'));
+      const imported = await runImportNotesToCurrentSpace(sources);
+      if (imported) onClose();
     } finally {
       setImporting(false);
     }
-  }, [currentSpace, onClose, reloadSpaces, t]);
+  }, [currentSpace, onClose, t]);
 
   const handleImportFiles = useCallback(async () => {
     if (importing) return;
@@ -134,6 +121,7 @@ const ImportNotesModal: React.FC<ImportNotesModalProps> = ({ open, onClose }) =>
           <li>{t('importNotes.ruleUnmarked')}</li>
           <li>{t('importNotes.ruleTarget')}</li>
           <li>{t('importNotes.ruleMultiple')}</li>
+          <li>{t('importNotes.ruleDrop')}</li>
         </ul>
 
         <input

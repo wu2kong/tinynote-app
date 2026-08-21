@@ -440,7 +440,10 @@ export const itMessages = {
     "noSpace": "Seleziona prima uno spazio note",
     "noMarkdown": "Nessun file Markdown da importare",
     "completed": "Importate {imported} note ({converted} convertite in note articolo)",
-    "failed": "Importazione delle note non riuscita"
+    "failed": "Importazione delle note non riuscita",
+    "ruleDrop": "Puoi anche trascinare file .md o cartelle nella finestra dell'app per importarli.",
+    "dropHint": "Rilascia per importare nello spazio note corrente",
+    "dropImporting": "Importazione delle note..."
   },
   "note": {
     "addNote": "Aggiungi nota",

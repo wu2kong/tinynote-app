@@ -440,7 +440,10 @@ export const deMessages = {
     "noSpace": "Bitte zuerst einen Notizbereich auswählen",
     "noMarkdown": "Keine Markdown-Dateien zum Importieren",
     "completed": "{imported} Notizen importiert ({converted} in Artikelnotizen umgewandelt)",
-    "failed": "Import der Notizen fehlgeschlagen"
+    "failed": "Import der Notizen fehlgeschlagen",
+    "ruleDrop": "Du kannst .md-Dateien oder Ordner auch in das App-Fenster ziehen, um sie zu importieren.",
+    "dropHint": "Loslassen, um in den aktuellen Notizbereich zu importieren",
+    "dropImporting": "Notizen werden importiert..."
   },
   "note": {
     "addNote": "Notiz hinzufügen",
