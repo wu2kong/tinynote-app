@@ -112,6 +112,9 @@ export const zhHantMessages = {
     "data": {
       "panelTitle": "儲存路徑",
       "panelDesc": "工作區設定儲存在筆記庫中，可隨 Git 同步；本機多工作區登錄檔儲存在使用者 Home 目錄中",
+      "sampleLibrary": "官方範例庫",
+      "sampleLibraryDesc": "匯入可自由編輯的英文入門空間，內含使用指南和多場景範例",
+      "importSampleLibrary": "匯入入門範例庫",
       "workspacesRegistry": "多工作區登錄檔",
       "currentWorkspaceConfig": "目前工作區設定",
       "currentStorageDir": "目前筆記庫資料夾",
@@ -318,7 +321,10 @@ export const zhHantMessages = {
     "homepage": "產品主頁",
     "helpDocs": "說明文件",
     "recentWorkspaces": "最近工作區",
-    "noRecentWorkspaces": "（暫無最近工作區）"
+    "noRecentWorkspaces": "（暫無最近工作區）",
+    "removeFromRecent": "從最近記錄中移除",
+    "clearRecentWorkspaces": "清除最近工作區",
+    "clearRecentWorkspacesConfirm": "從最近列表中移除其他工作區？目前工作區會保留。磁碟上的檔案不會被刪除。"
   },
   "app": {
     "loading": "載入中...",
@@ -528,6 +534,23 @@ export const zhHantMessages = {
     "title": "歡迎使用 TinyNote",
     "description": "輕量級筆記管理與快速複製工具。用空間、目錄和筆記整理命令、程式碼片段和筆記。",
     "selectStorage": "選擇儲存資料夾"
+  },
+  "sampleLibrary": {
+    "title": "用入門範例庫探索 TinyNote",
+    "description": "匯入一個現成空間，在了解 TinyNote 功能的同時，查看專案管理、資料收藏、程式碼片段和長文寫作等實際用法。",
+    "blocksTitle": "區塊筆記",
+    "blocksDesc": "功能導覽、專案看板和可重用片段",
+    "markdownTitle": "Markdown 筆記",
+    "markdownDesc": "包含任務、表格、圖表、程式碼和流程圖原始碼的語法指南",
+    "writerTitle": "文章筆記",
+    "writerDesc": "適合專注寫作的每週回顧範例",
+    "contentLanguage": "範例內容語言",
+    "safeImportNote": "所選語言將套用到空間名稱、筆記標題和正文；匯入不會覆蓋任何現有筆記。",
+    "notNow": "暫不匯入",
+    "importAction": "匯入入門範例庫",
+    "importing": "正在匯入...",
+    "imported": "已匯入 {name}，包含 {count} 篇範例筆記",
+    "importFailed": "無法匯入入門範例庫"
   },
   "links": {
     "title": "連結（{count}）",

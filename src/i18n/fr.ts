@@ -111,6 +111,9 @@ export const frMessages = {
     "data": {
       "panelTitle": "Chemins de stockage",
       "panelDesc": "La configuration du workspace est stockée dans la bibliothèque de notes et peut être synchronisée avec Git; le registre local multi-workspace est stocké dans le dossier Home de l'utilisateur",
+      "sampleLibrary": "Bibliothèque d’exemples officielle",
+      "sampleLibraryDesc": "Importer un espace de démarrage en anglais, modifiable, avec guides et exemples pratiques",
+      "importSampleLibrary": "Importer le kit de démarrage",
       "workspacesRegistry": "Registre multi-workspace",
       "currentWorkspaceConfig": "Configuration du workspace actuel",
       "currentStorageDir": "Dossier actuel de la bibliothèque de notes",
@@ -317,7 +320,10 @@ export const frMessages = {
     "homepage": "Site du produit",
     "helpDocs": "Documentation",
     "recentWorkspaces": "Workspaces récents",
-    "noRecentWorkspaces": "(Aucun workspace récent)"
+    "noRecentWorkspaces": "(Aucun workspace récent)",
+    "removeFromRecent": "Retirer des récents",
+    "clearRecentWorkspaces": "Effacer les workspaces récents",
+    "clearRecentWorkspacesConfirm": "Retirer les autres workspaces de la liste récente ? Le workspace actuel sera conservé. Les fichiers sur le disque ne seront pas supprimés."
   },
   "app": {
     "loading": "Chargement...",
@@ -527,6 +533,23 @@ export const frMessages = {
     "title": "Bienvenue dans TinyNote",
     "description": "Un gestionnaire de notes léger et un outil de copie rapide. Organisez vos commandes, extraits de code et notes dans des espaces, groupes et carnets.",
     "selectStorage": "Sélectionner le dossier de stockage"
+  },
+  "sampleLibrary": {
+    "title": "Découvrir TinyNote avec un kit de démarrage",
+    "description": "Importez un espace prêt à l’emploi qui présente TinyNote avec des exemples concrets de projets, références, code et rédaction longue.",
+    "blocksTitle": "Notes par blocs",
+    "blocksDesc": "Visite des fonctions, tableau de projet et extraits réutilisables",
+    "markdownTitle": "Note Markdown",
+    "markdownDesc": "Guide avec tâches, tableaux, graphique, code et source de diagramme",
+    "writerTitle": "Note article",
+    "writerDesc": "Un exemple de bilan hebdomadaire pour écrire sans distraction",
+    "contentLanguage": "Langue du contenu d’exemple",
+    "safeImportNote": "La langue choisie s’applique aux noms des espaces, aux titres et au contenu. Aucune note existante n’est remplacée.",
+    "notNow": "Plus tard",
+    "importAction": "Importer le kit de démarrage",
+    "importing": "Importation...",
+    "imported": "{name} importé avec {count} notes d’exemple",
+    "importFailed": "Impossible d’importer le kit de démarrage"
   },
   "links": {
     "title": "Liens ({count})",

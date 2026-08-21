@@ -139,6 +139,9 @@ export const zhHansMessages = {
     "data": {
       "panelTitle": "存储路径",
       "panelDesc": "工作区配置存储在笔记库中，可随 Git 同步；本地多工作区注册表存储在用户 Home 目录中",
+      "sampleLibrary": "官方样例库",
+      "sampleLibraryDesc": "导入一个可自由编辑的英文入门空间，内含使用指南和多场景范例",
+      "importSampleLibrary": "导入入门样例库",
       "workspacesRegistry": "多工作区注册表",
       "currentWorkspaceConfig": "当前工作区配置",
       "currentStorageDir": "当前笔记库文件夹",
@@ -345,7 +348,10 @@ export const zhHansMessages = {
     "homepage": "产品主页",
     "helpDocs": "帮助文档",
     "recentWorkspaces": "最近工作区",
-    "noRecentWorkspaces": "（暂无最近工作区）"
+    "noRecentWorkspaces": "（暂无最近工作区）",
+    "removeFromRecent": "从最近记录中移除",
+    "clearRecentWorkspaces": "清除最近工作区",
+    "clearRecentWorkspacesConfirm": "从最近列表中移除其他工作区？当前工作区会保留。磁盘上的文件不会被删除。"
   },
   "app": {
     "loading": "加载中...",
@@ -555,6 +561,23 @@ export const zhHansMessages = {
     "title": "欢迎使用 TinyNote",
     "description": "轻量级笔记管理与快捷复制工具。用空间、目录和笔记整理命令、代码片段和笔记。",
     "selectStorage": "选择存储文件夹"
+  },
+  "sampleLibrary": {
+    "title": "用入门样例库探索 TinyNote",
+    "description": "导入一个现成空间，在了解 TinyNote 功能的同时，查看项目管理、资料收藏、代码片段和长文写作等实际用法。",
+    "blocksTitle": "块笔记",
+    "blocksDesc": "功能导览、项目看板和可复用片段",
+    "markdownTitle": "Markdown 笔记",
+    "markdownDesc": "包含任务、表格、图表、代码和流程图源码的语法指南",
+    "writerTitle": "文章笔记",
+    "writerDesc": "适合专注写作的每周回顾范例",
+    "contentLanguage": "样例内容语言",
+    "safeImportNote": "所选语言将用于空间名称、笔记标题和正文；导入不会覆盖任何已有笔记。",
+    "notNow": "暂不导入",
+    "importAction": "导入入门样例库",
+    "importing": "正在导入...",
+    "imported": "已导入 {name}，包含 {count} 篇样例笔记",
+    "importFailed": "无法导入入门样例库"
   },
   "links": {
     "title": "链接（{count}）",

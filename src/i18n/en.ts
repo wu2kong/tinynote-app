@@ -139,6 +139,9 @@ export const enMessages = {
     "data": {
       "panelTitle": "Storage Paths",
       "panelDesc": "Workspace config is stored inside the note library and can be synced with Git; the local multi-workspace registry is stored in the user's Home directory",
+      "sampleLibrary": "Official Sample Library",
+      "sampleLibraryDesc": "Import an editable English starter space with guides and realistic examples",
+      "importSampleLibrary": "Import Starter Kit",
       "workspacesRegistry": "Multi-workspace Registry",
       "currentWorkspaceConfig": "Current Workspace Config",
       "currentStorageDir": "Current Note Library Folder",
@@ -345,7 +348,10 @@ export const enMessages = {
     "homepage": "Product Homepage",
     "helpDocs": "Help Documentation",
     "recentWorkspaces": "Recent Workspaces",
-    "noRecentWorkspaces": "(No recent workspaces)"
+    "noRecentWorkspaces": "(No recent workspaces)",
+    "removeFromRecent": "Remove from Recent",
+    "clearRecentWorkspaces": "Clear Recent Workspaces",
+    "clearRecentWorkspacesConfirm": "Remove other workspaces from the recent list? The current workspace will be kept. Files on disk will not be deleted."
   },
   "app": {
     "loading": "Loading...",
@@ -555,6 +561,23 @@ export const enMessages = {
     "title": "Welcome to TinyNote",
     "description": "A lightweight note manager and quick copy tool. Organize your commands, code snippets, and notes in spaces, directories, and notes.",
     "selectStorage": "Select Storage Folder"
+  },
+  "sampleLibrary": {
+    "title": "Explore TinyNote with a Starter Kit",
+    "description": "Import a ready-made space that teaches TinyNote while showing practical ways to capture projects, reference material, code, and long-form writing.",
+    "blocksTitle": "Block notes",
+    "blocksDesc": "Feature tour, project board, and reusable snippets",
+    "markdownTitle": "Markdown note",
+    "markdownDesc": "Syntax guide with tasks, tables, chart, code, and diagram source",
+    "writerTitle": "Article note",
+    "writerDesc": "A polished weekly-review example for focused writing",
+    "contentLanguage": "Sample content language",
+    "safeImportNote": "The selected language applies to space names, note titles, and content. Importing never overwrites existing notes.",
+    "notNow": "Not Now",
+    "importAction": "Import Starter Kit",
+    "importing": "Importing...",
+    "imported": "Imported {name} with {count} sample notes",
+    "importFailed": "Could not import the Starter Kit"
   },
   "links": {
     "title": "Links ({count})",

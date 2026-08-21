@@ -111,6 +111,9 @@ export const deMessages = {
     "data": {
       "panelTitle": "Speicherpfade",
       "panelDesc": "Die Workspace-Konfiguration wird in der Notizbibliothek gespeichert und kann mit Git synchronisiert werden; die lokale Mehr-Workspace-Registrierung liegt im Home-Verzeichnis des Benutzers",
+      "sampleLibrary": "Offizielle Beispielbibliothek",
+      "sampleLibraryDesc": "Einen bearbeitbaren englischen Einstiegsbereich mit Anleitungen und Praxisbeispielen importieren",
+      "importSampleLibrary": "Starter-Kit importieren",
       "workspacesRegistry": "Mehr-Workspace-Registrierung",
       "currentWorkspaceConfig": "Aktuelle Workspace-Konfiguration",
       "currentStorageDir": "Aktueller Ordner der Notizbibliothek",
@@ -317,7 +320,10 @@ export const deMessages = {
     "homepage": "Produkt-Website",
     "helpDocs": "Hilfedokumentation",
     "recentWorkspaces": "Zuletzt verwendete Workspaces",
-    "noRecentWorkspaces": "(Keine zuletzt verwendeten Workspaces)"
+    "noRecentWorkspaces": "(Keine zuletzt verwendeten Workspaces)",
+    "removeFromRecent": "Aus Verlauf entfernen",
+    "clearRecentWorkspaces": "Zuletzt verwendete Workspaces löschen",
+    "clearRecentWorkspacesConfirm": "Andere Workspaces aus der Liste entfernen? Der aktuelle Workspace bleibt erhalten. Dateien auf der Festplatte werden nicht gelöscht."
   },
   "app": {
     "loading": "Wird geladen...",
@@ -527,6 +533,23 @@ export const deMessages = {
     "title": "Willkommen bei TinyNote",
     "description": "Ein leichtgewichtiges Werkzeug zur Notizverwaltung und zum schnellen Kopieren. Organisiere Befehle, Code-Snippets und Notizen in Bereichen, Gruppen und Notizbüchern.",
     "selectStorage": "Speicherordner auswählen"
+  },
+  "sampleLibrary": {
+    "title": "TinyNote mit einem Starter-Kit erkunden",
+    "description": "Importiere einen fertigen Bereich, der TinyNote erklärt und praktische Beispiele für Projekte, Referenzen, Code und längere Texte zeigt.",
+    "blocksTitle": "Blocknotizen",
+    "blocksDesc": "Funktionstour, Projektboard und wiederverwendbare Snippets",
+    "markdownTitle": "Markdown-Notiz",
+    "markdownDesc": "Syntaxleitfaden mit Aufgaben, Tabellen, Diagramm, Code und Diagrammquelle",
+    "writerTitle": "Artikelnotiz",
+    "writerDesc": "Ein Beispiel für einen fokussierten Wochenrückblick",
+    "contentLanguage": "Sprache der Beispielinhalte",
+    "safeImportNote": "Die gewählte Sprache gilt für Bereichsnamen, Notiztitel und Inhalte. Vorhandene Notizen werden nie überschrieben.",
+    "notNow": "Nicht jetzt",
+    "importAction": "Starter-Kit importieren",
+    "importing": "Wird importiert...",
+    "imported": "{name} mit {count} Beispielnotizen wurde importiert",
+    "importFailed": "Starter-Kit konnte nicht importiert werden"
   },
   "links": {
     "title": "Links ({count})",

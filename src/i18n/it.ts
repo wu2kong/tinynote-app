@@ -111,6 +111,9 @@ export const itMessages = {
     "data": {
       "panelTitle": "Percorsi di archiviazione",
       "panelDesc": "La configurazione del workspace è salvata nella libreria delle note e può essere sincronizzata con Git; il registro locale multi-workspace è salvato nella directory Home dell'utente",
+      "sampleLibrary": "Libreria di esempi ufficiale",
+      "sampleLibraryDesc": "Importa uno spazio introduttivo in inglese, modificabile, con guide ed esempi pratici",
+      "importSampleLibrary": "Importa kit introduttivo",
       "workspacesRegistry": "Registro multi-workspace",
       "currentWorkspaceConfig": "Configurazione workspace corrente",
       "currentStorageDir": "Cartella corrente della libreria note",
@@ -317,7 +320,10 @@ export const itMessages = {
     "homepage": "Sito del prodotto",
     "helpDocs": "Documentazione",
     "recentWorkspaces": "Workspace recenti",
-    "noRecentWorkspaces": "(Nessun workspace recente)"
+    "noRecentWorkspaces": "(Nessun workspace recente)",
+    "removeFromRecent": "Rimuovi dai recenti",
+    "clearRecentWorkspaces": "Cancella workspace recenti",
+    "clearRecentWorkspacesConfirm": "Rimuovere gli altri workspace dall'elenco recente? Il workspace attuale verrà conservato. I file sul disco non verranno eliminati."
   },
   "app": {
     "loading": "Caricamento...",
@@ -527,6 +533,23 @@ export const itMessages = {
     "title": "Benvenuto in TinyNote",
     "description": "Un gestore di note leggero e uno strumento di copia rapida. Organizza comandi, frammenti di codice e note in spazi, gruppi e taccuini.",
     "selectStorage": "Seleziona cartella di archiviazione"
+  },
+  "sampleLibrary": {
+    "title": "Scopri TinyNote con un kit introduttivo",
+    "description": "Importa uno spazio pronto all’uso che presenta TinyNote con esempi pratici per progetti, riferimenti, codice e scrittura estesa.",
+    "blocksTitle": "Note a blocchi",
+    "blocksDesc": "Tour delle funzioni, bacheca di progetto e frammenti riutilizzabili",
+    "markdownTitle": "Nota Markdown",
+    "markdownDesc": "Guida con attività, tabelle, grafico, codice e sorgente del diagramma",
+    "writerTitle": "Nota articolo",
+    "writerDesc": "Un esempio di revisione settimanale per scrivere senza distrazioni",
+    "contentLanguage": "Lingua dei contenuti di esempio",
+    "safeImportNote": "La lingua scelta si applica ai nomi degli spazi, ai titoli e ai contenuti. Le note esistenti non vengono sovrascritte.",
+    "notNow": "Non ora",
+    "importAction": "Importa kit introduttivo",
+    "importing": "Importazione...",
+    "imported": "Importato {name} con {count} note di esempio",
+    "importFailed": "Impossibile importare il kit introduttivo"
   },
   "links": {
     "title": "Link ({count})",

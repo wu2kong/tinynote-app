@@ -23,6 +23,7 @@ import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId
 import { resetSyncAdapterForTests } from '@/adapters/sync';
 import { getPlatform, getSyncBackend, isTauri, isWeb } from '@/platform/detect';
 import ConfirmModal from './ConfirmModal';
+import OfficialSampleLibraryModal from './OfficialSampleLibraryModal';
 import { showToast } from './Toast';
 import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
@@ -1611,6 +1612,7 @@ const DataSettings: React.FC = () => {
   const [configPath, setConfigPath] = useState<string | null>(null);
   const [workspacesPath, setWorkspacesPath] = useState<string | null>(null);
   const [appDir, setAppDir] = useState<string | null>(null);
+  const [showSampleLibrary, setShowSampleLibrary] = useState(false);
 
   useEffect(() => {
     getConfigFilePath(storagePath).then(setConfigPath).catch((e) => {
@@ -1629,10 +1631,31 @@ const DataSettings: React.FC = () => {
       <h4 className="settings-panel-title">{t('settings.data.panelTitle')}</h4>
       <p className="settings-panel-desc">{t('settings.data.panelDesc')}</p>
 
+      <div className="settings-sample-library-card">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.data.sampleLibrary')}</span>
+          <span className="settings-row-desc">{t('settings.data.sampleLibraryDesc')}</span>
+        </div>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={() => setShowSampleLibrary(true)}
+          disabled={!storagePath}
+        >
+          <Download size={14} />
+          {t('settings.data.importSampleLibrary')}
+        </button>
+      </div>
+
       <PathItem label={t('settings.data.workspacesRegistry')} path={workspacesPath} />
       <PathItem label={t('settings.data.currentWorkspaceConfig')} path={configPath} />
       <PathItem label={t('settings.data.currentStorageDir')} path={storagePath} />
       <PathItem label={t('settings.data.currentAppDir')} path={appDir} />
+
+      <OfficialSampleLibraryModal
+        open={showSampleLibrary}
+        onClose={() => setShowSampleLibrary(false)}
+      />
     </div>
   );
 };

@@ -13,6 +13,7 @@ import RecentNotebooksModal from '@/components/RecentNotebooksModal';
 import AIChatModal from '@/components/AIChatModal';
 import Toast from '@/components/Toast';
 import ProUpgradeModal from '@/components/ProUpgradeModal';
+import OfficialSampleLibraryModal from '@/components/OfficialSampleLibraryModal';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
@@ -131,6 +132,7 @@ const App: React.FC = () => {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showRecentNotebooks, setShowRecentNotebooks] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showSampleLibrary, setShowSampleLibrary] = useState(false);
 
   const switchWorkspace = useCallback(async (path: string) => {
     setLoading(true);
@@ -224,6 +226,7 @@ const App: React.FC = () => {
     const path = await selectStoragePath();
     if (path) {
       await switchWorkspace(path);
+      setShowSampleLibrary(true);
     }
   };
 
@@ -237,6 +240,10 @@ const App: React.FC = () => {
       {settingsModal}
       {aiChatModal}
       <ProUpgradeModal />
+      <OfficialSampleLibraryModal
+        open={showSampleLibrary}
+        onClose={() => setShowSampleLibrary(false)}
+      />
     </>
   );
 

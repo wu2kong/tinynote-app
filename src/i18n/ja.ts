@@ -111,6 +111,9 @@ export const jaMessages = {
     "data": {
       "panelTitle": "保存パス",
       "panelDesc": "ワークスペース設定はノートライブラリ内に保存され、Git で同期できます。ローカルの複数ワークスペース登録情報はユーザーの Home ディレクトリに保存されます",
+      "sampleLibrary": "公式サンプルライブラリ",
+      "sampleLibraryDesc": "ガイドと実用例を含む、編集可能な英語のスタータースペースを読み込みます",
+      "importSampleLibrary": "スターターキットを読み込む",
       "workspacesRegistry": "複数ワークスペース登録情報",
       "currentWorkspaceConfig": "現在のワークスペース設定",
       "currentStorageDir": "現在のノートライブラリフォルダー",
@@ -317,7 +320,10 @@ export const jaMessages = {
     "homepage": "製品ホームページ",
     "helpDocs": "ヘルプドキュメント",
     "recentWorkspaces": "最近のワークスペース",
-    "noRecentWorkspaces": "（最近のワークスペースはありません）"
+    "noRecentWorkspaces": "（最近のワークスペースはありません）",
+    "removeFromRecent": "最近使った項目から削除",
+    "clearRecentWorkspaces": "最近のワークスペースをクリア",
+    "clearRecentWorkspacesConfirm": "最近のリストから他のワークスペースを削除しますか？現在のワークスペースは残ります。ディスク上のファイルは削除されません。"
   },
   "app": {
     "loading": "読み込み中...",
@@ -527,6 +533,23 @@ export const jaMessages = {
     "title": "TinyNote へようこそ",
     "description": "軽量なノート管理とクイックコピーのツールです。スペース、グループ、ノートブックでコマンド、コードスニペット、ノートを整理できます。",
     "selectStorage": "保存フォルダーを選択"
+  },
+  "sampleLibrary": {
+    "title": "スターターキットで TinyNote を探索",
+    "description": "TinyNote の機能を学びながら、プロジェクト、資料、コード、長文執筆の実用例を確認できる完成済みスペースを読み込みます。",
+    "blocksTitle": "ブロックノート",
+    "blocksDesc": "機能ツアー、プロジェクトボード、再利用可能なスニペット",
+    "markdownTitle": "Markdown ノート",
+    "markdownDesc": "タスク、表、チャート、コード、図表ソースを含む構文ガイド",
+    "writerTitle": "記事ノート",
+    "writerDesc": "集中して書くための週次レビュー例",
+    "contentLanguage": "サンプル内容の言語",
+    "safeImportNote": "選択した言語はスペース名、ノートタイトル、本文に適用されます。既存のノートは上書きされません。",
+    "notNow": "後で",
+    "importAction": "スターターキットを読み込む",
+    "importing": "読み込み中...",
+    "imported": "{name} を読み込みました（サンプルノート {count} 件）",
+    "importFailed": "スターターキットを読み込めませんでした"
   },
   "links": {
     "title": "リンク（{count}）",

@@ -111,6 +111,9 @@ export const koMessages = {
     "data": {
       "panelTitle": "저장 경로",
       "panelDesc": "작업 공간 설정은 노트 라이브러리 안에 저장되어 Git으로 동기화할 수 있으며, 로컬 다중 작업 공간 레지스트리는 사용자의 Home 디렉터리에 저장됩니다",
+      "sampleLibrary": "공식 샘플 라이브러리",
+      "sampleLibraryDesc": "가이드와 실용적인 예제가 담긴 편집 가능한 영어 시작 공간을 가져옵니다",
+      "importSampleLibrary": "스타터 키트 가져오기",
       "workspacesRegistry": "다중 작업 공간 레지스트리",
       "currentWorkspaceConfig": "현재 작업 공간 설정",
       "currentStorageDir": "현재 노트 라이브러리 폴더",
@@ -317,7 +320,10 @@ export const koMessages = {
     "homepage": "제품 홈페이지",
     "helpDocs": "도움말 문서",
     "recentWorkspaces": "최근 작업 공간",
-    "noRecentWorkspaces": "(최근 작업 공간 없음)"
+    "noRecentWorkspaces": "(최근 작업 공간 없음)",
+    "removeFromRecent": "최근 항목에서 제거",
+    "clearRecentWorkspaces": "최근 작업 공간 지우기",
+    "clearRecentWorkspacesConfirm": "최근 목록에서 다른 작업 공간을 제거할까요? 현재 작업 공간은 유지됩니다. 디스크의 파일은 삭제되지 않습니다."
   },
   "app": {
     "loading": "불러오는 중...",
@@ -527,6 +533,23 @@ export const koMessages = {
     "title": "TinyNote에 오신 것을 환영합니다",
     "description": "가벼운 노트 관리 및 빠른 복사 도구입니다. 공간, 그룹, 노트북에서 명령어, 코드 조각, 노트를 정리하세요.",
     "selectStorage": "저장 폴더 선택"
+  },
+  "sampleLibrary": {
+    "title": "스타터 키트로 TinyNote 둘러보기",
+    "description": "TinyNote 기능을 배우면서 프로젝트, 참고 자료, 코드 및 긴 글 작성의 실용적인 예제를 살펴볼 수 있는 완성된 공간을 가져옵니다.",
+    "blocksTitle": "블록 노트",
+    "blocksDesc": "기능 둘러보기, 프로젝트 보드 및 재사용 가능한 스니펫",
+    "markdownTitle": "Markdown 노트",
+    "markdownDesc": "작업, 표, 차트, 코드 및 다이어그램 소스가 포함된 문법 가이드",
+    "writerTitle": "문서 노트",
+    "writerDesc": "집중해서 쓰기 위한 주간 회고 예제",
+    "contentLanguage": "샘플 콘텐츠 언어",
+    "safeImportNote": "선택한 언어가 공간 이름, 노트 제목 및 본문에 적용됩니다. 기존 노트를 덮어쓰지 않습니다.",
+    "notNow": "나중에",
+    "importAction": "스타터 키트 가져오기",
+    "importing": "가져오는 중...",
+    "imported": "{name}에 샘플 노트 {count}개를 가져왔습니다",
+    "importFailed": "스타터 키트를 가져올 수 없습니다"
   },
   "links": {
     "title": "링크({count})",
