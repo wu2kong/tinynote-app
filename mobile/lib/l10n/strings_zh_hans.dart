@@ -161,7 +161,7 @@ final stringsZhHans = AppStrings(
   themeSakuraPinkLabel: '樱花粉',
   themeSakuraPinkDesc: '偏少女粉的杂志感主题，柔和又醒目。',
   themePaperGrayLabel: '纸墨灰',
-  themePaperGrayDesc: '偏纸质阅读感的暖色主题（默认）。',
+  themePaperGrayDesc: '偏纸质阅读感的暖色主题。',
   themeMatchaGreenLabel: '抹茶绿',
-  themeMatchaGreenDesc: '清爽偏自然的抹茶系主题，适合长时间阅读。',
+  themeMatchaGreenDesc: '清爽偏自然的抹茶系主题，适合长时间阅读（默认）。',
 );

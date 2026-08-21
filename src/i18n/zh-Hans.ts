@@ -119,11 +119,11 @@ export const zhHansMessages = {
       },
       "paper": {
         "label": "纸墨灰",
-        "description": "带有纸质阅读感的暖色主题（默认）。"
+        "description": "带有纸质阅读感的暖色主题。"
       },
       "matcha": {
         "label": "抹茶绿",
-        "description": "清新自然的抹茶主题，适合长时间阅读。"
+        "description": "清新自然的抹茶主题，适合长时间阅读（默认）。"
       }
     },
     "path": {

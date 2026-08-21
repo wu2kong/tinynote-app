@@ -231,22 +231,6 @@ async function buildAppSubmenu(): Promise<Submenu> {
   });
 }
 
-async function buildEditSubmenu(): Promise<Submenu> {
-  return Submenu.new({
-    id: 'edit-menu',
-    text: t('menu.edit'),
-    items: [
-      await PredefinedMenuItem.new({ item: 'Undo' }),
-      await PredefinedMenuItem.new({ item: 'Redo' }),
-      await PredefinedMenuItem.new({ item: 'Separator' }),
-      await PredefinedMenuItem.new({ item: 'Cut' }),
-      await PredefinedMenuItem.new({ item: 'Copy' }),
-      await PredefinedMenuItem.new({ item: 'Paste' }),
-      await PredefinedMenuItem.new({ item: 'SelectAll' }),
-    ],
-  });
-}
-
 async function buildViewSubmenu(): Promise<Submenu> {
   const {
     isDarkTheme,
@@ -402,13 +386,12 @@ async function buildHelpSubmenu(): Promise<Submenu> {
 
 async function buildMenu(): Promise<Menu> {
   const fileSubmenu = await buildFileSubmenu();
-  const editSubmenu = await buildEditSubmenu();
   const viewSubmenu = await buildViewSubmenu();
   const helpSubmenu = await buildHelpSubmenu();
 
   const items = isMacOS()
-    ? [await buildAppSubmenu(), fileSubmenu, editSubmenu, viewSubmenu, helpSubmenu]
-    : [fileSubmenu, editSubmenu, viewSubmenu, helpSubmenu];
+    ? [await buildAppSubmenu(), fileSubmenu, viewSubmenu, helpSubmenu]
+    : [fileSubmenu, viewSubmenu, helpSubmenu];
 
   return Menu.new({ items });
 }

@@ -64,7 +64,7 @@ export const COLOR_THEMES: ColorTheme[] = [
   },
 ];
 
-export const DEFAULT_COLOR_THEME_ID: ColorThemeId = 'paper';
+export const DEFAULT_COLOR_THEME_ID: ColorThemeId = 'matcha';
 
 export function getColorTheme(id: string): ColorTheme {
   return COLOR_THEMES.find((theme) => theme.id === id)

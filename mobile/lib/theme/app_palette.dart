@@ -35,7 +35,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color codeFg;
   final Color hover;
 
-  static const fallback = _paperLight;
+  static const fallback = _matchaLight;
 
   static AppPalette resolve(ColorThemeId id, bool isDark) {
     return switch (id) {

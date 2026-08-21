@@ -7,6 +7,14 @@ description: 查看 TinyNote 轻记各版本的功能更新、问题修复和改
 
 完整安装包见 [下载页](https://tinynote.wu2kong.com/download.html)。
 
+## v1.2.3
+
+2026-08-21
+
+- Git 同步支持多个托管平台：GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 和自定义源，可在应用内授权、选仓并一键增删
+- 新安装默认使用抹茶绿主题
+- 去掉系统菜单中用处不大的「编辑」项
+
 ## v1.2.2
 
 2026-08-21

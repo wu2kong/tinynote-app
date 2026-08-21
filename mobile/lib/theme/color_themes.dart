@@ -11,7 +11,7 @@ enum ColorThemeId {
   final String label;
   final String description;
 
-  static const ColorThemeId fallback = ColorThemeId.paper;
+  static const ColorThemeId fallback = ColorThemeId.matcha;
 
   static ColorThemeId fromId(String? value) {
     if (value == null) return ColorThemeId.fallback;

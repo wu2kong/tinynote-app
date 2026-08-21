@@ -5,7 +5,7 @@ import {
   NotebookFormatId,
 } from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
-import { isColorThemeId } from '@/themes';
+import { DEFAULT_COLOR_THEME_ID, isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
@@ -275,7 +275,7 @@ export const useStore = create<AppStore>((set, get) => ({
   noteBlockFocusKey: 0,
   recentNotebookHistory: [],
   isDarkTheme: false,
-  colorThemeId: 'paper' as ColorThemeId,
+  colorThemeId: DEFAULT_COLOR_THEME_ID as ColorThemeId,
   displayLanguage: DEFAULT_LOCALE,
   isSidebarCollapsed: false,
   showAppBar: true,
@@ -382,7 +382,7 @@ export const useStore = create<AppStore>((set, get) => ({
 
     const cfg = await config.loadConfig();
 
-    const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : 'paper';
+    const colorThemeId = isColorThemeId(cfg.colorThemeId) ? cfg.colorThemeId : DEFAULT_COLOR_THEME_ID;
     const { locale: displayLanguage, fromSystem } = resolveAppLocale(cfg.displayLanguage);
     setI18nLocale(displayLanguage);
     document.documentElement.lang = displayLanguage;

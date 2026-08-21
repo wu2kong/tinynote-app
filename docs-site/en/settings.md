@@ -14,7 +14,7 @@ Sections: General, Data, Sync, Backup, AI Models, Shortcuts, Pro, Feedback, Abou
 | Option | Meaning |
 | --- | --- |
 | Display language | UI language; follows the system until you override it |
-| Color theme | Aurora Blue, Slate Teal, Sakura Pink, Paper Gray, Matcha |
+| Color theme | Aurora Blue, Slate Teal, Sakura Pink, Paper Gray, Matcha (default) |
 | Dark mode | Light / dark, remembered |
 | Show space bar | Hide for a calmer notes-focused layout |
 | Space group display | Disabled, dropdown, or collapse |

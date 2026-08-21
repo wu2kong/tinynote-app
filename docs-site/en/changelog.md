@@ -7,6 +7,14 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.3
+
+2026-08-21
+
+- Git sync across GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, and custom remotes, with in-app sign-in, repo setup, and one-click add/remove
+- New installs default to the Matcha Green theme
+- Remove the unused Edit item from the system menu
+
 ## v1.2.2
 
 2026-08-21

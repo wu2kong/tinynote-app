@@ -172,8 +172,8 @@ final stringsEn = AppStrings(
   themeSakuraPinkDesc:
       'A magazine-like soft pink theme that feels gentle and vivid.',
   themePaperGrayLabel: 'Paper Gray',
-  themePaperGrayDesc: 'A warm paper-like reading theme (default).',
+  themePaperGrayDesc: 'A warm paper-like reading theme.',
   themeMatchaGreenLabel: 'Matcha Green',
   themeMatchaGreenDesc:
-      'A fresh, natural matcha theme for long reading sessions.',
+      'A fresh, natural matcha theme for long reading sessions (default).',
 );

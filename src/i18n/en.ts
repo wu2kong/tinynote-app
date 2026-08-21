@@ -119,11 +119,11 @@ export const enMessages = {
       },
       "paper": {
         "label": "Paper Ink Gray",
-        "description": "A warm theme with a paper-like reading feel (default)."
+        "description": "A warm theme with a paper-like reading feel."
       },
       "matcha": {
         "label": "Matcha Green",
-        "description": "A fresh, natural matcha theme for long reading sessions."
+        "description": "A fresh, natural matcha theme for long reading sessions (default)."
       }
     },
     "path": {
