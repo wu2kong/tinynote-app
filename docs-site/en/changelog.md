@@ -7,6 +7,17 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.2
+
+2026-08-21
+
+- Import Markdown notes and folders from the menu, directory panel, or by dropping them onto the window (plain `.md` becomes an article note)
+- Export the entire note library from the system menu
+- Import the official starter sample library after choosing a storage folder, or later from Settings
+- Fix switching between workspaces
+- Open external links in Markdown preview with the system browser
+- Cleaner system menu, including recent workspace management
+
 ## v1.2.1
 
 2026-08-20
