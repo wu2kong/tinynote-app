@@ -1,18 +1,52 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { FileDiff, GitSyncStatus, SyncAdapter } from './types';
+import type {
+  FileDiff,
+  GitInitResult,
+  GitPullOptions,
+  GitPushOptions,
+  GitPushResult,
+  GitRemoteInfo,
+  GitSyncStatus,
+  SyncAdapter,
+} from './types';
 
 export function createTauriRustSyncAdapter(): SyncAdapter {
   return {
-    getGitStatus(storagePath: string) {
-      return invoke<GitSyncStatus>('get_git_status', { storagePath });
+    getGitStatus(storagePath: string, primaryRemote?: string | null) {
+      return invoke<GitSyncStatus>('get_git_status', { storagePath, primaryRemote: primaryRemote ?? null });
     },
 
-    gitPull(storagePath: string) {
-      return invoke<void>('git_pull', { storagePath });
+    gitInit(storagePath: string) {
+      return invoke<GitInitResult>('git_init', { storagePath });
     },
 
-    gitSyncPush(storagePath: string) {
-      return invoke<string>('git_sync_push', { storagePath });
+    listRemotes(storagePath: string) {
+      return invoke<GitRemoteInfo[]>('git_list_remotes', { storagePath });
+    },
+
+    addRemote(storagePath: string, name: string, url: string) {
+      return invoke<void>('git_add_remote', { storagePath, name, url });
+    },
+
+    removeRemote(storagePath: string, name: string) {
+      return invoke<void>('git_remove_remote', { storagePath, name });
+    },
+
+    gitPull(storagePath: string, options?: GitPullOptions) {
+      return invoke<void>('git_pull', {
+        storagePath,
+        remote: options?.remote ?? null,
+        auth: options?.auth ?? null,
+        allowUnrelated: options?.allowUnrelated ?? false,
+      });
+    },
+
+    gitSyncPush(storagePath: string, options?: GitPushOptions) {
+      return invoke<GitPushResult>('git_sync_push', {
+        storagePath,
+        remotes: options?.remotes ?? null,
+        authByRemote: options?.authByRemote ?? null,
+      });
     },
 
     getFileDiff(storagePath: string, filePath: string) {

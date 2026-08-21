@@ -139,6 +139,7 @@ async function applyLocalSettings(config: AppConfig, workspacePath: string): Pro
     ...config,
     backupDir: local.backupDir ?? null,
     syncAuthToken: local.syncAuthToken ?? null,
+    gitRemoteAuth: local.gitRemoteAuth ?? {},
     llmProviders: local.llmProviders ?? DEFAULT_LLM_PROVIDERS.map((provider) => ({ ...provider })),
   };
 }
@@ -179,6 +180,7 @@ export async function saveConfig(partial?: Partial<AppConfig>): Promise<AppConfi
     const localPatch: Partial<{
       backupDir: string | null;
       syncAuthToken: string | null;
+      gitRemoteAuth: AppConfig['gitRemoteAuth'];
       llmProviders: LLMProviderConfig[];
     }> = {};
     if (partial && 'backupDir' in partial) {
@@ -186,6 +188,9 @@ export async function saveConfig(partial?: Partial<AppConfig>): Promise<AppConfi
     }
     if (partial && 'syncAuthToken' in partial) {
       localPatch.syncAuthToken = merged.syncAuthToken;
+    }
+    if (partial && 'gitRemoteAuth' in partial) {
+      localPatch.gitRemoteAuth = merged.gitRemoteAuth;
     }
     if (partial && 'llmProviders' in partial) {
       localPatch.llmProviders = merged.llmProviders;

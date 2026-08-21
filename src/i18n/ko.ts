@@ -147,7 +147,7 @@ export const koMessages = {
       "statusRefreshed": "동기화 상태를 새로 고쳤습니다",
       "setStorageFirst": "먼저 데이터에서 노트 라이브러리 폴더를 설정하세요",
       "notRepo": "현재 노트 라이브러리 폴더가 Git 저장소로 인식되지 않았습니다. origin 설정 여부와는 무관합니다.",
-      "notRepoHint": "이 폴더 또는 상위 폴더를 터미널에서 열고 .git 폴더가 있는지 확인하거나, git init을 실행한 뒤 원격 저장소를 설정하세요.",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "노트 라이브러리 폴더 열기",
       "currentRepo": "현재 노트 라이브러리",
       "copyRepoPath": "노트 라이브러리 경로 복사",

@@ -1,66 +1,62 @@
 ---
-title: TinyNote Git Sync Guide
-description: Use TinyNote Pro to sync a local note library across devices with Git, including pull, commit, push, and diff.
+title: TinyNote sync guide
+description: In TinyNote Pro, choose Git sync or cloud-drive sync, then authorize, pull, and push inside the app.
 ---
 
-# Git sync
+# Note sync
 
-Git sync is a [TinyNote Pro](/en/pro) feature. After you unlock it, the library can be a normal Git repository. Pull, commit, and push from the app.
+Sync is a [TinyNote Pro](/en/pro) feature. In Settings → Sync, choose one method:
 
-![Git sync settings](/screenshots/sync.png)
+- **Git sync**: connect the note library to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
+- **Cloud drive sync**: reserved, coming in a later version
+
+![Sync settings](/screenshots/sync.png)
 
 ## When to use it
 
 - The same notes on multiple computers
-- Host the library on GitHub, Gitea, Gitee, or similar
+- Back up the library to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or similar
 - You want commit history and diffs, not just folder copies
 
-Sync covers files in the library (mostly `.md` and workspace config). AI API keys stay on the device and are never pushed.
+Sync covers files in the library (mostly `.md` and workspace config). AI API keys and access tokens stay on the device and are never pushed.
 
-## Setup
+## Git sync
 
 1. Confirm the library folder in Settings → Data
-2. Initialize it as a Git repo and set `origin`
-3. Open Settings → Sync in TinyNote
+2. Open Settings → Sync and choose **Git sync**
+3. Click **Add sync source** and pick GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or custom Git
+4. Follow the in-app sign-in guide, or paste an access token
+5. Create a private repository or choose an existing one
 
-If you see “not a Git repository”:
+TinyNote initializes and connects the repository in the app. You do **not** need to run `git init` or `git pull` in a terminal.
 
-```bash
-cd /path/to/tinynote-library
-git init
-git remote add origin git@github.com:you/tinynote-notes.git
-```
+You can add multiple sources. Pull uses the primary source; commit-and-push updates every connected source.
 
-Make sure `.git` exists in that folder.
+### Authorization
 
-## Desktop
+- GitHub / GitLab: one-click browser sign-in when OAuth is configured, or paste a personal access token
+- Gitee / Alibaba Cloud Codeup / AtomGit: open the token page from the app, grant repository access, then paste the token
+- Custom Git: HTTPS URL plus a token or password
+- Official TinyNote hosting will come later
 
-Desktop TinyNote uses system Git (SSH and HTTPS).
+Tokens stay on this device. On a new computer, sign in again.
 
-- SSH remotes use your existing keys; no token in the app
-- HTTPS uses your OS credential helper or account as usual
+### Daily workflow
 
-The sync page shows the library path, remote URL, branch, pending `.md` changes, ahead/behind counts, and a generated commit message.
-
-| Action | What it does |
+| Button | What it does |
 | --- | --- |
-| Refresh | Re-read repo status |
-| Pull | `git pull` |
-| Commit and push | Commit changes and push |
-| View diff | Preview one file |
-| Revert | Restore one file to HEAD; newly added files are deleted |
+| Pull latest | Update notes from the primary source |
+| Commit and push | Commit changes and push to all sources |
+| View changes | Preview a file diff |
+| Revert change | Restore a file to the last commit; new files are deleted |
 
-On conflicts or auth errors, use the terminal hints (`git pull` / `git status`).
+Pull before you edit, then push when you finish. If authorization fails, sign in again on the Sync page. If a conflict keeps happening, make a local backup first.
 
-## Web
+## Desktop and web
 
-The web app uses isomorphic-git. It supports **HTTPS + token only**, plus a CORS proxy. SSH remotes are not supported in the browser.
+- Desktop uses system Git. Sources added by the wizard use HTTPS tokens. Existing SSH remotes can still use local keys.
+- Web supports HTTPS + token only.
 
-## Suggested workflow
+## Cloud drive sync
 
-1. Pull before you start
-2. Edit notes as usual
-3. Review the change list, then commit and push
-4. On the other machine, pull first
-
-Two people editing the same notebook can still conflict. Resolve those in a Git client or the terminal.
+iCloud, Nutstore, OneDrive, and similar providers are not available yet. Use Git sync for cross-device notes until that ships.

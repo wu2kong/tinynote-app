@@ -16,8 +16,12 @@ use tauri::ipc::Channel;
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
 use sync::{
     get_file_diff as run_get_file_diff, get_git_status as run_get_git_status,
-    git_pull as run_git_pull, git_sync_push as run_git_sync_push,
-    revert_file_change as run_revert_file_change, FileDiff, GitSyncStatus,
+    git_add_remote as run_git_add_remote, git_http_request as run_git_http_request,
+    git_init as run_git_init, git_list_remotes as run_git_list_remotes,
+    git_pull as run_git_pull, git_remove_remote as run_git_remove_remote,
+    git_sync_push as run_git_sync_push, revert_file_change as run_revert_file_change,
+    FileDiff, GitAuthPayload, GitHttpResponse, GitInitResult, GitPushResult, GitRemoteInfo,
+    GitSyncStatus,
 };
 
 static LLM_STREAM_CANCELLATIONS: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> = OnceLock::new();
@@ -54,18 +58,62 @@ fn create_backup(
 }
 
 #[tauri::command]
-fn get_git_status(storage_path: String) -> Result<GitSyncStatus, String> {
-    run_get_git_status(&storage_path)
+fn get_git_status(storage_path: String, primary_remote: Option<String>) -> Result<GitSyncStatus, String> {
+    run_get_git_status(&storage_path, primary_remote.as_deref())
 }
 
 #[tauri::command]
-fn git_pull(storage_path: String) -> Result<(), String> {
-    run_git_pull(&storage_path)
+fn git_init(storage_path: String) -> Result<GitInitResult, String> {
+    run_git_init(&storage_path)
 }
 
 #[tauri::command]
-fn git_sync_push(storage_path: String) -> Result<String, String> {
-    run_git_sync_push(&storage_path)
+fn git_list_remotes(storage_path: String) -> Result<Vec<GitRemoteInfo>, String> {
+    run_git_list_remotes(&storage_path)
+}
+
+#[tauri::command]
+fn git_add_remote(storage_path: String, name: String, url: String) -> Result<(), String> {
+    run_git_add_remote(&storage_path, &name, &url)
+}
+
+#[tauri::command]
+fn git_remove_remote(storage_path: String, name: String) -> Result<(), String> {
+    run_git_remove_remote(&storage_path, &name)
+}
+
+#[tauri::command]
+fn git_pull(
+    storage_path: String,
+    remote: Option<String>,
+    auth: Option<GitAuthPayload>,
+    allow_unrelated: Option<bool>,
+) -> Result<(), String> {
+    run_git_pull(
+        &storage_path,
+        remote.as_deref(),
+        auth.as_ref(),
+        allow_unrelated.unwrap_or(false),
+    )
+}
+
+#[tauri::command]
+fn git_sync_push(
+    storage_path: String,
+    remotes: Option<Vec<String>>,
+    auth_by_remote: Option<HashMap<String, GitAuthPayload>>,
+) -> Result<GitPushResult, String> {
+    run_git_sync_push(&storage_path, remotes, auth_by_remote)
+}
+
+#[tauri::command]
+fn git_http_request(
+    method: String,
+    url: String,
+    headers: Option<HashMap<String, String>>,
+    body: Option<String>,
+) -> Result<GitHttpResponse, String> {
+    run_git_http_request(&method, &url, headers, body)
 }
 
 #[tauri::command]
@@ -420,8 +468,13 @@ pub fn run() {
             get_backup_stats,
             create_backup,
             get_git_status,
+            git_init,
+            git_list_remotes,
+            git_add_remote,
+            git_remove_remote,
             git_pull,
             git_sync_push,
+            git_http_request,
             get_file_diff,
             revert_file_change,
             download_release_asset,

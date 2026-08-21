@@ -7,12 +7,19 @@ import { joinPath, normalizePath } from '@/utils/path';
 import { loadSyncRuntimeOptions } from '@/adapters/sync/runtime';
 import { t } from '@/i18n';
 import { createGitFsFromStorage, repoRelativePath } from './gitFs';
+import { TINYNOTE_GITIGNORE } from './gitignore';
 import type {
   FileDiff,
   GitChangedFile,
   GitChangeType,
+  GitInitResult,
+  GitPullOptions,
+  GitPushOptions,
+  GitPushResult,
+  GitRemoteInfo,
   GitSyncStatus,
   SyncAdapter,
+  SyncAuth,
 } from './types';
 
 const DEFAULT_CORS_PROXY = 'https://cors.isomorphic-git.org';
@@ -115,102 +122,175 @@ async function countAheadBehind(dir: string, remote: string, ref: string): Promi
   }
 }
 
-async function getHttpOptions() {
+async function getHttpOptions(auth?: SyncAuth | null) {
   const options = await loadSyncRuntimeOptions();
+  const resolved = auth ?? options.auth;
   return {
     http,
     corsProxy: options.corsProxy || DEFAULT_CORS_PROXY,
-    onAuth: options.auth
-      ? async () => options.auth!
+    onAuth: resolved
+      ? async () => resolved
       : undefined,
+  };
+}
+
+async function listRepoRemotes(dir: string): Promise<GitRemoteInfo[]> {
+  const remotes = await git.listRemotes({ fs: getGitFs(dir), dir });
+  const seen = new Set<string>();
+  const result: GitRemoteInfo[] = [];
+  for (const remote of remotes) {
+    if (!remote.remote || seen.has(remote.remote)) continue;
+    seen.add(remote.remote);
+    result.push({ name: remote.remote, url: remote.url });
+  }
+  return result;
+}
+
+function pickPrimaryRemote(remotes: GitRemoteInfo[], primaryRemote?: string | null): GitRemoteInfo | null {
+  if (primaryRemote) {
+    const match = remotes.find((remote) => remote.name === primaryRemote);
+    if (match) return match;
+  }
+  return remotes.find((remote) => remote.name === 'origin') ?? remotes[0] ?? null;
+}
+
+async function ensureGitignore(dir: string): Promise<void> {
+  const ignorePath = joinPath(dir, '.gitignore');
+  if (!(await getStorageAdapter().exists(ignorePath))) {
+    await getStorageAdapter().writeTextFile(ignorePath, TINYNOTE_GITIGNORE);
+  }
+}
+
+async function ensureGitIdentity(dir: string): Promise<void> {
+  await git.setConfig({ fs: getGitFs(dir), dir, path: 'user.name', value: 'TinyNote' });
+  await git.setConfig({ fs: getGitFs(dir), dir, path: 'user.email', value: 'tinynote@local' });
+}
+
+async function currentBranchName(dir: string): Promise<string> {
+  return await git.currentBranch({ fs: getGitFs(dir), dir, fullname: false }) ?? 'main';
+}
+
+function emptyStatus(hostname: string, error: string | null): GitSyncStatus {
+  return {
+    isRepo: false,
+    remotes: [],
+    remoteUrl: null,
+    primaryRemote: null,
+    branch: null,
+    changedMdCount: 0,
+    changedFiles: [],
+    ahead: 0,
+    behind: 0,
+    hasRemote: false,
+    hostname,
+    statusError: error,
   };
 }
 
 export function createIsomorphicGitSyncAdapter(): SyncAdapter {
   return {
-    async getGitStatus(storagePath: string): Promise<GitSyncStatus> {
+    async getGitStatus(storagePath: string, primaryRemote?: string | null): Promise<GitSyncStatus> {
       const hostname = getHostname();
       const dir = normalizePath(storagePath);
 
       if (!(await getStorageAdapter().exists(dir))) {
-        return {
-          isRepo: false,
-          remoteUrl: null,
-          branch: null,
-          changedMdCount: 0,
-          changedFiles: [],
-          ahead: 0,
-          behind: 0,
-          hasRemote: false,
-          hostname,
-          statusError: t('utils.sync.libraryMissing'),
-        };
+        return emptyStatus(hostname, t('utils.sync.libraryMissing'));
       }
 
       if (!(await isGitRepo(dir))) {
-        return {
-          isRepo: false,
-          remoteUrl: null,
-          branch: null,
-          changedMdCount: 0,
-          changedFiles: [],
-          ahead: 0,
-          behind: 0,
-          hasRemote: false,
-          hostname,
-          statusError: null,
-        };
+        return emptyStatus(hostname, null);
       }
 
       const repoDir = await getRepoDir(dir);
 
       try {
-        const remotes = await git.listRemotes({ fs: getGitFs(repoDir), dir: repoDir });
-        const origin = remotes.find((remote) => remote.remote === 'origin') ?? remotes[0];
-        const branch = await git.currentBranch({ fs: getGitFs(repoDir), dir: repoDir, fullname: false }) ?? 'main';
+        const remotes = await listRepoRemotes(repoDir);
+        const origin = pickPrimaryRemote(remotes, primaryRemote);
+        const branch = await currentBranchName(repoDir);
         const changedFiles = await collectChangedMdFiles(repoDir);
         const { ahead, behind } = origin
-          ? await countAheadBehind(repoDir, origin.remote, branch)
+          ? await countAheadBehind(repoDir, origin.name, branch)
           : { ahead: 0, behind: 0 };
 
         return {
           isRepo: true,
+          remotes,
           remoteUrl: origin?.url ?? null,
+          primaryRemote: origin?.name ?? null,
           branch,
           changedMdCount: changedFiles.length,
           changedFiles,
           ahead,
           behind,
-          hasRemote: Boolean(origin?.url),
+          hasRemote: remotes.length > 0,
           hostname,
           statusError: null,
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : t('settings.sync.readStatusFailed');
         return {
+          ...emptyStatus(hostname, message),
           isRepo: true,
-          remoteUrl: null,
-          branch: null,
-          changedMdCount: 0,
-          changedFiles: [],
-          ahead: 0,
-          behind: 0,
-          hasRemote: false,
-          hostname,
-          statusError: message,
         };
       }
     },
 
-    async gitPull(storagePath: string): Promise<void> {
+    async gitInit(storagePath: string): Promise<GitInitResult> {
+      const dir = normalizePath(storagePath);
+      if (await isGitRepo(dir)) {
+        return { created: false, branch: await currentBranchName(await getRepoDir(dir)) };
+      }
+
+      const fs = getGitFs(dir);
+      await git.init({ fs, dir, defaultBranch: 'main' });
+      await ensureGitIdentity(dir);
+      await ensureGitignore(dir);
+      try {
+        await git.add({ fs, dir, filepath: '.gitignore' });
+        await git.commit({
+          fs,
+          dir,
+          message: 'Initialize TinyNote library',
+          author: { name: 'TinyNote', email: 'tinynote@local' },
+        });
+      } catch {
+        // Initial commit is best-effort; first push can still create it.
+      }
+      return { created: true, branch: 'main' };
+    },
+
+    async listRemotes(storagePath: string): Promise<GitRemoteInfo[]> {
+      if (!(await isGitRepo(storagePath))) return [];
+      return listRepoRemotes(await getRepoDir(storagePath));
+    },
+
+    async addRemote(storagePath: string, name: string, url: string): Promise<void> {
       const dir = await getRepoDir(storagePath);
-      const branch = await git.currentBranch({ fs: getGitFs(dir), dir, fullname: false }) ?? 'main';
-      const httpOptions = await getHttpOptions();
+      const fs = getGitFs(dir);
+      const remotes = await listRepoRemotes(dir);
+      if (remotes.some((remote) => remote.name === name)) {
+        await git.deleteRemote({ fs, dir, remote: name });
+      }
+      await git.addRemote({ fs, dir, remote: name, url });
+    },
+
+    async removeRemote(storagePath: string, name: string): Promise<void> {
+      const dir = await getRepoDir(storagePath);
+      await git.deleteRemote({ fs: getGitFs(dir), dir, remote: name });
+    },
+
+    async gitPull(storagePath: string, options?: GitPullOptions): Promise<void> {
+      const dir = await getRepoDir(storagePath);
+      const branch = await currentBranchName(dir);
+      const remotes = await listRepoRemotes(dir);
+      const remote = pickPrimaryRemote(remotes, options?.remote)?.name ?? 'origin';
+      const httpOptions = await getHttpOptions(options?.auth);
 
       await git.pull({
         fs: getGitFs(dir),
         dir,
         ref: branch,
+        remote,
         singleBranch: true,
         author: { name: getHostname(), email: 'tinynote@local' },
         committer: { name: getHostname(), email: 'tinynote@local' },
@@ -218,42 +298,61 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
       });
     },
 
-    async gitSyncPush(storagePath: string): Promise<string> {
+    async gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult> {
       const dir = await getRepoDir(storagePath);
       const changedFiles = await collectChangedMdFiles(dir);
-      if (changedFiles.length === 0) {
+      const fs = getGitFs(dir);
+      const hostname = getHostname();
+      let message = `${hostname} sync push`;
+
+      if (changedFiles.length > 0) {
+        for (const file of changedFiles) {
+          if (file.changeType === 'deleted') {
+            await git.remove({ fs, dir, filepath: file.path });
+          } else {
+            await git.add({ fs, dir, filepath: file.path });
+          }
+        }
+        await git.commit({
+          fs,
+          dir,
+          message,
+          author: { name: hostname, email: 'tinynote@local' },
+        });
+      }
+
+      const remotes = await listRepoRemotes(dir);
+      const targetNames = options?.remotes?.length
+        ? options.remotes
+        : remotes.map((remote) => remote.name);
+      if (targetNames.length === 0) {
         throw new Error(t('utils.sync.nothingToCommit'));
       }
 
-      const fs = getGitFs(dir);
-      for (const file of changedFiles) {
-        if (file.changeType === 'deleted') {
-          await git.remove({ fs, dir, filepath: file.path });
-        } else {
-          await git.add({ fs, dir, filepath: file.path });
+      const branch = await currentBranchName(dir);
+      const results: GitPushResult['results'] = [];
+      for (const remote of targetNames) {
+        const auth = options?.authByRemote?.[remote] ?? null;
+        try {
+          await git.push({
+            fs,
+            dir,
+            remote,
+            ref: branch,
+            ...(await getHttpOptions(auth)),
+          });
+          results.push({ remote, ok: true, error: null });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          results.push({ remote, ok: false, error: errorMessage });
         }
       }
 
-      const hostname = getHostname();
-      const message = `${hostname} sync push`;
-      await git.commit({
-        fs,
-        dir,
-        message,
-        author: { name: hostname, email: 'tinynote@local' },
-      });
+      if (results.every((item) => !item.ok) && changedFiles.length === 0) {
+        throw new Error(t('utils.sync.nothingToCommit'));
+      }
 
-      const branch = await git.currentBranch({ fs, dir, fullname: false }) ?? 'main';
-      const httpOptions = await getHttpOptions();
-      await git.push({
-        fs,
-        dir,
-        remote: 'origin',
-        ref: branch,
-        ...httpOptions,
-      });
-
-      return message;
+      return { message, results };
     },
 
     async getFileDiff(storagePath: string, filePath: string): Promise<FileDiff> {

@@ -147,7 +147,7 @@ export const deMessages = {
       "statusRefreshed": "Synchronisierungsstatus aktualisiert",
       "setStorageFirst": "Lege zuerst unter Daten den Ordner der Notizbibliothek fest",
       "notRepo": "Der aktuelle Ordner der Notizbibliothek wurde nicht als Git-Repository erkannt, unabhängig davon, ob origin konfiguriert ist.",
-      "notRepoHint": "Öffne diesen Ordner oder seinen übergeordneten Ordner im Terminal, prüfe, ob ein .git-Ordner vorhanden ist, oder führe git init aus und konfiguriere ein Remote.",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "Ordner der Notizbibliothek öffnen",
       "currentRepo": "Aktuelle Notizbibliothek",
       "copyRepoPath": "Pfad der Notizbibliothek kopieren",

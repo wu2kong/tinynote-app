@@ -27,9 +27,9 @@ Changing the path does not migrate files. Copy the `.tinynotes` folders to the n
 
 Free allows 5 spaces and 100 notes per space. Delete unused items or upgrade to [Pro](/en/pro). Markdown and article notes allow one sample each per space.
 
-## Git sync says it is not a repository?
+## Git sync is not connected yet?
 
-The library root needs a `.git` folder. Run `git init`, add `origin`, then refresh Sync. The web app only supports HTTPS + token.
+Open Settings → Sync, choose Git sync, and add a source. TinyNote initializes and authorizes inside the app; you do not need the command line. The web app only supports HTTPS + token.
 
 ## Update check failed or download is slow?
 
@@ -41,7 +41,7 @@ Allow it in System Settings → Privacy & Security. Use the Universal `.dmg`. ma
 
 ## I deleted a note by mistake
 
-In-app delete is usually permanent. If the library is a Git repo, revert from the Sync page or `git checkout`. If you have a zip, follow [Restore](/en/backup#restore).
+In-app delete is usually permanent. If Git sync is enabled, revert from the Sync page. If you have a zip, follow [Restore](/en/backup#restore).
 
 ## How do I send feedback?
 

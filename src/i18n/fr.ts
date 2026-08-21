@@ -147,7 +147,7 @@ export const frMessages = {
       "statusRefreshed": "État de synchronisation actualisé",
       "setStorageFirst": "Définissez d'abord le dossier de la bibliothèque de notes dans Données",
       "notRepo": "Le dossier actuel de la bibliothèque de notes n'a pas été reconnu comme repository Git, que origin soit configuré ou non.",
-      "notRepoHint": "Ouvrez ce dossier ou son parent dans un terminal, vérifiez qu'un dossier .git existe, ou exécutez git init et configurez un remote.",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "Ouvrir le dossier de la bibliothèque de notes",
       "currentRepo": "Bibliothèque de notes actuelle",
       "copyRepoPath": "Copier le chemin de la bibliothèque de notes",

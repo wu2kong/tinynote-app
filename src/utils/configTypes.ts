@@ -1,5 +1,22 @@
 import type { RecentNotebookHistoryItem, SpaceGroupDef, SpaceGroupDisplayMode } from '@/types';
 import type { AppLocale } from '@/i18n';
+import type { GitRemoteProvider } from '@/adapters/sync/gitProviders';
+
+export type SyncMode = 'none' | 'git' | 'cloud';
+
+export interface GitRemoteConfig {
+  id: string;
+  name: string;
+  provider: GitRemoteProvider;
+  url: string;
+  enabled: boolean;
+  host?: string | null;
+}
+
+export interface GitRemoteAuth {
+  username: string;
+  token: string;
+}
 
 export type LLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek' | 'custom';
 
@@ -61,6 +78,10 @@ export interface AppConfig {
   currentGroupPath: string | null;
   currentNotebookPath: string | null;
   expandedGroupPaths: string[];
+  syncMode: SyncMode;
+  gitRemotes: GitRemoteConfig[];
+  syncPrimaryRemote: string | null;
+  gitRemoteAuth: Record<string, GitRemoteAuth>;
   syncRemoteUrl: string | null;
   syncBranch: string;
   gitCorsProxy: string;
@@ -95,6 +116,10 @@ export const DEFAULT_CONFIG: AppConfig = {
   currentGroupPath: null,
   currentNotebookPath: null,
   expandedGroupPaths: [],
+  syncMode: 'none',
+  gitRemotes: [],
+  syncPrimaryRemote: null,
+  gitRemoteAuth: {},
   syncRemoteUrl: null,
   syncBranch: 'main',
   gitCorsProxy: 'https://cors.isomorphic-git.org',

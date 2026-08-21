@@ -147,7 +147,7 @@ export const jaMessages = {
       "statusRefreshed": "同期状態を更新しました",
       "setStorageFirst": "先にデータでノートライブラリフォルダーを設定してください",
       "notRepo": "現在のノートライブラリフォルダーは Git リポジトリとして認識されていません。origin の設定有無とは関係ありません。",
-      "notRepoHint": "このフォルダーまたは親フォルダーをターミナルで開き、.git フォルダーがあることを確認するか、git init を実行してリモートを設定してください。",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "ノートライブラリフォルダーを開く",
       "currentRepo": "現在のノートライブラリ",
       "copyRepoPath": "ノートライブラリのパスをコピー",

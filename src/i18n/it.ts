@@ -147,7 +147,7 @@ export const itMessages = {
       "statusRefreshed": "Stato di sincronizzazione aggiornato",
       "setStorageFirst": "Imposta prima la cartella della libreria note in Dati",
       "notRepo": "La cartella corrente della libreria note non è stata riconosciuta come repository Git, indipendentemente dalla configurazione di origin.",
-      "notRepoHint": "Apri questa cartella o la cartella superiore in un terminale, verifica che esista una cartella .git, oppure esegui git init e configura un remote.",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "Apri cartella libreria note",
       "currentRepo": "Libreria note corrente",
       "copyRepoPath": "Copia percorso libreria note",

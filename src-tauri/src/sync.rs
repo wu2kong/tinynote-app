@@ -1,5 +1,5 @@
-use serde::Serialize;
-use std::collections::HashSet;
+use serde::{Deserialize, Serialize};
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
@@ -21,9 +21,18 @@ pub struct GitChangedFile {
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct GitRemoteInfo {
+    pub name: String,
+    pub url: String,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct GitSyncStatus {
     pub is_repo: bool,
+    pub remotes: Vec<GitRemoteInfo>,
     pub remote_url: Option<String>,
+    pub primary_remote: Option<String>,
     pub branch: Option<String>,
     pub changed_md_count: u32,
     pub changed_files: Vec<GitChangedFile>,
@@ -41,6 +50,38 @@ pub struct FileDiff {
     pub change_type: String,
     pub is_new_file: bool,
 }
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitInitResult {
+    pub created: bool,
+    pub branch: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitPushRemoteResult {
+    pub remote: String,
+    pub ok: bool,
+    pub error: Option<String>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitPushResult {
+    pub message: String,
+    pub results: Vec<GitPushRemoteResult>,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct GitAuthPayload {
+    pub username: String,
+    pub password: String,
+}
+
+const TINYNOTE_GITIGNORE: &str = ".DS_Store\nThumbs.db\ndesktop.ini\n*.swp\n*~\n.idea/\n**/.tinynotes/configs.json\n**/.tinynotes/configs.jsonc\n";
+
 
 fn configure_hidden_process(cmd: &mut Command) {
     #[cfg(windows)]
@@ -169,6 +210,8 @@ fn run_git_with_timeout(repo_path: &str, args: &[&str]) -> Result<String, String
         .current_dir(repo_path)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .env("GCM_INTERACTIVE", "never")
         .spawn()
         .map_err(|e| format!("无法执行 git：{e}"))?;
 
@@ -234,9 +277,14 @@ fn run_git_diff(repo_path: &str, args: &[&str]) -> Result<String, String> {
     }
 }
 
+fn run_git_timeout_args(repo_path: &str, args: &[String]) -> Result<String, String> {
+    let borrowed: Vec<&str> = args.iter().map(String::as_str).collect();
+    run_git_with_timeout(repo_path, &borrowed)
+}
+
 fn resolve_repo_path(storage_path: &str) -> Result<String, String> {
     find_git_root(Path::new(storage_path))
-        .ok_or_else(|| "当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。".to_string())
+        .ok_or_else(|| "当前笔记库还没有完成同步初始化。".to_string())
         .map(|p| p.to_string_lossy().into_owned())
 }
 
@@ -445,53 +493,129 @@ fn collect_status_snapshot(repo_path: &str) -> Result<(Option<String>, u32, u32,
     Ok(parse_status_snapshot(&output))
 }
 
-pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
+fn empty_status(hostname: String, error: Option<String>) -> GitSyncStatus {
+    GitSyncStatus {
+        is_repo: false,
+        remotes: Vec::new(),
+        remote_url: None,
+        primary_remote: None,
+        branch: None,
+        changed_md_count: 0,
+        changed_files: Vec::new(),
+        ahead: 0,
+        behind: 0,
+        has_remote: false,
+        hostname,
+        status_error: error,
+    }
+}
+
+fn list_remotes_in_repo(repo_path: &str) -> Result<Vec<GitRemoteInfo>, String> {
+    let output = run_git(repo_path, &["remote", "-v"]).unwrap_or_default();
+    let mut seen = HashSet::new();
+    let mut remotes = Vec::new();
+    for line in output.lines() {
+        let mut parts = line.split_whitespace();
+        let name = parts.next().unwrap_or("");
+        let url = parts.next().unwrap_or("");
+        if name.is_empty() || url.is_empty() || !seen.insert(name.to_string()) {
+            continue;
+        }
+        remotes.push(GitRemoteInfo {
+            name: name.to_string(),
+            url: url.to_string(),
+        });
+    }
+    Ok(remotes)
+}
+
+fn pick_primary_remote<'a>(
+    remotes: &'a [GitRemoteInfo],
+    primary_remote: Option<&str>,
+) -> Option<&'a GitRemoteInfo> {
+    if let Some(name) = primary_remote.filter(|value| !value.is_empty()) {
+        if let Some(found) = remotes.iter().find(|remote| remote.name == name) {
+            return Some(found);
+        }
+    }
+    remotes
+        .iter()
+        .find(|remote| remote.name == "origin")
+        .or_else(|| remotes.first())
+}
+
+fn current_branch(repo_path: &str) -> Option<String> {
+    run_git(repo_path, &["rev-parse", "--abbrev-ref", "HEAD"])
+        .ok()
+        .filter(|value| !value.is_empty() && value != "HEAD")
+}
+
+fn to_https_remote_url(url: &str) -> Result<String, String> {
+    let value = url.trim();
+    if value.starts_with("https://") || value.starts_with("http://") {
+        return Ok(value.to_string());
+    }
+    if let Some(rest) = value.strip_prefix("git@") {
+        if let Some((host, path)) = rest.split_once(':') {
+            return Ok(format!("https://{host}/{}", path.trim_start_matches('/')));
+        }
+    }
+    if let Some(rest) = value.strip_prefix("ssh://") {
+        let rest = rest.trim_start_matches("git@");
+        return Ok(format!("https://{rest}"));
+    }
+    Err(format!("不支持的远程地址：{url}"))
+}
+
+fn embed_credentials(url: &str, auth: &GitAuthPayload) -> Result<String, String> {
+    let https = to_https_remote_url(url)?;
+    let mut parsed = reqwest::Url::parse(&https).map_err(|_| "远程地址无效".to_string())?;
+    parsed
+        .set_username(&auth.username)
+        .map_err(|_| "无法写入用户名".to_string())?;
+    parsed
+        .set_password(Some(&auth.password))
+        .map_err(|_| "无法写入凭据".to_string())?;
+    Ok(parsed.to_string())
+}
+
+fn ensure_gitignore(storage: &Path) {
+    let path = storage.join(".gitignore");
+    if path.exists() {
+        return;
+    }
+    let _ = std::fs::write(path, TINYNOTE_GITIGNORE);
+}
+
+pub fn get_git_status(
+    storage_path: &str,
+    primary_remote: Option<&str>,
+) -> Result<GitSyncStatus, String> {
     let hostname = get_hostname();
     let storage = Path::new(storage_path);
 
     if !storage.is_dir() {
-        return Ok(GitSyncStatus {
-            is_repo: false,
-            remote_url: None,
-            branch: None,
-            changed_md_count: 0,
-            changed_files: Vec::new(),
-            ahead: 0,
-            behind: 0,
-            has_remote: false,
+        return Ok(empty_status(
             hostname,
-            status_error: Some("笔记库目录不存在".to_string()),
-        });
+            Some("笔记库目录不存在".to_string()),
+        ));
     }
 
     let Some(git_root) = find_git_root(storage) else {
-        return Ok(GitSyncStatus {
-            is_repo: false,
-            remote_url: None,
-            branch: None,
-            changed_md_count: 0,
-            changed_files: Vec::new(),
-            ahead: 0,
-            behind: 0,
-            has_remote: false,
-            hostname,
-            status_error: None,
-        });
+        return Ok(empty_status(hostname, None));
     };
 
     let repo_path = git_root.to_string_lossy().into_owned();
-
-    let remote_url = run_git(&repo_path, &["remote", "get-url", "origin"])
-        .ok()
-        .filter(|s| !s.is_empty());
-    let has_remote = remote_url.is_some();
+    let remotes = list_remotes_in_repo(&repo_path).unwrap_or_default();
+    let origin = pick_primary_remote(&remotes, primary_remote);
+    let remote_url = origin.map(|remote| remote.url.clone());
+    let primary = origin.map(|remote| remote.name.clone());
+    let has_remote = !remotes.is_empty();
 
     let (branch, ahead, behind, changed_files, status_error) =
         match collect_status_snapshot(&repo_path) {
             Ok((status_branch, ahead, behind, files)) => {
-                let branch = status_branch.or_else(|| {
-                    run_git(&repo_path, &["rev-parse", "--abbrev-ref", "HEAD"]).ok()
-                });
+                let branch = status_branch.or_else(|| current_branch(&repo_path));
                 (branch, ahead, behind, files, None)
             }
             Err(err) => (None, 0, 0, Vec::new(), Some(err)),
@@ -499,7 +623,9 @@ pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
 
     Ok(GitSyncStatus {
         is_repo: true,
+        remotes,
         remote_url,
+        primary_remote: primary,
         branch,
         changed_md_count: changed_files.len() as u32,
         changed_files,
@@ -511,36 +637,225 @@ pub fn get_git_status(storage_path: &str) -> Result<GitSyncStatus, String> {
     })
 }
 
-pub fn git_pull(storage_path: &str) -> Result<(), String> {
-    let repo_path = find_git_root(Path::new(storage_path))
-        .ok_or_else(|| "当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。".to_string())?;
-    run_git_with_timeout(&repo_path.to_string_lossy(), &["pull"]).map(|_| ())
+pub fn git_init(storage_path: &str) -> Result<GitInitResult, String> {
+    let storage = Path::new(storage_path);
+    if !storage.is_dir() {
+        return Err("笔记库目录不存在".to_string());
+    }
+
+    if let Some(root) = find_git_root(storage) {
+        let repo_path = root.to_string_lossy().into_owned();
+        return Ok(GitInitResult {
+            created: false,
+            branch: current_branch(&repo_path).unwrap_or_else(|| "main".to_string()),
+        });
+    }
+
+    let repo_path = storage.to_string_lossy().into_owned();
+    if run_git(&repo_path, &["init", "-b", "main"]).is_err() {
+        run_git(&repo_path, &["init"])?;
+        let _ = run_git(&repo_path, &["symbolic-ref", "HEAD", "refs/heads/main"]);
+    }
+    let _ = run_git(&repo_path, &["config", "user.name", "TinyNote"]);
+    let _ = run_git(&repo_path, &["config", "user.email", "tinynote@local"]);
+    ensure_gitignore(storage);
+    let _ = run_git(&repo_path, &["add", "--", ".gitignore"]);
+    let _ = run_git(
+        &repo_path,
+        &["commit", "-m", "Initialize TinyNote library"],
+    );
+    Ok(GitInitResult {
+        created: true,
+        branch: "main".to_string(),
+    })
 }
 
-pub fn git_sync_push(storage_path: &str) -> Result<String, String> {
-    let repo_path = find_git_root(Path::new(storage_path))
-        .ok_or_else(|| "当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。".to_string())?;
-    let repo_path = repo_path.to_string_lossy().into_owned();
+pub fn git_list_remotes(storage_path: &str) -> Result<Vec<GitRemoteInfo>, String> {
+    let repo_path = resolve_repo_path(storage_path)?;
+    list_remotes_in_repo(&repo_path)
+}
 
+pub fn git_add_remote(storage_path: &str, name: &str, url: &str) -> Result<(), String> {
+    let repo_path = resolve_repo_path(storage_path)?;
+    if run_git(&repo_path, &["remote", "get-url", name]).is_ok() {
+        run_git(&repo_path, &["remote", "set-url", name, url]).map(|_| ())
+    } else {
+        run_git(&repo_path, &["remote", "add", name, url]).map(|_| ())
+    }
+}
+
+pub fn git_remove_remote(storage_path: &str, name: &str) -> Result<(), String> {
+    let repo_path = resolve_repo_path(storage_path)?;
+    run_git(&repo_path, &["remote", "remove", name]).map(|_| ())
+}
+
+pub fn git_pull(
+    storage_path: &str,
+    remote: Option<&str>,
+    auth: Option<&GitAuthPayload>,
+    allow_unrelated: bool,
+) -> Result<(), String> {
+    let repo_path = resolve_repo_path(storage_path)?;
+    let remotes = list_remotes_in_repo(&repo_path)?;
+    let target = pick_primary_remote(&remotes, remote)
+        .ok_or_else(|| "还没有配置同步源".to_string())?;
+    let branch = current_branch(&repo_path).unwrap_or_else(|| "main".to_string());
+
+    let mut args = vec!["pull".to_string()];
+    if allow_unrelated {
+        args.push("--allow-unrelated-histories".to_string());
+        args.push("--no-edit".to_string());
+    }
+    if let Some(auth) = auth {
+        args.push(embed_credentials(&target.url, auth)?);
+        args.push(branch);
+    } else {
+        args.push(target.name.clone());
+        args.push(branch);
+    }
+    run_git_timeout_args(&repo_path, &args).map(|_| ())
+}
+
+pub fn git_sync_push(
+    storage_path: &str,
+    remotes: Option<Vec<String>>,
+    auth_by_remote: Option<HashMap<String, GitAuthPayload>>,
+) -> Result<GitPushResult, String> {
+    let repo_path = resolve_repo_path(storage_path)?;
     let hostname = get_hostname();
     let message = format!("{hostname} sync push");
 
     let changed_files = collect_changed_md_files(&repo_path)?;
-    if changed_files.is_empty() {
+    if !changed_files.is_empty() {
+        for file in &changed_files {
+            run_git(&repo_path, &["add", "--", &file.path])?;
+        }
+        let staged = run_git(&repo_path, &["diff", "--cached", "--name-only"]).unwrap_or_default();
+        if !staged.is_empty() {
+            run_git(&repo_path, &["commit", "-m", &message])?;
+        }
+    }
+
+    let remotes_info = list_remotes_in_repo(&repo_path)?;
+    let targets = remotes.unwrap_or_else(|| {
+        remotes_info
+            .iter()
+            .map(|remote| remote.name.clone())
+            .collect()
+    });
+    if targets.is_empty() {
+        return Err("还没有配置同步源".to_string());
+    }
+
+    let branch = current_branch(&repo_path).unwrap_or_else(|| "main".to_string());
+    let mut results = Vec::new();
+    for name in targets {
+        let Some(info) = remotes_info.iter().find(|remote| remote.name == name) else {
+            results.push(GitPushRemoteResult {
+                remote: name,
+                ok: false,
+                error: Some("找不到这个同步源".to_string()),
+            });
+            continue;
+        };
+        let mut args = vec!["push".to_string(), "-u".to_string()];
+        if let Some(auth) = auth_by_remote.as_ref().and_then(|map| map.get(&name)) {
+            match embed_credentials(&info.url, auth) {
+                Ok(auth_url) => {
+                    args.push(auth_url);
+                    args.push(format!("HEAD:{branch}"));
+                }
+                Err(error) => {
+                    results.push(GitPushRemoteResult {
+                        remote: name,
+                        ok: false,
+                        error: Some(error),
+                    });
+                    continue;
+                }
+            }
+        } else {
+            args.push(name.clone());
+            args.push(format!("HEAD:{branch}"));
+        }
+        match run_git_timeout_args(&repo_path, &args) {
+            Ok(_) => results.push(GitPushRemoteResult {
+                remote: name,
+                ok: true,
+                error: None,
+            }),
+            Err(error) => results.push(GitPushRemoteResult {
+                remote: name,
+                ok: false,
+                error: Some(error),
+            }),
+        }
+    }
+
+    if results.iter().all(|item| !item.ok) && changed_files.is_empty() {
+        if let Some(first_error) = results
+            .iter()
+            .find_map(|item| item.error.clone())
+        {
+            return Err(first_error);
+        }
         return Err("没有需要提交的内容".to_string());
     }
 
-    for file in &changed_files {
-        run_git(&repo_path, &["add", "--", &file.path])?;
+    Ok(GitPushResult { message, results })
+}
+
+pub fn git_http_request(
+    method: &str,
+    url: &str,
+    headers: Option<HashMap<String, String>>,
+    body: Option<String>,
+) -> Result<GitHttpResponse, String> {
+    let parsed = reqwest::Url::parse(url).map_err(|_| "请求地址无效".to_string())?;
+    if !matches!(parsed.scheme(), "https" | "http") {
+        return Err("仅支持 HTTP 或 HTTPS".to_string());
     }
 
-    let staged = run_git(&repo_path, &["diff", "--cached", "--name-only"]).unwrap_or_default();
-    if !staged.is_empty() {
-        run_git(&repo_path, &["commit", "-m", &message])?;
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|e| format!("无法创建网络请求: {e}"))?;
+
+    let mut request = match method.to_ascii_uppercase().as_str() {
+        "GET" => client.get(parsed),
+        "POST" => client.post(parsed),
+        "PUT" => client.put(parsed),
+        "PATCH" => client.patch(parsed),
+        _ => return Err("不支持的请求方法".to_string()),
+    };
+
+    if let Some(headers) = headers {
+        for (key, value) in headers {
+            request = request.header(key, value);
+        }
+    }
+    if let Some(body) = body {
+        request = request.body(body);
     }
 
-    run_git_with_timeout(&repo_path, &["push"])?;
-    Ok(message)
+    let response = request.send().map_err(|e| {
+        if e.is_connect() || e.is_timeout() || e.is_request() {
+            "网络请求失败，请检查网络连接".to_string()
+        } else {
+            format!("请求失败: {e}")
+        }
+    })?;
+    Ok(GitHttpResponse {
+        status: response.status().as_u16(),
+        text: response.text().unwrap_or_default(),
+    })
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitHttpResponse {
+    pub status: u16,
+    pub text: String,
 }
 
 pub fn get_file_diff(storage_path: &str, file_path: &str) -> Result<FileDiff, String> {
@@ -606,7 +921,7 @@ fn deleted_file_preview(repo_path: &str, file_path: &str) -> Result<String, Stri
 
 pub fn revert_file_change(storage_path: &str, file_path: &str) -> Result<(), String> {
     let repo_root = find_git_root(Path::new(storage_path))
-        .ok_or_else(|| "当前笔记库目录不是 Git 仓库，请先在目录中初始化 Git。".to_string())?;
+        .ok_or_else(|| "当前笔记库还没有完成同步初始化。".to_string())?;
     let repo_path = repo_root.to_string_lossy().into_owned();
 
     if is_untracked_file(&repo_path, file_path)? {

@@ -3,12 +3,29 @@ import type {
   FileDiff,
   GitChangedFile,
   GitChangeType,
+  GitInitResult,
+  GitPullOptions,
+  GitPushOptions,
+  GitPushResult,
+  GitRemoteInfo,
   GitSyncStatus,
+  SyncAuth,
 } from '@/adapters/sync';
 import { assertNetworkAvailable, TimeoutError, withTimeout } from '@/utils/async';
 import { t } from '@/i18n';
 
-export type { FileDiff, GitChangedFile, GitChangeType, GitSyncStatus };
+export type {
+  FileDiff,
+  GitChangedFile,
+  GitChangeType,
+  GitInitResult,
+  GitPullOptions,
+  GitPushOptions,
+  GitPushResult,
+  GitRemoteInfo,
+  GitSyncStatus,
+  SyncAuth,
+};
 
 const SYNC_NETWORK_TIMEOUT_MS = 60_000;
 const syncTimeoutMessage = () => t('utils.sync.timeout');
@@ -52,16 +69,32 @@ export function getDisplayDiffLines(raw: string): string[] {
   return raw.split('\n').filter((line) => line && !isDiffMetaLine(line));
 }
 
-export async function getGitStatus(storagePath: string): Promise<GitSyncStatus> {
-  return getSyncAdapter().getGitStatus(storagePath);
+export async function getGitStatus(storagePath: string, primaryRemote?: string | null): Promise<GitSyncStatus> {
+  return getSyncAdapter().getGitStatus(storagePath, primaryRemote);
 }
 
-export async function gitPull(storagePath: string): Promise<void> {
-  return runSyncNetworkOperation(() => getSyncAdapter().gitPull(storagePath));
+export async function gitInit(storagePath: string): Promise<GitInitResult> {
+  return getSyncAdapter().gitInit(storagePath);
 }
 
-export async function gitSyncPush(storagePath: string): Promise<string> {
-  return runSyncNetworkOperation(() => getSyncAdapter().gitSyncPush(storagePath));
+export async function listGitRemotes(storagePath: string): Promise<GitRemoteInfo[]> {
+  return getSyncAdapter().listRemotes(storagePath);
+}
+
+export async function addGitRemote(storagePath: string, name: string, url: string): Promise<void> {
+  return getSyncAdapter().addRemote(storagePath, name, url);
+}
+
+export async function removeGitRemote(storagePath: string, name: string): Promise<void> {
+  return getSyncAdapter().removeRemote(storagePath, name);
+}
+
+export async function gitPull(storagePath: string, options?: GitPullOptions): Promise<void> {
+  return runSyncNetworkOperation(() => getSyncAdapter().gitPull(storagePath, options));
+}
+
+export async function gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult> {
+  return runSyncNetworkOperation(() => getSyncAdapter().gitSyncPush(storagePath, options));
 }
 
 export async function getFileDiff(storagePath: string, filePath: string): Promise<FileDiff> {
@@ -96,4 +129,12 @@ export function getChangeTooltip(changeType: GitChangeType, path: string): strin
     default:
       return t('utils.sync.modified', { path });
   }
+}
+
+export function authForRemote(
+  remoteName: string,
+  authByRemote: Record<string, SyncAuth>,
+  fallback?: SyncAuth | null,
+): SyncAuth | null {
+  return authByRemote[remoteName] ?? fallback ?? null;
 }

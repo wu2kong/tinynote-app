@@ -7,7 +7,7 @@ import { joinPath, normalizePath } from '@/utils/path';
 import { saveWorkspaceLocalSettings } from '@/utils/workspaces';
 
 /** Synced workspace config — paths are relative to the library root; no machine-local fields. */
-export type WorkspaceConfigFile = Omit<AppConfig, 'storagePath' | 'backupDir' | 'syncAuthToken' | 'llmProviders'>;
+export type WorkspaceConfigFile = Omit<AppConfig, 'storagePath' | 'backupDir' | 'syncAuthToken' | 'gitRemoteAuth' | 'llmProviders'>;
 
 const CONFIG_DIR = '.tinynotes';
 export const WORKSPACE_CONFIG_DIR = CONFIG_DIR;
@@ -27,6 +27,7 @@ function toWorkspaceFile(workspaceRoot: string, config: AppConfig): WorkspaceCon
     storagePath: _storagePath,
     backupDir: _backupDir,
     syncAuthToken: _syncAuthToken,
+    gitRemoteAuth: _gitRemoteAuth,
     llmProviders: _llmProviders,
     ...rest
   } = config;
@@ -41,6 +42,7 @@ function fromWorkspaceFile(workspacePath: string, partial: Partial<WorkspaceConf
     storagePath: root,
     backupDir: null,
     syncAuthToken: null,
+    gitRemoteAuth: {},
     llmProviders: DEFAULT_CONFIG.llmProviders.map((provider) => ({ ...provider })),
   };
   return {
@@ -49,6 +51,7 @@ function fromWorkspaceFile(workspacePath: string, partial: Partial<WorkspaceConf
     storagePath: root,
     backupDir: null,
     syncAuthToken: null,
+    gitRemoteAuth: {},
     llmProviders: DEFAULT_CONFIG.llmProviders.map((provider) => ({ ...provider })),
   };
 }
@@ -84,7 +87,7 @@ function workspaceFileNeedsRelativization(partial: Partial<WorkspaceConfigFile>)
       if (hasAbsolute(parent) || children.some(hasAbsolute)) return true;
     }
   }
-  if ('backupDir' in partial || 'syncAuthToken' in partial || 'llmProviders' in partial) return true;
+  if ('backupDir' in partial || 'syncAuthToken' in partial || 'gitRemoteAuth' in partial || 'llmProviders' in partial) return true;
   return false;
 }
 
@@ -97,12 +100,14 @@ async function loadWorkspaceConfigContent(
     const legacyPartial = partial as Partial<WorkspaceConfigFile> & {
       backupDir?: string | null;
       syncAuthToken?: string | null;
+      gitRemoteAuth?: AppConfig['gitRemoteAuth'];
       llmProviders?: AppConfig['llmProviders'];
     };
-    if (legacyPartial.backupDir != null || legacyPartial.syncAuthToken != null || legacyPartial.llmProviders != null) {
+    if (legacyPartial.backupDir != null || legacyPartial.syncAuthToken != null || legacyPartial.gitRemoteAuth != null || legacyPartial.llmProviders != null) {
       await saveWorkspaceLocalSettings(root, {
         backupDir: legacyPartial.backupDir ?? null,
         syncAuthToken: legacyPartial.syncAuthToken ?? null,
+        gitRemoteAuth: legacyPartial.gitRemoteAuth,
         llmProviders: legacyPartial.llmProviders,
       });
     }
@@ -162,10 +167,11 @@ export async function ensureWorkspaceConfigMigrated(workspacePath: string): Prom
 
   await saveWorkspaceConfigFile(root, base);
 
-  if (legacyHome && (legacyHome.backupDir != null || legacyHome.syncAuthToken != null || legacyHome.llmProviders != null)) {
+  if (legacyHome && (legacyHome.backupDir != null || legacyHome.syncAuthToken != null || legacyHome.gitRemoteAuth != null || legacyHome.llmProviders != null)) {
     await saveWorkspaceLocalSettings(root, {
       backupDir: legacyHome.backupDir ?? null,
       syncAuthToken: legacyHome.syncAuthToken ?? null,
+      gitRemoteAuth: legacyHome.gitRemoteAuth,
       llmProviders: legacyHome.llmProviders,
     });
   }

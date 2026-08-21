@@ -147,7 +147,7 @@ export const ruMessages = {
       "statusRefreshed": "Статус синхронизации обновлен",
       "setStorageFirst": "Сначала задайте папку библиотеки заметок в разделе данных",
       "notRepo": "Текущая папка библиотеки заметок не распознана как Git-репозиторий, независимо от того, настроен ли origin.",
-      "notRepoHint": "Откройте эту папку или ее родителя в терминале, убедитесь, что существует папка .git, либо выполните git init и настройте удаленный репозиторий.",
+      "notRepoHint": "Add a sync source in Settings. TinyNote will initialize Git for you.",
       "openRepoDir": "Открыть папку библиотеки заметок",
       "currentRepo": "Текущая библиотека заметок",
       "copyRepoPath": "Копировать путь библиотеки заметок",
