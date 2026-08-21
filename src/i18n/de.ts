@@ -334,7 +334,8 @@ export const deMessages = {
     "exportLibrary": "Gesamte Notizbibliothek exportieren...",
     "exportLibraryNoWorkspace": "Es ist keine Notizbibliothek geöffnet",
     "exportLibraryCompleted": "Bibliothek exportiert: {filename}",
-    "exportLibraryFailed": "Export der Bibliothek fehlgeschlagen"
+    "exportLibraryFailed": "Export der Bibliothek fehlgeschlagen",
+    "importNotes": "Notizen importieren..."
   },
   "app": {
     "loading": "Wird geladen...",
@@ -423,7 +424,23 @@ export const deMessages = {
     "openDirectory": "Verzeichnisort öffnen",
     "hideSidebar": "Seitenleiste ausblenden",
     "showSidebar": "Seitenleiste anzeigen",
-    "resizeWidth": "Ziehen, um die Breite zu ändern"
+    "resizeWidth": "Ziehen, um die Breite zu ändern",
+    "importNotes": "Notizen importieren"
+  },
+  "importNotes": {
+    "title": "Notizen importieren",
+    "description": "Importiere Markdown-Dateien in das Stammverzeichnis des aktuellen Notizbereichs. Bitte lies zuerst die folgenden Regeln:",
+    "ruleMarkdownOnly": "Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.",
+    "ruleFormats": "Dateien, die bereits blk-, mk- oder writer-Kennzeichen (.blk.md / .mk.md / .writer.md) haben, behalten ihr ursprüngliches Format.",
+    "ruleUnmarked": "Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.",
+    "ruleTarget": "Notizen und Verzeichnisse werden in das Stammverzeichnis des aktuellen Notizbereichs importiert; Verzeichnisse behalten ihre interne Struktur.",
+    "ruleMultiple": "Sowohl „Notizen importieren“ als auch „Verzeichnis importieren“ unterstützen Mehrfachauswahl.",
+    "importFiles": "Notizen importieren",
+    "importDirectories": "Verzeichnis importieren",
+    "noSpace": "Bitte zuerst einen Notizbereich auswählen",
+    "noMarkdown": "Keine Markdown-Dateien zum Importieren",
+    "completed": "{imported} Notizen importiert ({converted} in Artikelnotizen umgewandelt)",
+    "failed": "Import der Notizen fehlgeschlagen"
   },
   "note": {
     "addNote": "Notiz hinzufügen",

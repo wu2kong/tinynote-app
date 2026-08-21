@@ -335,7 +335,8 @@ export const zhHantMessages = {
     "exportLibrary": "匯出整個筆記庫...",
     "exportLibraryNoWorkspace": "目前沒有開啟的筆記庫",
     "exportLibraryCompleted": "筆記庫已匯出：{filename}",
-    "exportLibraryFailed": "匯出筆記庫失敗"
+    "exportLibraryFailed": "匯出筆記庫失敗",
+    "importNotes": "匯入筆記..."
   },
   "app": {
     "loading": "載入中...",
@@ -424,7 +425,23 @@ export const zhHantMessages = {
     "openDirectory": "開啟目錄位置",
     "hideSidebar": "隱藏側邊欄",
     "showSidebar": "顯示側邊欄",
-    "resizeWidth": "拖曳以調整寬度"
+    "resizeWidth": "拖曳以調整寬度",
+    "importNotes": "匯入筆記"
+  },
+  "importNotes": {
+    "title": "匯入筆記",
+    "description": "將 Markdown 檔案匯入到目前筆記空間的根目錄。匯入前請閱讀以下規則：",
+    "ruleMarkdownOnly": "僅匯入以 .md 結尾的檔案，其他檔案會被忽略。",
+    "ruleFormats": "已帶 blk、mk、writer 標記（.blk.md / .mk.md / .writer.md）的檔案會保持原格式。",
+    "ruleUnmarked": "未帶上述標記的普通 .md 檔案會自動轉換為文章筆記（.writer.md）。",
+    "ruleTarget": "筆記和目錄都會匯入到目前筆記空間的根目錄；目錄會保留其內部結構。",
+    "ruleMultiple": "匯入筆記和匯入目錄都支援一次多選。",
+    "importFiles": "匯入筆記",
+    "importDirectories": "匯入目錄",
+    "noSpace": "請先選擇一個筆記空間",
+    "noMarkdown": "沒有可匯入的 Markdown 檔案",
+    "completed": "已匯入 {imported} 篇筆記（其中 {converted} 篇已轉換為文章筆記）",
+    "failed": "匯入筆記失敗"
   },
   "note": {
     "addNote": "新增筆記",

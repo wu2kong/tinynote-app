@@ -6,7 +6,7 @@ import {
   Search, X, Folder, FileText, FileCode, PenLine, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
-  PanelLeftOpen, PanelLeftClose, GripVertical
+  PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -31,6 +31,7 @@ import { showToast } from './Toast';
 import { isSubPath, normalizePath, dirname } from '@/utils/path';
 import * as config from '@/utils/config';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
+import { OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { useI18n } from '@/i18n/useI18n';
 import { FREE_MAX_NOTEBOOKS_PER_SPACE, isArticleNotebookFormat } from '@/constants/pro';
 import { countSpaceNotebooks, NOTEBOOK_TARGET_EXISTS } from '@/utils/fileSystem';
@@ -443,6 +444,10 @@ const DirectoryPanel: React.FC = () => {
 
   const closeContextMenu = useCallback(() => { setContextMenu(null); setBlankContextMenu(null); }, []);
 
+  const handleOpenImportNotes = useCallback(() => {
+    window.dispatchEvent(new Event(OPEN_IMPORT_NOTES_EVENT));
+  }, []);
+
   const handleBlankContextMenu = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.tree-item')) return;
     e.preventDefault();
@@ -667,6 +672,16 @@ const DirectoryPanel: React.FC = () => {
             </button>
           )}
         </div>
+        <button
+          type="button"
+          className="directory-sidebar-toggle"
+          onClick={handleOpenImportNotes}
+          disabled={!currentSpace}
+          title={t('directory.importNotes')}
+          aria-label={t('directory.importNotes')}
+        >
+          <FileDown size={18} />
+        </button>
       </div>
 
       <div
@@ -829,6 +844,9 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}
+            </button>
+            <button className="context-menu-item" onClick={() => { handleOpenImportNotes(); closeContextMenu(); }}>
+              <FileDown size={14} />{t('directory.importNotes')}
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={() => { expandAllGroups(); closeContextMenu(); }}>

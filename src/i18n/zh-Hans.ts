@@ -362,7 +362,8 @@ export const zhHansMessages = {
     "exportLibrary": "导出整个笔记库...",
     "exportLibraryNoWorkspace": "当前没有打开的笔记库",
     "exportLibraryCompleted": "笔记库已导出：{filename}",
-    "exportLibraryFailed": "导出笔记库失败"
+    "exportLibraryFailed": "导出笔记库失败",
+    "importNotes": "导入笔记..."
   },
   "app": {
     "loading": "加载中...",
@@ -451,7 +452,23 @@ export const zhHansMessages = {
     "openDirectory": "打开目录位置",
     "hideSidebar": "隐藏侧边栏",
     "showSidebar": "显示侧边栏",
-    "resizeWidth": "拖动以调整宽度"
+    "resizeWidth": "拖动以调整宽度",
+    "importNotes": "导入笔记"
+  },
+  "importNotes": {
+    "title": "导入笔记",
+    "description": "将 Markdown 文件导入到当前笔记空间的根目录。导入前请阅读以下规则：",
+    "ruleMarkdownOnly": "仅导入以 .md 结尾的文件，其他文件会被忽略。",
+    "ruleFormats": "已带 blk、mk、writer 标记（.blk.md / .mk.md / .writer.md）的文件会保持原格式。",
+    "ruleUnmarked": "未带上述标记的普通 .md 文件会自动转换为文章笔记（.writer.md）。",
+    "ruleTarget": "笔记和目录都会导入到当前笔记空间的根目录；目录会保留其内部结构。",
+    "ruleMultiple": "导入笔记和导入目录都支持一次多选。",
+    "importFiles": "导入笔记",
+    "importDirectories": "导入目录",
+    "noSpace": "请先选择一个笔记空间",
+    "noMarkdown": "没有可导入的 Markdown 文件",
+    "completed": "已导入 {imported} 篇笔记（其中 {converted} 篇已转换为文章笔记）",
+    "failed": "导入笔记失败"
   },
   "note": {
     "addNote": "添加笔记",

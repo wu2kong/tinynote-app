@@ -171,3 +171,27 @@ function normalizePreserveExtension(
 export function buildNotebookFileName(displayName: string, format: NotebookFormatId): string {
   return resolveNotebookFileName(displayName, format).fileName;
 }
+
+export function isMarkdownNotebookFileName(fileName: string): boolean {
+  return /\.md$/i.test(fileName);
+}
+
+/** True when the filename already carries a canonical `.blk.md` / `.mk.md` / `.writer.md` marker. */
+export function hasExplicitNotebookFormatMarker(fileName: string): boolean {
+  const lower = fileName.toLowerCase();
+  return NOTEBOOK_FORMATS.some((format) => lower.endsWith(format.extension.toLowerCase()));
+}
+
+/**
+ * Keep files that already have a built-in format marker.
+ * Plain `.md` (no blk / mk / writer marker) is rewritten to `.writer.md`.
+ */
+export function resolveImportedNotebookFileName(fileName: string): { fileName: string; converted: boolean } {
+  if (hasExplicitNotebookFormatMarker(fileName)) {
+    return { fileName, converted: false };
+  }
+  return {
+    fileName: buildNotebookFileName(getNotebookDisplayName(fileName), 'writer'),
+    converted: true,
+  };
+}

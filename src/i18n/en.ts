@@ -362,7 +362,8 @@ export const enMessages = {
     "exportLibrary": "Export Entire Library...",
     "exportLibraryNoWorkspace": "No note library is currently open",
     "exportLibraryCompleted": "Library exported: {filename}",
-    "exportLibraryFailed": "Failed to export library"
+    "exportLibraryFailed": "Failed to export library",
+    "importNotes": "Import Notes..."
   },
   "app": {
     "loading": "Loading...",
@@ -451,7 +452,23 @@ export const enMessages = {
     "openDirectory": "Open Directory Location",
     "hideSidebar": "Hide Sidebar",
     "showSidebar": "Show Sidebar",
-    "resizeWidth": "Drag to resize width"
+    "resizeWidth": "Drag to resize width",
+    "importNotes": "Import Notes"
+  },
+  "importNotes": {
+    "title": "Import Notes",
+    "description": "Import Markdown files into the root of the current note space. Please read the rules below first:",
+    "ruleMarkdownOnly": "Only files ending with .md are imported; other files are ignored.",
+    "ruleFormats": "Files that already have blk, mk, or writer markers (.blk.md / .mk.md / .writer.md) keep their original format.",
+    "ruleUnmarked": "Plain .md files without those markers are converted to article notes (.writer.md).",
+    "ruleTarget": "Both notes and directories are imported into the root of the current note space; directories keep their internal structure.",
+    "ruleMultiple": "Both Import Notes and Import Directory support multiple selection.",
+    "importFiles": "Import Notes",
+    "importDirectories": "Import Directory",
+    "noSpace": "Please select a note space first",
+    "noMarkdown": "No Markdown files to import",
+    "completed": "Imported {imported} notes ({converted} converted to article notes)",
+    "failed": "Failed to import notes"
   },
   "note": {
     "addNote": "Add Note",

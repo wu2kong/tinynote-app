@@ -15,6 +15,7 @@ import {
   closeCurrentWindow,
   loadRecentWorkspaceEntries,
   openSettingsFromMenu,
+  openImportNotesFromMenu,
   openWorkspaceInNewWindow,
   promptAndClearRecentWorkspaces,
   promptAndExportLibrary,
@@ -142,6 +143,11 @@ async function buildFileSubmenu(): Promise<Submenu> {
       await PredefinedMenuItem.new({ item: 'Separator' }),
       recentSubmenu,
       await PredefinedMenuItem.new({ item: 'Separator' }),
+      await MenuItem.new({
+        id: 'import-notes',
+        text: t('menu.importNotes'),
+        action: openImportNotesFromMenu,
+      }),
       await MenuItem.new({
         id: 'export-library',
         text: t('menu.exportLibrary'),

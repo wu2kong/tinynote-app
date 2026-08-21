@@ -334,7 +334,8 @@ export const jaMessages = {
     "exportLibrary": "ノートライブラリ全体を書き出す...",
     "exportLibraryNoWorkspace": "開いているノートライブラリがありません",
     "exportLibraryCompleted": "ライブラリを書き出しました：{filename}",
-    "exportLibraryFailed": "ライブラリの書き出しに失敗しました"
+    "exportLibraryFailed": "ライブラリの書き出しに失敗しました",
+    "importNotes": "ノートを読み込む..."
   },
   "app": {
     "loading": "読み込み中...",
@@ -423,7 +424,23 @@ export const jaMessages = {
     "openDirectory": "ディレクトリの場所を開く",
     "hideSidebar": "サイドバーを隠す",
     "showSidebar": "サイドバーを表示",
-    "resizeWidth": "ドラッグして幅を調整"
+    "resizeWidth": "ドラッグして幅を調整",
+    "importNotes": "ノートを読み込む"
+  },
+  "importNotes": {
+    "title": "ノートを読み込む",
+    "description": "Markdown ファイルを現在のノートスペースのルートに読み込みます。先に以下のルールをご確認ください：",
+    "ruleMarkdownOnly": ".md で終わるファイルのみ読み込みます。その他のファイルは無視されます。",
+    "ruleFormats": "すでに blk、mk、writer マーカー（.blk.md / .mk.md / .writer.md）があるファイルは元の形式のままです。",
+    "ruleUnmarked": "これらのマーカーがない通常の .md ファイルは記事ノート（.writer.md）に自動変換されます。",
+    "ruleTarget": "ノートもディレクトリも現在のノートスペースのルートに読み込まれます。ディレクトリの内部構造は保持されます。",
+    "ruleMultiple": "ノートの読み込みとディレクトリの読み込みはどちらも複数選択できます。",
+    "importFiles": "ノートを読み込む",
+    "importDirectories": "ディレクトリを読み込む",
+    "noSpace": "先にノートスペースを選択してください",
+    "noMarkdown": "読み込める Markdown ファイルがありません",
+    "completed": "{imported} 件のノートを読み込みました（うち {converted} 件を記事ノートに変換）",
+    "failed": "ノートの読み込みに失敗しました"
   },
   "note": {
     "addNote": "ノートを追加",

@@ -334,7 +334,8 @@ export const koMessages = {
     "exportLibrary": "전체 노트 라이브러리 내보내기...",
     "exportLibraryNoWorkspace": "열려 있는 노트 라이브러리가 없습니다",
     "exportLibraryCompleted": "라이브러리를 내보냈습니다: {filename}",
-    "exportLibraryFailed": "라이브러리 내보내기에 실패했습니다"
+    "exportLibraryFailed": "라이브러리 내보내기에 실패했습니다",
+    "importNotes": "노트 가져오기..."
   },
   "app": {
     "loading": "불러오는 중...",
@@ -423,7 +424,23 @@ export const koMessages = {
     "openDirectory": "디렉터리 위치 열기",
     "hideSidebar": "사이드바 숨기기",
     "showSidebar": "사이드바 표시",
-    "resizeWidth": "드래그하여 너비 조정"
+    "resizeWidth": "드래그하여 너비 조정",
+    "importNotes": "노트 가져오기"
+  },
+  "importNotes": {
+    "title": "노트 가져오기",
+    "description": "Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:",
+    "ruleMarkdownOnly": ".md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.",
+    "ruleFormats": "이미 blk, mk, writer 표시(.blk.md / .mk.md / .writer.md)가 있는 파일은 원래 형식을 유지합니다.",
+    "ruleUnmarked": "위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.",
+    "ruleTarget": "노트와 디렉터리 모두 현재 노트 스페이스의 루트로 가져오며, 디렉터리의 내부 구조는 유지됩니다.",
+    "ruleMultiple": "노트 가져오기와 디렉터리 가져오기 모두 여러 항목을 선택할 수 있습니다.",
+    "importFiles": "노트 가져오기",
+    "importDirectories": "디렉터리 가져오기",
+    "noSpace": "먼저 노트 스페이스를 선택하세요",
+    "noMarkdown": "가져올 Markdown 파일이 없습니다",
+    "completed": "{imported}개의 노트를 가져왔습니다({converted}개는 글 노트로 변환됨)",
+    "failed": "노트를 가져오지 못했습니다"
   },
   "note": {
     "addNote": "노트 추가",

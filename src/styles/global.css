@@ -626,9 +626,14 @@ body.directory-panel-resizing {
   border-radius: var(--radius-sm);
 }
 
-.directory-sidebar-toggle:hover {
+.directory-sidebar-toggle:hover:not(:disabled) {
   color: var(--text-primary);
   background: var(--bg-hover);
+}
+
+.directory-sidebar-toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .directory-search {
@@ -835,6 +840,11 @@ body.directory-panel-resizing {
 .icon-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .context-menu-overlay {
@@ -1942,6 +1952,12 @@ body.directory-panel-resizing {
   gap: 6px;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
 .btn-primary {
   background: var(--accent);
   color: white;
@@ -2019,6 +2035,36 @@ body.directory-panel-resizing {
   color: var(--text-secondary);
   margin: -8px 0 16px;
   line-height: 1.5;
+}
+
+.import-notes-modal {
+  position: relative;
+  min-width: 420px;
+  max-width: 480px;
+}
+
+.import-notes-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.import-notes-rules {
+  margin: 0 0 20px;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.import-notes-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.import-notes-actions .btn {
+  justify-content: center;
 }
 
 .modal-input {

@@ -14,9 +14,10 @@ import AIChatModal from '@/components/AIChatModal';
 import Toast from '@/components/Toast';
 import ProUpgradeModal from '@/components/ProUpgradeModal';
 import OfficialSampleLibraryModal from '@/components/OfficialSampleLibraryModal';
+import ImportNotesModal from '@/components/ImportNotesModal';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
-import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT } from '@/utils/workspaceActions';
+import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
@@ -133,6 +134,7 @@ const App: React.FC = () => {
   const [showRecentNotebooks, setShowRecentNotebooks] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showSampleLibrary, setShowSampleLibrary] = useState(false);
+  const [showImportNotes, setShowImportNotes] = useState(false);
 
   const switchWorkspace = useCallback(async (path: string) => {
     setLoading(true);
@@ -162,8 +164,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const onOpenSettings = () => setShowSettings(true);
+    const onOpenImportNotes = () => setShowImportNotes(true);
     window.addEventListener(OPEN_SETTINGS_EVENT, onOpenSettings);
-    return () => window.removeEventListener(OPEN_SETTINGS_EVENT, onOpenSettings);
+    window.addEventListener(OPEN_IMPORT_NOTES_EVENT, onOpenImportNotes);
+    return () => {
+      window.removeEventListener(OPEN_SETTINGS_EVENT, onOpenSettings);
+      window.removeEventListener(OPEN_IMPORT_NOTES_EVENT, onOpenImportNotes);
+    };
   }, []);
 
   useEffect(() => {
@@ -235,6 +242,10 @@ const App: React.FC = () => {
       <OfficialSampleLibraryModal
         open={showSampleLibrary}
         onClose={() => setShowSampleLibrary(false)}
+      />
+      <ImportNotesModal
+        open={showImportNotes}
+        onClose={() => setShowImportNotes(false)}
       />
     </>
   );

@@ -11,6 +11,7 @@ import { t } from '@/i18n';
 
 export const WORKSPACE_SWITCH_EVENT = 'tinynote-workspace-switch';
 export const OPEN_SETTINGS_EVENT = 'tinynote-open-settings';
+export const OPEN_IMPORT_NOTES_EVENT = 'tinynote-open-import-notes';
 
 function buildAppUrl(workspacePath: string): string {
   const url = new URL(window.location.href);
@@ -126,4 +127,8 @@ export async function promptAndExportLibrary(): Promise<void> {
 
 export function openSettingsFromMenu(): void {
   window.dispatchEvent(new Event(OPEN_SETTINGS_EVENT));
+}
+
+export function openImportNotesFromMenu(): void {
+  window.dispatchEvent(new Event(OPEN_IMPORT_NOTES_EVENT));
 }

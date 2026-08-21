@@ -334,7 +334,8 @@ export const itMessages = {
     "exportLibrary": "Esporta l'intera libreria...",
     "exportLibraryNoWorkspace": "Nessuna libreria di note è aperta",
     "exportLibraryCompleted": "Libreria esportata: {filename}",
-    "exportLibraryFailed": "Esportazione della libreria non riuscita"
+    "exportLibraryFailed": "Esportazione della libreria non riuscita",
+    "importNotes": "Importa note..."
   },
   "app": {
     "loading": "Caricamento...",
@@ -423,7 +424,23 @@ export const itMessages = {
     "openDirectory": "Apri posizione directory",
     "hideSidebar": "Nascondi barra laterale",
     "showSidebar": "Mostra barra laterale",
-    "resizeWidth": "Trascina per ridimensionare la larghezza"
+    "resizeWidth": "Trascina per ridimensionare la larghezza",
+    "importNotes": "Importa note"
+  },
+  "importNotes": {
+    "title": "Importa note",
+    "description": "Importa file Markdown nella radice dello spazio note corrente. Leggi prima le regole seguenti:",
+    "ruleMarkdownOnly": "Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.",
+    "ruleFormats": "I file che hanno già i marcatori blk, mk o writer (.blk.md / .mk.md / .writer.md) mantengono il formato originale.",
+    "ruleUnmarked": "I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).",
+    "ruleTarget": "Sia le note sia le directory vengono importate nella radice dello spazio note corrente; le directory mantengono la struttura interna.",
+    "ruleMultiple": "Sia Importa note sia Importa directory supportano la selezione multipla.",
+    "importFiles": "Importa note",
+    "importDirectories": "Importa directory",
+    "noSpace": "Seleziona prima uno spazio note",
+    "noMarkdown": "Nessun file Markdown da importare",
+    "completed": "Importate {imported} note ({converted} convertite in note articolo)",
+    "failed": "Importazione delle note non riuscita"
   },
   "note": {
     "addNote": "Aggiungi nota",

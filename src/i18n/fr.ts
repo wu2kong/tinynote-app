@@ -334,7 +334,8 @@ export const frMessages = {
     "exportLibrary": "Exporter toute la bibliothèque...",
     "exportLibraryNoWorkspace": "Aucune bibliothèque de notes n'est ouverte",
     "exportLibraryCompleted": "Bibliothèque exportée : {filename}",
-    "exportLibraryFailed": "Échec de l'export de la bibliothèque"
+    "exportLibraryFailed": "Échec de l'export de la bibliothèque",
+    "importNotes": "Importer des notes..."
   },
   "app": {
     "loading": "Chargement...",
@@ -423,7 +424,23 @@ export const frMessages = {
     "openDirectory": "Ouvrir l'emplacement du répertoire",
     "hideSidebar": "Masquer la barre latérale",
     "showSidebar": "Afficher la barre latérale",
-    "resizeWidth": "Faites glisser pour redimensionner la largeur"
+    "resizeWidth": "Faites glisser pour redimensionner la largeur",
+    "importNotes": "Importer des notes"
+  },
+  "importNotes": {
+    "title": "Importer des notes",
+    "description": "Importez des fichiers Markdown à la racine de l'espace de notes actuel. Veuillez d'abord lire les règles ci-dessous :",
+    "ruleMarkdownOnly": "Seuls les fichiers se terminant par .md sont importés ; les autres fichiers sont ignorés.",
+    "ruleFormats": "Les fichiers qui portent déjà les marqueurs blk, mk ou writer (.blk.md / .mk.md / .writer.md) conservent leur format d'origine.",
+    "ruleUnmarked": "Les fichiers .md sans ces marqueurs sont automatiquement convertis en notes article (.writer.md).",
+    "ruleTarget": "Les notes et les répertoires sont importés à la racine de l'espace de notes actuel ; les répertoires conservent leur structure interne.",
+    "ruleMultiple": "Importer des notes et Importer un répertoire prennent tous deux en charge la sélection multiple.",
+    "importFiles": "Importer des notes",
+    "importDirectories": "Importer un répertoire",
+    "noSpace": "Veuillez d'abord sélectionner un espace de notes",
+    "noMarkdown": "Aucun fichier Markdown à importer",
+    "completed": "{imported} notes importées ({converted} converties en notes article)",
+    "failed": "Échec de l'import des notes"
   },
   "note": {
     "addNote": "Ajouter une note",
