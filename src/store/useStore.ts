@@ -172,6 +172,13 @@ function sortTreeRecursively(children: (Group | Notebook)[], groupOrder: Record<
   });
 }
 
+function refreshDesktopMenuIfNeeded(): void {
+  if (!isTauri()) return;
+  void import('@/platform/desktopMenu').then(({ refreshDesktopMenu }) => {
+    void refreshDesktopMenu();
+  });
+}
+
 function applyIconsToSpaces(spaces: Space[], icons: Record<string, string>): Space[] {
   return spaces.map((s) => ({
     ...s,
@@ -294,6 +301,7 @@ export const useStore = create<AppStore>((set, get) => ({
   setViewMode: (mode) => {
     set({ viewMode: mode });
     config.saveConfig({ viewMode: mode });
+    refreshDesktopMenuIfNeeded();
   },
 
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -314,6 +322,7 @@ export const useStore = create<AppStore>((set, get) => ({
     applyTheme(colorThemeId, next);
     set({ isDarkTheme: next });
     config.saveConfig({ isDarkTheme: next });
+    refreshDesktopMenuIfNeeded();
   },
 
   setColorTheme: (themeId) => {
@@ -321,6 +330,7 @@ export const useStore = create<AppStore>((set, get) => ({
     applyTheme(themeId, isDarkTheme);
     set({ colorThemeId: themeId });
     config.saveConfig({ colorThemeId: themeId });
+    refreshDesktopMenuIfNeeded();
   },
 
   setDisplayLanguage: (locale) => {
@@ -328,27 +338,28 @@ export const useStore = create<AppStore>((set, get) => ({
     document.documentElement.lang = locale;
     set({ displayLanguage: locale });
     config.saveConfig({ displayLanguage: locale });
-    if (isTauri()) {
-      void import('@/platform/desktopMenu').then(({ refreshDesktopMenu }) => refreshDesktopMenu());
-    }
+    refreshDesktopMenuIfNeeded();
   },
 
   toggleSidebar: () => {
     const next = !get().isSidebarCollapsed;
     set({ isSidebarCollapsed: next });
     config.saveConfig({ isSidebarCollapsed: next });
+    refreshDesktopMenuIfNeeded();
   },
 
   toggleAppBar: () => {
     const next = !get().showAppBar;
     set({ showAppBar: next });
     config.saveConfig({ showAppBar: next });
+    refreshDesktopMenuIfNeeded();
   },
 
   toggleDirectoryPanel: () => {
     const next = !get().showDirectoryPanel;
     set({ showDirectoryPanel: next, showAppBar: next ? get().showAppBar : false });
     config.saveConfig({ showDirectoryPanel: next, showAppBar: next ? get().showAppBar : false });
+    refreshDesktopMenuIfNeeded();
   },
 
   toggleHideElementBorders: () => {
@@ -356,6 +367,7 @@ export const useStore = create<AppStore>((set, get) => ({
     applyMinimalStyle(next);
     set({ hideElementBorders: next });
     config.saveConfig({ hideElementBorders: next });
+    refreshDesktopMenuIfNeeded();
   },
 
   initApp: async () => {
@@ -761,6 +773,7 @@ export const useStore = create<AppStore>((set, get) => ({
   setSpaceGroupDisplayMode: (mode) => {
     set({ spaceGroupDisplayMode: mode });
     config.saveConfig({ spaceGroupDisplayMode: mode });
+    refreshDesktopMenuIfNeeded();
   },
 
   toggleSpaceGroupMembership: (space, groupId) => {

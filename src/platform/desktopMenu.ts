@@ -1,4 +1,5 @@
 import {
+  CheckMenuItem,
   Menu,
   MenuItem,
   PredefinedMenuItem,
@@ -6,6 +7,10 @@ import {
 } from '@tauri-apps/api/menu';
 import { getBoundWorkspacePath } from '@/utils/config';
 import { basename, normalizePath } from '@/utils/path';
+import { useStore } from '@/store/useStore';
+import { COLOR_THEMES } from '@/themes';
+import { LOCALE_OPTIONS, t } from '@/i18n';
+import type { SpaceGroupDisplayMode } from '@/types';
 import {
   closeCurrentWindow,
   loadRecentWorkspaceEntries,
@@ -17,11 +22,16 @@ import {
 } from '@/utils/workspaceActions';
 import { checkWithNativeUpdater } from '@/utils/updater';
 import { HOMEPAGE_URL, DOCS_URL } from '@/constants/app';
-import { t } from '@/i18n';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 const APP_NAME = 'TinyNote';
 const MAX_RECENT = 10;
+
+const SPACE_GROUP_DISPLAY_OPTIONS: { value: SpaceGroupDisplayMode; labelKey: string }[] = [
+  { value: 'disabled', labelKey: 'settings.general.spaceGroupDisabled' },
+  { value: 'dropdown', labelKey: 'settings.general.spaceGroupDropdown' },
+  { value: 'collapse', labelKey: 'settings.general.spaceGroupCollapse' },
+];
 
 function isMacOS(): boolean {
   return /Mac|iPhone|iPod|iPad/i.test(navigator.userAgent);
@@ -223,24 +233,125 @@ async function buildEditSubmenu(): Promise<Submenu> {
 }
 
 async function buildViewSubmenu(): Promise<Submenu> {
+  const {
+    isDarkTheme,
+    colorThemeId,
+    displayLanguage,
+    spaceGroupDisplayMode,
+    hideElementBorders,
+    isSidebarCollapsed,
+    showAppBar,
+    showDirectoryPanel,
+  } = useStore.getState();
+
+  const colorThemeSubmenu = await Submenu.new({
+    id: 'color-theme-menu',
+    text: t('settings.general.colorTheme'),
+    items: await Promise.all(
+      COLOR_THEMES.map((theme) =>
+        CheckMenuItem.new({
+          id: `color-theme-${theme.id}`,
+          text: t(`settings.themes.${theme.id}.label`),
+          checked: colorThemeId === theme.id,
+          action: () => {
+            useStore.getState().setColorTheme(theme.id);
+          },
+        }),
+      ),
+    ),
+  });
+
+  const languageSubmenu = await Submenu.new({
+    id: 'display-language-menu',
+    text: t('settings.general.displayLanguage'),
+    items: await Promise.all(
+      LOCALE_OPTIONS.map((option) =>
+        CheckMenuItem.new({
+          id: `display-language-${option.value}`,
+          text: option.label,
+          checked: displayLanguage === option.value,
+          action: () => {
+            useStore.getState().setDisplayLanguage(option.value);
+          },
+        }),
+      ),
+    ),
+  });
+
+  const spaceGroupSubmenu = await Submenu.new({
+    id: 'space-group-display-menu',
+    text: t('settings.general.spaceGroupDisplay'),
+    items: await Promise.all(
+      SPACE_GROUP_DISPLAY_OPTIONS.map((option) =>
+        CheckMenuItem.new({
+          id: `space-group-display-${option.value}`,
+          text: t(option.labelKey),
+          checked: spaceGroupDisplayMode === option.value,
+          action: () => {
+            useStore.getState().setSpaceGroupDisplayMode(option.value);
+          },
+        }),
+      ),
+    ),
+  });
+
+  const sectionHeader = (id: string, text: string) =>
+    MenuItem.new({ id, text, enabled: false });
+
   return Submenu.new({
     id: 'view-menu',
     text: t('menu.view'),
     items: [
-      await MenuItem.new({
-        id: 'toggle-app-bar',
-        text: t('menu.toggleSidebar'),
-        accelerator: 'CommandOrControl+1',
+      await sectionHeader('view-section-global', t('menu.sectionGlobal')),
+      await CheckMenuItem.new({
+        id: 'toggle-dark-theme',
+        text: t('settings.general.darkMode'),
+        checked: isDarkTheme,
         action: () => {
-          void import('@tauri-apps/api/event').then(({ emit }) => emit('toggle_app_bar'));
+          useStore.getState().toggleTheme();
+        },
+      }),
+      colorThemeSubmenu,
+      languageSubmenu,
+      await CheckMenuItem.new({
+        id: 'toggle-hide-borders',
+        text: t('settings.general.hideBorders'),
+        checked: hideElementBorders,
+        action: () => {
+          useStore.getState().toggleHideElementBorders();
+        },
+      }),
+      await PredefinedMenuItem.new({ item: 'Separator' }),
+      await sectionHeader('view-section-space', t('menu.sectionSpace')),
+      spaceGroupSubmenu,
+      await MenuItem.new({
+        id: 'collapse-expand-space-sidebar',
+        text: isSidebarCollapsed
+          ? t('menu.expandSpaceSidebar')
+          : t('menu.collapseSpaceSidebar'),
+        enabled: showAppBar,
+        action: () => {
+          useStore.getState().toggleSidebar();
         },
       }),
       await MenuItem.new({
-        id: 'toggle-directory',
-        text: t('menu.toggleDirectory'),
+        id: 'toggle-space-sidebar',
+        text: showAppBar ? t('menu.hideSpaceSidebar') : t('menu.showSpaceSidebar'),
+        accelerator: 'CommandOrControl+1',
+        action: () => {
+          useStore.getState().toggleAppBar();
+        },
+      }),
+      await PredefinedMenuItem.new({ item: 'Separator' }),
+      await sectionHeader('view-section-directory', t('menu.sectionDirectory')),
+      await MenuItem.new({
+        id: 'toggle-directory-panel',
+        text: showDirectoryPanel
+          ? t('menu.hideDirectoryPanel')
+          : t('menu.showDirectoryPanel'),
         accelerator: 'CommandOrControl+2',
         action: () => {
-          void import('@tauri-apps/api/event').then(({ emit }) => emit('toggle_directory'));
+          useStore.getState().toggleDirectoryPanel();
         },
       }),
     ],

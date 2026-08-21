@@ -171,18 +171,10 @@ const App: React.FC = () => {
 
     const unlistenFns: (() => void)[] = [];
     const setup = async () => {
-      const un1 = await listen<string>('toggle_app_bar', () => {
-        useStore.getState().toggleAppBar();
-      });
-      unlistenFns.push(un1);
-      const un2 = await listen<string>('toggle_directory', () => {
-        useStore.getState().toggleDirectoryPanel();
-      });
-      unlistenFns.push(un2);
-      const un3 = await listen<{ path: string }>(WORKSPACE_SWITCH_EVENT, (event) => {
+      const unlisten = await listen<{ path: string }>(WORKSPACE_SWITCH_EVENT, (event) => {
         void switchWorkspace(event.payload.path);
       });
-      unlistenFns.push(un3);
+      unlistenFns.push(unlisten);
     };
     setup();
     return () => { unlistenFns.forEach(fn => fn()); };
