@@ -10,6 +10,6 @@ export async function message(_message: string): Promise<void> {
   window.alert(_message);
 }
 
-export async function ask(_message: string): Promise<boolean> {
+export async function ask(_message: string, _options?: unknown): Promise<boolean> {
   return window.confirm(_message);
 }

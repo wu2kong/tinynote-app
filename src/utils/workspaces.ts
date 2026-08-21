@@ -119,6 +119,41 @@ export async function registerWorkspace(path: string, label?: string): Promise<W
   return registry;
 }
 
+export async function unregisterWorkspace(path: string): Promise<WorkspacesRegistry> {
+  const normalizedPath = normalizePath(path);
+  const registry = await loadWorkspacesRegistry();
+  registry.workspaces = registry.workspaces.filter(
+    (item) => normalizePath(item.path) !== normalizedPath,
+  );
+  if (registry.lastActivePath && normalizePath(registry.lastActivePath) === normalizedPath) {
+    registry.lastActivePath = registry.workspaces[0]?.path ?? null;
+  }
+  await saveWorkspacesRegistry(registry);
+  return registry;
+}
+
+/** Drop recent entries except `keepPath` (typically the current workspace). */
+export async function clearRecentWorkspaces(keepPath?: string | null): Promise<WorkspacesRegistry> {
+  const registry = await loadWorkspacesRegistry();
+  const keep = keepPath ? normalizePath(keepPath) : null;
+  if (keep) {
+    const kept = registry.workspaces.filter((item) => normalizePath(item.path) === keep);
+    registry.workspaces = kept.length > 0
+      ? kept
+      : [{
+          path: keep,
+          label: basename(keep) || keep,
+          lastOpenedAt: new Date().toISOString(),
+        }];
+    registry.lastActivePath = keep;
+  } else {
+    registry.workspaces = [];
+    registry.lastActivePath = null;
+  }
+  await saveWorkspacesRegistry(registry);
+  return registry;
+}
+
 /** Workspace path passed via `?workspace=` when opening a new window. */
 export function getWorkspacePathFromLaunchUrl(): string | null {
   if (typeof window === 'undefined') return null;

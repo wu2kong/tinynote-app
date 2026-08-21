@@ -10,9 +10,10 @@ import {
   closeCurrentWindow,
   loadRecentWorkspaceEntries,
   openSettingsFromMenu,
-  openWorkspaceInCurrentWindow,
-  promptAndOpenWorkspaceInCurrentWindow,
+  openWorkspaceInNewWindow,
+  promptAndClearRecentWorkspaces,
   promptAndOpenWorkspaceInNewWindow,
+  removeRecentWorkspace,
 } from '@/utils/workspaceActions';
 import { checkWithNativeUpdater } from '@/utils/updater';
 import { HOMEPAGE_URL, DOCS_URL } from '@/constants/app';
@@ -38,17 +39,20 @@ function workspaceMenuLabel(path: string, label?: string): string {
 
 async function buildRecentWorkspacesSubmenu(): Promise<Submenu> {
   const currentPath = getBoundWorkspacePath();
+  const currentNormalized = currentPath ? normalizePath(currentPath) : null;
   const entries = await loadRecentWorkspaceEntries();
-  const items = entries.length > 0
+  const visibleEntries = entries.slice(0, MAX_RECENT);
+  const recentItems = visibleEntries.length > 0
     ? await Promise.all(
-        entries.slice(0, MAX_RECENT).map(async (entry, index) => {
+        visibleEntries.map(async (entry, index) => {
           const normalizedPath = normalizePath(entry.path);
-          const isCurrent = currentPath != null && normalizePath(currentPath) === normalizedPath;
+          const isCurrent = currentNormalized != null && currentNormalized === normalizedPath;
           return MenuItem.new({
             id: `recent-workspace-${index}`,
             text: `${isCurrent ? '✓ ' : ''}${workspaceMenuLabel(entry.path, entry.label)}`,
             action: () => {
-              void openWorkspaceInCurrentWindow(normalizedPath);
+              if (isCurrent) return;
+              void openWorkspaceInNewWindow(normalizedPath);
             },
           });
         }),
@@ -61,10 +65,52 @@ async function buildRecentWorkspacesSubmenu(): Promise<Submenu> {
         }),
       ];
 
+  const removable = visibleEntries.filter(
+    (entry) => currentNormalized == null || normalizePath(entry.path) !== currentNormalized,
+  );
+  if (removable.length === 0) {
+    return Submenu.new({
+      id: 'recent-workspaces',
+      text: t('menu.recentWorkspaces'),
+      items: recentItems,
+    });
+  }
+
+  const removeSubmenu = await Submenu.new({
+    id: 'remove-recent-workspaces',
+    text: t('menu.removeFromRecent'),
+    items: await Promise.all(
+      removable.map(async (entry, index) => {
+        const normalizedPath = normalizePath(entry.path);
+        return MenuItem.new({
+          id: `remove-recent-workspace-${index}`,
+          text: workspaceMenuLabel(entry.path, entry.label),
+          action: () => {
+            void removeRecentWorkspace(normalizedPath).then(() => refreshDesktopMenu());
+          },
+        });
+      }),
+    ),
+  });
+  const clearItem = await MenuItem.new({
+    id: 'clear-recent-workspaces',
+    text: t('menu.clearRecentWorkspaces'),
+    action: () => {
+      void promptAndClearRecentWorkspaces().then((cleared) => {
+        if (cleared) return refreshDesktopMenu();
+      });
+    },
+  });
+
   return Submenu.new({
     id: 'recent-workspaces',
     text: t('menu.recentWorkspaces'),
-    items,
+    items: [
+      ...recentItems,
+      await PredefinedMenuItem.new({ item: 'Separator' }),
+      removeSubmenu,
+      clearItem,
+    ],
   });
 }
 
@@ -78,14 +124,6 @@ async function buildFileSubmenu(): Promise<Submenu> {
         id: 'open-workspace',
         text: t('menu.openWorkspace'),
         accelerator: 'CommandOrControl+O',
-        action: () => {
-          void promptAndOpenWorkspaceInCurrentWindow();
-        },
-      }),
-      await MenuItem.new({
-        id: 'open-workspace-new-window',
-        text: t('menu.openWorkspaceNewWindow'),
-        accelerator: 'CommandOrControl+Shift+O',
         action: () => {
           void promptAndOpenWorkspaceInNewWindow();
         },

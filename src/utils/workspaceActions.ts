@@ -2,8 +2,9 @@ import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewW
 import { emit } from '@tauri-apps/api/event';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { normalizePath, basename } from '@/utils/path';
-import { listRegisteredWorkspaces } from '@/utils/config';
-import { registerWorkspace } from '@/utils/workspaces';
+import { getBoundWorkspacePath, listRegisteredWorkspaces } from '@/utils/config';
+import { clearRecentWorkspaces, registerWorkspace, unregisterWorkspace } from '@/utils/workspaces';
+import { t } from '@/i18n';
 
 export const WORKSPACE_SWITCH_EVENT = 'tinynote-workspace-switch';
 export const OPEN_SETTINGS_EVENT = 'tinynote-open-settings';
@@ -69,6 +70,25 @@ export async function closeCurrentWindow(): Promise<void> {
 export async function loadRecentWorkspaceEntries() {
   const workspaces = await listRegisteredWorkspaces();
   return workspaces.slice(0, 10);
+}
+
+export async function removeRecentWorkspace(path: string): Promise<void> {
+  const current = getBoundWorkspacePath();
+  if (current && normalizePath(current) === normalizePath(path)) return;
+  await unregisterWorkspace(path);
+}
+
+export async function promptAndClearRecentWorkspaces(): Promise<boolean> {
+  const { ask } = await import('@tauri-apps/plugin-dialog');
+  const confirmed = await ask(t('menu.clearRecentWorkspacesConfirm'), {
+    title: t('menu.clearRecentWorkspaces'),
+    kind: 'warning',
+    okLabel: t('menu.clearRecentWorkspaces'),
+    cancelLabel: t('common.cancel'),
+  });
+  if (!confirmed) return false;
+  await clearRecentWorkspaces(getBoundWorkspacePath());
+  return true;
 }
 
 export function openSettingsFromMenu(): void {
