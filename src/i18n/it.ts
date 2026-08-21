@@ -330,7 +330,11 @@ export const itMessages = {
     "noRecentWorkspaces": "(Nessun workspace recente)",
     "removeFromRecent": "Rimuovi dai recenti",
     "clearRecentWorkspaces": "Cancella workspace recenti",
-    "clearRecentWorkspacesConfirm": "Rimuovere gli altri workspace dall'elenco recente? Il workspace attuale verrà conservato. I file sul disco non verranno eliminati."
+    "clearRecentWorkspacesConfirm": "Rimuovere gli altri workspace dall'elenco recente? Il workspace attuale verrà conservato. I file sul disco non verranno eliminati.",
+    "exportLibrary": "Esporta l'intera libreria...",
+    "exportLibraryNoWorkspace": "Nessuna libreria di note è aperta",
+    "exportLibraryCompleted": "Libreria esportata: {filename}",
+    "exportLibraryFailed": "Esportazione della libreria non riuscita"
   },
   "app": {
     "loading": "Caricamento...",

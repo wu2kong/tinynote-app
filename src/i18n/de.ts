@@ -330,7 +330,11 @@ export const deMessages = {
     "noRecentWorkspaces": "(Keine zuletzt verwendeten Workspaces)",
     "removeFromRecent": "Aus Verlauf entfernen",
     "clearRecentWorkspaces": "Zuletzt verwendete Workspaces löschen",
-    "clearRecentWorkspacesConfirm": "Andere Workspaces aus der Liste entfernen? Der aktuelle Workspace bleibt erhalten. Dateien auf der Festplatte werden nicht gelöscht."
+    "clearRecentWorkspacesConfirm": "Andere Workspaces aus der Liste entfernen? Der aktuelle Workspace bleibt erhalten. Dateien auf der Festplatte werden nicht gelöscht.",
+    "exportLibrary": "Gesamte Notizbibliothek exportieren...",
+    "exportLibraryNoWorkspace": "Es ist keine Notizbibliothek geöffnet",
+    "exportLibraryCompleted": "Bibliothek exportiert: {filename}",
+    "exportLibraryFailed": "Export der Bibliothek fehlgeschlagen"
   },
   "app": {
     "loading": "Wird geladen...",

@@ -330,7 +330,11 @@ export const jaMessages = {
     "noRecentWorkspaces": "（最近のワークスペースはありません）",
     "removeFromRecent": "最近使った項目から削除",
     "clearRecentWorkspaces": "最近のワークスペースをクリア",
-    "clearRecentWorkspacesConfirm": "最近のリストから他のワークスペースを削除しますか？現在のワークスペースは残ります。ディスク上のファイルは削除されません。"
+    "clearRecentWorkspacesConfirm": "最近のリストから他のワークスペースを削除しますか？現在のワークスペースは残ります。ディスク上のファイルは削除されません。",
+    "exportLibrary": "ノートライブラリ全体を書き出す...",
+    "exportLibraryNoWorkspace": "開いているノートライブラリがありません",
+    "exportLibraryCompleted": "ライブラリを書き出しました：{filename}",
+    "exportLibraryFailed": "ライブラリの書き出しに失敗しました"
   },
   "app": {
     "loading": "読み込み中...",

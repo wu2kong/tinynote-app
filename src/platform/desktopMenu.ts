@@ -17,6 +17,7 @@ import {
   openSettingsFromMenu,
   openWorkspaceInNewWindow,
   promptAndClearRecentWorkspaces,
+  promptAndExportLibrary,
   promptAndOpenWorkspaceInNewWindow,
   removeRecentWorkspace,
 } from '@/utils/workspaceActions';
@@ -140,6 +141,14 @@ async function buildFileSubmenu(): Promise<Submenu> {
       }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       recentSubmenu,
+      await PredefinedMenuItem.new({ item: 'Separator' }),
+      await MenuItem.new({
+        id: 'export-library',
+        text: t('menu.exportLibrary'),
+        action: () => {
+          void promptAndExportLibrary();
+        },
+      }),
       await PredefinedMenuItem.new({ item: 'Separator' }),
       await MenuItem.new({
         id: 'close-window',

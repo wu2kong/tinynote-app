@@ -331,7 +331,11 @@ export const zhHantMessages = {
     "noRecentWorkspaces": "（暫無最近工作區）",
     "removeFromRecent": "從最近記錄中移除",
     "clearRecentWorkspaces": "清除最近工作區",
-    "clearRecentWorkspacesConfirm": "從最近列表中移除其他工作區？目前工作區會保留。磁碟上的檔案不會被刪除。"
+    "clearRecentWorkspacesConfirm": "從最近列表中移除其他工作區？目前工作區會保留。磁碟上的檔案不會被刪除。",
+    "exportLibrary": "匯出整個筆記庫...",
+    "exportLibraryNoWorkspace": "目前沒有開啟的筆記庫",
+    "exportLibraryCompleted": "筆記庫已匯出：{filename}",
+    "exportLibraryFailed": "匯出筆記庫失敗"
   },
   "app": {
     "loading": "載入中...",

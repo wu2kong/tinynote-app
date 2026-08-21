@@ -330,7 +330,11 @@ export const frMessages = {
     "noRecentWorkspaces": "(Aucun workspace récent)",
     "removeFromRecent": "Retirer des récents",
     "clearRecentWorkspaces": "Effacer les workspaces récents",
-    "clearRecentWorkspacesConfirm": "Retirer les autres workspaces de la liste récente ? Le workspace actuel sera conservé. Les fichiers sur le disque ne seront pas supprimés."
+    "clearRecentWorkspacesConfirm": "Retirer les autres workspaces de la liste récente ? Le workspace actuel sera conservé. Les fichiers sur le disque ne seront pas supprimés.",
+    "exportLibrary": "Exporter toute la bibliothèque...",
+    "exportLibraryNoWorkspace": "Aucune bibliothèque de notes n'est ouverte",
+    "exportLibraryCompleted": "Bibliothèque exportée : {filename}",
+    "exportLibraryFailed": "Échec de l'export de la bibliothèque"
   },
   "app": {
     "loading": "Chargement...",

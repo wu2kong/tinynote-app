@@ -358,7 +358,11 @@ export const zhHansMessages = {
     "noRecentWorkspaces": "（暂无最近工作区）",
     "removeFromRecent": "从最近记录中移除",
     "clearRecentWorkspaces": "清除最近工作区",
-    "clearRecentWorkspacesConfirm": "从最近列表中移除其他工作区？当前工作区会保留。磁盘上的文件不会被删除。"
+    "clearRecentWorkspacesConfirm": "从最近列表中移除其他工作区？当前工作区会保留。磁盘上的文件不会被删除。",
+    "exportLibrary": "导出整个笔记库...",
+    "exportLibraryNoWorkspace": "当前没有打开的笔记库",
+    "exportLibraryCompleted": "笔记库已导出：{filename}",
+    "exportLibraryFailed": "导出笔记库失败"
   },
   "app": {
     "loading": "加载中...",

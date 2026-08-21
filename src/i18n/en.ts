@@ -358,7 +358,11 @@ export const enMessages = {
     "noRecentWorkspaces": "(No recent workspaces)",
     "removeFromRecent": "Remove from Recent",
     "clearRecentWorkspaces": "Clear Recent Workspaces",
-    "clearRecentWorkspacesConfirm": "Remove other workspaces from the recent list? The current workspace will be kept. Files on disk will not be deleted."
+    "clearRecentWorkspacesConfirm": "Remove other workspaces from the recent list? The current workspace will be kept. Files on disk will not be deleted.",
+    "exportLibrary": "Export Entire Library...",
+    "exportLibraryNoWorkspace": "No note library is currently open",
+    "exportLibraryCompleted": "Library exported: {filename}",
+    "exportLibraryFailed": "Failed to export library"
   },
   "app": {
     "loading": "Loading...",

@@ -330,7 +330,11 @@ export const koMessages = {
     "noRecentWorkspaces": "(최근 작업 공간 없음)",
     "removeFromRecent": "최근 항목에서 제거",
     "clearRecentWorkspaces": "최근 작업 공간 지우기",
-    "clearRecentWorkspacesConfirm": "최근 목록에서 다른 작업 공간을 제거할까요? 현재 작업 공간은 유지됩니다. 디스크의 파일은 삭제되지 않습니다."
+    "clearRecentWorkspacesConfirm": "최근 목록에서 다른 작업 공간을 제거할까요? 현재 작업 공간은 유지됩니다. 디스크의 파일은 삭제되지 않습니다.",
+    "exportLibrary": "전체 노트 라이브러리 내보내기...",
+    "exportLibraryNoWorkspace": "열려 있는 노트 라이브러리가 없습니다",
+    "exportLibraryCompleted": "라이브러리를 내보냈습니다: {filename}",
+    "exportLibraryFailed": "라이브러리 내보내기에 실패했습니다"
   },
   "app": {
     "loading": "불러오는 중...",
