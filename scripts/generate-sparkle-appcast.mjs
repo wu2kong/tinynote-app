@@ -24,7 +24,7 @@ import {
   writeFileSync,
 } from 'fs';
 import { basename, dirname, join } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { execFileSync, spawnSync } from 'child_process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -221,6 +221,86 @@ function readNotes(options, version) {
   return `TinyNote v${version}`;
 }
 
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;');
+}
+
+function renderInlineMarkdown(text) {
+  return escapeHtml(text)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2">$1</a>');
+}
+
+/**
+ * Sparkle / WinSparkle render <description> as HTML, not Markdown.
+ * GitHub release notes are Markdown, so convert before writing the appcast.
+ */
+export function markdownToHtml(markdown) {
+  const source = String(markdown ?? '').replace(/\r\n/g, '\n').trim();
+  if (!source) return '';
+  if (/^</.test(source)) return source;
+
+  const blocks = [];
+  let listItems = null;
+  let paragraph = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    blocks.push(`<p style="margin:0 0 8px;">${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+    paragraph = [];
+  };
+
+  const flushList = () => {
+    if (!listItems) return;
+    const items = listItems
+      .map((item) => `<li style="margin:0.2em 0;">${renderInlineMarkdown(item)}</li>`)
+      .join('');
+    blocks.push(`<ul style="margin:0 0 10px;padding-left:1.3em;">${items}</ul>`);
+    listItems = null;
+  };
+
+  for (const line of source.split('\n')) {
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    const bullet = line.match(/^[-*+]\s+(.+)$/);
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+    if (heading) {
+      flushParagraph();
+      flushList();
+      const level = Math.min(heading[1].length, 3);
+      const top = blocks.length === 0 ? '0' : '12px';
+      blocks.push(
+        `<h${level} style="font-size:13px;margin:${top} 0 6px;">${renderInlineMarkdown(heading[2])}</h${level}>`,
+      );
+      continue;
+    }
+    if (bullet) {
+      flushParagraph();
+      if (!listItems) listItems = [];
+      listItems.push(bullet[1]);
+      continue;
+    }
+    flushList();
+    paragraph.push(line.trim());
+  }
+  flushParagraph();
+  flushList();
+
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;font-size:13px;line-height:1.5;">${blocks.join('')}</div>`;
+}
+
+function sparkleDescription(notes) {
+  return markdownToHtml(notes).replaceAll(']]>', ']]]]><![CDATA[>');
+}
+
 function enclosureItem({ version, notes, filePath, tag }) {
   const name = basename(filePath);
   const os = detectOs(name);
@@ -251,7 +331,7 @@ function main() {
   const version = options.version || pkg.version;
   const tag = options.tag || `v${version}`;
   const files = findUpdaterFiles(options.files);
-  const notes = readNotes(options, version).replaceAll(']]>', ']]]]><![CDATA[>');
+  const notes = sparkleDescription(readNotes(options, version));
   const items = files.map((filePath) => {
     const item = enclosureItem({ version, notes, filePath, tag });
     console.log(`Signed ${basename(filePath)}`);
@@ -272,4 +352,5 @@ ${items.join('\n')}
   console.log(`Wrote ${options.out}`);
 }
 
-main();
+const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) main();
