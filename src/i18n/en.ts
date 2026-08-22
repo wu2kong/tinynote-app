@@ -225,7 +225,7 @@ export const enMessages = {
           "gitlab": "GitLab.com or your own GitLab server",
           "codeup": "Alibaba Cloud DevOps Git hosting, often faster in China",
           "atomgit": "GitCode / AtomGit hosting",
-          "tinynote": "Official TinyNote hosting",
+          "tinynote": "Official Gitea at git.wu2kong.com",
           "custom": "Any Git host that supports HTTPS"
         },
         "tinynoteSoon": "Official TinyNote sync is coming soon. Use GitHub or Gitee for now.",
@@ -245,7 +245,7 @@ export const enMessages = {
           "gitlab": "Enable api and write_repository",
           "codeup": "Grant Codeup repository read and write permission",
           "atomgit": "Grant repository (projects) read and write permission",
-          "tinynote": "Use the official access token",
+          "tinynote": "Grant repository read and write permission (write:repository,read:user)",
           "custom": "Use a password or token from your Git server"
         },
         "openTokenPage": "Open the create-token page",

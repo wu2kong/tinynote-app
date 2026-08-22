@@ -37,17 +37,17 @@ const GITEE_CLIENT_ID = (import.meta.env.VITE_GITEE_OAUTH_CLIENT_ID ?? '').trim(
 const GITLAB_CLIENT_ID = (import.meta.env.VITE_GITLAB_OAUTH_CLIENT_ID ?? '').trim();
 const TINYNOTE_CLIENT_ID = (import.meta.env.VITE_TINYNOTE_GIT_OAUTH_CLIENT_ID ?? '').trim();
 
-export const TINYNOTE_GIT_HOST = (import.meta.env.VITE_TINYNOTE_GIT_HOST ?? 'https://git.tinynote.wu2kong.com').replace(/\/+$/, '');
+export const TINYNOTE_GIT_HOST = (import.meta.env.VITE_TINYNOTE_GIT_HOST ?? 'https://git.wu2kong.com').replace(/\/+$/, '');
 const CODEUP_API_HOST = 'https://openapi-rdc.aliyuncs.com';
 const CODEUP_GIT_HOST = 'https://codeup.aliyun.com';
 
 export const GIT_PROVIDERS: GitProviderMeta[] = [
+  { id: 'tinynote', defaultRemoteName: 'tinynote', oauthClientId: TINYNOTE_CLIENT_ID },
   { id: 'github', defaultRemoteName: 'github', oauthClientId: GITHUB_CLIENT_ID },
   { id: 'gitee', defaultRemoteName: 'gitee', oauthClientId: GITEE_CLIENT_ID },
   { id: 'gitlab', defaultRemoteName: 'gitlab', oauthClientId: GITLAB_CLIENT_ID },
   { id: 'codeup', defaultRemoteName: 'codeup', oauthClientId: '' },
   { id: 'atomgit', defaultRemoteName: 'atomgit', oauthClientId: '' },
-  { id: 'tinynote', defaultRemoteName: 'tinynote', oauthClientId: TINYNOTE_CLIENT_ID, comingSoon: true },
   { id: 'custom', defaultRemoteName: 'origin', oauthClientId: '' },
 ];
 
@@ -71,7 +71,11 @@ export function inferGitProvider(url: string): GitRemoteProvider {
   if (value.includes('codeup.aliyun.com') || value.includes('codeup.aliyun')) return 'codeup';
   if (value.includes('gitcode.com') || value.includes('atomgit.com')) return 'atomgit';
   if (value.includes('gitlab.com') || /gitlab\./.test(value)) return 'gitlab';
-  if (value.includes('tinynote') || value.includes(TINYNOTE_GIT_HOST.replace(/^https?:\/\//, '').toLowerCase())) {
+  if (
+    value.includes('tinynote')
+    || value.includes('git.wu2kong.com')
+    || value.includes(TINYNOTE_GIT_HOST.replace(/^https?:\/\//, '').toLowerCase())
+  ) {
     return 'tinynote';
   }
   return 'custom';
@@ -113,6 +117,8 @@ export function tokenCreateUrl(provider: GitRemoteProvider, host?: string): stri
       return 'https://account-devops.aliyun.com/settings/personalAccessTokenCreate';
     case 'atomgit':
       return 'https://gitcode.com/setting/token-classic/create';
+    case 'tinynote':
+      return `${normalizeGitHost(host, TINYNOTE_GIT_HOST)}/user/settings/applications`;
     default:
       return '';
   }
@@ -162,6 +168,25 @@ function assertOk(status: number, text: string, fallback: string): void {
     throw new Error(detail || fallback);
   }
   throw new Error(detail);
+}
+
+function giteaHeaders(token: string): Record<string, string> {
+  return {
+    Accept: 'application/json',
+    Authorization: `token ${token.trim()}`,
+  };
+}
+
+function giteaCloneUrl(repo: {
+  clone_url?: string;
+  html_url?: string;
+  full_name?: string;
+}, host: string): string {
+  if (repo.clone_url?.trim()) return repo.clone_url.trim();
+  const web = (repo.html_url ?? '').replace(/\/+$/, '');
+  if (web) return web.endsWith('.git') ? web : `${web}.git`;
+  if (repo.full_name) return `${host}/${repo.full_name.replace(/^\/+/, '')}.git`;
+  return '';
 }
 
 function gitcodeCloneUrl(repo: {
@@ -286,10 +311,24 @@ export async function verifyGitToken(
   token: string,
   host?: string,
 ): Promise<GitProviderUser> {
-  if (provider === 'custom' || provider === 'tinynote') {
+  if (provider === 'custom') {
     const login = token.trim() ? 'ok' : '';
     if (!login) throw new Error('empty token');
     return { login: host || 'git', name: null };
+  }
+
+  if (provider === 'tinynote') {
+    const giteaHost = normalizeGitHost(host, TINYNOTE_GIT_HOST);
+    const response = await gitHttpRequest({
+      method: 'GET',
+      url: `${giteaHost}/api/v1/user`,
+      headers: giteaHeaders(token),
+    });
+    assertOk(response.status, response.text, 'TinyNote official authorization failed');
+    const data = parseJsonBody<{ login?: string; username?: string; full_name?: string | null }>(response.text);
+    const login = data.login || data.username;
+    if (!login) throw new Error('TinyNote official authorization failed');
+    return { login, name: data.full_name ?? null };
   }
 
   if (provider === 'github') {
@@ -486,6 +525,41 @@ export async function listProviderRepos(
       }
     }
     return listed;
+  }
+
+  if (provider === 'tinynote') {
+    const giteaHost = normalizeGitHost(host, TINYNOTE_GIT_HOST);
+    const repos: GitProviderRepo[] = [];
+    for (let page = 1; page <= 5; page += 1) {
+      const response = await gitHttpRequest({
+        method: 'GET',
+        url: `${giteaHost}/api/v1/user/repos?limit=100&page=${page}`,
+        headers: giteaHeaders(token),
+      });
+      assertOk(response.status, response.text, 'Failed to list TinyNote official repositories');
+      const batch = parseJsonBody<Array<{
+        full_name?: string;
+        name?: string;
+        clone_url?: string;
+        html_url?: string;
+        private?: boolean;
+        default_branch?: string;
+      }>>(response.text);
+      const items = Array.isArray(batch) ? batch : [];
+      for (const repo of items) {
+        const url = giteaCloneUrl(repo, giteaHost);
+        if (!url) continue;
+        repos.push({
+          fullName: repo.full_name || repo.name || '',
+          name: repo.name || '',
+          url,
+          private: Boolean(repo.private),
+          defaultBranch: repo.default_branch || 'main',
+        });
+      }
+      if (items.length < 100) break;
+    }
+    return repos;
   }
 
   return [];
@@ -697,6 +771,42 @@ export async function createProviderRepo(
       url,
       private: created.visibility !== 'internal',
       defaultBranch: created.defaultBranch || 'master',
+    };
+  }
+
+  if (provider === 'tinynote') {
+    const giteaHost = normalizeGitHost(options?.host, TINYNOTE_GIT_HOST);
+    const response = await gitHttpRequest({
+      method: 'POST',
+      url: `${giteaHost}/api/v1/user/repos`,
+      headers: {
+        ...giteaHeaders(token),
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: repoName,
+        private: privateRepo,
+        auto_init: false,
+        description: 'TinyNote library',
+      }),
+    });
+    assertOk(response.status, response.text, 'Failed to create TinyNote official repository');
+    const data = parseJsonBody<{
+      full_name?: string;
+      name?: string;
+      clone_url?: string;
+      html_url?: string;
+      private?: boolean;
+      default_branch?: string;
+    }>(response.text);
+    const url = giteaCloneUrl(data, giteaHost);
+    if (!url) throw new Error('Failed to create TinyNote official repository');
+    return {
+      fullName: data.full_name || data.name || repoName,
+      name: data.name || repoName,
+      url,
+      private: Boolean(data.private),
+      defaultBranch: data.default_branch || 'main',
     };
   }
 

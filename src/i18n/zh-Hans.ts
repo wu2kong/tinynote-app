@@ -225,7 +225,7 @@ export const zhHansMessages = {
           "gitlab": "GitLab.com 或自建 GitLab",
           "codeup": "阿里云云效代码管理，国内访问更稳",
           "atomgit": "GitCode / AtomGit，适合国内代码托管",
-          "tinynote": "TinyNote 官方托管",
+          "tinynote": "官方 Gitea（git.wu2kong.com），国内访问更方便",
           "custom": "任何支持 HTTPS 的 Git 服务"
         },
         "tinynoteSoon": "TinyNote 官方同步即将开放，可以先使用 GitHub 或 Gitee。",
@@ -245,7 +245,7 @@ export const zhHansMessages = {
           "gitlab": "勾选 api 和 write_repository",
           "codeup": "勾选「代码管理」代码仓库的读写权限",
           "atomgit": "勾选仓库（projects）读写权限",
-          "tinynote": "使用官方访问令牌",
+          "tinynote": "勾选仓库读写权限（write:repository,read:user）",
           "custom": "填写 Git 服务器的密码或令牌"
         },
         "openTokenPage": "打开创建令牌页面",

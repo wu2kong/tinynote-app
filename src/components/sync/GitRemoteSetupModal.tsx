@@ -11,6 +11,7 @@ import {
   startDeviceAuth,
   suggestedRemoteName,
   supportsOAuth,
+  TINYNOTE_GIT_HOST,
   tokenCreateUrl,
   verifyGitToken,
   type GitDeviceAuthStart,
@@ -141,11 +142,15 @@ const GitRemoteSetupModal: React.FC<GitRemoteSetupModalProps> = ({
         return;
       }
       const user = await verifyGitToken(provider, nextToken, host || undefined);
-      const nextHost = host.trim() || user.organizationId || '';
-      const nextUsername = (provider === 'codeup' || provider === 'atomgit') ? user.login : username;
+      const nextHost = host.trim()
+        || (provider === 'tinynote' ? TINYNOTE_GIT_HOST : '')
+        || user.organizationId
+        || '';
+      const needsLoginUser = provider === 'codeup' || provider === 'atomgit' || provider === 'tinynote';
+      const nextUsername = needsLoginUser ? user.login : username;
       connectExtrasRef.current = { host: nextHost, username: nextUsername || '' };
       if (nextHost) setHost(nextHost);
-      if ((provider === 'codeup' || provider === 'atomgit') && user.login) setUsername(user.login);
+      if (needsLoginUser && user.login) setUsername(user.login);
       if (reauth) {
         await saveRemoteAuth(reauth.name, provider, nextToken, nextUsername || undefined);
         showToast(t('settings.sync.wizard.reauthSuccess'));

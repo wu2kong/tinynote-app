@@ -7,7 +7,7 @@ description: 在 TinyNote 高级版中选择 Git 同步或云盘同步，并在�
 
 同步属于 [TinyNote 高级版](/pro)。开通后，在「设置 → 同步」里二选一：
 
-- **Git 同步**：把笔记库连接到 GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义仓库，支持同时连接多个平台
+- **Git 同步**：把笔记库连接到 TinyNote 官方、GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义仓库，支持同时连接多个平台
 - **云盘同步**：预留能力，后续版本开放
 
 ![同步设置](/screenshots/sync.png)
@@ -24,7 +24,7 @@ description: 在 TinyNote 高级版中选择 Git 同步或云盘同步，并在�
 
 1. 在「设置 → 数据」确认笔记库文件夹
 2. 打开「设置 → 同步」，选择 **Git 同步**
-3. 点击「添加同步源」，选择 GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义 Git
+3. 点击「添加同步源」，选择 TinyNote 官方、GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义 Git
 4. 按页面引导登录授权，或粘贴访问令牌
 5. 新建私有仓库，或选择已有仓库
 
@@ -35,9 +35,8 @@ TinyNote 会在应用内完成仓库初始化和连接，**不需要**在终端�
 ### 授权说明
 
 - GitHub / GitLab：若应用已配置登录，可一键在浏览器确认；也可以粘贴个人访问令牌
-- Gitee / 阿里云 Codeup / AtomGit：按步骤打开令牌页面，勾选仓库权限后粘贴
+- TinyNote 官方 / Gitee / 阿里云 Codeup / AtomGit：按步骤打开令牌页面，勾选仓库权限后粘贴
 - 自定义 Git：填写 HTTPS 地址和令牌/密码
-- TinyNote 官方同步稍后开放
 
 令牌只保存在本机。换一台电脑时，需要重新登录对应平台。
 

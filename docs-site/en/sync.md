@@ -7,7 +7,7 @@ description: In TinyNote Pro, choose Git sync or cloud-drive sync, then authoriz
 
 Sync is a [TinyNote Pro](/en/pro) feature. In Settings → Sync, choose one method:
 
-- **Git sync**: connect the note library to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
+- **Git sync**: connect the note library to TinyNote official, GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
 - **Cloud drive sync**: reserved, coming in a later version
 
 ![Sync settings](/screenshots/sync.png)
@@ -24,7 +24,7 @@ Sync covers files in the library (mostly `.md` and workspace config). AI API key
 
 1. Confirm the library folder in Settings → Data
 2. Open Settings → Sync and choose **Git sync**
-3. Click **Add sync source** and pick GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or custom Git
+3. Click **Add sync source** and pick TinyNote official, GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or custom Git
 4. Follow the in-app sign-in guide, or paste an access token
 5. Create a private repository or choose an existing one
 
@@ -35,9 +35,8 @@ You can add multiple sources. Pull uses the primary source; commit-and-push upda
 ### Authorization
 
 - GitHub / GitLab: one-click browser sign-in when OAuth is configured, or paste a personal access token
-- Gitee / Alibaba Cloud Codeup / AtomGit: open the token page from the app, grant repository access, then paste the token
+- TinyNote official / Gitee / Alibaba Cloud Codeup / AtomGit: open the token page from the app, grant repository access, then paste the token
 - Custom Git: HTTPS URL plus a token or password
-- Official TinyNote hosting will come later
 
 Tokens stay on this device. On a new computer, sign in again.
 
