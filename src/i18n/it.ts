@@ -218,7 +218,8 @@ export const itMessages = {
       "deleteModelAria": "Elimina modello {model}",
       "manualModelPlaceholder": "Inserisci manualmente un nome modello, ad esempio: qwen-plus",
       "addModel": "Aggiungi modello",
-      "modelName": "Nome modello",
+      "modelName": "Modello predefinito",
+      "modelNameDesc": "La chat usa prima un modello abilitato nell'elenco. Se nessuno è abilitato, usa il nome inserito qui.",
       "modelPlaceholder": "Ad esempio: qwen-plus",
       "apiKeyHintSubscription": "Inserisci l'API Key del tuo abbonamento; l'elenco dei modelli viene recuperato da un endpoint compatibile con OpenAI.",
       "apiKeyHintGeneric": "Abilita il servizio quando necessario e inserisci un nome modello disponibile.",
@@ -243,7 +244,15 @@ export const itMessages = {
         "custom": "Collega qualsiasi servizio di modelli di grandi dimensioni compatibile con OpenAI o un modello locale"
       },
       "customProvider": "Personalizzato",
-      "apiKeyOptionalPlaceholder": "API Key (lascia vuoto se non richiesta)"
+      "apiKeyOptionalPlaceholder": "API Key (lascia vuoto se non richiesta)",
+      "addProvider": "Aggiungi provider",
+      "removeProvider": "Rimuovi",
+      "removeProviderConfirm": "Rimuovere il provider «{name}»? Chiavi e impostazioni dei modelli salvate verranno eliminate.",
+      "providerListEmpty": "Nessun provider",
+      "noProviderSelected": "Fai clic su + in basso a sinistra per aggiungere un provider di modelli.",
+      "keepOneProvider": "Mantieni almeno un provider",
+      "providerAdded": "Aggiunto {name}",
+      "providerRemoved": "Rimosso {name}"
     },
     "shortcuts": {
       "panelTitle": "Scorciatoie",

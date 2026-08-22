@@ -218,7 +218,8 @@ export const koMessages = {
       "deleteModelAria": "모델 {model} 삭제",
       "manualModelPlaceholder": "모델 이름을 직접 입력하세요. 예: qwen-plus",
       "addModel": "모델 추가",
-      "modelName": "모델 이름",
+      "modelName": "기본 모델",
+      "modelNameDesc": "채팅은 위에서 사용으로 설정한 모델을 먼저 사용합니다. 목록이 비었거나 모두 꺼져 있으면 여기에 입력한 이름을 사용합니다.",
       "modelPlaceholder": "예: qwen-plus",
       "apiKeyHintSubscription": "구독에서 받은 API Key를 입력하세요. 모델 목록은 OpenAI 호환 엔드포인트에서 가져옵니다.",
       "apiKeyHintGeneric": "필요할 때 서비스를 활성화하고 사용 가능한 모델 이름을 입력하세요.",
@@ -243,7 +244,15 @@ export const koMessages = {
         "custom": "임의의 OpenAI 호환 대형 모델 서비스 또는 로컬 모델에 연결합니다"
       },
       "customProvider": "사용자 지정",
-      "apiKeyOptionalPlaceholder": "API Key(필요하지 않으면 비워 두세요)"
+      "apiKeyOptionalPlaceholder": "API Key(필요하지 않으면 비워 두세요)",
+      "addProvider": "공급자 추가",
+      "removeProvider": "제거",
+      "removeProviderConfirm": "공급자 「{name}」을(를) 제거할까요? 저장된 키와 모델 설정도 삭제됩니다.",
+      "providerListEmpty": "아직 공급자가 없습니다",
+      "noProviderSelected": "왼쪽 아래 +를 눌러 모델 공급자를 추가하세요.",
+      "keepOneProvider": "공급자를 하나 이상 유지하세요",
+      "providerAdded": "{name}을(를) 추가했습니다",
+      "providerRemoved": "{name}을(를) 제거했습니다"
     },
     "shortcuts": {
       "panelTitle": "단축키",

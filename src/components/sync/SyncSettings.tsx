@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
   ArrowDownToLine, Check, Cloud, Copy, FolderOpen, GitBranch, KeyRound, Loader2,
@@ -74,6 +74,7 @@ const SyncSettings: React.FC = () => {
   const [removeTarget, setRemoveTarget] = useState<GitRemoteConfig | null>(null);
   const [selectedRemoteId, setSelectedRemoteId] = useState<string | null>(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
   const [gitCorsProxy, setGitCorsProxy] = useState('https://cors.isomorphic-git.org');
 
   const loadLocalConfig = useCallback(async () => {
@@ -145,12 +146,12 @@ const SyncSettings: React.FC = () => {
 
   useEffect(() => {
     if (!addMenuOpen) return undefined;
-    const close = () => setAddMenuOpen(false);
-    const timer = window.setTimeout(() => document.addEventListener('click', close), 0);
-    return () => {
-      window.clearTimeout(timer);
-      document.removeEventListener('click', close);
+    const onPointerDown = (event: PointerEvent) => {
+      if (addMenuRef.current?.contains(event.target as Node)) return;
+      setAddMenuOpen(false);
     };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
   }, [addMenuOpen]);
 
   const handleChooseMode = useCallback(async (mode: SyncMode) => {
@@ -394,23 +395,34 @@ const SyncSettings: React.FC = () => {
   ), [handleChooseMode, syncMode, t]);
 
   return (
-    <div className="settings-panel settings-panel--compact">
+    <div className="settings-panel settings-panel--compact settings-panel--fill">
       <div className="settings-panel-head">
         <div className="settings-panel-head-row">
           <div>
             <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
-            <p className="settings-panel-desc">{t('settings.sync.panelDesc')}</p>
+            {syncMode !== 'git' && (
+              <p className="settings-panel-desc">{t('settings.sync.panelDesc')}</p>
+            )}
           </div>
           {syncMode === 'git' && (
-            <button
-              type="button"
-              className="settings-path-btn"
-              onClick={() => refreshStatus({ toastOnSuccess: true })}
-              disabled={!storagePath || loading || busy}
-              title={t('settings.sync.refreshStatus')}
-            >
-              {loading ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
-            </button>
+            <div className="settings-panel-head-actions">
+              <button
+                type="button"
+                className="settings-sync-change-mode"
+                onClick={() => handleChooseMode('none')}
+              >
+                {t('settings.sync.changeMode')}
+              </button>
+              <button
+                type="button"
+                className="settings-path-btn"
+                onClick={() => refreshStatus({ toastOnSuccess: true })}
+                disabled={!storagePath || loading || busy}
+                title={t('settings.sync.refreshStatus')}
+              >
+                {loading ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -432,10 +444,6 @@ const SyncSettings: React.FC = () => {
         </>
       ) : (
         <>
-          <button type="button" className="settings-sync-change-mode" onClick={() => handleChooseMode('none')}>
-            {t('settings.sync.changeMode')}
-          </button>
-
           <div className="settings-sync-workspace">
             <div className="settings-sync-source-nav">
               <div className="settings-sync-source-items">
@@ -459,15 +467,12 @@ const SyncSettings: React.FC = () => {
                 )}
               </div>
               <div className="settings-sync-source-toolbar">
-                <div className="settings-sync-add-wrap">
+                <div className="settings-sync-add-wrap" ref={addMenuRef}>
                   <button
                     type="button"
                     className="settings-sync-source-tool"
                     title={t('settings.sync.addRemote')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setAddMenuOpen((open) => !open);
-                    }}
+                    onClick={() => setAddMenuOpen((open) => !open)}
                   >
                     <Plus size={14} />
                   </button>

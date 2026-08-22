@@ -3043,12 +3043,16 @@ body.directory-panel-resizing {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
   width: 720px;
-  max-width: 90vw;
-  max-height: 80vh;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: var(--shadow-md);
+}
+
+.settings-modal:has(.settings-panel--fill) {
+  height: min(580px, calc(100vh - 16px));
 }
 
 .settings-modal-header {
@@ -3066,7 +3070,7 @@ body.directory-panel-resizing {
 .settings-modal-body {
   display: flex;
   flex: 1;
-  min-height: 320px;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -3109,8 +3113,12 @@ body.directory-panel-resizing {
 
 .settings-content {
   flex: 1;
-  padding: 14px 16px;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 12px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .settings-panel-title {
@@ -3127,7 +3135,8 @@ body.directory-panel-resizing {
 }
 
 .settings-panel-head {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .settings-panel-head .settings-panel-title {
@@ -3142,59 +3151,9 @@ body.directory-panel-resizing {
   margin: -6px 0 10px;
 }
 
-.ai-provider-tabs {
-  display: flex;
-  gap: 6px;
-  margin: 12px 0;
-  overflow-x: auto;
-}
-
-.ai-provider-tab {
-  flex: 1;
-  min-width: max-content;
-  padding: 7px 9px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.ai-provider-tab:hover {
-  border-color: var(--accent);
-  color: var(--text-primary);
-}
-
-.ai-provider-tab.active {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.ai-provider-status {
-  margin-left: 5px;
-  font-size: 10px;
-  opacity: 0.8;
-}
-
-.ai-provider-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.ai-provider-head .settings-panel-desc {
-  margin-top: 3px;
-}
-
 .ai-settings-field {
   display: block;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .ai-settings-field > span {
@@ -3202,6 +3161,10 @@ body.directory-panel-resizing {
   margin-bottom: 5px;
   font-size: 12px;
   color: var(--text-secondary);
+}
+
+.ai-settings-field .ai-models-desc {
+  margin: -2px 0 5px;
 }
 
 .ai-settings-field .settings-input {
@@ -3226,9 +3189,9 @@ body.directory-panel-resizing {
 }
 
 .ai-settings-hint {
-  margin: 10px 0 12px;
+  margin: 6px 0 0;
   font-size: 11px;
-  line-height: 1.5;
+  line-height: 1.45;
   color: var(--text-tertiary);
 }
 
@@ -3241,8 +3204,8 @@ body.directory-panel-resizing {
 .ai-settings-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .ai-settings-shortcut-hint {
@@ -3267,8 +3230,8 @@ body.directory-panel-resizing {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .ai-models-title {
@@ -3284,8 +3247,8 @@ body.directory-panel-resizing {
 }
 
 .ai-model-list {
-  max-height: 196px;
-  margin-top: 8px;
+  max-height: 132px;
+  margin-top: 6px;
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -3295,9 +3258,9 @@ body.directory-panel-resizing {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 40px;
-  padding: 7px 10px;
+  gap: 8px;
+  min-height: 30px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -3324,8 +3287,8 @@ body.directory-panel-resizing {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
@@ -3356,7 +3319,22 @@ body.directory-panel-resizing {
 }
 
 .settings-panel--compact .settings-panel-head {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+}
+
+.settings-panel--fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-panel-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .settings-path-item {
@@ -3492,8 +3470,9 @@ body.directory-panel-resizing {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin: 4px 0 10px;
-  padding: 6px 10px;
+  margin: 4px 0 8px;
+  padding: 5px 8px;
+  flex-shrink: 0;
   font-size: 11px;
   color: var(--text-secondary);
   background: var(--bg-secondary);
@@ -3625,11 +3604,11 @@ body.directory-panel-resizing {
 }
 
 .settings-sync-empty {
-  padding: 20px 12px;
+  padding: 12px 10px;
   text-align: center;
   font-size: 12px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .settings-sync-empty-hint {
@@ -3656,8 +3635,9 @@ body.directory-panel-resizing {
 .settings-sync-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .settings-sync-info-row {
@@ -3704,9 +3684,10 @@ body.directory-panel-resizing {
 }
 
 .settings-sync-commit-preview {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   font-size: 11px;
   color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 .settings-sync-commit-preview code {
@@ -3720,6 +3701,8 @@ body.directory-panel-resizing {
 
 .settings-sync-actions {
   flex-wrap: wrap;
+  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
 .settings-sync-error {
@@ -3741,7 +3724,7 @@ body.directory-panel-resizing {
 }
 
 .settings-sync-file-list {
-  max-height: 220px;
+  max-height: 120px;
 }
 
 .settings-sync-file-item {
@@ -3982,13 +3965,14 @@ body.directory-panel-resizing {
 }
 
 .settings-sync-change-mode {
-  margin: 0 0 12px;
+  margin: 0;
   padding: 0;
   border: none;
   background: none;
   color: var(--text-secondary);
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .settings-sync-change-mode:hover {
@@ -3997,16 +3981,38 @@ body.directory-panel-resizing {
 
 .settings-sync-workspace {
   display: flex;
-  min-height: 220px;
-  margin-bottom: 12px;
+  min-height: 128px;
+  margin-bottom: 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-primary);
 }
 
+.settings-panel--fill .settings-sync-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.settings-panel--fill.ai-settings .settings-sync-workspace {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+.settings-panel--fill .settings-backup-list {
+  flex: 0 1 110px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-panel--fill .settings-backup-list-items {
+  max-height: none;
+  min-height: 0;
+}
+
 .settings-sync-source-nav {
-  width: 156px;
+  width: 132px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -4034,9 +4040,9 @@ body.directory-panel-resizing {
 .settings-sync-source-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  padding: 7px 8px;
+  padding: 5px 8px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
@@ -4078,6 +4084,11 @@ body.directory-panel-resizing {
   background: var(--accent);
 }
 
+.settings-sync-source-dot.is-off {
+  background: var(--text-tertiary);
+  opacity: 0.45;
+}
+
 .settings-sync-source-toolbar {
   display: flex;
   align-items: center;
@@ -4094,8 +4105,8 @@ body.directory-panel-resizing {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
@@ -4116,7 +4127,7 @@ body.directory-panel-resizing {
 .settings-sync-add-menu {
   position: absolute;
   left: 0;
-  bottom: 32px;
+  bottom: 28px;
   z-index: 6;
   min-width: 168px;
   padding: 4px;
@@ -4154,7 +4165,7 @@ body.directory-panel-resizing {
 .settings-sync-source-detail {
   flex: 1;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 8px 10px;
   overflow-y: auto;
 }
 
@@ -4162,13 +4173,13 @@ body.directory-panel-resizing {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .settings-sync-detail-title {
-  margin: 0 0 4px;
-  font-size: 14px;
+  margin: 0 0 2px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -4189,8 +4200,8 @@ body.directory-panel-resizing {
 .settings-sync-detail-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .settings-sync-section {

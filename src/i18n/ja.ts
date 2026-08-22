@@ -218,7 +218,8 @@ export const jaMessages = {
       "deleteModelAria": "モデル {model} を削除",
       "manualModelPlaceholder": "モデル名を手動で入力してください。例: qwen-plus",
       "addModel": "モデルを追加",
-      "modelName": "モデル名",
+      "modelName": "デフォルトモデル",
+      "modelNameDesc": "チャットでは上のリストで有効にしたモデルを優先します。未設定またはすべて無効の場合は、ここに入力した名前を使います。",
       "modelPlaceholder": "例: qwen-plus",
       "apiKeyHintSubscription": "サブスクリプションの API Key を入力してください。モデル一覧は OpenAI 互換エンドポイントから取得されます。",
       "apiKeyHintGeneric": "必要に応じてサービスを有効にし、利用可能なモデル名を入力してください。",
@@ -243,7 +244,15 @@ export const jaMessages = {
         "custom": "任意の OpenAI 互換大規模モデルサービスまたはローカルモデルに接続します"
       },
       "customProvider": "カスタム",
-      "apiKeyOptionalPlaceholder": "API Key（不要な場合は空欄）"
+      "apiKeyOptionalPlaceholder": "API Key（不要な場合は空欄）",
+      "addProvider": "プロバイダーを追加",
+      "removeProvider": "削除",
+      "removeProviderConfirm": "プロバイダー「{name}」を削除しますか？保存済みのキーとモデル設定も削除されます。",
+      "providerListEmpty": "プロバイダーがありません",
+      "noProviderSelected": "左下の + をクリックしてモデルプロバイダーを追加します。",
+      "keepOneProvider": "少なくとも 1 つのプロバイダーを残してください",
+      "providerAdded": "{name} を追加しました",
+      "providerRemoved": "{name} を削除しました"
     },
     "shortcuts": {
       "panelTitle": "ショートカット",

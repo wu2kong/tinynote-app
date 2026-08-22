@@ -218,7 +218,8 @@ export const ruMessages = {
       "deleteModelAria": "Удалить модель {model}",
       "manualModelPlaceholder": "Введите имя модели вручную, например: qwen-plus",
       "addModel": "Добавить модель",
-      "modelName": "Имя модели",
+      "modelName": "Модель по умолчанию",
+      "modelNameDesc": "В чате сначала используется включённая модель из списка. Если ничего не включено — используется это имя.",
       "modelPlaceholder": "Например: qwen-plus",
       "apiKeyHintSubscription": "Введите API Key из вашей подписки; список моделей получается из OpenAI-совместимого endpoint.",
       "apiKeyHintGeneric": "При необходимости включите сервис и введите доступное имя модели.",
@@ -243,7 +244,15 @@ export const ruMessages = {
         "custom": "Подключите любой OpenAI-совместимый сервис больших моделей или локальную модель"
       },
       "customProvider": "Пользовательский",
-      "apiKeyOptionalPlaceholder": "API Key (оставьте пустым, если не требуется)"
+      "apiKeyOptionalPlaceholder": "API Key (оставьте пустым, если не требуется)",
+      "addProvider": "Добавить провайдера",
+      "removeProvider": "Удалить",
+      "removeProviderConfirm": "Удалить провайдера «{name}»? Сохранённые ключи и настройки моделей будут удалены.",
+      "providerListEmpty": "Пока нет провайдеров",
+      "noProviderSelected": "Нажмите + слева внизу, чтобы добавить провайдера моделей.",
+      "keepOneProvider": "Оставьте хотя бы одного провайдера",
+      "providerAdded": "Добавлен {name}",
+      "providerRemoved": "Удалён {name}"
     },
     "shortcuts": {
       "panelTitle": "Горячие клавиши",

@@ -219,7 +219,8 @@ export const zhHantMessages = {
       "deleteModelAria": "刪除模型 {model}",
       "manualModelPlaceholder": "手動輸入模型名稱，例如：qwen-plus",
       "addModel": "新增模型",
-      "modelName": "模型名稱",
+      "modelName": "預設模型",
+      "modelNameDesc": "聊天時優先使用上面已啟用的模型。若列表為空或都未啟用，則使用這裡填寫的名稱。",
       "modelPlaceholder": "例如：qwen-plus",
       "apiKeyHintSubscription": "輸入訂閱中的 API Key；模型列表將從 OpenAI 相容端點取得。",
       "apiKeyHintGeneric": "依需求啟用服務，並輸入可用的模型名稱。",
@@ -244,7 +245,15 @@ export const zhHantMessages = {
         "custom": "連接任意 OpenAI 相容的大模型服務或本機模型"
       },
       "customProvider": "自訂",
-      "apiKeyOptionalPlaceholder": "API Key（不需要時可留空）"
+      "apiKeyOptionalPlaceholder": "API Key（不需要時可留空）",
+      "addProvider": "新增供應商",
+      "removeProvider": "移除",
+      "removeProviderConfirm": "移除供應商「{name}」？已填寫的金鑰與模型設定會一併刪除。",
+      "providerListEmpty": "還沒有供應商",
+      "noProviderSelected": "點一下左下角 +，新增模型供應商。",
+      "keepOneProvider": "至少保留一個供應商",
+      "providerAdded": "已新增 {name}",
+      "providerRemoved": "已移除 {name}"
     },
     "shortcuts": {
       "panelTitle": "快捷鍵",

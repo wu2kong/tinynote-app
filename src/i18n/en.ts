@@ -350,7 +350,8 @@ export const enMessages = {
       "deleteModelAria": "Delete model {model}",
       "manualModelPlaceholder": "Enter a model name manually, for example: qwen-plus",
       "addModel": "Add Model",
-      "modelName": "Model Name",
+      "modelName": "Default Model",
+      "modelNameDesc": "Chat uses an enabled model from the list first. If none are enabled, it uses this name.",
       "modelPlaceholder": "For example: qwen-plus",
       "apiKeyHintSubscription": "Enter the API Key from your subscription; the model list is fetched from an OpenAI-compatible endpoint.",
       "apiKeyHintGeneric": "Enable the service when needed and enter an available model name.",
@@ -375,7 +376,15 @@ export const enMessages = {
         "custom": "Connect any OpenAI-compatible large model service or local model"
       },
       "customProvider": "Custom",
-      "apiKeyOptionalPlaceholder": "API Key (leave blank if not required)"
+      "apiKeyOptionalPlaceholder": "API Key (leave blank if not required)",
+      "addProvider": "Add provider",
+      "removeProvider": "Remove",
+      "removeProviderConfirm": "Remove provider \"{name}\"? Saved keys and model settings for it will be deleted.",
+      "providerListEmpty": "No providers yet",
+      "noProviderSelected": "Click + in the lower left to add a model provider.",
+      "keepOneProvider": "Keep at least one provider",
+      "providerAdded": "Added {name}",
+      "providerRemoved": "Removed {name}"
     },
     "shortcuts": {
       "panelTitle": "Shortcuts",

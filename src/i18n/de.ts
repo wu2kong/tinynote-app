@@ -218,7 +218,8 @@ export const deMessages = {
       "deleteModelAria": "Modell {model} löschen",
       "manualModelPlaceholder": "Modellnamen manuell eingeben, zum Beispiel: qwen-plus",
       "addModel": "Modell hinzufügen",
-      "modelName": "Modellname",
+      "modelName": "Standardmodell",
+      "modelNameDesc": "Der Chat verwendet zuerst ein aktiviertes Modell aus der Liste. Ist keines aktiv, wird dieser Name verwendet.",
       "modelPlaceholder": "Zum Beispiel: qwen-plus",
       "apiKeyHintSubscription": "Gib den API Key aus deinem Abonnement ein; die Modellliste wird von einem OpenAI-kompatiblen Endpunkt abgerufen.",
       "apiKeyHintGeneric": "Aktiviere den Dienst bei Bedarf und gib einen verfügbaren Modellnamen ein.",
@@ -243,7 +244,15 @@ export const deMessages = {
         "custom": "Beliebigen OpenAI-kompatiblen großen Modelldienst oder lokales Modell verbinden"
       },
       "customProvider": "Benutzerdefiniert",
-      "apiKeyOptionalPlaceholder": "API Key (leer lassen, falls nicht erforderlich)"
+      "apiKeyOptionalPlaceholder": "API Key (leer lassen, falls nicht erforderlich)",
+      "addProvider": "Anbieter hinzufügen",
+      "removeProvider": "Entfernen",
+      "removeProviderConfirm": "Anbieter „{name}“ entfernen? Gespeicherte Schlüssel und Modelleinstellungen werden gelöscht.",
+      "providerListEmpty": "Noch keine Anbieter",
+      "noProviderSelected": "Klicken Sie unten links auf +, um einen Modellanbieter hinzuzufügen.",
+      "keepOneProvider": "Mindestens einen Anbieter behalten",
+      "providerAdded": "{name} hinzugefügt",
+      "providerRemoved": "{name} entfernt"
     },
     "shortcuts": {
       "panelTitle": "Tastenkürzel",

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown, Mail, MessageSquare, BookOpen } from 'lucide-react';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, Bot, KeyRound, Save, ListRestart, Plus, Minus, Trash2, Crown, Mail, MessageSquare, BookOpen } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
@@ -15,6 +15,7 @@ import { loadConfig, saveConfig } from '@/utils/config';
 import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
 import { getPlatform, isTauri } from '@/platform/detect';
 import OfficialSampleLibraryModal from './OfficialSampleLibraryModal';
+import ConfirmModal from './ConfirmModal';
 import SyncSettings from './sync/SyncSettings';
 import { showToast } from './Toast';
 import { t as globalT } from '@/i18n';
@@ -260,12 +261,28 @@ const PROVIDER_KEY_PLACEHOLDERS: Record<LLMProviderId, string> = {
   custom: 'settings.ai.apiKeyOptionalPlaceholder',
 };
 
-function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProviderConfig[] {
-  return DEFAULT_LLM_PROVIDERS.map((fallback) => ({
+function mergeProvider(saved: LLMProviderConfig | undefined, fallback: LLMProviderConfig): LLMProviderConfig {
+  return {
     ...fallback,
-    ...providers?.find((provider) => provider.id === fallback.id),
-    models: providers?.find((provider) => provider.id === fallback.id)?.models?.filter((model) => model.id.trim()),
-  }));
+    ...saved,
+    models: saved?.models?.filter((model) => model.id.trim()),
+  };
+}
+
+function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProviderConfig[] {
+  if (!providers?.length) {
+    return DEFAULT_LLM_PROVIDERS.map((fallback) => ({ ...fallback }));
+  }
+  const seen = new Set<LLMProviderId>();
+  const next: LLMProviderConfig[] = [];
+  for (const provider of providers) {
+    if (seen.has(provider.id)) continue;
+    seen.add(provider.id);
+    const fallback = DEFAULT_LLM_PROVIDERS.find((item) => item.id === provider.id)
+      ?? DEFAULT_LLM_PROVIDERS[DEFAULT_LLM_PROVIDERS.length - 1];
+    next.push(mergeProvider(provider, fallback));
+  }
+  return next;
 }
 
 function getModelsUrl(baseUrl: string): string {
@@ -302,12 +319,35 @@ const AISettings: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
   const [manualModelId, setManualModelId] = useState('');
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<LLMProviderConfig | null>(null);
+  const addMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadConfig().then((config) => setProviders(normalizeProviders(config.llmProviders)));
   }, []);
 
+  useEffect(() => {
+    if (providers.length === 0) return;
+    if (!providers.some((provider) => provider.id === selectedId)) {
+      setSelectedId(providers[0].id);
+    }
+  }, [providers, selectedId]);
+
+  useEffect(() => {
+    if (!addMenuOpen) return undefined;
+    const onPointerDown = (event: PointerEvent) => {
+      if (addMenuRef.current?.contains(event.target as Node)) return;
+      setAddMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [addMenuOpen]);
+
   const selected = providers.find((provider) => provider.id === selectedId) ?? providers[0];
+  const addableProviders = DEFAULT_LLM_PROVIDERS.filter(
+    (item) => !providers.some((provider) => provider.id === item.id),
+  );
   const providerLabel = (id: LLMProviderId) => {
     const label = PROVIDER_LABELS[id];
     return label.startsWith('settings.') ? t(label) : label;
@@ -321,6 +361,29 @@ const AISettings: React.FC = () => {
     setProviders((current) => current.map((provider) => (
       provider.id === selectedId ? { ...provider, ...patch } : provider
     )));
+  };
+
+  const handleAddProvider = (id: LLMProviderId) => {
+    const fallback = DEFAULT_LLM_PROVIDERS.find((item) => item.id === id);
+    if (!fallback || providers.some((provider) => provider.id === id)) return;
+    setProviders((current) => [...current, { ...fallback }]);
+    setSelectedId(id);
+    setAddMenuOpen(false);
+    showToast(t('settings.ai.providerAdded', { name: providerLabel(id) }));
+  };
+
+  const handleRemoveSelected = () => {
+    if (!selected) return;
+    if (providers.length <= 1) {
+      showToast(t('settings.ai.keepOneProvider'));
+      return;
+    }
+    setRemoveTarget(selected);
+  };
+
+  const handleRemoveProvider = (provider: LLMProviderConfig) => {
+    setProviders((current) => current.filter((item) => item.id !== provider.id));
+    showToast(t('settings.ai.providerRemoved', { name: providerLabel(provider.id) }));
   };
 
   const handleFetchModels = async () => {
@@ -404,148 +467,219 @@ const AISettings: React.FC = () => {
   };
 
   return (
-    <div className="settings-panel ai-settings">
+    <div className="settings-panel settings-panel--compact settings-panel--fill ai-settings">
       <div className="settings-panel-head">
-        <h4 className="settings-panel-title">{t('settings.ai.panelTitle')}</h4>
-        <p className="settings-panel-desc">{t('settings.ai.panelDesc')}</p>
-      </div>
-
-      <div className="ai-provider-tabs" role="tablist" aria-label={t('settings.ai.providerTabsLabel')}>
-        {providers.map((provider) => (
-          <button
-            key={provider.id}
-            type="button"
-            role="tab"
-            aria-selected={selectedId === provider.id}
-            className={`ai-provider-tab ${selectedId === provider.id ? 'active' : ''}`}
-            onClick={() => setSelectedId(provider.id)}
-          >
-            {providerLabel(provider.id)}
-            {provider.enabled && <span className="ai-provider-status">{t('settings.ai.enabled')}</span>}
-          </button>
-        ))}
-      </div>
-
-      <div className="ai-provider-head">
-        <div>
-          <div className="settings-row-label">{providerLabel(selected.id)}</div>
-          <p className="settings-panel-desc">{t(PROVIDER_DESCRIPTION_KEYS[selected.id])}</p>
+        <div className="settings-panel-head-row">
+          <div>
+            <h4 className="settings-panel-title">{t('settings.ai.panelTitle')}</h4>
+          </div>
+          <div className="settings-panel-head-actions ai-settings-actions">
+            <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
+              <Save size={14} />
+              {saving ? t('settings.ai.saving') : t('settings.ai.saveConfig')}
+            </button>
+          </div>
         </div>
-        <SettingsToggle checked={selected.enabled} onChange={() => updateProvider({ enabled: !selected.enabled })} />
       </div>
 
-      <label className="ai-settings-field">
-        <span>{t('settings.ai.apiUrl')}</span>
-        <input
-          className="settings-input"
-          type="url"
-          value={selected.baseUrl}
-          onChange={(event) => updateProvider({ baseUrl: event.target.value })}
-          placeholder="https://api.example.com/v1"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-        />
-      </label>
-
-      <div className="ai-models-head">
-        <div>
-          <span className="ai-models-title">{t('settings.ai.modelList')}</span>
-          <p className="ai-models-desc">{t('settings.ai.modelListDesc')}</p>
-        </div>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleFetchModels} disabled={loadingModels}>
-          {loadingModels ? <Loader2 size={14} className="settings-spin" /> : <ListRestart size={14} />}
-          {loadingModels ? t('settings.ai.fetchingModels') : t('settings.ai.fetchModels')}
-        </button>
-      </div>
-
-      {selected.models && selected.models.length > 0 && (
-        <div className="ai-model-list" aria-label={t('settings.ai.modelsLabel', { provider: providerLabel(selected.id) })}>
-          {selected.models.map((model) => (
-            <div className="ai-model-row" key={model.id}>
-              <code>{model.id}</code>
-              <div className="ai-model-actions">
-                <SettingsToggle checked={model.enabled} onChange={() => toggleModel(model.id)} />
+      <div className="settings-sync-workspace" role="tablist" aria-label={t('settings.ai.providerTabsLabel')}>
+        <div className="settings-sync-source-nav">
+          <div className="settings-sync-source-items">
+            {providers.length === 0 ? (
+              <div className="settings-sync-source-empty">{t('settings.ai.providerListEmpty')}</div>
+            ) : (
+              providers.map((provider) => (
                 <button
+                  key={provider.id}
                   type="button"
-                  className="ai-model-delete"
-                  onClick={() => removeModel(model.id)}
-                  title={t('settings.ai.deleteModel', { model: model.id })}
-                  aria-label={t('settings.ai.deleteModelAria', { model: model.id })}
+                  role="tab"
+                  aria-selected={selectedId === provider.id}
+                  className={`settings-sync-source-item ${selectedId === provider.id ? 'is-active' : ''}`}
+                  onClick={() => setSelectedId(provider.id)}
                 >
-                  <Trash2 size={15} />
+                  <span className="settings-sync-source-item-name">{providerLabel(provider.id)}</span>
+                  <span className={`settings-sync-source-dot ${provider.enabled ? 'is-ok' : 'is-off'}`} />
+                </button>
+              ))
+            )}
+          </div>
+          <div className="settings-sync-source-toolbar">
+            <div className="settings-sync-add-wrap" ref={addMenuRef}>
+              <button
+                type="button"
+                className="settings-sync-source-tool"
+                title={t('settings.ai.addProvider')}
+                disabled={addableProviders.length === 0}
+                onClick={() => setAddMenuOpen((open) => !open)}
+              >
+                <Plus size={14} />
+              </button>
+              {addMenuOpen && addableProviders.length > 0 && (
+                <div className="settings-sync-add-menu" onClick={(e) => e.stopPropagation()}>
+                  {addableProviders.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className="settings-sync-add-menu-item"
+                      onClick={() => handleAddProvider(item.id)}
+                    >
+                      <span>{providerLabel(item.id)}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="settings-sync-source-tool"
+              title={t('settings.ai.removeProvider')}
+              disabled={!selected || providers.length <= 1}
+              onClick={handleRemoveSelected}
+            >
+              <Minus size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-sync-source-detail">
+          {!selected ? (
+            <div className="settings-sync-empty">
+              <p>{t('settings.ai.noProviderSelected')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="settings-sync-detail-head">
+                <div>
+                  <h5 className="settings-sync-detail-title">{providerLabel(selected.id)}</h5>
+                  <p className="settings-sync-detail-desc">{t(PROVIDER_DESCRIPTION_KEYS[selected.id])}</p>
+                </div>
+                <div className="settings-sync-detail-badges">
+                  {selected.enabled && (
+                    <span className="settings-sync-auth-dot is-ok">{t('settings.ai.enabled')}</span>
+                  )}
+                  <SettingsToggle
+                    checked={selected.enabled}
+                    onChange={() => updateProvider({ enabled: !selected.enabled })}
+                  />
+                </div>
+              </div>
+
+              <label className="ai-settings-field">
+                <span>{t('settings.ai.apiUrl')}</span>
+                <input
+                  className="settings-input"
+                  type="url"
+                  value={selected.baseUrl}
+                  onChange={(event) => updateProvider({ baseUrl: event.target.value })}
+                  placeholder="https://api.example.com/v1"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
+              </label>
+
+              <label className="ai-settings-field">
+                <span>{t('settings.ai.apiKey')}</span>
+                <div className="ai-key-input-wrap">
+                  <KeyRound size={14} />
+                  <input
+                    className="settings-input"
+                    type="password"
+                    value={selected.apiKey ?? ''}
+                    onChange={(event) => updateProvider({ apiKey: event.target.value })}
+                    placeholder={providerKeyPlaceholder(selected.id)}
+                    autoComplete="off"
+                  />
+                </div>
+                <p className="ai-settings-hint">
+                  {selected.id === 'opencode-go' || selected.id === 'opencode-zen'
+                    ? t('settings.ai.apiKeyHintSubscription')
+                    : t('settings.ai.apiKeyHintGeneric')}
+                </p>
+              </label>
+
+              <div className="ai-models-head">
+                <div>
+                  <span className="ai-models-title">{t('settings.ai.modelList')}</span>
+                  <p className="ai-models-desc">{t('settings.ai.modelListDesc')}</p>
+                </div>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleFetchModels} disabled={loadingModels}>
+                  {loadingModels ? <Loader2 size={14} className="settings-spin" /> : <ListRestart size={14} />}
+                  {loadingModels ? t('settings.ai.fetchingModels') : t('settings.ai.fetchModels')}
                 </button>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
 
-      <div className="ai-add-model">
-        <input
-          className="settings-input"
-          value={manualModelId}
-          onChange={(event) => setManualModelId(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              handleAddModel();
-            }
-          }}
-          placeholder={t('settings.ai.manualModelPlaceholder')}
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-        />
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddModel}>
-          <Plus size={14} />
-          {t('settings.ai.addModel')}
-        </button>
+              {selected.models && selected.models.length > 0 && (
+                <div className="ai-model-list" aria-label={t('settings.ai.modelsLabel', { provider: providerLabel(selected.id) })}>
+                  {selected.models.map((model) => (
+                    <div className="ai-model-row" key={model.id}>
+                      <code>{model.id}</code>
+                      <div className="ai-model-actions">
+                        <SettingsToggle checked={model.enabled} onChange={() => toggleModel(model.id)} />
+                        <button
+                          type="button"
+                          className="ai-model-delete"
+                          onClick={() => removeModel(model.id)}
+                          title={t('settings.ai.deleteModel', { model: model.id })}
+                          aria-label={t('settings.ai.deleteModelAria', { model: model.id })}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="ai-add-model">
+                <input
+                  className="settings-input"
+                  value={manualModelId}
+                  onChange={(event) => setManualModelId(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      handleAddModel();
+                    }
+                  }}
+                  placeholder={t('settings.ai.manualModelPlaceholder')}
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddModel}>
+                  <Plus size={14} />
+                  {t('settings.ai.addModel')}
+                </button>
+              </div>
+
+              <label className="ai-settings-field">
+                <span>{t('settings.ai.modelName')}</span>
+                <p className="ai-models-desc">{t('settings.ai.modelNameDesc')}</p>
+                <input
+                  className="settings-input"
+                  type="text"
+                  value={selected.model}
+                  onChange={(event) => updateProvider({ model: event.target.value })}
+                  placeholder={selected.id === 'custom' ? t('settings.ai.modelPlaceholder') : undefined}
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                />
+              </label>
+            </>
+          )}
+        </div>
       </div>
 
-      <label className="ai-settings-field">
-        <span>{t('settings.ai.apiKey')}</span>
-        <div className="ai-key-input-wrap">
-          <KeyRound size={14} />
-          <input
-            className="settings-input"
-            type="password"
-            value={selected.apiKey ?? ''}
-            onChange={(event) => updateProvider({ apiKey: event.target.value })}
-            placeholder={providerKeyPlaceholder(selected.id)}
-            autoComplete="off"
-          />
-        </div>
-      </label>
-
-      <label className="ai-settings-field">
-        <span>{t('settings.ai.modelName')}</span>
-        <input
-          className="settings-input"
-          value={selected.model}
-          onChange={(event) => updateProvider({ model: event.target.value })}
-          placeholder={selected.id === 'custom' ? t('settings.ai.modelPlaceholder') : undefined}
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-        />
-      </label>
-
-      <p className="ai-settings-hint">
-        {selected.id === 'opencode-go' || selected.id === 'opencode-zen'
-          ? t('settings.ai.apiKeyHintSubscription')
-          : t('settings.ai.apiKeyHintGeneric')}
-      </p>
-
-      <div className="ai-settings-actions">
-        <button type="button" className="btn btn-primary btn-sm ai-settings-save" onClick={handleSave} disabled={saving}>
-          <Save size={14} />
-          {saving ? t('settings.ai.saving') : t('settings.ai.saveConfig')}
-        </button>
-        <span className="ai-settings-shortcut-hint">
-          <kbd>{formatShortcut('I')}</kbd> {t('settings.ai.shortcutHint')}
-        </span>
-      </div>
+      <ConfirmModal
+        open={!!removeTarget}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={() => { if (removeTarget) handleRemoveProvider(removeTarget); }}
+        title={t('settings.ai.removeProvider')}
+        message={t('settings.ai.removeProviderConfirm', { name: removeTarget ? providerLabel(removeTarget.id) : '' })}
+        confirmLabel={t('settings.ai.removeProvider')}
+      />
     </div>
   );
 };
