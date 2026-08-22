@@ -87,7 +87,7 @@ git status
 | --- | --- |
 | macOS | Universal `.dmg` |
 | Windows | `.exe` 安装包，也可使用 `.msi` |
-| Linux | `.AppImage` / `.deb` / `.rpm` |
+| Linux | `.deb` / `.rpm` |
 
 ## 下一步
 

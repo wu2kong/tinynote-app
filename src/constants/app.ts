@@ -6,7 +6,14 @@ export const AUTHOR_NAME = '悟二空';
 export const AUTHOR_URL = 'https://wu2kong.com';
 export const FEEDBACK_EMAIL = 'tinynote-app@wu2kong.com';
 export const GITHUB_RELEASES_API = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
-/** Mirror download page for users who cannot access GitHub. */
+export const GITHUB_APPCAST_URL = `https://github.com/${GITHUB_REPO}/releases/latest/download/appcast.xml`;
+/** Qiniu fallback CDN. Public files live under /tinynote/. */
+export const QINIU_CDN_BASE =
+  (import.meta.env.VITE_QINIU_CDN_BASE as string | undefined)?.replace(/\/+$/, '')
+  || 'https://qin.wu2kong.com/tinynote';
+export const QINIU_APPCAST_URL = `${QINIU_CDN_BASE}/updates/appcast.xml`;
+export const QINIU_LATEST_JSON_URL = `${QINIU_CDN_BASE}/updates/latest.json`;
+/** Mirror download page for users who cannot access GitHub or Qiniu. */
 export const MIRROR_DOWNLOAD_URL = 'https://www.ilanzou.com/s/B6uXlvhu';
 
 /**

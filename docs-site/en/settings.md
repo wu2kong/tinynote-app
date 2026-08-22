@@ -60,7 +60,7 @@ Or open a [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues).
 
 The About page shows the version and can check for updates:
 
-- **macOS / Windows**: native updater dialog
+- **macOS / Windows**: native updater dialog (GitHub first, Qiniu Cloud if GitHub is unreachable)
 - **Otherwise**: get the installer from the [download page](https://tinynote.wu2kong.com/download.html)
 
 TinyNote → Check for Updates… is the same entry.

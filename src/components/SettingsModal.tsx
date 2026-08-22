@@ -1164,7 +1164,7 @@ const AboutSettings: React.FC = () => {
     } finally {
       setChecking(false);
     }
-  }, []);
+  }, [t]);
 
   const handleDownloadUpdate = useCallback(async () => {
     if (!updateInfo) return;
@@ -1179,7 +1179,7 @@ const AboutSettings: React.FC = () => {
     } finally {
       setDownloading(false);
     }
-  }, [updateInfo]);
+  }, [updateInfo, t]);
 
   const handleManualDownload = useCallback(async () => {
     if (!updateInfo) return;
@@ -1252,7 +1252,7 @@ const AboutSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="settings-row settings-row-vertical">
+      <div className="settings-row settings-row-vertical" aria-busy={checking || downloading}>
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.about.softwareUpdate')}</span>
           <span className="settings-row-desc">{t(isMacOS() ? 'settings.about.softwareUpdateDescMacos' : isWindows() ? 'settings.about.softwareUpdateDescWindows' : 'settings.about.softwareUpdateDesc')}</span>
@@ -1260,9 +1260,10 @@ const AboutSettings: React.FC = () => {
         <div className="settings-update-actions">
           <button
             type="button"
-            className="btn btn-secondary"
+            className={`btn btn-secondary${checking ? ' is-loading' : ''}`}
             onClick={handleCheckUpdate}
             disabled={checking || downloading}
+            aria-busy={checking}
           >
             {checking ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
             {checking ? t('settings.about.checking') : t('settings.about.checkUpdate')}
@@ -1271,9 +1272,10 @@ const AboutSettings: React.FC = () => {
             <>
               <button
                 type="button"
-                className="btn btn-primary"
+                className={`btn btn-primary${downloading ? ' is-loading' : ''}`}
                 onClick={handleDownloadUpdate}
                 disabled={downloading}
+                aria-busy={downloading}
               >
                 {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
                 {downloading ? t('settings.about.downloading') : t('settings.about.downloadAndUpdate')}
@@ -1299,7 +1301,16 @@ const AboutSettings: React.FC = () => {
             </>
           )}
         </div>
-        {checkMessage && (
+        {(checking || downloading) && (
+          <div className="settings-update-loading" role="status" aria-live="polite">
+            <Loader2 size={16} className="settings-spin" />
+            <span>
+              {checking ? t('settings.about.checkingHint') : t('settings.about.downloadingHint')}
+            </span>
+            <span className="settings-update-progress" aria-hidden="true" />
+          </div>
+        )}
+        {checkMessage && !checking && !downloading && (
           <p className={`settings-update-message ${updateInfo ? 'has-update' : ''}`}>
             {checkMessage}
           </p>

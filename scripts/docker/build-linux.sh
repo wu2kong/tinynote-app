@@ -9,7 +9,7 @@ else
   npm install
 fi
 
-npx tauri build --target x86_64-unknown-linux-gnu --bundles appimage,deb,rpm
+npx tauri build --target x86_64-unknown-linux-gnu --bundles deb,rpm
 
 if [[ -n "${HOST_UID:-}" ]]; then
   if [[ -d /app/src-tauri/target/x86_64-unknown-linux-gnu ]]; then

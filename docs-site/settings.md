@@ -60,7 +60,7 @@ description: TinyNote 设置中心的完整说明，涵盖语言、主题、数�
 
 「关于」页显示当前版本，并提供检查更新：
 
-- **macOS / Windows**：走系统原生更新对话框
+- **macOS / Windows**：走系统原生更新对话框（默认 GitHub，无法访问时改用七牛云）
 - **其他情况**：到 [下载页](https://tinynote.wu2kong.com/download.html) 获取安装包
 
 菜单「TinyNote → 检查更新…」与此入口相同。

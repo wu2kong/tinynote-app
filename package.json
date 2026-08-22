@@ -19,7 +19,8 @@
     "landing:build": "node scripts/build-landing-seo.mjs",
     "landing:verify": "node scripts/verify-landing-seo.mjs",
     "indexnow:setup": "node scripts/setup-indexnow.mjs",
-    "indexnow:submit": "node scripts/submit-indexnow.mjs"
+    "indexnow:submit": "node scripts/submit-indexnow.mjs",
+    "test": "node --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/updateSource.test.mjs"
   },
   "dependencies": {
     "@codemirror/lang-css": "^6.3.1",

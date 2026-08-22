@@ -35,7 +35,7 @@ TinyNote 面向「短片段 + 一键复制」。Notion 更适合长文和协作�
 
 ## 检查更新失败或下载很慢？
 
-GitHub 在部分网络环境下不稳定。可改从 [下载页](https://tinynote.wu2kong.com/download.html) 获取安装包，或稍后重试「关于」里的检查更新。
+检查更新默认走 GitHub；网络出错或无法访问时会自动改用七牛云。若两边都失败，可从 [下载页](https://tinynote.wu2kong.com/download.html) 或蓝奏云镜像获取安装包。
 
 ## macOS 打不开应用？
 

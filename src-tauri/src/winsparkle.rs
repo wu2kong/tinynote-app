@@ -5,8 +5,7 @@ use std::sync::OnceLock;
 use libloading::{Library, Symbol};
 use tauri::{AppHandle, Manager, Runtime};
 
-const APPCAST_URL: &str =
-    "https://github.com/wu2kong/tinynote-app/releases/latest/download/appcast.xml";
+use crate::updater;
 /// Keep in sync with `src-tauri/Info.plist` `SUPublicEDKey`.
 const EDDSA_PUBLIC_KEY: &str = "iuoIi1Gqa16zHOpgGPGmVPlmK+9XXMx/dPrOssrSXO0=";
 const CHECK_INTERVAL_SECS: i32 = 86_400;
@@ -68,7 +67,7 @@ pub fn init<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
         Library::new(&dll_path).map_err(|error| format!("无法加载 WinSparkle.dll: {error}"))?
     };
 
-    let appcast = CString::new(APPCAST_URL).map_err(|error| error.to_string())?;
+    let appcast = CString::new(updater::preferred_appcast_url()).map_err(|error| error.to_string())?;
     let pubkey = CString::new(EDDSA_PUBLIC_KEY).map_err(|error| error.to_string())?;
     let company = wide("TinyNote");
     let app_name = wide("TinyNote");
@@ -126,6 +125,19 @@ pub fn init<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
 
 pub fn is_available() -> bool {
     STATE.get().is_some()
+}
+
+pub fn set_appcast_url(url: &str) -> Result<(), String> {
+    let state = STATE.get().ok_or_else(|| "WinSparkle 未初始化".to_string())?;
+    let appcast = CString::new(url).map_err(|error| error.to_string())?;
+    unsafe {
+        let set_appcast: Symbol<unsafe extern "C" fn(*const std::ffi::c_char)> = state
+            .lib
+            .get(b"win_sparkle_set_appcast_url")
+            .map_err(|error| error.to_string())?;
+        set_appcast(appcast.as_ptr());
+    }
+    Ok(())
 }
 
 pub fn check_for_updates() -> Result<(), String> {

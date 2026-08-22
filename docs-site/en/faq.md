@@ -33,7 +33,7 @@ Open Settings → Sync, choose Git sync, and add a source. TinyNote initializes 
 
 ## Update check failed or download is slow?
 
-GitHub can be unreliable on some networks. Use the [download page](https://tinynote.wu2kong.com/download.html) or retry later from About.
+Update checks try GitHub first and automatically fall back to Qiniu Cloud if GitHub errors or is unreachable. If both fail, get the installer from the [download page](https://tinynote.wu2kong.com/download.html) or the Lanzou Cloud mirror.
 
 ## macOS will not open the app?
 

@@ -16,7 +16,7 @@ jobs:
           - platform: 'macos-latest'
             args: '--target universal-apple-darwin'
           - platform: 'ubuntu-22.04'
-            args: ''
+            args: '--bundles deb,rpm'
           - platform: 'windows-latest'
             args: ''
 
@@ -113,3 +113,44 @@ jobs:
             --out appcast.xml \
             "${files[@]}"
           gh release upload "$TAG" appcast.xml --clobber
+
+      - name: Mirror installers to Qiniu
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          QINIU_ACCESS_KEY: ${{ secrets.QINIU_ACCESS_KEY }}
+          QINIU_SECRET_KEY: ${{ secrets.QINIU_SECRET_KEY }}
+          QINIU_BUCKET: ${{ secrets.QINIU_BUCKET }}
+          QINIU_CDN_BASE: ${{ secrets.QINIU_CDN_BASE }}
+          QINIU_UPLOAD_HOST: ${{ secrets.QINIU_UPLOAD_HOST }}
+          TAG: ${{ github.event.release.tag_name }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          PUBLISHED_AT: ${{ github.event.release.published_at }}
+        run: |
+          if [ -z "$QINIU_ACCESS_KEY" ] || [ -z "$QINIU_SECRET_KEY" ] || [ -z "$QINIU_BUCKET" ] || [ -z "$QINIU_CDN_BASE" ]; then
+            echo "Qiniu secrets not configured; skip China mirror."
+            exit 0
+          fi
+          mkdir -p release-assets
+          gh release download "$TAG" --dir release-assets || true
+          shopt -s nullglob
+          files=(release-assets/*.dmg release-assets/*x64-setup.exe)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No macOS DMG or Windows NSIS installer found for the Qiniu mirror."
+            exit 1
+          fi
+          NOTES_FILE="$RUNNER_TEMP/release-notes-qiniu.txt"
+          printf '%s\n' "$RELEASE_BODY" > "$NOTES_FILE"
+          node scripts/generate-sparkle-appcast.mjs \
+            --tag "$TAG" \
+            --notes-file "$NOTES_FILE" \
+            --asset-base-url "$QINIU_CDN_BASE" \
+            --out appcast-cn.xml \
+            --latest-json latest.json \
+            --latest-files-dir release-assets \
+            --published-at "$PUBLISHED_AT" \
+            "${files[@]}"
+          node scripts/upload-qiniu.mjs \
+            --dir release-assets \
+            --appcast appcast-cn.xml \
+            --latest latest.json

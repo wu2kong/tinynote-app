@@ -1,9 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
 import { getVersion } from '@tauri-apps/api/app';
-import { GITHUB_RELEASES_API } from '@/constants/app';
+import { GITHUB_APPCAST_URL, GITHUB_RELEASES_API, QINIU_APPCAST_URL, QINIU_LATEST_JSON_URL } from '@/constants/app';
 import { isTauri } from '@/platform/detect';
 import { t } from '@/i18n';
+import { forcedUpdateSource, updateSourceOrder } from '@/utils/updateSource';
 
 export interface GitHubReleaseAsset {
   name: string;
@@ -44,6 +45,12 @@ export async function checkWithSparkle(): Promise<boolean> {
   try {
     const sparkle = await import('tauri-plugin-sparkle-updater-api');
     if (!(await sparkle.canCheckForUpdates())) return false;
+    const url = await resolveAppcastUrl();
+    try {
+      await sparkle.setFeedUrl(url);
+    } catch {
+      if (url === QINIU_APPCAST_URL) return false;
+    }
     await sparkle.checkForUpdates();
     return true;
   } catch {
@@ -57,6 +64,12 @@ export async function checkWithWinSparkle(): Promise<boolean> {
   try {
     const available = await invoke<boolean>('winsparkle_available');
     if (!available) return false;
+    const url = await resolveAppcastUrl();
+    try {
+      await invoke('winsparkle_set_appcast_url', { url });
+    } catch {
+      if (url === QINIU_APPCAST_URL) return false;
+    }
     await invoke('winsparkle_check_for_updates');
     return true;
   } catch {
@@ -67,6 +80,40 @@ export async function checkWithWinSparkle(): Promise<boolean> {
 export async function checkWithNativeUpdater(): Promise<boolean> {
   if (await checkWithSparkle()) return true;
   return checkWithWinSparkle();
+}
+
+async function resolveAppcastUrl(): Promise<string> {
+  if (forcedUpdateSource() === 'qiniu') return QINIU_APPCAST_URL;
+  if (forcedUpdateSource() === 'github') return GITHUB_APPCAST_URL;
+  if (isTauri()) {
+    try {
+      return await invoke<string>('resolve_appcast_url');
+    } catch {
+      return GITHUB_APPCAST_URL;
+    }
+  }
+  return GITHUB_APPCAST_URL;
+}
+
+/** Probe GitHub first; only switch Sparkle / WinSparkle to Qiniu when GitHub is unreachable. */
+export async function configureNativeUpdaterFeed(): Promise<void> {
+  if (!isTauri()) return;
+  const url = await resolveAppcastUrl();
+  if (isMacOS()) {
+    try {
+      const sparkle = await import('tauri-plugin-sparkle-updater-api');
+      await sparkle.setFeedUrl(url);
+    } catch {
+      // Dev builds and older Sparkle plugins may not expose setFeedUrl.
+    }
+  }
+  if (isWindows()) {
+    try {
+      await invoke('winsparkle_set_appcast_url', { url });
+    } catch {
+      // WinSparkle is only initialized in release Windows builds.
+    }
+  }
 }
 
 function parseVersion(version: string): number[] {
@@ -97,8 +144,8 @@ function pickAsset(assets: GitHubReleaseAsset[], platform: Platform): GitHubRele
     return assets.find((a) => /universal\.dmg$/i.test(a.name)) ?? null;
   }
   return (
-    assets.find((a) => /\.AppImage$/i.test(a.name)) ??
     assets.find((a) => /amd64\.deb$/i.test(a.name)) ??
+    assets.find((a) => /\.rpm$/i.test(a.name)) ??
     null
   );
 }
@@ -148,24 +195,39 @@ interface LatestReleasePayload {
   assets: GitHubReleaseAsset[];
 }
 
+async function fetchJsonRelease(url: string): Promise<LatestReleasePayload> {
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : t('utils.updater.checkFailed');
+    throw new Error(formatNetworkError(msg));
+  }
+  if (!response.ok) {
+    throw new Error(t('utils.updater.checkFailedWithStatus', { status: response.status }));
+  }
+  return await response.json() as LatestReleasePayload;
+}
+
 async function loadLatestRelease(): Promise<LatestReleasePayload> {
   if (isTauri()) {
     return invoke<LatestReleasePayload>('fetch_latest_release');
   }
 
-  let response: Response;
-  try {
-    response = await fetch(GITHUB_RELEASES_API);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : t('utils.updater.checkFailed');
-    throw new Error(formatNetworkError(msg));
+  const sources = updateSourceOrder(
+    GITHUB_RELEASES_API,
+    QINIU_LATEST_JSON_URL,
+    forcedUpdateSource(),
+  );
+  let lastError: Error | null = null;
+  for (const url of sources) {
+    try {
+      return await fetchJsonRelease(url);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
   }
-
-  if (!response.ok) {
-    throw new Error(t('utils.updater.checkFailedWithStatus', { status: response.status }));
-  }
-
-  return await response.json() as LatestReleasePayload;
+  throw lastError ?? new Error(t('utils.updater.checkFailed'));
 }
 
 export async function downloadAndInstall(asset: GitHubReleaseAsset): Promise<void> {

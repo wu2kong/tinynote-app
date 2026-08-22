@@ -7,7 +7,8 @@
  * Usage:
  *   node scripts/generate-sparkle-appcast.mjs [file ...]
  *     [--version x.y.z] [--tag vX.Y.Z] [--notes "..."] [--notes-file path]
- *     [--out appcast.xml]
+ *     [--out appcast.xml] [--asset-base-url https://cdn.example.com]
+ *     [--latest-json latest.json] [--latest-files-dir dir]
  *
  * Signing key (first match wins):
  *   1. SPARKLE_PRIVATE_KEY env (CI)
@@ -27,8 +28,10 @@ import { basename, dirname, join } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { execFileSync, spawnSync } from 'child_process';
 
+import { GITHUB_REPO, assetUrl, isIgnorableReleaseAsset } from './lib/update-sources.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const REPO = 'wu2kong/tinynote-app';
+const REPO = GITHUB_REPO;
 const SPARKLE_ACCOUNT = 'tinynote-app';
 const SIGN_UPDATE = join(ROOT, 'src-tauri', 'sparkle-bin', 'sign_update');
 const WINSPARKLE_TOOL = join(ROOT, 'src-tauri', 'winsparkle', 'winsparkle-tool.exe');
@@ -44,6 +47,11 @@ function parseArgs(argv) {
     notes: '',
     notesFile: '',
     out: DEFAULT_OUT,
+    assetBaseUrl: '',
+    latestJson: '',
+    latestFilesDir: '',
+    publishedAt: '',
+    htmlUrl: '',
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -71,10 +79,28 @@ function parseArgs(argv) {
         i += 1;
         break;
       case '--url':
+      case '--asset-base-url':
+        options.assetBaseUrl = value;
         i += 1;
         break;
       case '--out':
         options.out = value;
+        i += 1;
+        break;
+      case '--latest-json':
+        options.latestJson = value;
+        i += 1;
+        break;
+      case '--latest-files-dir':
+        options.latestFilesDir = value;
+        i += 1;
+        break;
+      case '--published-at':
+        options.publishedAt = value;
+        i += 1;
+        break;
+      case '--html-url':
+        options.htmlUrl = value;
         i += 1;
         break;
       default:
@@ -301,13 +327,41 @@ function sparkleDescription(notes) {
   return markdownToHtml(notes).replaceAll(']]>', ']]]]><![CDATA[>');
 }
 
-function enclosureItem({ version, notes, filePath, tag }) {
+export function collectLatestFiles(dir, extraFiles = []) {
+  const names = new Set();
+  const files = [];
+  for (const filePath of [...extraFiles, ...walkFiles(dir)]) {
+    const name = basename(filePath);
+    if (isIgnorableReleaseAsset(name) || names.has(name)) continue;
+    names.add(name);
+    files.push(filePath);
+  }
+  return files.sort((a, b) => basename(a).localeCompare(basename(b)));
+}
+
+export function buildLatestJson({ tag, htmlUrl, publishedAt, files, assetBaseUrl }) {
+  return {
+    tag_name: tag.startsWith('v') ? tag : `v${tag}`,
+    html_url: htmlUrl,
+    published_at: publishedAt,
+    assets: files.map((filePath) => {
+      const name = basename(filePath);
+      return {
+        name,
+        browser_download_url: assetUrl(tag, name, assetBaseUrl),
+        size: statSync(filePath).size,
+      };
+    }),
+  };
+}
+
+function enclosureItem({ version, notes, filePath, tag, assetBaseUrl }) {
   const name = basename(filePath);
   const os = detectOs(name);
   if (!os) {
     throw new Error(`无法识别更新包平台: ${name}`);
   }
-  const enclosureUrl = `https://github.com/${REPO}/releases/download/${tag}/${name}`;
+  const enclosureUrl = assetUrl(tag, name, assetBaseUrl);
   const signed = parseSignature(signUpdate(filePath), filePath);
   return `    <item>
       <title>TinyNote ${escapeXml(version)}</title>
@@ -333,7 +387,13 @@ function main() {
   const files = findUpdaterFiles(options.files);
   const notes = sparkleDescription(readNotes(options, version));
   const items = files.map((filePath) => {
-    const item = enclosureItem({ version, notes, filePath, tag });
+    const item = enclosureItem({
+      version,
+      notes,
+      filePath,
+      tag,
+      assetBaseUrl: options.assetBaseUrl,
+    });
     console.log(`Signed ${basename(filePath)}`);
     return item;
   });
@@ -350,6 +410,21 @@ ${items.join('\n')}
 
   writeFileSync(options.out, xml);
   console.log(`Wrote ${options.out}`);
+
+  if (options.latestJson) {
+    const latestFiles = options.latestFilesDir
+      ? collectLatestFiles(options.latestFilesDir, files)
+      : files.filter((filePath) => !isIgnorableReleaseAsset(basename(filePath)));
+    const payload = buildLatestJson({
+      tag,
+      htmlUrl: options.htmlUrl || `https://github.com/${REPO}/releases/tag/${tag}`,
+      publishedAt: options.publishedAt || new Date().toISOString(),
+      files: latestFiles,
+      assetBaseUrl: options.assetBaseUrl,
+    });
+    writeFileSync(options.latestJson, `${JSON.stringify(payload, null, 2)}\n`);
+    console.log(`Wrote ${options.latestJson}`);
+  }
 }
 
 const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;

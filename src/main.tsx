@@ -10,6 +10,8 @@ import './styles/ai-chat.css';
 async function bootstrap() {
   await initializePlatform();
   if (isTauri()) {
+    const { configureNativeUpdaterFeed } = await import('@/utils/updater');
+    await configureNativeUpdaterFeed();
     const { initDesktopMenu } = await import('@/platform/desktopMenu');
     await initDesktopMenu();
   }

@@ -85,7 +85,7 @@ Free and open source on **macOS / Windows / Linux**.
 | --- | --- |
 | macOS | Universal `.dmg` |
 | Windows | `.exe` setup, or `.msi` |
-| Linux | `.AppImage` / `.deb` / `.rpm` |
+| Linux | `.deb` / `.rpm` |
 
 ## Next
 

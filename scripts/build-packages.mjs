@@ -26,11 +26,11 @@ const OUT_DIR = join(ROOT, 'dist-packages');
 const DOCKER_FILE = join(ROOT, 'scripts', 'docker', 'linux.Dockerfile');
 const LINUX_SCRIPT = 'scripts/docker/build-linux.sh';
 const DOCKER_IMAGE = 'tinynote-linux-builder:22';
-const INSTALLER_EXT = /\.(dmg|exe|msi|AppImage|deb|rpm)$/i;
+const INSTALLER_EXT = /\.(dmg|exe|msi|deb|rpm)$/i;
 const EXTS_BY_PLATFORM = {
   macos: ['.dmg'],
   windows: ['.exe', '.msi'],
-  linux: ['.appimage', '.deb', '.rpm'],
+  linux: ['.deb', '.rpm'],
 };
 
 const PLATFORMS = {
@@ -50,10 +50,10 @@ const PLATFORMS = {
   },
   linux: {
     id: 'linux',
-    label: 'Linux AppImage / deb / rpm (x64)',
+    label: 'Linux deb / rpm (x64)',
     host: 'linux',
     rustTargets: [],
-    tauriArgs: '--bundles appimage,deb,rpm',
+    tauriArgs: '--bundles deb,rpm',
   },
 };
 
@@ -84,13 +84,13 @@ TinyNote 本地打包 — 编译安装包，便于手动上传
   npm run build:packages                     打包当前系统
   npm run build:packages -- macos            macOS universal DMG
   npm run build:packages -- windows          Windows NSIS / MSI（需在 Windows 上运行）
-  npm run build:packages -- linux            Linux AppImage / deb / rpm
+  npm run build:packages -- linux            Linux deb / rpm
   npm run build:packages -- linux --docker   非 Linux 主机用 Docker 交叉打包 Linux x64
   npm run build:packages -- --all            当前机器能编的全部平台
   npm run build:packages -- --upload [tag]   打包后上传到 GitHub Release（默认当前版本 vX.Y.Z）
 
 说明:
-  · Tauri 安装包必须在对应系统上打包（macOS→DMG，Windows→EXE/MSI，Linux→AppImage/deb/rpm）
+  · Tauri 安装包必须在对应系统上打包（macOS→DMG，Windows→EXE/MSI，Linux→deb/rpm）
   · 在 macOS / Windows 上可用 Docker 额外产出 Linux x64 包
   · Windows 安装包仍需在 Windows 上构建，或走现有 GitHub Actions
   · 产物写入 dist-packages/，文件名与官网下载页 / GitHub Release 资源名对齐

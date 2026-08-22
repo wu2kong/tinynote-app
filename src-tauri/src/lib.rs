@@ -132,6 +132,11 @@ fn fetch_latest_release() -> Result<updater::LatestRelease, String> {
 }
 
 #[tauri::command]
+fn resolve_appcast_url() -> String {
+    updater::resolve_appcast_url().to_string()
+}
+
+#[tauri::command]
 fn download_release_asset(url: String, filename: String) -> Result<String, String> {
     updater::download_release_asset(&url, &filename)
 }
@@ -156,6 +161,19 @@ fn winsparkle_check_for_updates() -> Result<(), String> {
     }
     #[cfg(not(windows))]
     {
+        Err("WinSparkle 仅在 Windows 上可用".to_string())
+    }
+}
+
+#[tauri::command]
+fn winsparkle_set_appcast_url(url: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        winsparkle::set_appcast_url(&url)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = url;
         Err("WinSparkle 仅在 Windows 上可用".to_string())
     }
 }
@@ -479,8 +497,10 @@ pub fn run() {
             revert_file_change,
             download_release_asset,
             fetch_latest_release,
+            resolve_appcast_url,
             winsparkle_available,
             winsparkle_check_for_updates,
+            winsparkle_set_appcast_url,
             fetch_llm_models,
             chat_with_llm,
             chat_with_llm_stream,

@@ -1,4 +1,4 @@
 [[permission]]
 identifier = "allow-updater"
 description = "Enables release download command."
-commands.allow = ["download_release_asset", "fetch_latest_release", "winsparkle_available", "winsparkle_check_for_updates"]
+commands.allow = ["download_release_asset", "fetch_latest_release", "resolve_appcast_url", "winsparkle_available", "winsparkle_check_for_updates", "winsparkle_set_appcast_url"]

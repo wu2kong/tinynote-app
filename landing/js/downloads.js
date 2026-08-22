@@ -1,6 +1,7 @@
 (function () {
   var REPO = 'wu2kong/tinynote-app';
   var API_URL = 'https://api.github.com/repos/' + REPO + '/releases/latest';
+  var QINIU_LATEST_URL = 'https://qin.wu2kong.com/tinynote/updates/latest.json';
   var RELEASES_URL = 'https://github.com/' + REPO + '/releases';
 
   /** Expected download slots. Match GitHub asset names; unmatched = coming soon. */
@@ -36,21 +37,11 @@
       },
     },
     {
-      id: 'linux-appimage',
-      platform: 'linux',
-      formats: ['appimage'],
-      arch: 'x64',
-      recommendOn: ['linux'],
-      match: function (name) {
-        return /\.AppImage$/i.test(name);
-      },
-    },
-    {
       id: 'linux-deb',
       platform: 'linux',
       formats: ['deb'],
       arch: 'x64',
-      recommendOn: [],
+      recommendOn: ['linux'],
       match: function (name) {
         return /\.deb$/i.test(name);
       },
@@ -463,10 +454,19 @@
       }
     } catch (_) {}
 
-    fetch(API_URL)
-      .then(function (res) {
+    function fetchJson(url) {
+      return fetch(url).then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
+      });
+    }
+
+    var primary = API_URL;
+    var secondary = QINIU_LATEST_URL;
+
+    fetchJson(primary)
+      .catch(function () {
+        return fetchJson(secondary);
       })
       .then(function (data) {
         try {
