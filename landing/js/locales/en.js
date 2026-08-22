@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['en'] = {
   "features.f9Desc": "Right-side inspector panel to manage titles, body, and tags. Clear creation and modification timestamps.",
   "features.f10Title": "4-Column Distraction-Free Layout",
   "features.f10Desc": "Clear division: App bar, Directory, Notes list, and Inspector. Optimized for desktop multitasking in light and dark themes.",
+  "features.f11Title": "Three note formats",
+  "features.f11Desc": "Block notebooks for copyable snippets, Markdown notes for whole documents, and article notes for WYSIWYG writing. All stay as local files.",
+  "features.f12Title": "AI chat",
+  "features.f12Desc": "Talk to OpenAI-compatible models inside the app. Keys stay on this device and are never written into the note library.",
+  "features.f13Title": "Multi-host Git and sample library",
+  "features.f13Desc": "GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, and official TinyNote Git. Import the starter library on first launch.",
 
   // Showcase
   "showcase.label": "Interface Preview",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['en'] = {
   "compare.tnDesc": "When you repeatedly copy commands, JSON snippets, or API URLs every day, and want quick structured access without selecting text in long documents. That's the exact pain point TinyNote solves.",
   "compare.iterTitle": "Rapid Iteration Around High-Frequency Needs",
   "compare.iterDesc": "TinyNote is driven by real developer workflows—Git sync, local backup, multiple view modes, and source mode all stem from daily snippet management needs. Open-source and actively maintained; feedback and suggestions on GitHub Issues are always welcome.",
+  "compare.articlesTitle": "Compare with popular note apps",
+  "compare.articlesDesc": "Longer write-ups live in the help center, so searches like “TinyNote vs Notion” can land on a dedicated page.",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs Apple Notes",
 
   // CTA / Footer
   "cta.title": "Start Organizing Your Snippets Today",

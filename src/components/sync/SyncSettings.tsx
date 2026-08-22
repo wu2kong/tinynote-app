@@ -248,6 +248,7 @@ const SyncSettings: React.FC = () => {
         auth: buildAuthByRemote(cfg)[remote] ?? null,
       });
       showToast(t('settings.sync.pullComplete'));
+      await useStore.getState().reloadSpaces();
       await refreshStatus();
     } catch (e) {
       const msg = formatSyncError(e, t('settings.sync.pullFailed'));

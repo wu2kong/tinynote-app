@@ -22,6 +22,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -134,6 +135,110 @@ function spaceBelongsToGroup(space: Space, groupId: string): boolean {
   return (space.groupIds ?? []).includes(groupId);
 }
 
+interface GroupMenuItemProps {
+  label: string;
+  isActive: boolean;
+  canRename?: boolean;
+  canReorder?: boolean;
+  renameTitle?: string;
+  onSelect: () => void;
+  onRename?: () => void;
+  dragHandle?: {
+    attributes: React.HTMLAttributes<HTMLElement>;
+    listeners?: Record<string, Function>;
+    setNodeRef: (node: HTMLElement | null) => void;
+    style?: React.CSSProperties;
+  };
+}
+
+const GroupMenuItem: React.FC<GroupMenuItemProps> = ({
+  label,
+  isActive,
+  canRename = false,
+  canReorder = false,
+  renameTitle,
+  onSelect,
+  onRename,
+  dragHandle,
+}) => (
+  <div
+    ref={dragHandle?.setNodeRef}
+    style={dragHandle?.style}
+    className={`app-bar-group-menu-row${isActive ? ' active' : ''}${canReorder ? ' sortable' : ''}`}
+  >
+    {canReorder && (
+      <span
+        className="app-bar-group-menu-drag"
+        {...dragHandle?.attributes}
+        {...dragHandle?.listeners}
+        aria-hidden
+      >
+        <GripVertical size={12} />
+      </span>
+    )}
+    <button
+      type="button"
+      role="option"
+      aria-selected={isActive}
+      className="app-bar-group-menu-item"
+      onClick={onSelect}
+    >
+      <span className="app-bar-group-menu-item-text">{label}</span>
+      {isActive && <Check size={14} className="app-bar-group-menu-check" />}
+    </button>
+    {canRename && onRename && (
+      <button
+        type="button"
+        className="app-bar-group-menu-rename"
+        title={renameTitle}
+        aria-label={renameTitle}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRename();
+        }}
+      >
+        <Edit3 size={13} />
+      </button>
+    )}
+  </div>
+);
+
+interface SortableGroupMenuItemProps {
+  group: SpaceGroupDef;
+  isActive: boolean;
+  renameTitle: string;
+  onSelect: () => void;
+  onRename: () => void;
+}
+
+const SortableGroupMenuItem: React.FC<SortableGroupMenuItemProps> = (props) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.group.id,
+  });
+
+  return (
+    <GroupMenuItem
+      label={props.group.name}
+      isActive={props.isActive}
+      canRename
+      canReorder
+      renameTitle={props.renameTitle}
+      onSelect={props.onSelect}
+      onRename={props.onRename}
+      dragHandle={{
+        attributes,
+        listeners,
+        setNodeRef,
+        style: {
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.55 : 1,
+        },
+      }}
+    />
+  );
+};
+
 interface AppBarProps {
   onOpenGlobalSearch: () => void;
 }
@@ -159,6 +264,7 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
   const toggleSpaceGroupMembership = useStore((s) => s.toggleSpaceGroupMembership);
   const addSpaceGroup = useStore((s) => s.addSpaceGroup);
   const renameSpaceGroup = useStore((s) => s.renameSpaceGroup);
+  const reorderSpaceGroupsAction = useStore((s) => s.reorderSpaceGroups);
   const isPro = useLicenseStore((s) => s.isPro);
   const openGate = useLicenseStore((s) => s.openGate);
   const spaceLimitReached = !isPro && spaces.length >= FREE_MAX_SPACES;
@@ -174,6 +280,7 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     open: false,
     group: null,
   });
+  const [addGroupFromMenuOpen, setAddGroupFromMenuOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const [groupMenuOpen, setGroupMenuOpen] = useState(false);
   const groupSwitcherRef = useRef<HTMLDivElement>(null);
@@ -336,7 +443,22 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
     closeContextMenu();
   };
 
-  const handleDragEnd = (event: import('@dnd-kit/core').DragEndEvent) => {
+  const handleRenameGroupFromMenu = (group: SpaceGroupDef) => {
+    setRenameGroupModal({ open: true, group });
+    setGroupMenuOpen(false);
+  };
+
+  const handleGroupDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = spaceGroups.findIndex((group) => group.id === active.id);
+    const newIndex = spaceGroups.findIndex((group) => group.id === over.id);
+    if (oldIndex !== -1 && newIndex !== -1) {
+      reorderSpaceGroupsAction(oldIndex, newIndex);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = spaces.findIndex((s) => s.id === active.id);
@@ -427,40 +549,53 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
             </button>
             {groupMenuOpen && (
               <div className="app-bar-group-menu" role="listbox" aria-label={t('appBar.switchGroup')}>
+                <div className="app-bar-group-menu-header">{t('appBar.switchGroup')}</div>
+                <div className="app-bar-group-menu-list">
+                  <GroupMenuItem
+                    label={t('appBar.allGroups')}
+                    isActive={currentSpaceGroupId === ALL_SPACE_GROUP_ID}
+                    onSelect={() => {
+                      setCurrentSpaceGroup(ALL_SPACE_GROUP_ID);
+                      setGroupMenuOpen(false);
+                    }}
+                  />
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleGroupDragEnd}
+                  >
+                    <SortableContext
+                      items={spaceGroups.map((group) => group.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {spaceGroups.map((group) => (
+                        <SortableGroupMenuItem
+                          key={group.id}
+                          group={group}
+                          isActive={currentSpaceGroupId === group.id}
+                          renameTitle={t('appBar.renameGroup')}
+                          onSelect={() => {
+                            setCurrentSpaceGroup(group.id);
+                            setGroupMenuOpen(false);
+                          }}
+                          onRename={() => handleRenameGroupFromMenu(group)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+                <div className="app-bar-group-menu-divider" />
                 <button
                   type="button"
-                  role="option"
-                  aria-selected={currentSpaceGroupId === ALL_SPACE_GROUP_ID}
-                  className={`app-bar-group-menu-item${currentSpaceGroupId === ALL_SPACE_GROUP_ID ? ' active' : ''}`}
+                  className="app-bar-group-menu-create"
                   onClick={() => {
-                    setCurrentSpaceGroup(ALL_SPACE_GROUP_ID);
                     setGroupMenuOpen(false);
+                    setAddGroupFromMenuOpen(true);
                   }}
                 >
-                  <span className="app-bar-group-menu-item-text">{t('appBar.allGroups')}</span>
-                  {currentSpaceGroupId === ALL_SPACE_GROUP_ID && (
-                    <Check size={14} className="app-bar-group-menu-check" />
-                  )}
+                  <Plus size={14} />
+                  <span>{t('appBar.createNewGroup')}</span>
                 </button>
-                {spaceGroups.map((group) => {
-                  const isActive = currentSpaceGroupId === group.id;
-                  return (
-                    <button
-                      key={group.id}
-                      type="button"
-                      role="option"
-                      aria-selected={isActive}
-                      className={`app-bar-group-menu-item${isActive ? ' active' : ''}`}
-                      onClick={() => {
-                        setCurrentSpaceGroup(group.id);
-                        setGroupMenuOpen(false);
-                      }}
-                    >
-                      <span className="app-bar-group-menu-item-text">{group.name}</span>
-                      {isActive && <Check size={14} className="app-bar-group-menu-check" />}
-                    </button>
-                  );
-                })}
               </div>
             )}
           </div>
@@ -704,6 +839,21 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
             }
           }
           setAddGroupModal({ open: false, space: null });
+        }}
+        title={t('appBar.addGroup')}
+        placeholder={t('appBar.groupName')}
+      />
+
+      <InputModal
+        open={addGroupFromMenuOpen}
+        onClose={() => setAddGroupFromMenuOpen(false)}
+        onSubmit={(name) => {
+          const id = addSpaceGroup(name);
+          if (id) {
+            showToast(t('appBar.groupAdded', { name: name.trim() }));
+            setCurrentSpaceGroup(id);
+          }
+          setAddGroupFromMenuOpen(false);
         }}
         title={t('appBar.addGroup')}
         placeholder={t('appBar.groupName')}

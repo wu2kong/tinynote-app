@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   "features.f9Desc": "右侧属性面板支持编辑标题、正文与标签，创建与更新时间一目了然，方便追踪笔记生命周期。",
   "features.f10Title": "四栏工具型布局，低打扰",
   "features.f10Desc": "应用栏、目录栏、笔记栏与属性编辑栏分工明确，专为桌面端高频管理优化。浅色与深色主题随心切换，长时间使用也不累眼。",
+  "features.f11Title": "三种笔记格式",
+  "features.f11Desc": "块笔记本管碎片复制；Markdown 笔记写整篇文档；文章笔记所见即所得。三种格式都是本地文件，可按场景切换。",
+  "features.f12Title": "AI 问答",
+  "features.f12Desc": "在应用内接入 OpenAI 兼容模型。密钥只存在本机，不写入笔记库，需要时用快捷键打开会话。",
+  "features.f13Title": "多源 Git 与入门样例",
+  "features.f13Desc": "GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit，以及 TinyNote 官方 Git。首次启动可导入官方样例库，三分钟摸清用法。",
 
   // Showcase
   "showcase.label": "界面预览",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['zh-Hans'] = {
   "compare.tnDesc": "每天反复复制同一段命令、同一份 JSON 配置、同一个 API 地址；需要把零碎信息分类归档，但又不想每次翻长文档框选。这正是 TinyNote 要解决的高频痛点。",
   "compare.iterTitle": "围绕日常高频管理需求，快速迭代",
   "compare.iterDesc": "TinyNote 由真实工作流驱动演进——Git 同步、本地备份、多视图切换、源码模式等功能，都来自日常管理命令片段时的切身需求。项目持续开源维护，欢迎通过 GitHub Issue 提出场景与建议，让工具跟着你的效率习惯一起成长。",
+  "compare.articlesTitle": "和主流笔记软件比一比",
+  "compare.articlesDesc": "帮助中心有更细的对照，方便搜索「TinyNote vs Notion」这类问题。",
+  "compare.articleEvernote": "TinyNote vs 印象笔记",
+  "compare.articleAppleNotes": "TinyNote vs 苹果备忘录",
 
   // CTA / Footer
   "cta.title": "开始整理你的零碎知识",

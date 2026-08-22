@@ -25,7 +25,7 @@ Tips:
 - Avoid a Downloads folder
 - You can change the path later in Settings → Data, but files stay in the old folder unless you move them
 
-After you pick a folder, TinyNote creates a default space and opens the main window.
+After you pick a folder, TinyNote creates a default space and asks whether to import the [official sample library](/en/settings#sample-library). Importing it is the fastest way to see all three note formats.
 
 ## Create your first note
 
@@ -66,6 +66,7 @@ Spaces are life contexts, folders are topics, notes are groups of copyable items
 ## Next
 
 - [Organize notes](/en/organize)
+- [Import and export](/en/import-export)
 - [Settings](/en/settings)
 - [Git sync](/en/sync)
 - [Backup](/en/backup)

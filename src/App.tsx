@@ -21,7 +21,7 @@ import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
-import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
+import { serializeNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
@@ -56,17 +56,19 @@ const SourceEditorPanel: React.FC = () => {
   const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);
+  const applySourceContent = useStore((s) => s.applySourceContent);
   const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
   const showAppBar = useStore((s) => s.showAppBar);
   const toggleDirectoryPanel = useStore((s) => s.toggleDirectoryPanel);
   const [sourceContent, setSourceContent] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!currentNotebook?.isSourceMode) return;
+    setSourceContent(serializeNoteBlocks(currentNotebook.noteBlocks));
+  }, [currentNotebook?.path, currentNotebook?.isSourceMode]);
 
   if (!currentNotebook || !currentNotebook.isSourceMode) return null;
-
-  const source = serializeNoteBlocks(currentNotebook.noteBlocks);
-  if (!sourceContent && source) {
-    setSourceContent(source);
-  }
 
   const leftPanelVisible = showDirectoryPanel || showAppBar;
 
@@ -105,12 +107,12 @@ const SourceEditorPanel: React.FC = () => {
         </button>
         <button
           className="btn btn-primary"
+          disabled={saving}
           onClick={() => {
-            const blocks = parseNoteBlocks(sourceContent);
-            useStore.setState((state) => ({
-              currentNotebook: { ...state.currentNotebook!, noteBlocks: blocks, isSourceMode: false },
-            }));
-            setSourceContent('');
+            setSaving(true);
+            void applySourceContent(sourceContent)
+              .then(() => setSourceContent(''))
+              .finally(() => setSaving(false));
           }}
         >
           {t('app.saveAndParse')}

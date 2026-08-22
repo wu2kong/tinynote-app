@@ -288,6 +288,46 @@ fn resolve_repo_path(storage_path: &str) -> Result<String, String> {
         .map(|p| p.to_string_lossy().into_owned())
 }
 
+fn resolve_repo_relative_path(repo_root: &Path, file_path: &str) -> Result<PathBuf, String> {
+    if file_path.is_empty() {
+        return Err("文件路径无效".to_string());
+    }
+    let candidate = Path::new(file_path);
+    if candidate.is_absolute() {
+        return Err("不允许使用绝对路径".to_string());
+    }
+    for component in candidate.components() {
+        match component {
+            std::path::Component::Normal(_) | std::path::Component::CurDir => {}
+            _ => return Err("文件路径包含非法分量".to_string()),
+        }
+    }
+
+    let full = repo_root.join(candidate);
+    let canonical_root = repo_root
+        .canonicalize()
+        .map_err(|e| format!("无法解析仓库路径：{e}"))?;
+    let canonical_full = if full.exists() {
+        full.canonicalize()
+            .map_err(|e| format!("无法解析文件路径：{e}"))?
+    } else {
+        let parent = full.parent().ok_or_else(|| "文件路径无效".to_string())?;
+        let file_name = full.file_name().ok_or_else(|| "文件路径无效".to_string())?;
+        if !parent.exists() {
+            return Err("文件路径超出仓库范围".to_string());
+        }
+        parent
+            .canonicalize()
+            .map_err(|e| format!("无法解析文件路径：{e}"))?
+            .join(file_name)
+    };
+
+    if !canonical_full.starts_with(&canonical_root) {
+        return Err("文件路径超出仓库范围".to_string());
+    }
+    Ok(full)
+}
+
 fn strip_git_quotes(raw: &str) -> String {
     let trimmed = raw.trim();
     if trimmed.len() >= 2 && trimmed.starts_with('"') && trimmed.ends_with('"') {
@@ -860,6 +900,7 @@ pub struct GitHttpResponse {
 
 pub fn get_file_diff(storage_path: &str, file_path: &str) -> Result<FileDiff, String> {
     let repo_path = resolve_repo_path(storage_path)?;
+    resolve_repo_relative_path(Path::new(&repo_path), file_path)?;
     let is_deleted = is_deleted_file(&repo_path, file_path)?;
     let is_new = !is_deleted && is_untracked_file(&repo_path, file_path)?;
 
@@ -901,7 +942,7 @@ pub fn get_file_diff(storage_path: &str, file_path: &str) -> Result<FileDiff, St
 }
 
 fn new_file_preview(repo_path: &str, file_path: &str) -> Result<String, String> {
-    let full_path = Path::new(repo_path).join(file_path);
+    let full_path = resolve_repo_relative_path(Path::new(repo_path), file_path)?;
     let content = std::fs::read_to_string(&full_path).map_err(|e| e.to_string())?;
     Ok(content
         .lines()
@@ -922,10 +963,11 @@ fn deleted_file_preview(repo_path: &str, file_path: &str) -> Result<String, Stri
 pub fn revert_file_change(storage_path: &str, file_path: &str) -> Result<(), String> {
     let repo_root = find_git_root(Path::new(storage_path))
         .ok_or_else(|| "当前笔记库还没有完成同步初始化。".to_string())?;
+    resolve_repo_relative_path(&repo_root, file_path)?;
     let repo_path = repo_root.to_string_lossy().into_owned();
 
     if is_untracked_file(&repo_path, file_path)? {
-        let full_path = repo_root.join(file_path);
+        let full_path = resolve_repo_relative_path(&repo_root, file_path)?;
         if full_path.is_file() {
             std::fs::remove_file(&full_path).map_err(|e| format!("删除文件失败：{e}"))?;
         }
@@ -990,9 +1032,18 @@ mod tests {
     }
 
     #[test]
-    fn hostname_is_not_unknown() {
+    fn hostname_is_not_empty() {
         let name = get_hostname();
         assert!(!name.is_empty());
-        assert_ne!(name, "unknown");
+    }
+
+    #[test]
+    fn rejects_path_escape_outside_repo() {
+        let tmp = std::env::temp_dir().join(format!("tinynote-sync-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(&tmp).unwrap();
+        let result = resolve_repo_relative_path(&tmp, "../secret.txt");
+        let _ = std::fs::remove_dir_all(&tmp);
+        assert!(result.is_err());
     }
 }

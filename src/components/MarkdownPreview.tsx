@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { showToast } from './Toast';
 import { t } from '@/i18n';
+import { sanitizePreviewHtml } from '@/utils/sanitizeHtml';
 
 marked.setOptions({
   gfm: true,
@@ -46,11 +47,11 @@ function findPreviewAnchor(event: React.MouseEvent<HTMLElement>): HTMLAnchorElem
   return anchor;
 }
 
-/** Renders GFM markdown with raw HTML/CSS (notebook document preview). */
+/** Renders GFM markdown; raw HTML/CSS is kept after stripping scripts and event handlers. */
 const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ content, className }) => {
   const html = useMemo(() => {
     const parsed = marked.parse(content ?? '', { async: false });
-    return typeof parsed === 'string' ? parsed : '';
+    return sanitizePreviewHtml(typeof parsed === 'string' ? parsed : '');
   }, [content]);
 
   const handleLinkNavigate = useCallback((event: React.MouseEvent<HTMLElement>) => {

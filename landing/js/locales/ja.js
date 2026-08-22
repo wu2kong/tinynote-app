@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['ja'] = {
   "features.f9Desc": "右側のプロパティパネルでタイトル、本文、タグを編集。作成日・更新日も一目で確認でき、スニペットの管理がスムーズに。",
   "features.f10Title": "4カラムのツール型レイアウト、邪魔にならない設計",
   "features.f10Desc": "アプリバー、ディレクトリ、ノート一覧、プロパティ編集が明確に分かれたデスクトップ最適化デザイン。ライト＆ダークテーマ対応。",
+  "features.f11Title": "3つのノート形式",
+  "features.f11Desc": "ブロックノートはコピー用スニペット、Markdown ノートは文書、記事ノートは WYSIWYG。すべてローカルファイルです。",
+  "features.f12Title": "AI チャット",
+  "features.f12Desc": "アプリ内で OpenAI 互換モデルに接続。キーはこの端末だけに保存され、ノート庫には書き込まれません。",
+  "features.f13Title": "複数 Git とサンプルライブラリ",
+  "features.f13Desc": "GitHub、Gitee、GitLab、Alibaba Cloud Codeup、AtomGit、公式 TinyNote Git。初回起動でサンプルを取り込めます。",
 
   // Showcase
   "showcase.label": "インターフェース",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['ja'] = {
   "compare.tnDesc": "毎日同じコマンドや JSON 設定、API エンドポイントをコピーしている方、長文ドキュメントからわざわざ探して選択する手間をなくしたい方に最適です。",
   "compare.iterTitle": "日常の高頻度なニーズに合わせて迅速に進化",
   "compare.iterDesc": "TinyNote は実際の開発ワークフローから生まれました。Git 同期、ローカルバックアップ、マルチビュー、ソースモードなど、すべて日々のスニペット管理の必要性から実装されています。オープンソースで継続メンテナンス中、GitHub Issue でのご意見・ご提案をお待ちしています。",
+  "compare.articlesTitle": "人気ノートアプリとの比較",
+  "compare.articlesDesc": "ヘルプセンターに詳細な比較記事があります。「TinyNote vs Notion」などで検索できます。",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs メモ",
 
   // CTA / Footer
   "cta.title": "断片的な知識の整理を、今すぐ始めよう",

@@ -86,7 +86,9 @@ location /docs/ {
 | `app.md` | `/docs/app`（入口） |
 | `quickstart.md` | `/docs/quickstart` |
 | `organize.md` | `/docs/organize` |
+| `import-export.md` | `/docs/import-export` |
 | `settings.md` | `/docs/settings` |
+| `vs-*.md` | `/docs/vs-notion` 等对比文 |
 | `sync.md` / `backup.md` | `/docs/sync`、`/docs/backup` |
 | `ai.md` / `pro.md` | `/docs/ai`、`/docs/pro` |
 | `faq.md` / `changelog.md` | `/docs/faq`、`/docs/changelog` |

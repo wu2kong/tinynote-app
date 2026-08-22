@@ -7,7 +7,7 @@ description: Configure TinyNote language, themes, data paths, shortcuts, AI mode
 
 Open the gear at the bottom of the space bar, or File → Settings….
 
-Sections: General, Data, Sync, Backup, AI Models, Shortcuts, Pro, Feedback, About. Sync and backup have their own pages.
+Sections: General, Data, Sync, Backup, AI Models, Shortcuts, Pro, Samples, Feedback, About. Sync and backup have their own pages.
 
 ## General
 
@@ -36,6 +36,12 @@ This page manages paths, not note content.
 Changing the storage folder does not move files. Back up or copy the old folder first.
 
 You can copy a path or reveal it in the system file manager.
+
+## Sample library
+
+Samples is its own settings page. The same dialog also appears after you first pick a storage folder.
+
+Importing adds a starter space: welcome, Markdown guide, spaces and block notes, workflows, and a command cookbook. It covers block, Markdown, and article notes. Existing files are not overwritten. The copy follows the UI language.
 
 ## Shortcuts
 

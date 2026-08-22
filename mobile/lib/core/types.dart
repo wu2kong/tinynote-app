@@ -45,18 +45,41 @@ class NoteBlock {
   final String updatedAt;
 }
 
+enum NotebookFormat { blocks, markdown, writer }
+
+NotebookFormat detectNotebookFormat(String fileName) {
+  final lower = fileName.toLowerCase();
+  if (lower.endsWith('.writer.md')) return NotebookFormat.writer;
+  if (lower.endsWith('.mk.md')) return NotebookFormat.markdown;
+  return NotebookFormat.blocks;
+}
+
+String notebookDisplayName(String fileName) {
+  final lower = fileName.toLowerCase();
+  for (final suffix in ['.writer.md', '.mk.md', '.blk.md', '.md']) {
+    if (lower.endsWith(suffix)) {
+      return fileName.substring(0, fileName.length - suffix.length);
+    }
+  }
+  return fileName;
+}
+
 class Notebook {
   const Notebook({
     required this.id,
     required this.name,
     required this.path,
     required this.noteBlocks,
+    this.format = NotebookFormat.blocks,
+    this.content,
   });
 
   final String id;
   final String name;
   final String path;
   final List<NoteBlock> noteBlocks;
+  final NotebookFormat format;
+  final String? content;
 }
 
 class Group {

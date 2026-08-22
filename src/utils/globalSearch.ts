@@ -20,6 +20,7 @@ export interface GlobalSearchResult {
   spacePath: string;
   notebookPath?: string;
   blockTitleKey?: string;
+  blockId?: string;
 }
 
 export interface TextSegment {
@@ -162,7 +163,7 @@ export function performGlobalSearch(
         }
         if (matchLabels.length > 0) {
           results.push({
-            id: `block:${notebook.path}:${block.title}`,
+            id: `block:${notebook.path}:${block.id}`,
             type: 'noteBlock',
             matchLabels,
             spaceName: space.name,
@@ -171,6 +172,7 @@ export function performGlobalSearch(
             spacePath: space.path,
             notebookPath: notebook.path,
             blockTitleKey: block.title,
+            blockId: block.id,
           });
           if (results.length >= maxResults) return true;
         }

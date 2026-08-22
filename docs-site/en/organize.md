@@ -79,3 +79,7 @@ Global search can match space name, note name, block title, or block body.
 ## Drag and drop
 
 Spaces, folders, notes, and blocks can be reordered by dragging. “Move to…” relocates a note. Real filesystem paths update with the tree.
+
+## Import and export
+
+Drag Markdown files or folders onto the window, or use the menu to import and export the library. See [Import and export](/en/import-export).

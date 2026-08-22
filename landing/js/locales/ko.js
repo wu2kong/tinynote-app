@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['ko'] = {
   "features.f9Desc": "우측 속성 패널에서 제목, 본문, 태그를 편집할 수 있으며 생성 및 수정 시간을 한눈에 확인하여 메모의 라이프사이클을 쉽게 추적할 수 있습니다.",
   "features.f10Title": "4단 툴형 레이아웃, 방해 없는 작업 환경",
   "features.f10Desc": "앱 바, 디렉터리, 메모 목록, 속성 편집창의 명확한 역할 분담으로 데스크톱 멀티태스킹에 최적화되었습니다. 라이트/다크 테마 지원.",
+  "features.f11Title": "세 가지 노트 형식",
+  "features.f11Desc": "블록 노트는 복사할 조각, Markdown 노트는 문서, 글 노트는 WYSIWYG. 모두 로컬 파일입니다.",
+  "features.f12Title": "AI 채팅",
+  "features.f12Desc": "앱에서 OpenAI 호환 모델에 연결합니다. 키는 이 기기에만 저장되며 노트 라이브러리에는 쓰지 않습니다.",
+  "features.f13Title": "다중 Git과 샘플 라이브러리",
+  "features.f13Desc": "GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, 공식 TinyNote Git. 첫 실행에서 샘플을 가져올 수 있습니다.",
 
   // Showcase
   "showcase.label": "화면 미리보기",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['ko'] = {
   "compare.tnDesc": "매일 같은 명령어, JSON 설정, API 주소를 반복해서 복사하고, 긴 문서를 뒤지며 드래그하고 싶지 않을 때 바로 TinyNote가 최고의 생산성을 제공합니다.",
   "compare.iterTitle": "일상적인 고빈도 요구사항을 바탕으로 빠른 개선",
   "compare.iterDesc": "TinyNote는 실제 개발 워크플로우에 의해 발전합니다. Git 동기화, 로컬 백업, 다중 뷰 전환, 소스 모드 등은 모두 명령어 관리를 하며 겪은 필요에서 출발했습니다. 오픈 소스로 지속 관리되며 GitHub Issue를 통한 피드백을 환영합니다.",
+  "compare.articlesTitle": "인기 노트 앱과 비교",
+  "compare.articlesDesc": "도움말에 더 자세한 비교 글이 있어 “TinyNote vs Notion” 같은 검색에 맞춰져 있습니다.",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs 메모",
 
   // CTA / Footer
   "cta.title": "지금 바로 흩어진 지식을 정리하세요",

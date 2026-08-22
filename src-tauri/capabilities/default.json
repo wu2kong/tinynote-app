@@ -56,7 +56,6 @@
     "clipboard-manager:default",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-text",
-    "shell:default",
     {
       "identifier": "opener:allow-open-path",
       "allow": [

@@ -523,6 +523,7 @@ export const zhHansMessages = {
     "resizeWidth": "拖动以调整宽度",
     "modifyGroups": "修改分组",
     "addGroup": "新增分组",
+    "createNewGroup": "新建分组",
     "groupName": "分组名称",
     "allGroups": "全部",
     "switchGroup": "切换分组",

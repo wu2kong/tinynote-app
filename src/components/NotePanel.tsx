@@ -69,10 +69,12 @@ const NotePanel: React.FC = () => {
   }, [currentNotebook, searchText]);
 
   const handleDragEnd = (event: import('@dnd-kit/core').DragEndEvent) => {
+    if (searchText) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = currentNotebook!.noteBlocks.findIndex((b) => b.id === active.id);
     const newIndex = currentNotebook!.noteBlocks.findIndex((b) => b.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
     reorderNoteBlocks(oldIndex, newIndex);
   };
 
@@ -202,7 +204,7 @@ const NotePanel: React.FC = () => {
 
       <div className={`note-panel-list ${viewMode}`} onContextMenu={handleContextMenu}>
         <DndContext
-          sensors={sensors}
+          sensors={searchText ? [] : sensors}
           collisionDetection={closestCenter}
           modifiers={[restrictToVerticalAxis]}
           onDragEnd={handleDragEnd}

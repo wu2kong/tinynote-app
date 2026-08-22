@@ -215,21 +215,80 @@ body.app-bar-resizing {
   top: calc(100% + 4px);
   left: 0;
   z-index: 40;
-  min-width: max(160px, 100%);
-  max-width: min(240px, calc(100vw - 24px));
-  padding: 4px;
+  min-width: max(110px, 100%);
+  max-width: min(220px, calc(100vw - 24px));
+  padding: 3px 4px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-primary);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+.app-bar-group-menu-header {
+  padding: 6px 10px 4px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.app-bar-group-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: min(280px, 40vh);
+  overflow-y: auto;
+}
+
+.app-bar-group-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5px;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition);
+}
+
+.app-bar-group-menu-row:hover,
+.app-bar-group-menu-row.active {
+  background: var(--bg-hover);
+}
+
+.app-bar-group-menu-row.sortable {
+  padding-left: 0;
+}
+
+.app-bar-group-menu-drag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 28px;
+  margin-left: 2px;
+  color: var(--text-tertiary);
+  cursor: grab;
+  opacity: 0;
+  transition: opacity var(--transition), color var(--transition);
+}
+
+.app-bar-group-menu-row.sortable:hover .app-bar-group-menu-drag,
+.app-bar-group-menu-row.sortable:focus-within .app-bar-group-menu-drag {
+  opacity: 1;
+}
+
+.app-bar-group-menu-drag:active {
+  cursor: grabbing;
+}
+
 .app-bar-group-menu-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 6px;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -240,8 +299,8 @@ body.app-bar-resizing {
 }
 
 .app-bar-group-menu-item:hover,
-.app-bar-group-menu-item.active {
-  background: var(--bg-hover);
+.app-bar-group-menu-item:focus-visible {
+  outline: none;
 }
 
 .app-bar-group-menu-item-text {
@@ -256,6 +315,66 @@ body.app-bar-resizing {
 .app-bar-group-menu-check {
   flex-shrink: 0;
   color: var(--text-secondary);
+}
+
+.app-bar-group-menu-rename {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin-right: 2px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition), background var(--transition), color var(--transition);
+}
+
+.app-bar-group-menu-row:hover .app-bar-group-menu-rename,
+.app-bar-group-menu-row:focus-within .app-bar-group-menu-rename {
+  opacity: 1;
+}
+
+.app-bar-group-menu-rename:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.app-bar-group-menu-divider {
+  height: 1px;
+  margin: 4px 4px;
+  background: var(--border-color);
+}
+
+.app-bar-group-menu-create {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.app-bar-group-menu-create:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.app-bar-group-menu-create svg {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
 }
 
 .app-bar-group-toolbar-btn {

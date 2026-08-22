@@ -18,14 +18,14 @@ const OfficialSampleLibraryModal: React.FC<OfficialSampleLibraryModalProps> = ({
   onClose,
   onImported,
 }) => {
-  const { t, locales } = useI18n();
+  const { t, locales, locale } = useI18n();
   const storagePath = useStore((state) => state.storagePath);
   const [importing, setImporting] = useState(false);
-  const [targetLanguage, setTargetLanguage] = useState<AppLocale>('en');
+  const [targetLanguage, setTargetLanguage] = useState<AppLocale>(locale);
 
   useEffect(() => {
-    if (open) setTargetLanguage('en');
-  }, [open]);
+    if (open) setTargetLanguage(locale);
+  }, [open, locale]);
 
   const handleImport = useCallback(async () => {
     if (!storagePath || importing) return;

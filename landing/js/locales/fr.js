@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['fr'] = {
   "features.f9Desc": "Panneau latéral pour modifier le titre, le texte et les tags. Horodatages de création et modification visibles d'un coup d'œil.",
   "features.f10Title": "Disposition en 4 colonnes sans distraction",
   "features.f10Desc": "Répartition claire : Barre d'espaces, Répertoire, Liste des notes et Propriétés. Optimisé pour le multitâche en thèmes clair et sombre.",
+  "features.f11Title": "Trois formats de notes",
+  "features.f11Desc": "Notes en blocs pour les extraits à copier, notes Markdown pour les documents, notes article en WYSIWYG. Tout reste en fichiers locaux.",
+  "features.f12Title": "Chat IA",
+  "features.f12Desc": "Connectez des modèles compatibles OpenAI dans l'application. Les clés restent sur cet appareil et ne sont pas écrites dans la bibliothèque.",
+  "features.f13Title": "Git multi-hôtes et bibliothèque d'exemples",
+  "features.f13Desc": "GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit et le Git officiel TinyNote. Importez les exemples au premier lancement.",
 
   // Showcase
   "showcase.label": "Aperçu",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['fr'] = {
   "compare.tnDesc": "Lorsque vous copiez quotidiennement les mêmes commandes, configurations JSON ou URL d'API, et que vous ne voulez plus perdre de temps à surligner du texte dans de longs documents.",
   "compare.iterTitle": "Une évolution rapide guidée par les besoins réels",
   "compare.iterDesc": "TinyNote évolue en fonction des besoins réels des développeurs : Git, sauvegardes locales, vues multiples et mode source sont nés de l'usage quotidien. Projet open source activement maintenu, vos retours sur GitHub Issues sont les bienvenus.",
+  "compare.articlesTitle": "Comparer avec les applis de notes connues",
+  "compare.articlesDesc": "Le centre d'aide contient des comparatifs plus longs, pour des recherches du type « TinyNote vs Notion ».",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs Notes Apple",
 
   // CTA / Footer
   "cta.title": "Commencez à organiser vos connaissances",

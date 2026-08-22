@@ -523,6 +523,7 @@ export const enMessages = {
     "resizeWidth": "Drag to resize width",
     "modifyGroups": "Edit Groups",
     "addGroup": "New Group",
+    "createNewGroup": "Create New Group",
     "groupName": "Group Name",
     "allGroups": "All",
     "switchGroup": "Switch Group",

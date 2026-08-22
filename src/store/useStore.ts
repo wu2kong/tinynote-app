@@ -9,7 +9,7 @@ import { DEFAULT_COLOR_THEME_ID, isColorThemeId } from '@/themes';
 import * as fs from '@/utils/fileSystem';
 import * as config from '@/utils/config';
 import { ALL_SPACE_GROUP_ID } from '@/utils/configTypes';
-import { createNoteBlock } from '@/utils/noteParser';
+import { createNoteBlock, parseNoteBlocks } from '@/utils/noteParser';
 import { detectNotebookFormat, getNotebookDisplayName, getSwappableArticleFormat } from '@/utils/notebookFormat';
 import { flushPendingDocumentSaves } from '@/utils/documentSaveFlush';
 import { isSubPath, normalizePath, dirname, basename } from '@/utils/path';
@@ -54,6 +54,7 @@ interface AppActions {
   toggleSpaceGroupMembership: (space: Space, groupId: string) => void;
   addSpaceGroup: (name: string, assignToSpace?: Space) => string | null;
   renameSpaceGroup: (groupId: string, newName: string) => boolean;
+  reorderSpaceGroups: (fromIndex: number, toIndex: number) => void;
   addGroup: (parentPath: string, name: string) => Promise<void>;
   deleteGroup: (group: Group) => Promise<void>;
   renameGroup: (group: Group, newName: string) => Promise<void>;
@@ -73,6 +74,7 @@ interface AppActions {
   reorderNoteBlocks: (fromIndex: number, toIndex: number) => Promise<void>;
   reorderChildren: (parentPath: string, fromIndex: number, toIndex: number) => Promise<void>;
   toggleSourceMode: () => void;
+  applySourceContent: (source: string) => Promise<void>;
   reloadSpaces: () => Promise<void>;
   /** Reload current space children from disk and optionally expand ancestors of a path. */
   refreshCurrentSpaceTree: (revealPath?: string | null) => Promise<void>;
@@ -109,6 +111,41 @@ function findNotebookByPath(items: (Group | Notebook)[], path: string): Notebook
     }
   }
   return null;
+}
+
+function updateNotebookInTree(
+  items: (Group | Notebook)[],
+  path: string,
+  updater: (notebook: Notebook) => Notebook,
+): (Group | Notebook)[] {
+  const target = normalizePath(path);
+  return items.map((item) => {
+    if ('noteBlocks' in item && normalizePath(item.path) === target) {
+      return updater(item);
+    }
+    if ('children' in item) {
+      return { ...item, children: updateNotebookInTree(item.children, path, updater) };
+    }
+    return item;
+  });
+}
+
+function withSyncedNotebook<T extends Record<string, unknown>>(
+  state: { currentSpace: Space | null; spaces: Space[] },
+  updated: Notebook,
+  extra: T,
+): T & { currentNotebook: Notebook; currentSpace: Space | null; spaces: Space[] } {
+  if (!state.currentSpace) {
+    return { ...extra, currentNotebook: updated, currentSpace: null, spaces: state.spaces };
+  }
+  const groups = updateNotebookInTree(state.currentSpace.groups, updated.path, () => updated);
+  const currentSpace = { ...state.currentSpace, groups };
+  return {
+    ...extra,
+    currentNotebook: updated,
+    currentSpace,
+    spaces: state.spaces.map((space) => (space.id === currentSpace.id ? currentSpace : space)),
+  };
 }
 
 function getAncestorPaths(items: (Group | Notebook)[], targetPath: string): string[] {
@@ -596,9 +633,10 @@ export const useStore = create<AppStore>((set, get) => ({
 
     await get().selectNotebook(notebookInTree);
 
-    if (result.type === 'noteBlock' && result.blockTitleKey) {
+    if (result.type === 'noteBlock') {
       const loaded = get().currentNotebook;
-      const block = loaded?.noteBlocks.find((b) => b.title === result.blockTitleKey);
+      const block = loaded?.noteBlocks.find((b) => b.id === result.blockId)
+        ?? loaded?.noteBlocks.find((b) => b.title === result.blockTitleKey);
       if (block) {
         set({ currentNoteBlock: block });
       }
@@ -858,6 +896,22 @@ export const useStore = create<AppStore>((set, get) => ({
     return true;
   },
 
+  reorderSpaceGroups: (fromIndex, toIndex) => {
+    const { spaceGroups } = get();
+    if (
+      fromIndex < 0 || toIndex < 0
+      || fromIndex >= spaceGroups.length || toIndex >= spaceGroups.length
+      || fromIndex === toIndex
+    ) {
+      return;
+    }
+    const next = [...spaceGroups];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    set({ spaceGroups: next });
+    config.saveConfig({ spaceGroups: next });
+  },
+
   addGroup: async (parentPath, name) => {
     const group = await fs.createGroup(parentPath, name);
     const { currentSpace } = get();
@@ -902,9 +956,15 @@ export const useStore = create<AppStore>((set, get) => ({
       };
       const updatedGroups = removeGroup(currentSpace.groups);
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
+      const currentGroup = get().currentGroup;
+      const deletedCurrent = !!currentGroup && (
+        currentGroup.id === group.id
+        || normalizePath(currentGroup.path) === normalizePath(group.path)
+        || isSubPath(group.path, currentGroup.path)
+      );
       set((state) => ({
         currentSpace: updatedSpace,
-        currentGroup: currentSpace.groups.some((item) => 'children' in item && item.id === group.id) ? null : get().currentGroup,
+        currentGroup: deletedCurrent ? null : currentGroup,
         spaces: state.spaces.map((s) => s.id === currentSpace.id ? updatedSpace : s),
       }));
     }
@@ -1066,21 +1126,35 @@ export const useStore = create<AppStore>((set, get) => ({
     await fs.deleteNotebook(notebook.path);
     const { currentSpace } = get();
     if (currentSpace) {
-      const removeNotebook = (children: (Group | Notebook)[]): (Group | Notebook)[] => {
-        return children
-          .filter((child) => !(child.id === notebook.id))
+      const removeNotebook = (
+        children: (Group | Notebook)[],
+      ): { items: (Group | Notebook)[]; removed: boolean } => {
+        let removed = false;
+        const items = children
+          .filter((child) => {
+            if (child.id === notebook.id) {
+              removed = true;
+              return false;
+            }
+            return true;
+          })
           .map((child) => {
             if ('children' in child) {
-              return {
-                ...child,
-                children: removeNotebook(child.children),
-                notebookCount: child.notebookCount - 1,
-              };
+              const nested = removeNotebook(child.children);
+              if (nested.removed) {
+                removed = true;
+                return {
+                  ...child,
+                  children: nested.items,
+                  notebookCount: Math.max(0, child.notebookCount - 1),
+                };
+              }
             }
             return child;
           });
+        return { items, removed };
       };
-      const updatedGroups = removeNotebook(currentSpace.groups);
+      const updatedGroups = removeNotebook(currentSpace.groups).items;
       const updatedSpace = { ...currentSpace, groups: updatedGroups };
       set((state) => ({
         currentSpace: updatedSpace,
@@ -1206,7 +1280,7 @@ export const useStore = create<AppStore>((set, get) => ({
       noteBlocks: [...currentNotebook.noteBlocks, block],
     };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated, currentNoteBlock: block });
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: block }));
   },
 
   addNoteBlockAtIndex: async (index: number, contentType = 'text') => {
@@ -1217,7 +1291,7 @@ export const useStore = create<AppStore>((set, get) => ({
     blocks.splice(index, 0, block);
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated, currentNoteBlock: block });
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: block }));
   },
 
   duplicateNoteBlock: async (id: string, index: number) => {
@@ -1237,7 +1311,7 @@ export const useStore = create<AppStore>((set, get) => ({
     blocks.splice(index, 0, duplicatedBlock);
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated, currentNoteBlock: duplicatedBlock });
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: duplicatedBlock }));
   },
 
   pasteNoteBlock: async (block: NoteBlock, index: number) => {
@@ -1254,7 +1328,7 @@ export const useStore = create<AppStore>((set, get) => ({
     blocks.splice(index, 0, newBlock);
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated, currentNoteBlock: newBlock });
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: newBlock }));
   },
 
   pasteNoteBlockAtEnd: async (block: NoteBlock) => {
@@ -1270,7 +1344,7 @@ export const useStore = create<AppStore>((set, get) => ({
     const blocks = [...currentNotebook.noteBlocks, newBlock];
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated, currentNoteBlock: newBlock });
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: newBlock }));
   },
 
   updateNoteBlock: async (id, updates) => {
@@ -1282,10 +1356,11 @@ export const useStore = create<AppStore>((set, get) => ({
     const updated = { ...currentNotebook, noteBlocks: updatedBlocks };
     await fs.saveNotebook(updated);
     const currentBlock = get().currentNoteBlock;
-    set({
-      currentNotebook: updated,
-      currentNoteBlock: currentBlock?.id === id ? { ...currentBlock, ...updates, updatedAt: new Date().toISOString() } : currentBlock,
-    });
+    set((state) => withSyncedNotebook(state, updated, {
+      currentNoteBlock: currentBlock?.id === id
+        ? { ...currentBlock, ...updates, updatedAt: new Date().toISOString() }
+        : currentBlock,
+    }));
   },
 
   updateNotebookContent: async (content, notebookPath) => {
@@ -1302,7 +1377,8 @@ export const useStore = create<AppStore>((set, get) => ({
 
     const stillCurrent = get().currentNotebook;
     if (stillCurrent && normalizePath(stillCurrent.path) === normalizePath(targetPath)) {
-      set({ currentNotebook: { ...stillCurrent, content } });
+      const next = { ...stillCurrent, content };
+      set((state) => withSyncedNotebook(state, next, {}));
     }
   },
 
@@ -1312,10 +1388,9 @@ export const useStore = create<AppStore>((set, get) => ({
     const updatedBlocks = currentNotebook.noteBlocks.filter((b) => b.id !== id);
     const updated = { ...currentNotebook, noteBlocks: updatedBlocks };
     await fs.saveNotebook(updated);
-    set({
-      currentNotebook: updated,
+    set((state) => withSyncedNotebook(state, updated, {
       currentNoteBlock: get().currentNoteBlock?.id === id ? null : get().currentNoteBlock,
-    });
+    }));
   },
 
   reorderNoteBlocks: async (fromIndex, toIndex) => {
@@ -1326,7 +1401,7 @@ export const useStore = create<AppStore>((set, get) => ({
     blocks.splice(toIndex, 0, moved);
     const updated = { ...currentNotebook, noteBlocks: blocks };
     await fs.saveNotebook(updated);
-    set({ currentNotebook: updated });
+    set((state) => withSyncedNotebook(state, updated, {}));
   },
 
   reorderChildren: async (parentPath, fromIndex, toIndex) => {
@@ -1380,6 +1455,15 @@ export const useStore = create<AppStore>((set, get) => ({
     const { currentNotebook } = get();
     if (!currentNotebook || currentNotebook.format !== 'blocks') return;
     set({ currentNotebook: { ...currentNotebook, isSourceMode: !currentNotebook.isSourceMode } });
+  },
+
+  applySourceContent: async (source) => {
+    const { currentNotebook } = get();
+    if (!currentNotebook || currentNotebook.format !== 'blocks') return;
+    const blocks = parseNoteBlocks(source);
+    const updated = { ...currentNotebook, noteBlocks: blocks, isSourceMode: false };
+    await fs.saveNotebook(updated);
+    set((state) => withSyncedNotebook(state, updated, { currentNoteBlock: null }));
   },
 
   zoomIn: () => {

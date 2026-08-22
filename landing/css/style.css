@@ -888,6 +888,45 @@ a {
   background: var(--table-highlight-bg);
 }
 
+.compare-articles {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.compare-articles h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.compare-articles-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.compare-article-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.compare-article-links a {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm, 10px);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.compare-article-links a:hover {
+  border-color: var(--border-strong, var(--accent));
+}
+
 .compare-scenarios {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

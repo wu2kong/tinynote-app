@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['de'] = {
   "features.f9Desc": "Rechtes Eigenschaften-Panel für Titel, Text und Tags. Erstellungs- und Änderungszeiten auf einen Blick sichtbar.",
   "features.f10Title": "4-Spalten Werkzeuglayout, ablenkungsfrei",
   "features.f10Desc": "Klare Aufteilung: App-Leiste, Verzeichnis, Notizen und Eigenschaften. Optimiert für den Desktop im hellen und dunklen Design.",
+  "features.f11Title": "Drei Notizformate",
+  "features.f11Desc": "Blocknotizen für kopierbare Schnipsel, Markdown-Notizen für Dokumente, Artikelnotizen zum WYSIWYG-Schreiben. Alles lokale Dateien.",
+  "features.f12Title": "KI-Chat",
+  "features.f12Desc": "OpenAI-kompatible Modelle in der App. Schlüssel bleiben auf diesem Gerät und landen nicht in der Notizbibliothek.",
+  "features.f13Title": "Mehrere Git-Hosts und Beispielbibliothek",
+  "features.f13Desc": "GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit und offizielles TinyNote-Git. Beim ersten Start die Beispielbibliothek importieren.",
 
   // Showcase
   "showcase.label": "Vorschau",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['de'] = {
   "compare.tnDesc": "Wenn Sie täglich dieselben Befehle, JSON-Configs oder API-URLs kopieren und keine Lust haben, lange Texte mit der Maus zu markieren. Genau dafür wurde TinyNote geschaffen.",
   "compare.iterTitle": "Schnelle Weiterentwicklung entlang echter Arbeitsabläufe",
   "compare.iterDesc": "TinyNote wächst mit echten Entwicklerbedürfnissen: Git-Sync, lokale Backups, Multi-View-Modi und Quelltextansicht entstanden alle aus dem Alltag. Das Projekt ist Open Source – Feedback und Vorschläge auf GitHub Issues sind herzlich willkommen.",
+  "compare.articlesTitle": "Vergleich mit bekannten Notiz-Apps",
+  "compare.articlesDesc": "Längere Gegenüberstellungen stehen im Hilfezentrum, etwa für Suchen wie „TinyNote vs Notion“.",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs Apple Notizen",
 
   // CTA / Footer
   "cta.title": "Bringen Sie Ordnung in Ihre Snippets",

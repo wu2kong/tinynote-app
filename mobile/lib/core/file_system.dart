@@ -119,12 +119,37 @@ class FileSystemService {
     final normalizedPath = normalizePath(filePath);
     try {
       final content = await storage.readTextFile(normalizedPath);
+      final fileName = basename(normalizedPath);
+      final format = detectNotebookFormat(fileName);
+      final name = notebookDisplayName(fileName);
+      if (format != NotebookFormat.blocks) {
+        final now = DateTime.now().toUtc().toIso8601String();
+        return Notebook(
+          id: stableIdFromPath(normalizedPath),
+          name: name,
+          path: normalizedPath,
+          format: format,
+          content: content,
+          noteBlocks: [
+            NoteBlock(
+              id: stableIdFromPath(normalizedPath),
+              title: name,
+              content: content,
+              contentType: ContentType.markdown,
+              tags: const [],
+              createdAt: now,
+              updatedAt: now,
+            ),
+          ],
+        );
+      }
       final noteBlocks = parseNoteBlocks(content, notebookPath: normalizedPath);
-      final name = basename(normalizedPath).replaceAll('.md', '');
       return Notebook(
         id: stableIdFromPath(normalizedPath),
         name: name,
         path: normalizedPath,
+        format: format,
+        content: content,
         noteBlocks: noteBlocks,
       );
     } catch (_) {
@@ -133,6 +158,12 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
+    if (notebook.format != NotebookFormat.blocks) {
+      final raw = notebook.content ??
+          (notebook.noteBlocks.isNotEmpty ? notebook.noteBlocks.first.content : '');
+      await storage.writeTextFile(notebook.path, raw);
+      return;
+    }
     final content = serializeNoteBlocks(notebook.noteBlocks);
     await storage.writeTextFile(notebook.path, content);
   }
@@ -259,6 +290,7 @@ class FileSystemService {
         id: notebook.id,
         name: notebook.name,
         path: notebook.path,
+        format: NotebookFormat.blocks,
         noteBlocks: [
           NoteBlock(
             id:

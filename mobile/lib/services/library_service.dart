@@ -559,6 +559,8 @@ class LibraryService extends ChangeNotifier {
       id: notebook.id,
       name: notebook.name,
       path: notebook.path,
+      format: notebook.format,
+      content: notebook.content,
       noteBlocks: [...notebook.noteBlocks, block],
     );
     await _fileSystem!.saveNotebook(updated);
@@ -594,6 +596,10 @@ class LibraryService extends ChangeNotifier {
       id: notebook.id,
       name: notebook.name,
       path: notebook.path,
+      format: notebook.format,
+      content: notebook.format == NotebookFormat.blocks
+          ? notebook.content
+          : (updatedBlocks.isNotEmpty ? updatedBlocks.first.content : notebook.content),
       noteBlocks: updatedBlocks,
     );
     await _fileSystem!.saveNotebook(updated);
@@ -608,6 +614,8 @@ class LibraryService extends ChangeNotifier {
       id: notebook.id,
       name: notebook.name,
       path: notebook.path,
+      format: notebook.format,
+      content: notebook.content,
       noteBlocks: notebook.noteBlocks.where((b) => b.id != id).toList(),
     );
     await _fileSystem!.saveNotebook(updated);

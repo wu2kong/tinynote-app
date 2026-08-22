@@ -157,6 +157,10 @@ function localizeLinks(html, locale) {
   const downloadRoute = routeFor(locale, 'download');
   const docsRoute = locale.id === 'en' ? '/docs/en/app' : '/docs/app';
 
+  if (locale.id === 'en') {
+    html = html.replace(/href="\/docs\/(?!en\/)/g, 'href="/docs/en/');
+  }
+
   return html
     .replace(/(src|href)="(images|css|js)\//g, '$1="/$2/')
     .replace(/href="\/docs\/app"/g, `href="${docsRoute}"`)

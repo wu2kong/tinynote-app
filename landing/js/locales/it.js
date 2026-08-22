@@ -76,6 +76,12 @@ window.TINYNOTE_LANDING_I18N.messages['it'] = {
   "features.f9Desc": "Pannello laterale destro per modificare titolo, corpo e tag. Data di creazione e modifica subito visibili.",
   "features.f10Title": "Layout a 4 colonne senza distrazioni",
   "features.f10Desc": "Suddivisione chiara: Barra degli spazi, Struttura ad albero, Elenco note e Pannello proprietà. Ottimizzato per desktop in tema chiaro e scuro.",
+  "features.f11Title": "Tre formati di note",
+  "features.f11Desc": "Note a blocchi per gli snippet da copiare, note Markdown per i documenti, note articolo WYSIWYG. Tutto resta in file locali.",
+  "features.f12Title": "Chat IA",
+  "features.f12Desc": "Collega modelli compatibili OpenAI nell'app. Le chiavi restano su questo dispositivo e non finiscono nella libreria.",
+  "features.f13Title": "Git su più host e libreria di esempi",
+  "features.f13Desc": "GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit e il Git ufficiale TinyNote. Importa gli esempi al primo avvio.",
 
   // Showcase
   "showcase.label": "Anteprima interfaccia",
@@ -171,6 +177,10 @@ window.TINYNOTE_LANDING_I18N.messages['it'] = {
   "compare.tnDesc": "Quando copi ogni giorno gli stessi comandi, configurazioni JSON o endpoint API e non vuoi perdere tempo a scorrere e selezionare testo in documenti lunghi.",
   "compare.iterTitle": "Evoluzione rapida basata su esigenze quotidiane",
   "compare.iterDesc": "TinyNote si sviluppa a partire da flussi di lavoro reali: Git sync, backup locali, modalità di visualizzazione multiple e modalità sorgente nascono dalla pratica di tutti i giorni. Progetto open source e manutenuto attivamente: feedback e proposte su GitHub Issues sono sempre i benvenuti.",
+  "compare.articlesTitle": "Confronta con le app di note più usate",
+  "compare.articlesDesc": "Nel centro assistenza ci sono confronti più lunghi, adatti a ricerche come «TinyNote vs Notion».",
+  "compare.articleEvernote": "TinyNote vs Evernote",
+  "compare.articleAppleNotes": "TinyNote vs Note di Apple",
 
   // CTA / Footer
   "cta.title": "Inizia a organizzare le tue conoscenze frammentate",
