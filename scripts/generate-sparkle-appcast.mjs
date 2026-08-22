@@ -320,7 +320,23 @@ export function markdownToHtml(markdown) {
   flushParagraph();
   flushList();
 
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;font-size:13px;line-height:1.5;">${blocks.join('')}</div>`;
+  // WinSparkle embeds release notes in WebView2/IE; without explicit colors,
+  // Windows dark mode can render a dark background with dark text (unreadable).
+  const wrapperStyle = [
+    'background:#ffffff',
+    'color:#1a1a1a',
+    'color-scheme:light',
+    'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif',
+    'font-size:13px',
+    'line-height:1.5',
+    'padding:4px 2px',
+  ].join(';');
+  const linkStyle = 'color:#0066cc;text-decoration:underline';
+  const codeStyle = 'background:#f3f3f3;color:#1a1a1a;padding:0 3px;border-radius:3px';
+  const html = blocks.join('')
+    .replaceAll('<a href=', `<a style="${linkStyle}" href=`)
+    .replaceAll('<code>', `<code style="${codeStyle}">`);
+  return `<div style="${wrapperStyle}">${html}</div>`;
 }
 
 function sparkleDescription(notes) {

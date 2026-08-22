@@ -4,9 +4,22 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import test from 'node:test';
 
-import { buildLatestJson, collectLatestFiles } from './generate-sparkle-appcast.mjs';
+import {
+  buildLatestJson,
+  collectLatestFiles,
+  markdownToHtml,
+} from './generate-sparkle-appcast.mjs';
 
 const dir = join(tmpdir(), `tinynote-appcast-test-${process.pid}`);
+
+test('release notes HTML uses explicit light colors for WinSparkle', () => {
+  const html = markdownToHtml('## 新增功能\n\n- Git 同步\n\nVisit [官网](https://example.com)');
+  assert.match(html, /background:#ffffff/);
+  assert.match(html, /color:#1a1a1a/);
+  assert.match(html, /color-scheme:light/);
+  assert.match(html, /<h2[^>]*>新增功能<\/h2>/);
+  assert.match(html, /<a style="[^"]*color:#0066cc[^"]*" href="https:\/\/example\.com">官网<\/a>/);
+});
 
 test('latest.json points installers at the requested host and skips metadata', () => {
   mkdirSync(dir, { recursive: true });
