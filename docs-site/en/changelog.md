@@ -7,6 +7,27 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.4
+
+2026-08-22
+
+### New features
+
+- Git sync now includes TinyNote official hosting (git.wu2kong.com), with in-app sign-in, repo selection, and creating a new repository
+
+### Improvements
+
+- Updates check GitHub first and fall back to Qiniu Cloud when GitHub is unreachable; Lanzou Cloud remains a manual backup
+- Clearer loading feedback while checking for updates and downloading installers
+- About page now lists the official download page, GitHub Releases, and the mirror
+- Sample library is a dedicated Settings page instead of living under Data
+- AI model providers can be added or removed as needed, with a more compact layout
+
+### Fixes
+
+- Fix update checks failing when GitHub is unreachable
+- Fix the Check for Updates button appearing unresponsive
+
 ## v1.2.3
 
 2026-08-21
