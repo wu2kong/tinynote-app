@@ -60,6 +60,12 @@ export function makeQboxAuthorization(accessKey, secretKey, method, host, path, 
   return `QBox ${accessKey}:${sign}`;
 }
 
+export const METADATA_CACHE_CONTROL = 'public, max-age=60, must-revalidate';
+
+export function chgmCacheControlPath(bucket, key, mimeType, cacheControl = METADATA_CACHE_CONTROL) {
+  return `/chgm/${urlsafeBase64(`${bucket}:${key}`)}/mime/${urlsafeBase64(mimeType)}/cacheControl/${urlsafeBase64(cacheControl)}`;
+}
+
 function parseArgs(argv) {
   const options = { dir: '', appcast: '', latest: '' };
   for (let i = 0; i < argv.length; i += 1) {
@@ -113,6 +119,33 @@ async function uploadObject({ uploadHost, accessKey, secretKey, bucket, key, byt
     throw new Error(`上传 ${key} 失败（HTTP ${response.status}）: ${detail}`);
   }
   console.log(`Uploaded ${key}`);
+}
+
+async function setObjectCacheControl({ accessKey, secretKey, bucket, key, mimeType }) {
+  const host = 'rs.qiniuapi.com';
+  const path = chgmCacheControlPath(bucket, key, mimeType);
+  const contentType = 'application/x-www-form-urlencoded';
+  const authorization = makeQboxAuthorization(
+    accessKey,
+    secretKey,
+    'POST',
+    host,
+    path,
+    contentType,
+    '',
+  );
+  const response = await fetch(`https://${host}${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: authorization,
+      'Content-Type': contentType,
+    },
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`设置 ${key} Cache-Control 失败（HTTP ${response.status}）: ${detail}`);
+  }
+  console.log(`Set Cache-Control on ${key}`);
 }
 
 async function refreshCdn(accessKey, secretKey, urls) {
@@ -193,9 +226,36 @@ export async function uploadReleaseToQiniu(options, env = process.env) {
     });
   }
 
-  const refreshUrls = [];
-  if (options.appcast) refreshUrls.push(qiniuAppcastUrl(cdnBase));
-  if (options.latest) refreshUrls.push(qiniuLatestJsonUrl(cdnBase));
+  const metadataObjects = [];
+  if (options.appcast) {
+    metadataObjects.push({
+      key: qiniuAppcastKey(cdnBase),
+      mimeType: 'application/xml',
+      url: qiniuAppcastUrl(cdnBase),
+    });
+  }
+  if (options.latest) {
+    metadataObjects.push({
+      key: qiniuLatestJsonKey(cdnBase),
+      mimeType: 'application/json',
+      url: qiniuLatestJsonUrl(cdnBase),
+    });
+  }
+  for (const item of metadataObjects) {
+    try {
+      await setObjectCacheControl({
+        accessKey,
+        secretKey,
+        bucket,
+        key: item.key,
+        mimeType: item.mimeType,
+      });
+    } catch (error) {
+      console.warn(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  const refreshUrls = metadataObjects.map((item) => item.url);
   if (refreshUrls.length) {
     try {
       await refreshCdn(accessKey, secretKey, refreshUrls);

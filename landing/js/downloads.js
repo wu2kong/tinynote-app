@@ -410,30 +410,64 @@
   }
 
   function applyFallbackAssets() {
-    // Known latest assets if GitHub API is unreachable (CORS/rate-limit/network).
-    state.tagName = 'v1.1.0';
-    state.publishedAt = '2026-07-21T04:56:39Z';
-    state.htmlUrl = 'https://github.com/' + REPO + '/releases/tag/v1.1.0';
+    // Last-known assets when GitHub and Qiniu are both unreachable.
+    state.tagName = 'v1.2.4';
+    state.publishedAt = '2026-08-22T05:06:34Z';
+    state.htmlUrl = 'https://github.com/' + REPO + '/releases/tag/v1.2.4';
     state.assets = [
       {
-        name: 'TinyNote_1.1.0_universal.dmg',
-        browser_download_url:
-          'https://github.com/' + REPO + '/releases/download/v1.1.0/TinyNote_1.1.0_universal.dmg',
-        size: 16239865,
+        name: 'TinyNote_1.2.4_universal.dmg',
+        browser_download_url: 'https://qin.wu2kong.com/tinynote/releases/TinyNote_1.2.4_universal.dmg',
+        size: 20681307,
       },
       {
-        name: 'TinyNote_1.1.0_x64-setup.exe',
-        browser_download_url:
-          'https://github.com/' + REPO + '/releases/download/v1.1.0/TinyNote_1.1.0_x64-setup.exe',
-        size: 5089660,
+        name: 'TinyNote_1.2.4_x64-setup.exe',
+        browser_download_url: 'https://qin.wu2kong.com/tinynote/releases/TinyNote_1.2.4_x64-setup.exe',
+        size: 7688328,
       },
       {
-        name: 'TinyNote_1.1.0_x64_en-US.msi',
-        browser_download_url:
-          'https://github.com/' + REPO + '/releases/download/v1.1.0/TinyNote_1.1.0_x64_en-US.msi',
-        size: 6967296,
+        name: 'TinyNote_1.2.4_x64_en-US.msi',
+        browser_download_url: 'https://qin.wu2kong.com/tinynote/releases/TinyNote_1.2.4_x64_en-US.msi',
+        size: 9838592,
+      },
+      {
+        name: 'TinyNote_1.2.4_amd64.deb',
+        browser_download_url: 'https://qin.wu2kong.com/tinynote/releases/TinyNote_1.2.4_amd64.deb',
+        size: 10494172,
+      },
+      {
+        name: 'TinyNote-1.2.4-1.x86_64.rpm',
+        browser_download_url: 'https://qin.wu2kong.com/tinynote/releases/TinyNote-1.2.4-1.x86_64.rpm',
+        size: 10494224,
       },
     ];
+  }
+
+  function isUsableRelease(data) {
+    if (!data || !(data.tag_name || data.name)) return false;
+    var assets = data.assets;
+    if (!Array.isArray(assets) || !assets.length) return false;
+    return assets.some(function (asset) {
+      return asset && asset.name && asset.browser_download_url && !isIgnorableAsset(asset.name);
+    });
+  }
+
+  function fetchJson(url, timeoutMs) {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () {
+      if (controller) controller.abort();
+    }, timeoutMs || 5000);
+    return fetch(url, {
+      cache: 'no-store',
+      signal: controller ? controller.signal : undefined,
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .finally(function () {
+        clearTimeout(timer);
+      });
   }
 
   function loadRelease() {
@@ -442,33 +476,28 @@
     renderMeta();
 
     var CACHE_KEY = 'tinynote.latestRelease';
-    var CACHE_MS = 30 * 60 * 1000;
+    var CACHE_MS = 10 * 60 * 1000;
     try {
       var cached = sessionStorage.getItem(CACHE_KEY);
       if (cached) {
         var parsed = JSON.parse(cached);
-        if (parsed && parsed.savedAt && Date.now() - parsed.savedAt < CACHE_MS && parsed.data) {
+        if (parsed && parsed.savedAt && Date.now() - parsed.savedAt < CACHE_MS && isUsableRelease(parsed.data)) {
           applyReleaseData(parsed.data);
           return;
         }
       }
     } catch (_) {}
 
-    function fetchJson(url) {
-      return fetch(url).then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      });
-    }
-
-    var primary = API_URL;
-    var secondary = QINIU_LATEST_URL;
-
-    fetchJson(primary)
-      .catch(function () {
-        return fetchJson(secondary);
-      })
-      .then(function (data) {
+    // Official site visitors are often in China: try Qiniu first and do not
+    // wait for a hanging GitHub request before showing a version.
+    var qiniuUrl = QINIU_LATEST_URL + (QINIU_LATEST_URL.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+    Promise.all([
+      fetchJson(qiniuUrl, 5000).catch(function () { return null; }),
+      fetchJson(API_URL, 5000).catch(function () { return null; }),
+    ])
+      .then(function (pair) {
+        var data = isUsableRelease(pair[0]) ? pair[0] : isUsableRelease(pair[1]) ? pair[1] : null;
+        if (!data) throw new Error('no usable release');
         try {
           sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data: data }));
         } catch (_) {}

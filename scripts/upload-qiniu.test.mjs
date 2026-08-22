@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { makeQboxAuthorization, makeUploadToken, urlsafeBase64 } from './upload-qiniu.mjs';
+import {
+  METADATA_CACHE_CONTROL,
+  chgmCacheControlPath,
+  makeQboxAuthorization,
+  makeUploadToken,
+  urlsafeBase64,
+} from './upload-qiniu.mjs';
 
 test('upload token is accessKey:sign:policy', () => {
   const token = makeUploadToken('ak', 'sk', 'tinynote', 'updates/appcast.xml', 1_700_000_000_000);
@@ -26,4 +32,13 @@ test('QBox authorization is stable for a known request', () => {
   assert.match(auth, /^QBox ak:/);
   assert.equal(urlsafeBase64('hello').includes('+'), false);
   assert.equal(urlsafeBase64('hello').includes('/'), false);
+});
+
+test('chgm path encodes bucket key mime and cache control', () => {
+  const path = chgmCacheControlPath('tinynote', 'tinynote/updates/latest.json', 'application/json');
+  assert.equal(path.startsWith('/chgm/'), true);
+  assert.equal(path.includes('/mime/'), true);
+  assert.equal(path.includes('/cacheControl/'), true);
+  assert.equal(path.includes(urlsafeBase64('tinynote:tinynote/updates/latest.json')), true);
+  assert.equal(path.includes(urlsafeBase64(METADATA_CACHE_CONTROL)), true);
 });
