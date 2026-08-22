@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown, Mail, MessageSquare } from 'lucide-react';
+import { flushSync } from 'react-dom';
+import { X, Settings, Info, Database, ExternalLink, RefreshCw, Download, Loader2, Copy, FolderOpen, Check, Archive, HardDrive, GitBranch, Bot, KeyRound, Save, ListRestart, Plus, Trash2, Crown, Mail, MessageSquare, BookOpen } from 'lucide-react';
 import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
-import { HOMEPAGE_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
-import { checkForUpdate, checkWithNativeUpdater, downloadAndInstall, formatUpdateError, getAppVersion, isMacOS, isWindows, openReleasePage, UpdateInfo } from '@/utils/updater';
+import { HOMEPAGE_URL, DOCS_URL, DOWNLOAD_PAGE_URL, GITHUB_RELEASES_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
+import { checkForUpdate, checkWithNativeUpdater, downloadAndInstall, formatUpdateError, getAppVersion, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import { loadConfig, saveConfig } from '@/utils/config';
@@ -20,7 +21,7 @@ import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
 
-type SettingsModule = 'general' | 'ai' | 'data' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
+type SettingsModule = 'general' | 'ai' | 'data' | 'sampleLibrary' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
 
 interface SettingsModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ interface SettingsModalProps {
 const MODULES: { id: SettingsModule; icon: React.ReactNode }[] = [
   { id: 'general', icon: <Settings size={16} /> },
   { id: 'data', icon: <Database size={16} /> },
+  { id: 'sampleLibrary', icon: <BookOpen size={16} /> },
   { id: 'sync', icon: <GitBranch size={16} /> },
   { id: 'backup', icon: <Archive size={16} /> },
   { id: 'ai', icon: <Bot size={16} /> },
@@ -978,9 +980,6 @@ const FeedbackSettings: React.FC = () => {
     getAppVersion().then(setVersion);
   }, []);
 
-  const runtime = getPlatform();
-  const osLabel = detectOsLabel();
-  const platformDisplay = t(`settings.feedback.runtime.${runtime}`);
   const diagnosticInfo = buildDiagnosticInfo(version);
 
   const handleCopyInfo = useCallback(async () => {
@@ -1022,34 +1021,6 @@ const FeedbackSettings: React.FC = () => {
         <p className="settings-panel-desc">{t('settings.feedback.panelDesc')}</p>
       </div>
 
-      <div className="settings-row">
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.feedback.platform')}</span>
-          <span className="settings-row-desc">{platformDisplay} · {osLabel}</span>
-        </div>
-      </div>
-
-      <div className="settings-row">
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.feedback.version')}</span>
-          <span className="settings-row-desc">{version || '...'}</span>
-        </div>
-      </div>
-
-      <div className="settings-row settings-row-vertical">
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.feedback.diagnosticInfo')}</span>
-          <span className="settings-row-desc">{t('settings.feedback.diagnosticInfoDesc')}</span>
-        </div>
-        <pre className="settings-feedback-info">{diagnosticInfo}</pre>
-        <div className="settings-update-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => void handleCopyInfo()}>
-            {copiedInfo ? <Check size={14} /> : <Copy size={14} />}
-            {copiedInfo ? t('settings.feedback.copied') : t('settings.feedback.copyInfo')}
-          </button>
-        </div>
-      </div>
-
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.feedback.email')}</span>
@@ -1068,6 +1039,10 @@ const FeedbackSettings: React.FC = () => {
             {copiedEmail ? <Check size={14} /> : <Copy size={14} />}
             {copiedEmail ? t('settings.feedback.copied') : t('settings.feedback.copyEmail')}
           </button>
+          <button type="button" className="btn btn-secondary" onClick={() => void handleCopyInfo()}>
+            {copiedInfo ? <Check size={14} /> : <Copy size={14} />}
+            {copiedInfo ? t('settings.feedback.copied') : t('settings.feedback.copyInfo')}
+          </button>
         </div>
         <p className="settings-feedback-hint">{t('settings.feedback.bugHint')}</p>
       </div>
@@ -1081,7 +1056,6 @@ const DataSettings: React.FC = () => {
   const [configPath, setConfigPath] = useState<string | null>(null);
   const [workspacesPath, setWorkspacesPath] = useState<string | null>(null);
   const [appDir, setAppDir] = useState<string | null>(null);
-  const [showSampleLibrary, setShowSampleLibrary] = useState(false);
 
   useEffect(() => {
     getConfigFilePath(storagePath).then(setConfigPath).catch((e) => {
@@ -1100,10 +1074,30 @@ const DataSettings: React.FC = () => {
       <h4 className="settings-panel-title">{t('settings.data.panelTitle')}</h4>
       <p className="settings-panel-desc">{t('settings.data.panelDesc')}</p>
 
+      <PathItem label={t('settings.data.workspacesRegistry')} path={workspacesPath} />
+      <PathItem label={t('settings.data.currentWorkspaceConfig')} path={configPath} />
+      <PathItem label={t('settings.data.currentStorageDir')} path={storagePath} />
+      <PathItem label={t('settings.data.currentAppDir')} path={appDir} />
+    </div>
+  );
+};
+
+const SampleLibrarySettings: React.FC = () => {
+  const { t } = useI18n();
+  const storagePath = useStore((s) => s.storagePath);
+  const [showSampleLibrary, setShowSampleLibrary] = useState(false);
+
+  return (
+    <div className="settings-panel">
+      <div className="settings-panel-head">
+        <h4 className="settings-panel-title">{t('settings.sampleLibrary.panelTitle')}</h4>
+        <p className="settings-panel-desc">{t('settings.sampleLibrary.panelDesc')}</p>
+      </div>
+
       <div className="settings-sample-library-card">
         <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.data.sampleLibrary')}</span>
-          <span className="settings-row-desc">{t('settings.data.sampleLibraryDesc')}</span>
+          <span className="settings-row-label">{t('settings.sampleLibrary.importLabel')}</span>
+          <span className="settings-row-desc">{t('settings.sampleLibrary.importDesc')}</span>
         </div>
         <button
           type="button"
@@ -1112,14 +1106,9 @@ const DataSettings: React.FC = () => {
           disabled={!storagePath}
         >
           <Download size={14} />
-          {t('settings.data.importSampleLibrary')}
+          {t('settings.sampleLibrary.importAction')}
         </button>
       </div>
-
-      <PathItem label={t('settings.data.workspacesRegistry')} path={workspacesPath} />
-      <PathItem label={t('settings.data.currentWorkspaceConfig')} path={configPath} />
-      <PathItem label={t('settings.data.currentStorageDir')} path={storagePath} />
-      <PathItem label={t('settings.data.currentAppDir')} path={appDir} />
 
       <OfficialSampleLibraryModal
         open={showSampleLibrary}
@@ -1142,9 +1131,14 @@ const AboutSettings: React.FC = () => {
   }, []);
 
   const handleCheckUpdate = useCallback(async () => {
-    setChecking(true);
-    setCheckMessage('');
-    setUpdateInfo(null);
+    flushSync(() => {
+      setChecking(true);
+      setCheckMessage('');
+      setUpdateInfo(null);
+    });
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
     try {
       if (await checkWithNativeUpdater()) {
         setCheckMessage(t('settings.about.sparkleOpened'));
@@ -1181,126 +1175,58 @@ const AboutSettings: React.FC = () => {
     }
   }, [updateInfo, t]);
 
-  const handleManualDownload = useCallback(async () => {
-    if (!updateInfo) return;
+  const handleOpenExternal = useCallback(async (url: string, failKey: string) => {
     try {
-      await openReleasePage(updateInfo.releaseUrl);
+      await openUrl(url);
     } catch (e) {
-      console.error('Failed to open release page:', e);
-      showToast(t('settings.about.openReleaseFailed'));
+      console.error(`Failed to open ${url}:`, e);
+      showToast(t(failKey));
     }
-  }, [updateInfo]);
-
-  const handleMirrorDownload = useCallback(async () => {
-    try {
-      await openUrl(MIRROR_DOWNLOAD_URL);
-    } catch (e) {
-      console.error('Failed to open mirror download page:', e);
-      showToast(t('settings.about.openMirrorFailed'));
-    }
-  }, []);
-
-  const handleOpenHomepage = useCallback(async () => {
-    try {
-      await openUrl(HOMEPAGE_URL);
-    } catch (e) {
-      console.error('Failed to open homepage:', e);
-      showToast(t('settings.about.openHomepageFailed'));
-    }
-  }, []);
-
-  const handleOpenAuthorHomepage = useCallback(async () => {
-    try {
-      await openUrl(AUTHOR_URL);
-    } catch (e) {
-      console.error('Failed to open author homepage:', e);
-      showToast(t('settings.about.openAuthorFailed'));
-    }
-  }, []);
+  }, [t]);
 
   return (
     <div className="settings-panel">
       <h4 className="settings-panel-title">{t('settings.about.panelTitle')}</h4>
 
-      <div className="settings-about-card">
+      <div className="settings-about-card" aria-busy={checking || downloading}>
         <div className="settings-about-logo">📝</div>
         <div className="settings-about-info">
           <div className="settings-about-name">TinyNote</div>
-          <div className="settings-about-version">{t('settings.about.version', { version: version || '...' })}</div>
+          <div className="settings-about-version-row">
+            <div className="settings-about-version">{t('settings.about.version', { version: version || '...' })}</div>
+            <button
+              type="button"
+              className={`settings-about-check${checking ? ' is-loading' : ''}`}
+              onClick={(event) => {
+                event.currentTarget.querySelector('svg')?.classList.add('settings-spin');
+                void handleCheckUpdate();
+              }}
+              disabled={checking || downloading}
+              aria-busy={checking}
+            >
+              <RefreshCw size={13} className={checking ? 'settings-spin' : undefined} />
+              {checking ? t('settings.about.checking') : t('settings.about.checkUpdate')}
+            </button>
+          </div>
           <div className="settings-about-desc">{t('utils.app.description')}</div>
         </div>
       </div>
 
-      <div className="settings-row settings-row-vertical">
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.about.projectAuthor')}</span>
-          <button type="button" className="settings-link" onClick={handleOpenAuthorHomepage}>
-            {AUTHOR_NAME}
-            <ExternalLink size={14} />
-          </button>
-          <span className="settings-row-desc">{AUTHOR_URL}</span>
-        </div>
-      </div>
-
-      <div className="settings-row settings-row-vertical">
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.about.projectHome')}</span>
-          <button type="button" className="settings-link" onClick={handleOpenHomepage}>
-            {HOMEPAGE_URL}
-            <ExternalLink size={14} />
-          </button>
-        </div>
-      </div>
-
-      <div className="settings-row settings-row-vertical" aria-busy={checking || downloading}>
-        <div className="settings-row-info">
-          <span className="settings-row-label">{t('settings.about.softwareUpdate')}</span>
-          <span className="settings-row-desc">{t(isMacOS() ? 'settings.about.softwareUpdateDescMacos' : isWindows() ? 'settings.about.softwareUpdateDescWindows' : 'settings.about.softwareUpdateDesc')}</span>
-        </div>
-        <div className="settings-update-actions">
-          <button
-            type="button"
-            className={`btn btn-secondary${checking ? ' is-loading' : ''}`}
-            onClick={handleCheckUpdate}
-            disabled={checking || downloading}
-            aria-busy={checking}
-          >
-            {checking ? <Loader2 size={14} className="settings-spin" /> : <RefreshCw size={14} />}
-            {checking ? t('settings.about.checking') : t('settings.about.checkUpdate')}
-          </button>
-          {updateInfo && (
-            <>
-              <button
-                type="button"
-                className={`btn btn-primary${downloading ? ' is-loading' : ''}`}
-                onClick={handleDownloadUpdate}
-                disabled={downloading}
-                aria-busy={downloading}
-              >
-                {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
-                {downloading ? t('settings.about.downloading') : t('settings.about.downloadAndUpdate')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleManualDownload}
-                disabled={downloading}
-              >
-                <ExternalLink size={14} />
-                {t('settings.about.githubDownload')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleMirrorDownload}
-                disabled={downloading}
-              >
-                <ExternalLink size={14} />
-                {t('settings.about.mirrorDownload')}
-              </button>
-            </>
-          )}
-        </div>
+      <div className="settings-about-update">
+        {updateInfo && (
+          <div className="settings-update-actions">
+            <button
+              type="button"
+              className={`btn btn-primary${downloading ? ' is-loading' : ''}`}
+              onClick={handleDownloadUpdate}
+              disabled={downloading}
+              aria-busy={downloading}
+            >
+              {downloading ? <Loader2 size={14} className="settings-spin" /> : <Download size={14} />}
+              {downloading ? t('settings.about.downloading') : t('settings.about.downloadAndUpdate')}
+            </button>
+          </div>
+        )}
         {(checking || downloading) && (
           <div className="settings-update-loading" role="status" aria-live="polite">
             <Loader2 size={16} className="settings-spin" />
@@ -1316,6 +1242,92 @@ const AboutSettings: React.FC = () => {
           </p>
         )}
       </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.about.projectAuthor')}</span>
+          <button
+            type="button"
+            className="settings-link"
+            onClick={() => void handleOpenExternal(AUTHOR_URL, 'settings.about.openAuthorFailed')}
+          >
+            {AUTHOR_NAME}
+            <ExternalLink size={14} />
+          </button>
+          <span className="settings-row-desc">{AUTHOR_URL}</span>
+        </div>
+      </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.about.projectHome')}</span>
+          <button
+            type="button"
+            className="settings-link"
+            onClick={() => void handleOpenExternal(HOMEPAGE_URL, 'settings.about.openHomepageFailed')}
+          >
+            {HOMEPAGE_URL}
+            <ExternalLink size={14} />
+          </button>
+        </div>
+      </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.about.helpCenter')}</span>
+          <button
+            type="button"
+            className="settings-link"
+            onClick={() => void handleOpenExternal(DOCS_URL, 'settings.about.openHelpCenterFailed')}
+          >
+            {DOCS_URL}
+            <ExternalLink size={14} />
+          </button>
+        </div>
+      </div>
+
+      <div className="settings-row settings-row-vertical">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.about.downloadPages')}</span>
+          <span className="settings-row-desc">{t('settings.about.downloadPagesDesc')}</span>
+        </div>
+        <div className="settings-about-downloads">
+          <div className="settings-about-download-item">
+            <span className="settings-row-label">{t('settings.about.officialDownload')}</span>
+            <button
+              type="button"
+              className="settings-link"
+              onClick={() => void handleOpenExternal(DOWNLOAD_PAGE_URL, 'settings.about.openOfficialDownloadFailed')}
+            >
+              {DOWNLOAD_PAGE_URL}
+              <ExternalLink size={14} />
+            </button>
+          </div>
+          <div className="settings-about-download-item">
+            <span className="settings-row-label">{t('settings.about.githubDownload')}</span>
+            <button
+              type="button"
+              className="settings-link"
+              onClick={() => void handleOpenExternal(GITHUB_RELEASES_URL, 'settings.about.openReleaseFailed')}
+            >
+              {GITHUB_RELEASES_URL}
+              <ExternalLink size={14} />
+            </button>
+          </div>
+          <div className="settings-about-download-item">
+            <span className="settings-row-label">{t('settings.about.mirrorDownload')}</span>
+            <button
+              type="button"
+              className="settings-link"
+              onClick={() => void handleOpenExternal(MIRROR_DOWNLOAD_URL, 'settings.about.openMirrorFailed')}
+            >
+              {MIRROR_DOWNLOAD_URL}
+              <ExternalLink size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
@@ -1355,6 +1367,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'general' && <GeneralSettings />}
             {activeModule === 'ai' && <AISettings />}
             {activeModule === 'data' && <DataSettings />}
+            {activeModule === 'sampleLibrary' && <SampleLibrarySettings />}
             {activeModule === 'sync' && <SyncSettingsGate onGoToPro={() => setActiveModule('pro')} />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}

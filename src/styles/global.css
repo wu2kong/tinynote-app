@@ -3078,6 +3078,7 @@ body.directory-panel-resizing {
   display: flex;
   flex-direction: column;
   gap: 1px;
+  overflow-y: auto;
 }
 
 .settings-nav-item {
@@ -4656,10 +4657,48 @@ body.directory-panel-resizing {
   color: var(--text-primary);
 }
 
+.settings-about-version-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 1px;
+}
+
 .settings-about-version {
   font-size: 12px;
   color: var(--text-tertiary);
-  margin-top: 1px;
+}
+
+.settings-about-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.settings-about-check:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.settings-about-check:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.settings-about-update {
+  margin: -4px 0 12px;
+}
+
+.settings-about-update .settings-update-actions,
+.settings-about-update .settings-update-loading,
+.settings-about-update .settings-update-message {
+  margin-top: 8px;
 }
 
 .settings-about-desc {
@@ -4685,6 +4724,21 @@ body.directory-panel-resizing {
 
 .settings-link:hover {
   text-decoration: underline;
+}
+
+.settings-about-downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.settings-about-download-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .settings-update-actions {
