@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark" data-i18n-page="vs-notion">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var theme = localStorage.getItem('tinynote-landing-theme');
+      if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta property="og:title" content="TinyNote vs Notion — TinyNote" />
+  <meta property="og:description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://tinynote.wu2kong.com/images/icon-512.png" />
+  <meta property="og:url" content="https://tinynote.wu2kong.com/vs-notion.html" />
+  <link rel="canonical" href="https://tinynote.wu2kong.com/vs-notion.html" />
+  <link rel="alternate" hreflang="zh-CN" href="https://tinynote.wu2kong.com/vs-notion.html" />
+  <link rel="alternate" hreflang="zh-TW" href="https://tinynote.wu2kong.com/zh-hant/vs-notion.html" />
+  <link rel="alternate" hreflang="en" href="https://tinynote.wu2kong.com/en/vs-notion.html" />
+  <link rel="alternate" hreflang="ja" href="https://tinynote.wu2kong.com/ja/vs-notion.html" />
+  <link rel="alternate" hreflang="ko" href="https://tinynote.wu2kong.com/ko/vs-notion.html" />
+  <link rel="alternate" hreflang="de" href="https://tinynote.wu2kong.com/de/vs-notion.html" />
+  <link rel="alternate" hreflang="fr" href="https://tinynote.wu2kong.com/fr/vs-notion.html" />
+  <link rel="alternate" hreflang="it" href="https://tinynote.wu2kong.com/it/vs-notion.html" />
+  <link rel="alternate" hreflang="ru" href="https://tinynote.wu2kong.com/ru/vs-notion.html" />
+  <link rel="alternate" hreflang="x-default" href="https://tinynote.wu2kong.com/vs-notion.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TinyNote vs Notion — TinyNote" />
+  <meta name="twitter:description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta name="twitter:image" content="https://tinynote.wu2kong.com/images/icon-512.png" />
+  <script id="software-application-jsonld" type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"TinyNote vs Notion — TinyNote","description":"TinyNote 轻记的官方产品信息、政策说明与使用指南。","url":"https://tinynote.wu2kong.com/vs-notion.html","inLanguage":"zh-CN","isPartOf":{"@type":"WebSite","name":"TinyNote","url":"https://tinynote.wu2kong.com"}}</script>
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <title>TinyNote vs Notion — TinyNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="bg-atmosphere" aria-hidden="true"><div class="bg-orb bg-orb-1"></div><div class="bg-orb bg-orb-2"></div><div class="bg-grid"></div></div>
+  <header class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-brand"><img class="nav-logo" src="/images/icon-88.png" alt="" width="44" height="44" /><span data-i18n="brand.name">TinyNote 轻记</span></a>
+      <nav><ul class="nav-links">
+        <li><a href="/#features" data-i18n="nav.features">功能</a></li>
+        <li><a href="/#pricing" data-i18n="nav.pricing">定价</a></li>
+        <li><a href="/faq.html" data-i18n="footer.faq">常见问题</a></li>
+        <li><a href="/docs/app" data-i18n="nav.docs">帮助中心</a></li>
+      </ul></nav>
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="切换主题"><svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+        <select id="langSelect" class="lang-select" aria-label="Language"></select>
+        <a href="/download.html" class="btn btn-primary"><span data-i18n="nav.download">下载</span></a>
+        <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false" data-i18n-attr="aria-label:nav.openMenu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <a href="/#features" data-i18n="nav.features">功能</a><a href="/#pricing" data-i18n="nav.pricing">定价</a><a href="/faq.html" data-i18n="footer.faq">常见问题</a><a href="/docs/app" data-i18n="nav.docs">帮助中心</a><a href="/download.html" data-i18n="nav.download">下载</a>
+  </div>
+
+  <main class="content-page-main">
+    <div class="container content-page-layout">
+      <article class="content-page-card"><h1>TinyNote vs Notion</h1>
+<p>两者都叫「笔记」，解决的却不是同一件事。</p>
+<p><a href="https://www.notion.so">Notion</a> 是云端工作区：页面、数据库、权限、团队协作。适合写项目文档、建知识库、和同事共编。代价是客户端偏重、数据在账号里、复制一段命令往往要打开页面再框选。</p>
+<p>TinyNote 是本地优先的片段工具。安装包约 5~10 MB，笔记是你磁盘上的 Markdown。每个笔记块有独立复制按钮，为 Shell 命令、JSON、Prompt 这种「每天贴很多次」的内容设计。</p>
+<h2>怎么选</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Notion</th>
+<th>TinyNote</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>定位</td>
+<td>长文、数据库、团队 wiki</td>
+<td>零碎片段、一键复制</td>
+</tr>
+<tr>
+<td>数据</td>
+<td>云端账号</td>
+<td>本地文件，可用 Git</td>
+</tr>
+<tr>
+<td>体积</td>
+<td>通常上百 MB</td>
+<td>约 5~10 MB</td>
+</tr>
+<tr>
+<td>协作</td>
+<td>强</td>
+<td>靠 Git，不是实时共编</td>
+</tr>
+<tr>
+<td>适合</td>
+<td>会议纪要、项目页、团队文档</td>
+<td>命令手册、配置片段、模板</td>
+</tr>
+</tbody></table>
+<p>可以一起用：Notion 写方案和周报，TinyNote 存「打开方案前要执行的那串命令」。</p>
+<p>更多场景见<a href="/docs/app">应用概述</a>，下载见<a href="https://tinynote.wu2kong.com/download.html">下载页</a>。</p>
+</article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand"><a href="/" class="nav-brand"><img class="nav-logo" src="/images/icon-88.png" alt="" width="44" height="44" /><span data-i18n="brand.name">TinyNote 轻记</span></a><p data-i18n="footer.tagline">轻量级快捷笔记管理 + 快捷复制工具。由 wu2kong（悟二空）开发维护。</p></div>
+        <div class="footer-col"><h5 data-i18n="footer.support">支持</h5><ul class="footer-links"><li><a href="/docs/app" data-i18n="footer.help">帮助中心</a></li><li><a href="/download.html" data-i18n="nav.download">下载</a></li><li><a href="/changelog.html" data-i18n="footer.updates">更新日志</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.legal">法律</h5><ul class="footer-links"><li><a href="/terms.html" data-i18n="footer.terms">服务条款</a></li><li><a href="/privacy.html" data-i18n="footer.privacy">隐私政策</a></li><li><a href="/refund.html" data-i18n="footer.refund">退款政策</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.resources">资源</h5><ul class="footer-links"><li><a href="/affiliate.html" data-i18n="footer.affiliate">合作推广</a></li><li><a href="/vs-notion.html">TinyNote vs Notion</a></li><li><a href="/#pricing" data-i18n="footer.pricing">产品定价</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.contact">联系</h5><ul class="footer-links"><li><a href="mailto:tinynote-app@wu2kong.com" data-i18n="footer.feedback">反馈与支持</a></li><li><a href="/faq.html" data-i18n="footer.faq">常见问题</a></li><li><a href="https://wu2kong.com" target="_blank" rel="noopener noreferrer" data-i18n="footer.site">作者主页</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><span data-i18n="footer.copyright">© 2026 TinyNote. MIT License.</span><span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">沪ICP备2023020617号-1</a></span></div>
+    </div>
+  </footer>
+
+  <script src="/js/i18n-meta.js"></script>
+  <script src="/js/locales/zh-Hans.js"></script><script src="/js/locales/zh-Hant.js"></script><script src="/js/locales/en.js"></script><script src="/js/locales/ja.js"></script><script src="/js/locales/ko.js"></script><script src="/js/locales/de.js"></script><script src="/js/locales/fr.js"></script><script src="/js/locales/it.js"></script><script src="/js/locales/ru.js"></script><script src="/js/locales/index.js"></script><script src="/js/page-meta.js"></script><script src="/js/i18n.js"></script>
+  <script>
+    (function () {
+      var root = document.documentElement, toggle = document.getElementById('themeToggle'), navToggle = document.getElementById('navToggle'), menu = document.getElementById('mobileMenu');
+      toggle.addEventListener('click', function () { var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; root.setAttribute('data-theme', next); localStorage.setItem('tinynote-landing-theme', next); });
+      navToggle.addEventListener('click', function () { var open = menu.classList.toggle('open'); navToggle.setAttribute('aria-expanded', open); menu.setAttribute('aria-hidden', !open); });
+    })();
+  </script>
+</body>
+</html>

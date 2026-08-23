@@ -2,6 +2,7 @@ import { readFile, rm, mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import vm from 'node:vm';
+import { marked } from 'marked';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const landingDir = path.join(rootDir, 'landing');
@@ -20,10 +21,28 @@ const locales = [
 ];
 
 const generatedLocaleDirectories = locales.filter((locale) => locale.path).map((locale) => locale.path);
+const contentPages = [
+  { id: 'changelog', file: 'changelog.html', zh: 'changelog.md', en: 'en/changelog.md' },
+  { id: 'terms', file: 'terms.html', zh: 'terms.md', en: 'en/terms.md' },
+  { id: 'privacy', file: 'privacy.html', zh: 'privacy.md', en: 'en/privacy.md' },
+  { id: 'refund', file: 'refund.html', zh: 'refund.md', en: 'en/refund.md' },
+  { id: 'affiliate', file: 'affiliate.html', zh: 'affiliate.md', en: 'en/affiliate.md' },
+  { id: 'faq', file: 'faq.html', zh: 'faq.md', en: 'en/faq.md' },
+  { id: 'vs-notion', file: 'vs-notion.html', zh: 'vs-notion.md', en: 'en/vs-notion.md' },
+  { id: 'vs-obsidian', file: 'vs-obsidian.html', zh: 'vs-obsidian.md', en: 'en/vs-obsidian.md' },
+  { id: 'vs-evernote', file: 'vs-evernote.html', zh: 'vs-evernote.md', en: 'en/vs-evernote.md' },
+  { id: 'vs-typora', file: 'vs-typora.html', zh: 'vs-typora.md', en: 'en/vs-typora.md' },
+  { id: 'vs-apple-notes', file: 'vs-apple-notes.html', zh: 'vs-apple-notes.md', en: 'en/vs-apple-notes.md' },
+];
+const contentPageById = new Map(contentPages.map((page) => [page.id, page]));
 
 function routeFor(locale, page) {
   const prefix = locale.path ? `/${locale.path}` : '';
-  return page === 'download' ? `${prefix}/download.html` : (prefix ? `${prefix}/` : '/');
+  if (page === 'home') return prefix ? `${prefix}/` : '/';
+  if (page === 'download') return `${prefix}/download.html`;
+  const contentPage = contentPageById.get(page);
+  if (!contentPage) throw new Error(`Unknown landing page: ${page}`);
+  return `${prefix}/${contentPage.file}`;
 }
 
 function absoluteUrl(locale, page) {
@@ -49,6 +68,7 @@ async function loadMessages() {
   const sources = [
     path.join(landingDir, 'js/i18n-meta.js'),
     ...locales.map((locale) => path.join(landingDir, `js/locales/${locale.id}.js`)),
+    path.join(landingDir, 'js/page-meta.js'),
   ];
 
   for (const source of sources) {
@@ -97,8 +117,19 @@ function alternateLinks(page) {
 }
 
 function structuredData(messages, locale, page) {
-  const descriptionKey = page === 'download' ? 'download.meta.description' : 'meta.description';
+  const descriptionKey = page === 'home' ? 'meta.description' : `${page}.meta.description`;
   const canonical = absoluteUrl(locale, page);
+  if (contentPageById.has(page)) {
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: message(messages, locale, `${page}.meta.title`),
+      description: message(messages, locale, descriptionKey),
+      url: canonical,
+      inLanguage: locale.htmlLang,
+      isPartOf: { '@type': 'WebSite', name: 'TinyNote', url: siteUrl },
+    }).replace(/</g, '\\u003c');
+  }
   return JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
@@ -124,12 +155,12 @@ function structuredData(messages, locale, page) {
 }
 
 function localizeHead(html, messages, locale, page) {
-  const titleKey = page === 'download' ? 'download.meta.title' : 'meta.title';
-  const descriptionKey = page === 'download' ? 'download.meta.description' : 'meta.description';
+  const titleKey = page === 'home' ? 'meta.title' : `${page}.meta.title`;
+  const descriptionKey = page === 'home' ? 'meta.description' : `${page}.meta.description`;
   const title = message(messages, locale, titleKey);
   const description = message(messages, locale, descriptionKey);
-  const ogTitle = page === 'download' ? title : message(messages, locale, 'meta.ogTitle');
-  const ogDescription = page === 'download' ? description : message(messages, locale, 'meta.ogDescription');
+  const ogTitle = page === 'home' ? message(messages, locale, 'meta.ogTitle') : title;
+  const ogDescription = page === 'home' ? message(messages, locale, 'meta.ogDescription') : description;
   const canonical = absoluteUrl(locale, page);
 
   let result = html
@@ -157,11 +188,13 @@ function localizeLinks(html, locale) {
   const downloadRoute = routeFor(locale, 'download');
   const docsRoute = locale.id === 'en' ? '/docs/en/app' : '/docs/app';
 
-  if (locale.id === 'en') {
+  // The help center currently ships Chinese and English content. Use English
+  // as the readable fallback for every non-Chinese landing locale.
+  if (locale.id !== 'zh-Hans' && locale.id !== 'zh-Hant') {
     html = html.replace(/href="\/docs\/(?!en\/)/g, 'href="/docs/en/');
   }
 
-  return html
+  let result = html
     .replace(/(src|href)="(images|css|js)\//g, '$1="/$2/')
     .replace(/href="\/docs\/app"/g, `href="${docsRoute}"`)
     .replace(/href="#"/g, `href="${homeRoute}"`)
@@ -170,6 +203,14 @@ function localizeLinks(html, locale) {
     .replace(/href="index\.html"/g, `href="${homeRoute}"`)
     .replace(/href="download\.html"/g, `href="${downloadRoute}"`)
     .replace(/href="\/download\.html"/g, `href="${downloadRoute}"`);
+  for (const page of contentPages) {
+    const route = routeFor(locale, page.id);
+    result = result
+      .replace(new RegExp(`href="${escapeRegExp(page.file)}"`, 'g'), `href="${route}"`)
+      .replace(new RegExp(`href="/${escapeRegExp(page.file)}"`, 'g'), `href="${route}"`)
+      .replace(new RegExp(`href="/docs/(?:en/)?${escapeRegExp(page.id)}"`, 'g'), `href="${route}"`);
+  }
+  return result;
 }
 
 async function buildLocalePage(source, messages, locale, page) {
@@ -179,27 +220,86 @@ async function buildLocalePage(source, messages, locale, page) {
   return html;
 }
 
+function stripFrontmatter(markdown) {
+  return markdown.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, '');
+}
+
+function normalizeContentLinks(html) {
+  const officialIds = new Set(contentPages.map((page) => page.id));
+  return html.replace(/href="\/(en\/)?([^"#]+)(#[^"]*)?"/g, (_match, englishPrefix, target, hash = '') => {
+    const normalized = target.replace(/\.html$/, '');
+    if (officialIds.has(normalized)) return `href="${normalized}.html${hash}"`;
+    return `href="/docs/${englishPrefix || ''}${target}${hash}"`;
+  });
+}
+
+async function contentSourceFor(page, locale, template, messages) {
+  const useChinese = locale.id === 'zh-Hans' || locale.id === 'zh-Hant';
+  const markdownPath = path.join(rootDir, 'docs-site', useChinese ? page.zh : page.en);
+  const markdown = stripFrontmatter(await readFile(markdownPath, 'utf8'));
+  const localizedTitle = message(messages, locale, `${page.id}.meta.title`).replace(/\s+[—-]\s+TinyNote$/, '');
+  const contentHtml = normalizeContentLinks(await marked.parse(markdown))
+    .replace(/<h1>[^<]*<\/h1>/, `<h1>${escapeHtml(localizedTitle)}</h1>`);
+  return template
+    .replaceAll('{{PAGE_ID}}', page.id)
+    .replaceAll('{{PAGE_FILE}}', page.file)
+    .replaceAll('{{PAGE_TITLE}}', escapeHtml(message(messages, locale, `${page.id}.meta.title`)))
+    .replaceAll('{{PAGE_DESCRIPTION}}', escapeHtml(message(messages, locale, `${page.id}.meta.description`)))
+    .replace('{{CONTENT_HTML}}', contentHtml);
+}
+
+async function updateSitemap() {
+  const sitemapPath = path.join(landingDir, 'sitemap.xml');
+  const sitemap = await readFile(sitemapPath, 'utf8');
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const pageIds = ['home', 'download', ...contentPages.map((page) => page.id)];
+  const entries = locales.flatMap((locale) => pageIds.map((page) =>
+    `  <url><loc>${absoluteUrl(locale, page)}</loc><lastmod>${lastmod}</lastmod></url>`
+  )).join('\n');
+  const block = `  <!-- localized-landing-pages:start -->\n${entries}\n  <!-- localized-landing-pages:end -->`;
+  const markerPattern = /  <!-- localized-landing-pages:start -->[\s\S]*?  <!-- localized-landing-pages:end -->/;
+  if (!markerPattern.test(sitemap)) throw new Error('Sitemap localized landing marker block is missing');
+  let next = sitemap.replace(markerPattern, block);
+  const officialDocsPattern = contentPages.map((page) => escapeRegExp(page.id)).join('|');
+  next = next.replace(new RegExp(`\\s*<url><loc>${escapeRegExp(siteUrl)}/docs/(?:en/)?(?:${officialDocsPattern})</loc><lastmod>[^<]+</lastmod></url>`, 'g'), '');
+  await writeFile(sitemapPath, next);
+}
+
 async function main() {
-  const [messages, homeSource, downloadSource] = await Promise.all([
+  const [messages, homeSource, downloadSource, contentTemplate] = await Promise.all([
     loadMessages(),
     readFile(path.join(landingDir, 'index.html'), 'utf8'),
     readFile(path.join(landingDir, 'download.html'), 'utf8'),
+    readFile(path.join(rootDir, 'scripts/templates/landing-content-page.html'), 'utf8'),
   ]);
 
   for (const directory of generatedLocaleDirectories) {
     await rm(path.join(landingDir, directory), { recursive: true, force: true });
   }
 
+  const rootLocale = locales[0];
+  for (const page of contentPages) {
+    const source = await contentSourceFor(page, rootLocale, contentTemplate, messages);
+    await writeFile(path.join(landingDir, page.file), await buildLocalePage(source, messages, rootLocale, page.id));
+  }
+
   for (const locale of locales.filter((item) => item.path)) {
     const outputDirectory = path.join(landingDir, locale.path);
     await mkdir(outputDirectory, { recursive: true });
+    const contentOutputs = contentPages.map(async (page) => {
+      const source = await contentSourceFor(page, locale, contentTemplate, messages);
+      return writeFile(path.join(outputDirectory, page.file), await buildLocalePage(source, messages, locale, page.id));
+    });
     await Promise.all([
       writeFile(path.join(outputDirectory, 'index.html'), await buildLocalePage(homeSource, messages, locale, 'home')),
       writeFile(path.join(outputDirectory, 'download.html'), await buildLocalePage(downloadSource, messages, locale, 'download')),
+      ...contentOutputs,
     ]);
   }
 
-  process.stdout.write(`Generated ${generatedLocaleDirectories.length * 2} localized landing pages.\n`);
+  await updateSitemap();
+
+  process.stdout.write(`Generated ${locales.length * contentPages.length + generatedLocaleDirectories.length * 2} first-class localized landing pages.\n`);
 }
 
 main().catch((error) => {

@@ -92,4 +92,5 @@ location /docs/ {
 | `sync.md` / `backup.md` | `/docs/sync`、`/docs/backup` |
 | `ai.md` / `pro.md` | `/docs/ai`、`/docs/pro` |
 | `faq.md` / `changelog.md` | `/docs/faq`、`/docs/changelog` |
+| `terms.md` / `privacy.md` / `refund.md` / `affiliate.md` | 官网独立页内容源：`/terms.html`、`/privacy.html`、`/refund.html`、`/affiliate.html` |
 | `en/` | `/docs/en/` |

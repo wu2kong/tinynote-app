@@ -16,10 +16,12 @@ const locales = [
   { path: 'it', hreflang: 'it', htmlLang: 'it' },
   { path: 'ru', hreflang: 'ru', htmlLang: 'ru' },
 ];
+const contentPages = ['changelog', 'terms', 'privacy', 'refund', 'affiliate', 'faq', 'vs-notion', 'vs-obsidian', 'vs-evernote', 'vs-typora', 'vs-apple-notes'];
 
 function routeFor(locale, page) {
   const prefix = locale.path ? `/${locale.path}` : '';
-  return page === 'download' ? `${prefix}/download.html` : (prefix ? `${prefix}/` : '/');
+  if (page === 'home') return prefix ? `${prefix}/` : '/';
+  return `${prefix}/${page}.html`;
 }
 
 async function assertFile(filePath) {
@@ -32,7 +34,7 @@ async function assertFile(filePath) {
 
 async function verifyPage(locale, page, sitemap) {
   const route = routeFor(locale, page);
-  const filePath = path.join(landingDir, locale.path, page === 'download' ? 'download.html' : 'index.html');
+  const filePath = path.join(landingDir, locale.path, page === 'home' ? 'index.html' : `${page}.html`);
   await assertFile(filePath);
   const html = await readFile(filePath, 'utf8');
   const url = `${siteUrl}${route}`;
@@ -59,10 +61,10 @@ async function verifyPage(locale, page, sitemap) {
 async function main() {
   const sitemap = await readFile(path.join(landingDir, 'sitemap.xml'), 'utf8');
   for (const locale of locales) {
-    for (const page of ['home', 'download']) await verifyPage(locale, page, sitemap);
+    for (const page of ['home', 'download', ...contentPages]) await verifyPage(locale, page, sitemap);
   }
 
-  for (const page of ['app', 'quickstart', 'organize', 'settings', 'sync', 'backup', 'ai', 'pro', 'faq', 'changelog']) {
+  for (const page of ['app', 'quickstart', 'organize', 'settings', 'sync', 'backup', 'ai', 'pro']) {
     for (const locale of ['', 'en']) {
       const pathPart = locale ? `en/${page}` : page;
       const html = await readFile(path.join(landingDir, 'docs', locale, `${page}.html`), 'utf8');

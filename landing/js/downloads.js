@@ -102,6 +102,13 @@
     return key;
   }
 
+  function changelogUrl() {
+    var locale = window.TinyNoteI18n && TinyNoteI18n.getLocale ? TinyNoteI18n.getLocale() : 'zh-Hans';
+    var paths = { 'zh-Hans': '', 'zh-Hant': 'zh-hant', en: 'en', ja: 'ja', ko: 'ko', de: 'de', fr: 'fr', it: 'it', ru: 'ru' };
+    var prefix = paths[locale] || '';
+    return (prefix ? '/' + prefix : '') + '/changelog.html';
+  }
+
   function detectOs() {
     var ua = navigator.userAgent || '';
     var platform = navigator.platform || '';
@@ -252,8 +259,8 @@
         t('download.recommended') +
         '</p>' +
         '<a class="btn btn-ghost btn-lg" href="' +
-        state.htmlUrl +
-        '" target="_blank" rel="noopener noreferrer" data-i18n="download.viewReleases">' +
+        changelogUrl() +
+        '" data-i18n="download.viewReleases">' +
         t('download.viewReleases') +
         '</a></div>';
       return;
@@ -380,7 +387,7 @@
         : '';
     }
     if (linkEl) {
-      linkEl.href = state.htmlUrl || RELEASES_URL;
+      linkEl.href = changelogUrl();
     }
     if (statusEl) {
       if (state.loading) {

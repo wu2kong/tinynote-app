@@ -1,10 +1,10 @@
 import { defineConfig } from 'vitepress'
 
-const GITHUB_REPO = 'https://github.com/wu2kong/tinynote-app'
 const DOWNLOAD = 'https://tinynote.wu2kong.com/download.html'
 const HOMEPAGE = 'https://tinynote.wu2kong.com/'
 const SITE_URL = 'https://tinynote.wu2kong.com'
 const BASE = '/docs/'
+const OFFICIAL_PAGES = new Set(['faq', 'changelog', 'vs-notion', 'vs-obsidian', 'vs-evernote', 'vs-typora', 'vs-apple-notes'])
 
 export default defineConfig({
   title: 'TinyNote 轻记帮助文档',
@@ -12,7 +12,7 @@ export default defineConfig({
   description: 'TinyNote 轻记帮助文档：安装、组织笔记、同步备份与高级功能说明。',
   base: BASE,
   outDir: '../landing/docs',
-  srcExclude: ['README.md'],
+  srcExclude: ['README.md', 'terms.md', 'privacy.md', 'refund.md', 'affiliate.md', 'en/terms.md', 'en/privacy.md', 'en/refund.md', 'en/affiliate.md'],
   lastUpdated: true,
   cleanUrls: true,
   head: [
@@ -25,11 +25,12 @@ export default defineConfig({
   transformHead({ page }) {
     if (!page || page === '404.md') return
     const route = page.replace(/\.md$/, '').replace(/\/index$/, '')
-    const canonical = `${SITE_URL}${BASE}${route}`
     const isEnglish = route.startsWith('en/')
     const localizedRoute = isEnglish ? route.slice(3) : route
-    const chineseUrl = `${SITE_URL}${BASE}${localizedRoute}`
-    const englishUrl = `${SITE_URL}${BASE}en/${localizedRoute}`
+    const isOfficialPage = OFFICIAL_PAGES.has(localizedRoute)
+    const chineseUrl = isOfficialPage ? `${SITE_URL}/${localizedRoute}.html` : `${SITE_URL}${BASE}${localizedRoute}`
+    const englishUrl = isOfficialPage ? `${SITE_URL}/en/${localizedRoute}.html` : `${SITE_URL}${BASE}en/${localizedRoute}`
+    const canonical = isEnglish ? englishUrl : chineseUrl
     return [
       ['link', { rel: 'canonical', href: canonical }],
       ['meta', { property: 'og:url', content: canonical }],
@@ -70,7 +71,6 @@ export default defineConfig({
       },
     },
     externalLinkIcon: true,
-    socialLinks: [{ icon: 'github', link: GITHUB_REPO }],
   },
   locales: {
     root: {
@@ -123,10 +123,6 @@ export default defineConfig({
           { text: '常见问题', link: '/faq' },
           { text: '更新日志', link: '/changelog' },
         ],
-        editLink: {
-          pattern: `${GITHUB_REPO}/edit/main/docs-site/:path`,
-          text: '在 GitHub 上编辑此页',
-        },
         lastUpdated: {
           text: '最后更新',
           formatOptions: { dateStyle: 'medium', timeStyle: 'short' },
@@ -196,10 +192,6 @@ export default defineConfig({
           { text: 'FAQ', link: '/en/faq' },
           { text: 'Changelog', link: '/en/changelog' },
         ],
-        editLink: {
-          pattern: `${GITHUB_REPO}/edit/main/docs-site/:path`,
-          text: 'Edit this page on GitHub',
-        },
         lastUpdated: {
           text: 'Last updated',
           formatOptions: { dateStyle: 'medium', timeStyle: 'short' },

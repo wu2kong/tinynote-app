@@ -13,6 +13,20 @@
     it: 'it',
     ru: 'ru'
   };
+  var PAGE_FILES = {
+    download: 'download.html',
+    changelog: 'changelog.html',
+    terms: 'terms.html',
+    privacy: 'privacy.html',
+    refund: 'refund.html',
+    affiliate: 'affiliate.html',
+    faq: 'faq.html',
+    'vs-notion': 'vs-notion.html',
+    'vs-obsidian': 'vs-obsidian.html',
+    'vs-evernote': 'vs-evernote.html',
+    'vs-typora': 'vs-typora.html',
+    'vs-apple-notes': 'vs-apple-notes.html'
+  };
   // Time zone is only a fallback when the browser's preferred languages do
   // not match a supported locale. A time zone can be affected by travel or
   // user settings, so it must never take precedence over an explicit choice.
@@ -119,7 +133,10 @@
     var normalized = String(pathname || '/').replace(/^\/+|\/+$/g, '');
     // The root route is intentionally not treated as an explicit Chinese
     // route. This lets a first-time visitor be matched from browser language.
-    if (!normalized || normalized === 'index.html' || normalized === 'download.html') return null;
+    if (!normalized || normalized === 'index.html') return null;
+    for (var pageId in PAGE_FILES) {
+      if (Object.prototype.hasOwnProperty.call(PAGE_FILES, pageId) && PAGE_FILES[pageId] === normalized) return null;
+    }
     var firstSegment = normalized.split('/')[0].toLowerCase();
     for (var locale in LOCALE_PATHS) {
       if (Object.prototype.hasOwnProperty.call(LOCALE_PATHS, locale) && LOCALE_PATHS[locale] === firstSegment) {
@@ -131,13 +148,18 @@
 
   function isRootLandingPath(pathname) {
     var normalized = String(pathname || '/').replace(/^\/+|\/+$/g, '');
-    return !normalized || normalized === 'index.html' || normalized === 'download.html';
+    if (!normalized || normalized === 'index.html') return true;
+    for (var pageId in PAGE_FILES) {
+      if (Object.prototype.hasOwnProperty.call(PAGE_FILES, pageId) && PAGE_FILES[pageId] === normalized) return true;
+    }
+    return false;
   }
 
   function localePath(locale) {
     var segment = LOCALE_PATHS[locale] || '';
-    var isDownload = document.documentElement.getAttribute('data-i18n-page') === 'download';
-    if (isDownload) return (segment ? '/' + segment : '') + '/download.html';
+    var page = document.documentElement.getAttribute('data-i18n-page');
+    var pageFile = PAGE_FILES[page];
+    if (pageFile) return (segment ? '/' + segment : '') + '/' + pageFile;
     return segment ? '/' + segment + '/' : '/';
   }
 

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark" data-i18n-page="changelog">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      var theme = localStorage.getItem('tinynote-landing-theme');
+      if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta property="og:title" content="更新日志 — TinyNote" />
+  <meta property="og:description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://tinynote.wu2kong.com/images/icon-512.png" />
+  <meta property="og:url" content="https://tinynote.wu2kong.com/changelog.html" />
+  <link rel="canonical" href="https://tinynote.wu2kong.com/changelog.html" />
+  <link rel="alternate" hreflang="zh-CN" href="https://tinynote.wu2kong.com/changelog.html" />
+  <link rel="alternate" hreflang="zh-TW" href="https://tinynote.wu2kong.com/zh-hant/changelog.html" />
+  <link rel="alternate" hreflang="en" href="https://tinynote.wu2kong.com/en/changelog.html" />
+  <link rel="alternate" hreflang="ja" href="https://tinynote.wu2kong.com/ja/changelog.html" />
+  <link rel="alternate" hreflang="ko" href="https://tinynote.wu2kong.com/ko/changelog.html" />
+  <link rel="alternate" hreflang="de" href="https://tinynote.wu2kong.com/de/changelog.html" />
+  <link rel="alternate" hreflang="fr" href="https://tinynote.wu2kong.com/fr/changelog.html" />
+  <link rel="alternate" hreflang="it" href="https://tinynote.wu2kong.com/it/changelog.html" />
+  <link rel="alternate" hreflang="ru" href="https://tinynote.wu2kong.com/ru/changelog.html" />
+  <link rel="alternate" hreflang="x-default" href="https://tinynote.wu2kong.com/changelog.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="更新日志 — TinyNote" />
+  <meta name="twitter:description" content="TinyNote 轻记的官方产品信息、政策说明与使用指南。" />
+  <meta name="twitter:image" content="https://tinynote.wu2kong.com/images/icon-512.png" />
+  <script id="software-application-jsonld" type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"更新日志 — TinyNote","description":"TinyNote 轻记的官方产品信息、政策说明与使用指南。","url":"https://tinynote.wu2kong.com/changelog.html","inLanguage":"zh-CN","isPartOf":{"@type":"WebSite","name":"TinyNote","url":"https://tinynote.wu2kong.com"}}</script>
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <title>更新日志 — TinyNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="bg-atmosphere" aria-hidden="true"><div class="bg-orb bg-orb-1"></div><div class="bg-orb bg-orb-2"></div><div class="bg-grid"></div></div>
+  <header class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-brand"><img class="nav-logo" src="/images/icon-88.png" alt="" width="44" height="44" /><span data-i18n="brand.name">TinyNote 轻记</span></a>
+      <nav><ul class="nav-links">
+        <li><a href="/#features" data-i18n="nav.features">功能</a></li>
+        <li><a href="/#pricing" data-i18n="nav.pricing">定价</a></li>
+        <li><a href="/faq.html" data-i18n="footer.faq">常见问题</a></li>
+        <li><a href="/docs/app" data-i18n="nav.docs">帮助中心</a></li>
+      </ul></nav>
+      <div class="nav-actions">
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="切换主题"><svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+        <select id="langSelect" class="lang-select" aria-label="Language"></select>
+        <a href="/download.html" class="btn btn-primary"><span data-i18n="nav.download">下载</span></a>
+        <button class="nav-toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false" data-i18n-attr="aria-label:nav.openMenu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <a href="/#features" data-i18n="nav.features">功能</a><a href="/#pricing" data-i18n="nav.pricing">定价</a><a href="/faq.html" data-i18n="footer.faq">常见问题</a><a href="/docs/app" data-i18n="nav.docs">帮助中心</a><a href="/download.html" data-i18n="nav.download">下载</a>
+  </div>
+
+  <main class="content-page-main">
+    <div class="container content-page-layout">
+      <article class="content-page-card"><h1>更新日志</h1>
+<p>完整安装包见 <a href="https://tinynote.wu2kong.com/download.html">下载页</a>。</p>
+<h2>v1.2.4</h2>
+<p>2026-08-22</p>
+<h3>新增功能</h3>
+<ul>
+<li>Git 同步开放 TinyNote 官方托管（git.wu2kong.com），可在应用内授权、选择或新建仓库，国内访问更方便</li>
+</ul>
+<h3>功能优化</h3>
+<ul>
+<li>检查更新默认走 GitHub，无法访问时自动改用七牛云，仍失败可用蓝奏云手动下载</li>
+<li>检查更新与下载安装包时给出明确的加载提示</li>
+<li>关于页补充官网下载、GitHub Releases 与备用镜像入口</li>
+<li>样例库从「数据」中独立为单独设置项</li>
+<li>大模型配置改为可按需添加、移除供应商，界面更紧凑</li>
+</ul>
+<h3>问题修复</h3>
+<ul>
+<li>修复国内网络环境下因无法访问 GitHub 导致检查更新失败的问题</li>
+<li>修复点击「检查更新」后界面反馈不及时、容易误以为无响应的问题</li>
+</ul>
+<h2>v1.2.3</h2>
+<p>2026-08-21</p>
+<ul>
+<li>Git 同步支持多个托管平台：GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 和自定义源，可在应用内授权、选仓并一键增删</li>
+<li>新安装默认使用抹茶绿主题</li>
+<li>去掉系统菜单中用处不大的「编辑」项</li>
+</ul>
+<h2>v1.2.2</h2>
+<p>2026-08-21</p>
+<ul>
+<li>支持导入 Markdown 笔记与目录，也可将文件或文件夹拖入窗口（普通 .md 会转为文章笔记）</li>
+<li>可从系统菜单导出整个笔记库</li>
+<li>首次选择存储目录或在设置中，可导入官方入门样例库</li>
+<li>修复多工作区切换异常</li>
+<li>Markdown 预览中的外链改为在系统浏览器中打开</li>
+<li>优化系统菜单，支持最近工作区管理</li>
+</ul>
+<h2>v1.2.1</h2>
+<p>2026-08-20</p>
+<ul>
+<li>文章笔记与 Markdown 笔记可在右键菜单中互相转换（只改后缀与编辑视图，正文不变）</li>
+<li>新增帮助中心，并可从系统菜单打开</li>
+<li>修复笔记保存时因防抖动导致内容被覆盖的问题</li>
+<li>macOS 使用 Sparkle、Windows 使用 WinSparkle 自动更新</li>
+</ul>
+<h2>v1.2.0</h2>
+<p>2026-08-19</p>
+<ul>
+<li>三种笔记格式：块笔记本之外，新增 Markdown 笔记与文章笔记（所见即所得写作）</li>
+<li>多语言界面：简体中文、繁體中文、English、日本語、한국어、Deutsch、Français、Italiano、Русский，并按系统语言自动切换</li>
+<li>空间分组：空间可归入分组，支持下拉切换或折叠展示</li>
+<li>反馈入口：设置中可一键复制版本信息并写信反馈</li>
+<li>优化全局搜索入口、分组交互，以及文章笔记的新建与编辑体验</li>
+</ul>
+<h2>v1.1.0</h2>
+<p>2026-07-21</p>
+<ul>
+<li>新增 AI 会话，并优化聊天交互</li>
+<li>支持配置大模型提供商与模型</li>
+<li>增强笔记编辑能力</li>
+<li>新增历史记录管理与快捷访问</li>
+<li>完善工作区与设置管理</li>
+<li>优化笔记本点击体验、搜索及右键菜单</li>
+</ul>
+<h2>v1.0.8</h2>
+<p>2026-06-18</p>
+<ul>
+<li>提升 Git 稳定性</li>
+<li>将 <code>configs.json</code> 迁移到笔记库根目录</li>
+<li>侧边栏支持自由调整宽度</li>
+</ul>
+<h2>v1.0.7</h2>
+<p>2026-06-16</p>
+<ul>
+<li>增加主题切换</li>
+<li>全局搜索</li>
+<li>笔记本复制</li>
+</ul>
+<h2>v1.0.6</h2>
+<p>2026-06-15</p>
+<ul>
+<li>更新产品图标</li>
+</ul>
+<h2>v1.0.5</h2>
+<p>2026-06-13</p>
+<ul>
+<li>修复在线更新下载失败（Load failed），改为 Rust 原生层下载</li>
+<li>新增手动下载入口，可跳转 GitHub Release 页</li>
+</ul>
+<h2>v1.0.4</h2>
+<p>2026-06-13</p>
+<ul>
+<li>增加备份与同步相关功能</li>
+</ul>
+</article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand"><a href="/" class="nav-brand"><img class="nav-logo" src="/images/icon-88.png" alt="" width="44" height="44" /><span data-i18n="brand.name">TinyNote 轻记</span></a><p data-i18n="footer.tagline">轻量级快捷笔记管理 + 快捷复制工具。由 wu2kong（悟二空）开发维护。</p></div>
+        <div class="footer-col"><h5 data-i18n="footer.support">支持</h5><ul class="footer-links"><li><a href="/docs/app" data-i18n="footer.help">帮助中心</a></li><li><a href="/download.html" data-i18n="nav.download">下载</a></li><li><a href="/changelog.html" data-i18n="footer.updates">更新日志</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.legal">法律</h5><ul class="footer-links"><li><a href="/terms.html" data-i18n="footer.terms">服务条款</a></li><li><a href="/privacy.html" data-i18n="footer.privacy">隐私政策</a></li><li><a href="/refund.html" data-i18n="footer.refund">退款政策</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.resources">资源</h5><ul class="footer-links"><li><a href="/affiliate.html" data-i18n="footer.affiliate">合作推广</a></li><li><a href="/vs-notion.html">TinyNote vs Notion</a></li><li><a href="/#pricing" data-i18n="footer.pricing">产品定价</a></li></ul></div>
+        <div class="footer-col"><h5 data-i18n="footer.contact">联系</h5><ul class="footer-links"><li><a href="mailto:tinynote-app@wu2kong.com" data-i18n="footer.feedback">反馈与支持</a></li><li><a href="/faq.html" data-i18n="footer.faq">常见问题</a></li><li><a href="https://wu2kong.com" target="_blank" rel="noopener noreferrer" data-i18n="footer.site">作者主页</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><span data-i18n="footer.copyright">© 2026 TinyNote. MIT License.</span><span><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">沪ICP备2023020617号-1</a></span></div>
+    </div>
+  </footer>
+
+  <script src="/js/i18n-meta.js"></script>
+  <script src="/js/locales/zh-Hans.js"></script><script src="/js/locales/zh-Hant.js"></script><script src="/js/locales/en.js"></script><script src="/js/locales/ja.js"></script><script src="/js/locales/ko.js"></script><script src="/js/locales/de.js"></script><script src="/js/locales/fr.js"></script><script src="/js/locales/it.js"></script><script src="/js/locales/ru.js"></script><script src="/js/locales/index.js"></script><script src="/js/page-meta.js"></script><script src="/js/i18n.js"></script>
+  <script>
+    (function () {
+      var root = document.documentElement, toggle = document.getElementById('themeToggle'), navToggle = document.getElementById('navToggle'), menu = document.getElementById('mobileMenu');
+      toggle.addEventListener('click', function () { var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; root.setAttribute('data-theme', next); localStorage.setItem('tinynote-landing-theme', next); });
+      navToggle.addEventListener('click', function () { var open = menu.classList.toggle('open'); navToggle.setAttribute('aria-expanded', open); menu.setAttribute('aria-hidden', !open); });
+    })();
+  </script>
+</body>
+</html>
