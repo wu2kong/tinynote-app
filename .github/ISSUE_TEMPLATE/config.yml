@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: TinyNote docs
+    url: https://tinynote.wu2kong.com/docs/app
+    about: Read the user guide before opening a support issue.
