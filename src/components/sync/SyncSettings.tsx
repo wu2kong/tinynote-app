@@ -16,6 +16,7 @@ import { joinPath, normalizePath } from '@/utils/path';
 import * as fs from '@/utils/fileSystem';
 import { loadConfig, saveConfig } from '@/utils/config';
 import { getSyncBackend, isWeb } from '@/platform/detect';
+import { promptAndOpenWorkspaceInCurrentWindow } from '@/utils/workspaceActions';
 import ConfirmModal from '@/components/ConfirmModal';
 import { showToast } from '@/components/Toast';
 import { useI18n } from '@/i18n/useI18n';
@@ -76,6 +77,7 @@ const SyncSettings: React.FC = () => {
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
   const [gitCorsProxy, setGitCorsProxy] = useState('https://cors.isomorphic-git.org');
+  const [choosingCloudFolder, setChoosingCloudFolder] = useState(false);
 
   const loadLocalConfig = useCallback(async () => {
     const cfg = await loadConfig();
@@ -158,6 +160,19 @@ const SyncSettings: React.FC = () => {
     await saveConfig({ syncMode: mode });
     setSyncMode(mode);
   }, []);
+
+  const handleChooseCloudFolder = useCallback(async () => {
+    if (choosingCloudFolder) return;
+    setChoosingCloudFolder(true);
+    try {
+      await promptAndOpenWorkspaceInCurrentWindow({ syncMode: 'cloud' });
+    } catch (e) {
+      console.error('Failed to choose cloud drive folder:', e);
+      showToast(e instanceof Error ? e.message : t('settings.sync.cloudFolderSelectFailed'));
+    } finally {
+      setChoosingCloudFolder(false);
+    }
+  }, [choosingCloudFolder, t]);
 
   const handleCopy = useCallback(async (value: string, key: string) => {
     try {
@@ -428,8 +443,11 @@ const SyncSettings: React.FC = () => {
         </div>
       </div>
 
-      {!storagePath ? (
-        <div className="settings-sync-empty">{t('settings.sync.setStorageFirst')}</div>
+      {!storagePath && syncMode !== 'cloud' ? (
+        <>
+          <p className="settings-sync-choose-hint">{t('settings.sync.setStorageFirst')}</p>
+          {modeCards}
+        </>
       ) : syncMode === 'none' ? (
         <>
           <p className="settings-sync-choose-hint">{t('settings.sync.chooseModeHint')}</p>
@@ -438,9 +456,37 @@ const SyncSettings: React.FC = () => {
       ) : syncMode === 'cloud' ? (
         <>
           {modeCards}
-          <div className="settings-sync-empty">
-            <p>{t('settings.sync.cloudPlaceholderTitle')}</p>
-            <p className="settings-sync-empty-hint">{t('settings.sync.cloudPlaceholderDesc')}</p>
+          <div className="settings-sync-cloud-card">
+            <div className="settings-sync-cloud-card-copy">
+              <h5>{t('settings.sync.cloudFolderTitle')}</h5>
+              <p>{t('settings.sync.cloudFolderDesc')}</p>
+            </div>
+            {storagePath && (
+              <div className="settings-sync-info settings-sync-cloud-path">
+                <span className="settings-sync-info-label">{t('settings.sync.cloudCurrentFolder')}</span>
+                <div className="settings-sync-info-value-row">
+                  <span className="settings-sync-remote" title={storagePath}>{storagePath}</span>
+                  <button
+                    type="button"
+                    className="settings-path-btn"
+                    onClick={handleOpenRepo}
+                    title={t('settings.path.openInFileManager')}
+                  >
+                    <FolderOpen size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => void handleChooseCloudFolder()}
+              disabled={choosingCloudFolder}
+            >
+              {choosingCloudFolder ? <Loader2 size={14} className="settings-spin" /> : <FolderOpen size={14} />}
+              {storagePath ? t('settings.sync.cloudChangeFolder') : t('settings.sync.cloudSelectFolder')}
+            </button>
+            <p className="settings-sync-cloud-hint">{t('settings.sync.cloudFolderHint')}</p>
           </div>
         </>
       ) : (
@@ -608,7 +654,7 @@ const SyncSettings: React.FC = () => {
                 <div className="settings-sync-info-row">
                   <span className="settings-sync-info-label">{t('settings.sync.currentRepo')}</span>
                   <div className="settings-sync-info-value-row">
-                    <span className="settings-sync-remote" title={storagePath}>{storagePath}</span>
+                    <span className="settings-sync-remote" title={storagePath ?? undefined}>{storagePath}</span>
                     <button type="button" className="settings-path-btn" onClick={handleOpenRepo} title={t('settings.path.openInFileManager')}>
                       <FolderOpen size={14} />
                     </button>

@@ -4098,6 +4098,43 @@ body.directory-panel-resizing {
   color: var(--accent);
 }
 
+.settings-sync-cloud-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+}
+
+.settings-sync-cloud-card-copy h5 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-sync-cloud-card-copy p,
+.settings-sync-cloud-hint {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.settings-sync-cloud-card-copy p {
+  margin-top: 4px;
+}
+
+.settings-sync-cloud-path {
+  width: 100%;
+  margin: 0;
+}
+
+.settings-sync-cloud-hint {
+  color: var(--text-tertiary);
+}
+
 .settings-sync-workspace {
   display: flex;
   min-height: 128px;

@@ -19,6 +19,8 @@ import ImportNotesDropOverlay from '@/components/ImportNotesDropOverlay';
 import { selectStoragePath } from '@/utils/fileSystem';
 import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
+import { saveConfig } from '@/utils/config';
+import type { SyncMode } from '@/utils/configTypes';
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks } from '@/utils/noteParser';
@@ -139,10 +141,13 @@ const App: React.FC = () => {
   const [showSampleLibrary, setShowSampleLibrary] = useState(false);
   const [showImportNotes, setShowImportNotes] = useState(false);
 
-  const switchWorkspace = useCallback(async (path: string) => {
+  const switchWorkspace = useCallback(async (path: string, syncMode?: SyncMode) => {
     setLoading(true);
     try {
       await setStoragePath(path);
+      if (syncMode) {
+        await saveConfig({ syncMode });
+      }
       await initApp();
       if (isTauri()) {
         const { refreshDesktopMenu } = await import('@/platform/desktopMenu');
@@ -181,8 +186,8 @@ const App: React.FC = () => {
 
     const unlistenFns: (() => void)[] = [];
     const setup = async () => {
-      const unlisten = await listen<{ path: string }>(WORKSPACE_SWITCH_EVENT, (event) => {
-        void switchWorkspace(event.payload.path);
+      const unlisten = await listen<{ path: string; syncMode?: SyncMode }>(WORKSPACE_SWITCH_EVENT, (event) => {
+        void switchWorkspace(event.payload.path, event.payload.syncMode);
       });
       unlistenFns.push(unlisten);
     };

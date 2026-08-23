@@ -8,6 +8,7 @@ import { createBackup, selectBackupDir } from '@/utils/backup';
 import { clearRecentWorkspaces, registerWorkspace, unregisterWorkspace } from '@/utils/workspaces';
 import { showToast } from '@/components/Toast';
 import { t } from '@/i18n';
+import type { SyncMode } from '@/utils/configTypes';
 
 export const WORKSPACE_SWITCH_EVENT = 'tinynote-workspace-switch';
 export const OPEN_SETTINGS_EVENT = 'tinynote-open-settings';
@@ -28,10 +29,15 @@ export async function pickWorkspaceDirectory(): Promise<string | null> {
   return selected ? normalizePath(selected) : null;
 }
 
-export async function openWorkspaceInCurrentWindow(path: string): Promise<void> {
+export interface OpenWorkspaceOptions {
+  /** Applies a sync mode to the workspace after it has been opened. */
+  syncMode?: SyncMode;
+}
+
+export async function openWorkspaceInCurrentWindow(path: string, options?: OpenWorkspaceOptions): Promise<void> {
   const normalizedPath = normalizePath(path);
   await registerWorkspace(normalizedPath);
-  await emit(WORKSPACE_SWITCH_EVENT, { path: normalizedPath });
+  await emit(WORKSPACE_SWITCH_EVENT, { path: normalizedPath, syncMode: options?.syncMode });
 }
 
 export async function openWorkspaceInNewWindow(path: string): Promise<void> {
@@ -53,10 +59,10 @@ export async function openWorkspaceInNewWindow(path: string): Promise<void> {
   });
 }
 
-export async function promptAndOpenWorkspaceInCurrentWindow(): Promise<void> {
+export async function promptAndOpenWorkspaceInCurrentWindow(options?: OpenWorkspaceOptions): Promise<void> {
   const path = await pickWorkspaceDirectory();
   if (path) {
-    await openWorkspaceInCurrentWindow(path);
+    await openWorkspaceInCurrentWindow(path, options);
   }
 }
 

@@ -13,6 +13,64 @@
     it: 'it',
     ru: 'ru'
   };
+  // Time zone is only a fallback when the browser's preferred languages do
+  // not match a supported locale. A time zone can be affected by travel or
+  // user settings, so it must never take precedence over an explicit choice.
+  var TIME_ZONE_LOCALES = {
+    'Asia/Shanghai': 'zh-Hans',
+    'Asia/Chongqing': 'zh-Hans',
+    'Asia/Urumqi': 'zh-Hans',
+    'Asia/Taipei': 'zh-Hant',
+    'Asia/Hong_Kong': 'zh-Hant',
+    'Asia/Macau': 'zh-Hant',
+    'Asia/Tokyo': 'ja',
+    'Asia/Seoul': 'ko',
+    'Europe/Berlin': 'de',
+    'Europe/Vienna': 'de',
+    'Europe/Zurich': 'de',
+    'Europe/Vaduz': 'de',
+    'Europe/Luxembourg': 'de',
+    'Europe/Paris': 'fr',
+    'Europe/Brussels': 'fr',
+    'Europe/Monaco': 'fr',
+    'Europe/Rome': 'it',
+    'Europe/San_Marino': 'it',
+    'Europe/Vatican': 'it',
+    'Europe/Moscow': 'ru',
+    'Europe/Kirov': 'ru',
+    'Europe/Volgograd': 'ru',
+    'Asia/Yekaterinburg': 'ru',
+    'Asia/Omsk': 'ru',
+    'Asia/Novosibirsk': 'ru',
+    'Asia/Barnaul': 'ru',
+    'Asia/Tomsk': 'ru',
+    'Asia/Novokuznetsk': 'ru',
+    'Asia/Krasnoyarsk': 'ru',
+    'Asia/Irkutsk': 'ru',
+    'Asia/Chita': 'ru',
+    'Asia/Yakutsk': 'ru',
+    'Asia/Vladivostok': 'ru',
+    'Asia/Magadan': 'ru',
+    'Asia/Sakhalin': 'ru',
+    'Asia/Srednekolymsk': 'ru',
+    'Asia/Kamchatka': 'ru',
+    'Asia/Anadyr': 'ru',
+    'Europe/London': 'en',
+    'Europe/Dublin': 'en',
+    'America/New_York': 'en',
+    'America/Chicago': 'en',
+    'America/Denver': 'en',
+    'America/Los_Angeles': 'en',
+    'America/Anchorage': 'en',
+    'Pacific/Honolulu': 'en',
+    'America/Toronto': 'en',
+    'America/Vancouver': 'en',
+    'Australia/Sydney': 'en',
+    'Australia/Melbourne': 'en',
+    'Australia/Brisbane': 'en',
+    'Australia/Perth': 'en',
+    'Pacific/Auckland': 'en'
+  };
 
   function getMessages(locale) {
     var all = catalog.messages || {};
@@ -59,7 +117,9 @@
 
   function localeFromPathname(pathname) {
     var normalized = String(pathname || '/').replace(/^\/+|\/+$/g, '');
-    if (!normalized || normalized === 'index.html' || normalized === 'download.html') return 'zh-Hans';
+    // The root route is intentionally not treated as an explicit Chinese
+    // route. This lets a first-time visitor be matched from browser language.
+    if (!normalized || normalized === 'index.html' || normalized === 'download.html') return null;
     var firstSegment = normalized.split('/')[0].toLowerCase();
     for (var locale in LOCALE_PATHS) {
       if (Object.prototype.hasOwnProperty.call(LOCALE_PATHS, locale) && LOCALE_PATHS[locale] === firstSegment) {
@@ -69,11 +129,26 @@
     return null;
   }
 
+  function isRootLandingPath(pathname) {
+    var normalized = String(pathname || '/').replace(/^\/+|\/+$/g, '');
+    return !normalized || normalized === 'index.html' || normalized === 'download.html';
+  }
+
   function localePath(locale) {
     var segment = LOCALE_PATHS[locale] || '';
     var isDownload = document.documentElement.getAttribute('data-i18n-page') === 'download';
     if (isDownload) return (segment ? '/' + segment : '') + '/download.html';
     return segment ? '/' + segment + '/' : '/';
+  }
+
+  function localeFromTimeZone() {
+    try {
+      if (typeof Intl === 'undefined' || !Intl.DateTimeFormat) return null;
+      var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return TIME_ZONE_LOCALES[timeZone] || null;
+    } catch (_) {
+      return null;
+    }
   }
 
   function detectLocale() {
@@ -99,6 +174,8 @@
       var matched = matchLocale(candidates[i]);
       if (matched) return matched;
     }
+    var fromTimeZone = localeFromTimeZone();
+    if (fromTimeZone) return fromTimeZone;
     return catalog.defaultLocale || 'zh-Hans';
   }
 
@@ -218,6 +295,19 @@
         localizedUrl.searchParams.delete('locale');
         window.location.replace(localizedUrl.toString());
         return;
+      } catch (_) {}
+    }
+    // A localized URL is an explicit visitor intent. Only normalize the root
+    // route, where language was inferred from a saved preference, browser, or
+    // time zone, to the matching locale path.
+    if (isRootLandingPath(window.location.pathname) && currentLocale !== (catalog.defaultLocale || 'zh-Hans')) {
+      try {
+        var detectedUrl = new URL(window.location.href);
+        detectedUrl.pathname = localePath(currentLocale);
+        if (detectedUrl.pathname !== window.location.pathname) {
+          window.location.replace(detectedUrl.toString());
+          return;
+        }
       } catch (_) {}
     }
     buildLanguageSelect();
