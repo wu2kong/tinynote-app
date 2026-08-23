@@ -4109,10 +4109,34 @@ body.directory-panel-resizing {
   background: var(--bg-secondary);
 }
 
+.settings-sync-cloud-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
 .settings-sync-cloud-card-copy h5 {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.settings-sync-cloud-mode-badge {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.settings-sync-cloud-mode-prefix {
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .settings-sync-cloud-card-copy p,
@@ -4133,6 +4157,17 @@ body.directory-panel-resizing {
 
 .settings-sync-cloud-hint {
   color: var(--text-tertiary);
+}
+
+.settings-sync-cloud-notice {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border-color));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 7%, var(--bg-primary));
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .settings-sync-workspace {

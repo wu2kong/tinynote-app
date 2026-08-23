@@ -87,6 +87,9 @@ export async function resolveInitialWorkspacePath(): Promise<string | null> {
 export async function prepareWorkspace(storagePath: string): Promise<AppConfig> {
   const normalizedPath = normalizePath(storagePath);
   bindWorkspace(normalizedPath);
+  // Keep subsequent app initialization on the newly selected workspace instead
+  // of reverting to the path resolved during the first bootstrap.
+  bootstrappedWorkspacePath = normalizedPath;
   await ensureWorkspaceConfigMigrated(normalizedPath);
   await registerWorkspace(normalizedPath);
   setSessionWorkspaceOverride(normalizedPath);

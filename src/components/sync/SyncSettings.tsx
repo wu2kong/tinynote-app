@@ -47,6 +47,20 @@ function isRemoteAuthorized(remote: GitRemoteConfig, authorizedNames: string[]):
   return Boolean(remote.url) && /^(git@|ssh:\/\/)/i.test(remote.url);
 }
 
+type CloudFolderMode = 'icloud' | 'onedrive' | 'dropbox' | 'nutstore' | 'baidu' | 'webdav' | 'local';
+
+function detectCloudFolderMode(storagePath: string | null): CloudFolderMode {
+  if (!storagePath) return 'local';
+  const path = normalizePath(storagePath).toLowerCase();
+  if (path.includes('com~apple~clouddocs') || path.includes('icloud drive')) return 'icloud';
+  if (/(^|\/)onedrive(?:[\s._-]|\/|$)/.test(path)) return 'onedrive';
+  if (/(^|\/)dropbox(?:\/|$)/.test(path)) return 'dropbox';
+  if (path.includes('nutstore') || path.includes('坚果云')) return 'nutstore';
+  if (path.includes('baidunetdisk') || path.includes('baidu cloud') || path.includes('百度网盘') || path.includes('百度云')) return 'baidu';
+  if (path.includes('webdav') || path.includes('web-dav') || path.includes('davfs')) return 'webdav';
+  return 'local';
+}
+
 const SyncSettings: React.FC = () => {
   const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
@@ -382,6 +396,7 @@ const SyncSettings: React.FC = () => {
   const usedKnownProviders = new Set(
     remotes.filter((remote) => remote.provider !== 'custom').map((remote) => remote.provider),
   );
+  const cloudFolderMode = useMemo(() => detectCloudFolderMode(storagePath), [storagePath]);
   const addableProviders = GIT_PROVIDERS.filter(
     (item) => item.id === 'custom' || !usedKnownProviders.has(item.id),
   );
@@ -405,7 +420,6 @@ const SyncSettings: React.FC = () => {
         <Cloud size={18} />
         <span className="settings-sync-mode-title">{t('settings.sync.modeCloudTitle')}</span>
         <span className="settings-sync-mode-desc">{t('settings.sync.modeCloudDesc')}</span>
-        <span className="settings-sync-soon">{t('settings.sync.modeCloudSoon')}</span>
       </button>
     </div>
   ), [handleChooseMode, syncMode, t]);
@@ -458,7 +472,17 @@ const SyncSettings: React.FC = () => {
           {modeCards}
           <div className="settings-sync-cloud-card">
             <div className="settings-sync-cloud-card-copy">
-              <h5>{t('settings.sync.cloudFolderTitle')}</h5>
+              <div className="settings-sync-cloud-card-title-row">
+                <h5>{t('settings.sync.cloudFolderTitle')}</h5>
+                {storagePath && (
+                  <>
+                    <span className="settings-sync-cloud-mode-prefix">{t('settings.sync.cloudCurrentMode')}</span>
+                    <span className="settings-sync-cloud-mode-badge">
+                      {t(`settings.sync.cloudMode.${cloudFolderMode}`)}
+                    </span>
+                  </>
+                )}
+              </div>
               <p>{t('settings.sync.cloudFolderDesc')}</p>
             </div>
             {storagePath && (
@@ -487,6 +511,7 @@ const SyncSettings: React.FC = () => {
               {storagePath ? t('settings.sync.cloudChangeFolder') : t('settings.sync.cloudSelectFolder')}
             </button>
             <p className="settings-sync-cloud-hint">{t('settings.sync.cloudFolderHint')}</p>
+            <p className="settings-sync-cloud-notice">{t('settings.sync.cloudSyncNotice')}</p>
           </div>
         </>
       ) : (
