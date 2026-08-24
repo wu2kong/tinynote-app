@@ -951,27 +951,35 @@ const SyncSettingsGate: React.FC<{ onGoToPro: () => void }> = ({ onGoToPro }) =>
       <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
       <div className="pro-locked-panel">
         <p className="pro-locked-title">{t('pro.gate.sync')}</p>
-        <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
-        <div className="pro-locked-actions">
-          <button type="button" className="btn btn-secondary" onClick={onGoToPro}>
-            <KeyRound size={14} />
-            {t('pro.gate.activate')}
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={async () => {
-              try {
-                await openUrl(PURCHASE_URL);
-              } catch {
-                showToast(t('pro.errors.openPurchaseFailed'));
-              }
-            }}
-          >
-            <ExternalLink size={14} />
-            {t('pro.gate.purchase')}
-          </button>
-        </div>
+        {IS_MAC_APP_STORE ? (
+          <div className="pro-locked-store">
+            <AppStorePurchaseControls />
+          </div>
+        ) : (
+          <>
+            <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
+            <div className="pro-locked-actions">
+              <button type="button" className="btn btn-secondary" onClick={onGoToPro}>
+                <KeyRound size={14} />
+                {t('pro.gate.activate')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await openUrl(PURCHASE_URL);
+                  } catch {
+                    showToast(t('pro.errors.openPurchaseFailed'));
+                  }
+                }}
+              >
+                <ExternalLink size={14} />
+                {t('pro.gate.purchase')}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

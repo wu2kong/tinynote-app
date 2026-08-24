@@ -5178,6 +5178,13 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
   justify-content: center;
 }
 
+.pro-locked-store {
+  width: 100%;
+  max-width: 360px;
+  margin-top: 4px;
+  text-align: left;
+}
+
 .pro-settings-activate {
   display: flex;
   flex-direction: column;
