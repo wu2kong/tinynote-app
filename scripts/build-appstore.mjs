@@ -29,6 +29,9 @@ function run(command, args, options = {}) {
     stdio: options.capture ? 'pipe' : 'inherit',
     env: {
       ...process.env,
+      // StoreKit 2 / Swift concurrency requires macOS 13+; Tauri debug defaults to 11.0
+      // and would link @rpath/libswift_Concurrency.dylib (missing at runtime).
+      MACOSX_DEPLOYMENT_TARGET: '13.0',
       VITE_DISTRIBUTION: 'mac-app-store',
       ...options.env,
     },
@@ -107,9 +110,14 @@ function identityList() {
 
 function findAppIdentity() {
   const output = identityList();
-  const matches = [...output.matchAll(/"([^"]*Apple Distribution:[^"]*)"/g)];
-  return matches.find((match) => match[1].includes(`(${TEAM_ID})`))?.[1]
-    || matches[0]?.[1]
+  const names = [...output.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  const isMacAppStoreIdentity = (name) =>
+    name.includes('Apple Distribution:')
+    || name.includes('Mac App Distribution:')
+    || name.includes('3rd Party Mac Developer Application:');
+  const matches = names.filter(isMacAppStoreIdentity);
+  return matches.find((name) => name.includes(`(${TEAM_ID})`))
+    || matches[0]
     || '';
 }
 
@@ -148,12 +156,33 @@ function decodeProfile(path) {
     ['-convert', 'json', '-o', '-', '--', '-'],
     { encoding: 'utf8', input: plist },
   );
-  if (converted.status !== 0) return null;
-  try {
-    return JSON.parse(converted.stdout);
-  } catch {
-    return null;
+  if (converted.status === 0) {
+    try {
+      return JSON.parse(converted.stdout);
+    } catch {
+      // Fall through to the XML parser below.
+    }
   }
+
+  // Newer profiles embed DER data that `plutil -convert json` cannot represent.
+  // Parse the small set of fields needed for signing validation directly instead.
+  const valueForKey = (key, tag) => {
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = plist.match(new RegExp(`<key>${escapedKey}</key>\\s*<${tag}>([^<]*)</${tag}>`));
+    return match?.[1] || '';
+  };
+  const entitlements = plist.match(/<key>Entitlements<\/key>\s*<dict>([\s\S]*?)<\/dict>/)?.[1] || '';
+  const appIdentifier = entitlements.match(
+    /<key>com\.apple\.application-identifier<\/key>\s*<string>([^<]*)<\/string>/,
+  )?.[1] || '';
+  const platform = plist.match(/<key>Platform<\/key>\s*<array>\s*<string>([^<]*)<\/string>/)?.[1] || '';
+  const expirationDate = valueForKey('ExpirationDate', 'date');
+  if (!appIdentifier || !platform || !expirationDate) return null;
+  return {
+    Entitlements: { 'com.apple.application-identifier': appIdentifier },
+    Platform: [platform],
+    ExpirationDate: expirationDate,
+  };
 }
 
 function isMatchingProfile(path) {

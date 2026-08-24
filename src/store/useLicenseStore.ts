@@ -11,6 +11,7 @@ import {
   type StoredLicense,
 } from '@/utils/license';
 import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import type { AppStoreProduct, AppStoreProductId } from '@/constants/appStoreIap';
 
 export interface GateContext {
   parentPath: string;
@@ -33,6 +34,9 @@ interface LicenseState {
   clearError: () => void;
   openGate: (feature: ProFeature, context?: GateContext | null) => void;
   closeGate: () => void;
+  appStoreProducts: AppStoreProduct[];
+  purchaseAppStoreProduct: (productId: AppStoreProductId) => Promise<boolean>;
+  restoreAppStorePurchases: () => Promise<boolean>;
   /** Returns true if Pro or free-tier allows the action; otherwise opens gate. */
   requirePro: (feature: ProFeature) => boolean;
 }
@@ -139,6 +143,10 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
   }),
 
   closeGate: () => set({ gateOpen: false, gateFeature: null, gateContext: null }),
+
+  appStoreProducts: [],
+  purchaseAppStoreProduct: async () => false,
+  restoreAppStorePurchases: async () => false,
 
   requirePro: (feature) => {
     if (IS_MAC_APP_STORE || get().isPro) return true;

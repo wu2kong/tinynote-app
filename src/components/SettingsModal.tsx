@@ -22,6 +22,7 @@ import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
 import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { AppStorePurchaseControls } from './AppStorePurchaseControls';
 
 type SettingsModule = 'general' | 'ai' | 'data' | 'sampleLibrary' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
 
@@ -38,7 +39,7 @@ const MODULES: { id: SettingsModule; icon: React.ReactNode }[] = [
   { id: 'backup', icon: <Archive size={16} /> },
   { id: 'ai', icon: <Bot size={16} /> },
   { id: 'shortcuts', icon: <KeyRound size={16} /> },
-  ...(!IS_MAC_APP_STORE ? [{ id: 'pro' as const, icon: <Crown size={16} /> }] : []),
+  { id: 'pro', icon: <Crown size={16} /> },
   { id: 'feedback', icon: <MessageSquare size={16} /> },
   { id: 'about', icon: <Info size={16} /> },
 ];
@@ -995,6 +996,10 @@ const LicenseSettings: React.FC = () => {
   const clearError = useLicenseStore((s) => s.clearError);
   const [licenseKey, setLicenseKey] = useState('');
 
+  if (IS_MAC_APP_STORE) {
+    return <AppStorePurchaseControls />;
+  }
+
   const handleActivate = async () => {
     const ok = await activate(licenseKey);
     if (ok) {
@@ -1506,7 +1511,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'sync' && <SyncSettingsGate onGoToPro={() => setActiveModule('pro')} />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}
-            {!IS_MAC_APP_STORE && activeModule === 'pro' && <ProSettings />}
+            {activeModule === 'pro' && <ProSettings />}
             {activeModule === 'feedback' && <FeedbackSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>

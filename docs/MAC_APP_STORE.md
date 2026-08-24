@@ -14,6 +14,8 @@ Mac App Store 相关标识：
 
 Mac App Store 构建会启用 App Sandbox、关闭 Sparkle 与站外授权/购买界面，并把用户通过系统对话框选择的工作区授权持久化。官网下载版仍保留 Sparkle 更新能力。
 
+日常开发、测试、编译和发布时，先看 [分发路线总览](./DISTRIBUTION_WORKFLOWS.md)。它明确区分官网版与 Mac App Store 版，并说明为什么 `npm run dev:appstore` 不能直接测试 IAP。
+
 ## 1. 在 Apple Developer 注册 App ID
 
 打开 [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list)：
@@ -116,11 +118,41 @@ npm run build:appstore -- --profile /绝对路径/TinyNote.provisionprofile --up
 
 `.p8` 私钥应放在 Apple 工具支持的私有目录中，不要放进项目或提交到 Git。
 
-## 7. 提交前检查
+## 7. 本机测试 IAP（不使用 TestFlight）
+
+仓库中的 [`src-tauri/TinyNote.storekit`](../src-tauri/TinyNote.storekit) 提供了一个本地 StoreKit 测试目录，包含与生产代码完全一致的三个产品 ID：
+
+- 月度订阅：`com.wu2kong.tinynote.app.pro.monthly`
+- 年度订阅：`com.wu2kong.tinynote.app.pro.yearly`
+- 终身版（非消耗型）：`com.wu2kong.tinynote.app.pro.lifetime`
+
+`TinyNote.storekit` 只在 Xcode 的本地 StoreKit 测试环境中生效：Xcode 必须从 Run scheme 启动一个 `.app` bundle，并把该文件设为 StoreKit Configuration。仓库当前没有维护这样的 Tauri Xcode scheme，因此不能把“打开 `.storekit`”与 `npm run dev:appstore` 组合为可用测试路径。
+
+`npm run dev:appstore` 只会启动裸可执行文件；虽然它启用了商店代码，但不会生成 `.app` bundle。若点击购买出现 `IAP requires the app to run from a .app bundle`，这是预期结果，应该改走下方签名 bundle 测试，而不是反复重试 dev 命令。
+
+### 推荐：Sandbox 真机流程
+
+1. 先构建带 Mac App Store profile 的签名包：
+
+   ```bash
+   npm run build:appstore -- --profile /绝对路径/TinyNote.provisionprofile
+   ```
+
+2. 从生成的 `.app` 启动：
+
+   ```bash
+   open "src-tauri/target/universal-apple-darwin/release/bundle/macos/TinyNote.app"
+   ```
+
+3. 用 App Store Connect 的 Sandbox 测试账号登录 Mac 的 Sandbox Apple Account 设置；在 app 内购买月度、年度或终身版，验证解锁与“恢复购买”。Sandbox 不会实际扣款。
+4. 若应用一打开就显示“高级版已激活”，该测试账号已经有购买记录。在 App Store Connect → 用户和访问 → 沙盒中选中该账号，执行“清除购买历史记录”，然后在 Mac 退出并重新登录该 Sandbox 账号，再重启 app。此操作只影响测试交易、不可撤销。
+
+Sandbox 用于验证 App Store Connect 中的真实商品、订阅状态和恢复购买；不依赖 TestFlight。完整的日常流程见 [DISTRIBUTION_WORKFLOWS.md](./DISTRIBUTION_WORKFLOWS.md)。
+
+## 8. 提交前检查
 
 - 在本机安装并启动商店构建，测试新建、打开、保存工作区以及重启后的授权恢复。
 - 在 App Store Connect 填写截图、描述、关键词、支持网址、隐私政策网址、年龄分级与 App Privacy。
 - 加密问题：项目的商店 Info.plist 已声明 `ITSAppUsesNonExemptEncryption = false`；提交时仍需按实际网络与加密用途如实回答。
 - 如果启用新的 Apple capability，需要同步更新 App ID、provisioning profile 与 `src-tauri/Entitlements.appstore.plist`。
 - 上传后先用 TestFlight 内部测试，再提交 App Review。
-

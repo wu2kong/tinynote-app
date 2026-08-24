@@ -58,6 +58,17 @@ export const zhHansMessages = {
       "sampleMarkdownName": "Markdown 样例",
       "sampleWriterName": "文章样例"
     },
+    "store": {
+      "hint": "选择订阅或一次性购买。你可随时使用当前 Apple 账户恢复已购项目。",
+      "monthly": "月度订阅 {price}",
+      "yearly": "年度订阅 {price}",
+      "lifetime": "早鸟买断 {price}",
+      "restore": "恢复购买",
+      "purchaseComplete": "TinyNote 高级版已解锁。",
+      "restoreComplete": "已恢复你的 TinyNote 高级版购买。",
+      "restoreEmpty": "当前 Apple 账户没有找到有效的 TinyNote 高级版购买。",
+      "active": "TinyNote 高级版已激活"
+    },
     "errors": {
       "emptyKey": "请输入许可证密钥",
       "network": "网络异常，请检查连接后重试",

@@ -1,0 +1,109 @@
+{
+  "identifier" : "7C83964D-8AD2-4EF7-A28A-BADDBD11C4BE",
+  "nonConsumables" : [
+    {
+      "displayPrice" : "128.00",
+      "familyShareable" : false,
+      "localizations" : [
+        {
+          "description" : "一次性解锁 TinyNote Pro 的全部功能。",
+          "displayName" : "TinyNote Pro 终身版",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Unlock all TinyNote Pro features with a one-time purchase.",
+          "displayName" : "TinyNote Pro Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productIdentifier" : "com.wu2kong.tinynote.app.pro.lifetime",
+      "referenceName" : "TinyNote Pro Lifetime"
+    }
+  ],
+  "products" : [
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "zh_CN",
+    "_storefront" : "CHN",
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "CE7A0A08-25EF-416A-8647-BAC533E038D8",
+      "localizations" : [
+        {
+          "description" : "按月或按年订阅 TinyNote Pro。",
+          "displayName" : "TinyNote Pro 订阅",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Subscribe monthly or yearly to TinyNote Pro.",
+          "displayName" : "TinyNote Pro Subscription",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "TinyNote Pro Subscription",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+          ],
+          "codeOffers" : [
+          ],
+          "displayPrice" : "6.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "introductoryOffers" : [
+          ],
+          "localizations" : [
+            {
+              "description" : "按月解锁 TinyNote Pro。",
+              "displayName" : "TinyNote Pro 月度订阅",
+              "locale" : "zh_CN"
+            },
+            {
+              "description" : "Unlock TinyNote Pro monthly.",
+              "displayName" : "TinyNote Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productIdentifier" : "com.wu2kong.tinynote.app.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "TinyNote Pro Monthly",
+          "subscriptionGroupID" : "CE7A0A08-25EF-416A-8647-BAC533E038D8"
+        },
+        {
+          "adHocOffers" : [
+          ],
+          "codeOffers" : [
+          ],
+          "displayPrice" : "68.00",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "introductoryOffers" : [
+          ],
+          "localizations" : [
+            {
+              "description" : "按年解锁 TinyNote Pro。",
+              "displayName" : "TinyNote Pro 年度订阅",
+              "locale" : "zh_CN"
+            },
+            {
+              "description" : "Unlock TinyNote Pro yearly.",
+              "displayName" : "TinyNote Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productIdentifier" : "com.wu2kong.tinynote.app.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "TinyNote Pro Yearly",
+          "subscriptionGroupID" : "CE7A0A08-25EF-416A-8647-BAC533E038D8"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

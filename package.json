@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "preview:web": "vite preview --outDir dist-web",
     "tauri": "tauri",
+    "dev:appstore": "MACOSX_DEPLOYMENT_TARGET=13.0 VITE_DISTRIBUTION=mac-app-store tauri dev --features app-store --config src-tauri/tauri.appstore.conf.json",
     "release": "node scripts/release.mjs",
     "build:packages": "node scripts/build-packages.mjs",
     "build:appstore": "node scripts/build-appstore.mjs",
@@ -25,6 +26,7 @@
     "test": "node --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/updateSource.test.mjs"
   },
   "dependencies": {
+    "@choochmeque/tauri-plugin-iap-api": "^0.10.0-rc.8",
     "@codemirror/lang-css": "^6.3.1",
     "@codemirror/lang-go": "^6.0.1",
     "@codemirror/lang-html": "^6.4.11",

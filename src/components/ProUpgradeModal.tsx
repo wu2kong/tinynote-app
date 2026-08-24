@@ -8,6 +8,8 @@ import { useStore } from '@/store/useStore';
 import { collectSpaceArticleNotebooks } from '@/utils/fileSystem';
 import { useI18n } from '@/i18n/useI18n';
 import { showToast } from './Toast';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { AppStorePurchaseControls } from './AppStorePurchaseControls';
 
 function featureMessageKey(feature: ProFeature | null): string {
   switch (feature) {
@@ -95,6 +97,23 @@ const ProUpgradeModal: React.FC = () => {
   }, [gateOpen, gateFeature, clearError, refreshCurrentSpaceTree]);
 
   if (!gateOpen) return null;
+
+  if (IS_MAC_APP_STORE) {
+    return (
+      <div className="modal-overlay pro-upgrade-overlay" onClick={closeGate}>
+        <div className="modal pro-upgrade-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="pro-upgrade-header">
+            <h3 className="modal-title">{t('pro.gate.title')}</h3>
+            <button type="button" className="icon-btn" onClick={closeGate} title={t('common.close')}>
+              <X size={16} />
+            </button>
+          </div>
+          <p className="modal-message">{t(featureMessageKey(gateFeature))}</p>
+          <AppStorePurchaseControls onSuccess={closeGate} />
+        </div>
+      </div>
+    );
+  }
 
   const handlePurchase = async () => {
     try {

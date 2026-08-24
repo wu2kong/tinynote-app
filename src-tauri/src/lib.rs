@@ -490,6 +490,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init());
 
+    #[cfg(all(target_os = "macos", feature = "app-store"))]
+    let builder = builder.plugin(tauri_plugin_iap::init());
+
     #[cfg(all(target_os = "macos", feature = "sparkle-updater", not(feature = "app-store")))]
     let builder = builder.plugin(tauri_plugin_sparkle_updater::init());
 

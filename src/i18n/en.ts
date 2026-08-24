@@ -58,6 +58,17 @@ export const enMessages = {
       "sampleMarkdownName": "Markdown Sample",
       "sampleWriterName": "Article Sample"
     },
+    "store": {
+      "hint": "Choose a subscription or a one-time purchase. You can restore purchases made with this Apple Account at any time.",
+      "monthly": "Monthly {price}",
+      "yearly": "Yearly {price}",
+      "lifetime": "Early-bird lifetime {price}",
+      "restore": "Restore Purchases",
+      "purchaseComplete": "TinyNote Pro is now unlocked.",
+      "restoreComplete": "Your TinyNote Pro purchase has been restored.",
+      "restoreEmpty": "No active TinyNote Pro purchase was found for this Apple Account.",
+      "active": "TinyNote Pro is active"
+    },
     "errors": {
       "emptyKey": "Please enter a license key",
       "network": "Network error. Check your connection and try again.",
