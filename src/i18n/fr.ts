@@ -378,6 +378,7 @@ export const frMessages = {
         "custom": "Connecter tout service de grands modèles compatible OpenAI ou un modèle local"
       },
       "customProvider": "Personnalisé",
+      "customProviderN": "Personnalisé {n}",
       "apiKeyOptionalPlaceholder": "API Key (laisser vide si non requise)",
       "addProvider": "Ajouter un fournisseur",
       "removeProvider": "Supprimer",

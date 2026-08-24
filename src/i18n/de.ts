@@ -378,6 +378,7 @@ export const deMessages = {
         "custom": "Beliebigen OpenAI-kompatiblen großen Modelldienst oder lokales Modell verbinden"
       },
       "customProvider": "Benutzerdefiniert",
+      "customProviderN": "Benutzerdefiniert {n}",
       "apiKeyOptionalPlaceholder": "API Key (leer lassen, falls nicht erforderlich)",
       "addProvider": "Anbieter hinzufügen",
       "removeProvider": "Entfernen",

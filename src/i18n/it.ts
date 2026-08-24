@@ -378,6 +378,7 @@ export const itMessages = {
         "custom": "Collega qualsiasi servizio di modelli di grandi dimensioni compatibile con OpenAI o un modello locale"
       },
       "customProvider": "Personalizzato",
+      "customProviderN": "Personalizzato {n}",
       "apiKeyOptionalPlaceholder": "API Key (lascia vuoto se non richiesta)",
       "addProvider": "Aggiungi provider",
       "removeProvider": "Rimuovi",

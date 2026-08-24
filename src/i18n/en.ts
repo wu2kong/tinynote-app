@@ -405,6 +405,7 @@ export const enMessages = {
         "custom": "Connect any OpenAI-compatible large model service or local model"
       },
       "customProvider": "Custom",
+      "customProviderN": "Custom {n}",
       "apiKeyOptionalPlaceholder": "API Key (leave blank if not required)",
       "addProvider": "Add provider",
       "removeProvider": "Remove",

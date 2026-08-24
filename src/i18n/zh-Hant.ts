@@ -378,6 +378,7 @@ export const zhHantMessages = {
         "custom": "連接任意 OpenAI 相容的大模型服務或本機模型"
       },
       "customProvider": "自訂",
+      "customProviderN": "自訂 {n}",
       "apiKeyOptionalPlaceholder": "API Key（不需要時可留空）",
       "addProvider": "新增供應商",
       "removeProvider": "移除",

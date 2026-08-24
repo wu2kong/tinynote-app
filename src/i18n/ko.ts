@@ -378,6 +378,7 @@ export const koMessages = {
         "custom": "임의의 OpenAI 호환 대형 모델 서비스 또는 로컬 모델에 연결합니다"
       },
       "customProvider": "사용자 지정",
+      "customProviderN": "사용자 지정 {n}",
       "apiKeyOptionalPlaceholder": "API Key(필요하지 않으면 비워 두세요)",
       "addProvider": "공급자 추가",
       "removeProvider": "제거",

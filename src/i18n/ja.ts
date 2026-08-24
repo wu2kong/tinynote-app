@@ -378,6 +378,7 @@ export const jaMessages = {
         "custom": "任意の OpenAI 互換大規模モデルサービスまたはローカルモデルに接続します"
       },
       "customProvider": "カスタム",
+      "customProviderN": "カスタム {n}",
       "apiKeyOptionalPlaceholder": "API Key（不要な場合は空欄）",
       "addProvider": "プロバイダーを追加",
       "removeProvider": "削除",

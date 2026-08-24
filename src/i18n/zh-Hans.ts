@@ -405,6 +405,7 @@ export const zhHansMessages = {
         "custom": "连接任意 OpenAI 兼容的大模型服务或本地模型"
       },
       "customProvider": "自定义",
+      "customProviderN": "自定义 {n}",
       "apiKeyOptionalPlaceholder": "API Key（不需要时可留空）",
       "addProvider": "添加供应商",
       "removeProvider": "移除",

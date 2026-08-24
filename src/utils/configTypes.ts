@@ -18,7 +18,35 @@ export interface GitRemoteAuth {
   token: string;
 }
 
-export type LLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek' | 'custom';
+export type BuiltinLLMProviderId = 'openai' | 'opencode-go' | 'opencode-zen' | 'deepseek';
+export type LLMProviderId = BuiltinLLMProviderId | string;
+
+export const BUILTIN_LLM_PROVIDER_IDS: readonly BuiltinLLMProviderId[] = [
+  'openai',
+  'opencode-go',
+  'opencode-zen',
+  'deepseek',
+];
+
+export function isBuiltinLLMProviderId(id: string): id is BuiltinLLMProviderId {
+  return (BUILTIN_LLM_PROVIDER_IDS as readonly string[]).includes(id);
+}
+
+export function isCustomLLMProviderId(id: string): boolean {
+  return id === 'custom' || id.startsWith('custom-');
+}
+
+export function nextCustomLLMProviderId(existingIds: string[]): string {
+  if (!existingIds.includes('custom')) return 'custom';
+  let n = 2;
+  while (existingIds.includes(`custom-${n}`)) n += 1;
+  return `custom-${n}`;
+}
+
+export function customLLMProviderOrdinal(providers: { id: string }[], id: string): number {
+  if (!isCustomLLMProviderId(id)) return 0;
+  return providers.filter((provider) => isCustomLLMProviderId(provider.id)).findIndex((provider) => provider.id === id) + 1;
+}
 
 /** Built-in virtual group that always shows every space. */
 export const ALL_SPACE_GROUP_ID = '__all__';
@@ -40,12 +68,20 @@ export interface LLMProviderConfig {
   models?: LLMModelConfig[];
 }
 
+export const CUSTOM_LLM_PROVIDER_TEMPLATE: LLMProviderConfig = {
+  id: 'custom',
+  enabled: false,
+  apiKey: null,
+  baseUrl: '',
+  model: '',
+};
+
 export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig[] = [
   { id: 'openai', enabled: false, apiKey: null, baseUrl: 'https://api.openai.com/v1', model: 'gpt-5.4-mini' },
   { id: 'opencode-go', enabled: false, apiKey: null, baseUrl: 'https://opencode.ai/zen/go/v1', model: 'deepseek-v4-flash' },
   { id: 'opencode-zen', enabled: false, apiKey: null, baseUrl: 'https://opencode.ai/zen/v1', model: 'gpt-5.4' },
   { id: 'deepseek', enabled: false, apiKey: null, baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-v4-flash' },
-  { id: 'custom', enabled: false, apiKey: null, baseUrl: '', model: '' },
+  { ...CUSTOM_LLM_PROVIDER_TEMPLATE },
 ];
 
 export interface AppConfig {

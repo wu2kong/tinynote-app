@@ -6,6 +6,7 @@ import hljs from 'highlight.js';
 import { Channel, invoke } from '@tauri-apps/api/core';
 import { loadConfig } from '@/utils/config';
 import type { LLMProviderConfig } from '@/utils/configTypes';
+import { customLLMProviderOrdinal, isCustomLLMProviderId } from '@/utils/configTypes';
 import { isTauri } from '@/platform/detect';
 import { deleteChatSession, listChatSessions, saveChatSession } from '@/utils/aiChatSessions';
 import type { ChatMessage, ChatSession } from '@/utils/aiChatSessions';
@@ -20,6 +21,16 @@ interface AIChatModalProps {
 }
 
 const createId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+function llmProviderGroupTitle(
+  provider: LLMProviderConfig,
+  providers: LLMProviderConfig[],
+  translate: (key: string, params?: I18nParams) => string,
+): string {
+  if (!isCustomLLMProviderId(provider.id)) return provider.id;
+  const ordinal = customLLMProviderOrdinal(providers, provider.id);
+  return ordinal > 1 ? translate('settings.ai.customProviderN', { n: ordinal }) : translate('settings.ai.customProvider');
+}
 
 const PANEL_SIZE_STORAGE_KEY = 'tinynote-ai-chat-size';
 const MIN_PANEL_WIDTH = 380;
@@ -757,7 +768,7 @@ const AIChatModal: React.FC<AIChatModalProps> = ({ open, onClose }) => {
                   <div className="ai-chat-model-options">
                     {filteredProviders.length === 0 ? <div className="ai-chat-model-none">{t('aiChat.noModels')}</div> : filteredProviders.map(({ provider, models }) => (
                       <div className="ai-chat-model-group" key={provider.id}>
-                        <div className="ai-chat-model-group-title">{provider.id}</div>
+                        <div className="ai-chat-model-group-title">{llmProviderGroupTitle(provider, providers, t)}</div>
                         {models.map((model) => <button type="button" className={selectedModel?.providerId === provider.id && selectedModel.model === model ? 'active' : ''} key={model} onClick={() => { setSelectedModel({ providerId: provider.id, model }); setShowModels(false); setModelSearch(''); }}>{model}</button>)}
                       </div>
                     ))}

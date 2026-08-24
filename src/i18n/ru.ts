@@ -378,6 +378,7 @@ export const ruMessages = {
         "custom": "Подключите любой OpenAI-совместимый сервис больших моделей или локальную модель"
       },
       "customProvider": "Пользовательский",
+      "customProviderN": "Пользовательский {n}",
       "apiKeyOptionalPlaceholder": "API Key (оставьте пустым, если не требуется)",
       "addProvider": "Добавить провайдера",
       "removeProvider": "Удалить",

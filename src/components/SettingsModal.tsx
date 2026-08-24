@@ -12,7 +12,7 @@ import { checkForUpdate, checkWithNativeUpdater, downloadAndInstall, formatUpdat
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
 import { loadConfig, saveConfig } from '@/utils/config';
-import { DEFAULT_LLM_PROVIDERS, LLMModelConfig, LLMProviderConfig, LLMProviderId } from '@/utils/configTypes';
+import { DEFAULT_LLM_PROVIDERS, CUSTOM_LLM_PROVIDER_TEMPLATE, LLMModelConfig, LLMProviderConfig, LLMProviderId, customLLMProviderOrdinal, isBuiltinLLMProviderId, isCustomLLMProviderId, nextCustomLLMProviderId } from '@/utils/configTypes';
 import { getPlatform, isTauri } from '@/platform/detect';
 import OfficialSampleLibraryModal from './OfficialSampleLibraryModal';
 import ConfirmModal from './ConfirmModal';
@@ -239,7 +239,7 @@ const GeneralSettings: React.FC = () => {
   );
 };
 
-const PROVIDER_LABELS: Record<LLMProviderId, string> = {
+const PROVIDER_LABELS: Record<string, string> = {
   openai: 'OpenAI',
   'opencode-go': 'OpenCode Go',
   'opencode-zen': 'OpenCode Zen',
@@ -247,7 +247,7 @@ const PROVIDER_LABELS: Record<LLMProviderId, string> = {
   custom: 'settings.ai.customProvider',
 };
 
-const PROVIDER_DESCRIPTION_KEYS: Record<LLMProviderId, string> = {
+const PROVIDER_DESCRIPTION_KEYS: Record<string, string> = {
   openai: 'settings.ai.providerDescriptions.openai',
   'opencode-go': 'settings.ai.providerDescriptions.opencodeGo',
   'opencode-zen': 'settings.ai.providerDescriptions.opencodeZen',
@@ -255,7 +255,7 @@ const PROVIDER_DESCRIPTION_KEYS: Record<LLMProviderId, string> = {
   custom: 'settings.ai.providerDescriptions.custom',
 };
 
-const PROVIDER_KEY_PLACEHOLDERS: Record<LLMProviderId, string> = {
+const PROVIDER_KEY_PLACEHOLDERS: Record<string, string> = {
   openai: 'sk-...',
   'opencode-go': 'OpenCode Go API Key',
   'opencode-zen': 'OpenCode Zen API Key',
@@ -267,6 +267,7 @@ function mergeProvider(saved: LLMProviderConfig | undefined, fallback: LLMProvid
   return {
     ...fallback,
     ...saved,
+    id: saved?.id || fallback.id,
     models: saved?.models?.filter((model) => model.id.trim()),
   };
 }
@@ -275,13 +276,13 @@ function normalizeProviders(providers: LLMProviderConfig[] | undefined): LLMProv
   if (!providers?.length) {
     return DEFAULT_LLM_PROVIDERS.map((fallback) => ({ ...fallback }));
   }
-  const seen = new Set<LLMProviderId>();
+  const seen = new Set<string>();
   const next: LLMProviderConfig[] = [];
   for (const provider of providers) {
-    if (seen.has(provider.id)) continue;
+    if (!provider.id || seen.has(provider.id)) continue;
     seen.add(provider.id);
     const fallback = DEFAULT_LLM_PROVIDERS.find((item) => item.id === provider.id)
-      ?? DEFAULT_LLM_PROVIDERS[DEFAULT_LLM_PROVIDERS.length - 1];
+      ?? CUSTOM_LLM_PROVIDER_TEMPLATE;
     next.push(mergeProvider(provider, fallback));
   }
   return next;
@@ -347,15 +348,26 @@ const AISettings: React.FC = () => {
   }, [addMenuOpen]);
 
   const selected = providers.find((provider) => provider.id === selectedId) ?? providers[0];
-  const addableProviders = DEFAULT_LLM_PROVIDERS.filter(
-    (item) => !providers.some((provider) => provider.id === item.id),
-  );
+  const addableProviders = [
+    ...DEFAULT_LLM_PROVIDERS.filter((item) => isBuiltinLLMProviderId(item.id) && !providers.some((provider) => provider.id === item.id)),
+    CUSTOM_LLM_PROVIDER_TEMPLATE,
+  ];
   const providerLabel = (id: LLMProviderId) => {
+    if (isCustomLLMProviderId(id)) {
+      const ordinal = customLLMProviderOrdinal(providers, id);
+      return ordinal > 1 ? t('settings.ai.customProviderN', { n: ordinal }) : t('settings.ai.customProvider');
+    }
     const label = PROVIDER_LABELS[id];
-    return label.startsWith('settings.') ? t(label) : label;
+    return label?.startsWith('settings.') ? t(label) : (label || id);
+  };
+  const providerDescription = (id: LLMProviderId) => {
+    const key = isCustomLLMProviderId(id) ? PROVIDER_DESCRIPTION_KEYS.custom : (PROVIDER_DESCRIPTION_KEYS[id] ?? PROVIDER_DESCRIPTION_KEYS.custom);
+    return t(key);
   };
   const providerKeyPlaceholder = (id: LLMProviderId) => {
-    const placeholder = PROVIDER_KEY_PLACEHOLDERS[id];
+    const placeholder = isCustomLLMProviderId(id)
+      ? PROVIDER_KEY_PLACEHOLDERS.custom
+      : (PROVIDER_KEY_PLACEHOLDERS[id] ?? PROVIDER_KEY_PLACEHOLDERS.custom);
     return placeholder.startsWith('settings.') ? t(placeholder) : placeholder;
   };
 
@@ -366,6 +378,17 @@ const AISettings: React.FC = () => {
   };
 
   const handleAddProvider = (id: LLMProviderId) => {
+    if (isCustomLLMProviderId(id)) {
+      const newId = nextCustomLLMProviderId(providers.map((provider) => provider.id));
+      const next = { ...CUSTOM_LLM_PROVIDER_TEMPLATE, id: newId };
+      const ordinal = providers.filter((provider) => isCustomLLMProviderId(provider.id)).length + 1;
+      const name = ordinal > 1 ? t('settings.ai.customProviderN', { n: ordinal }) : t('settings.ai.customProvider');
+      setProviders((current) => [...current, next]);
+      setSelectedId(newId);
+      setAddMenuOpen(false);
+      showToast(t('settings.ai.providerAdded', { name }));
+      return;
+    }
     const fallback = DEFAULT_LLM_PROVIDERS.find((item) => item.id === id);
     if (!fallback || providers.some((provider) => provider.id === id)) return;
     setProviders((current) => [...current, { ...fallback }]);
@@ -511,7 +534,6 @@ const AISettings: React.FC = () => {
                 type="button"
                 className="settings-sync-source-tool"
                 title={t('settings.ai.addProvider')}
-                disabled={addableProviders.length === 0}
                 onClick={() => setAddMenuOpen((open) => !open)}
               >
                 <Plus size={14} />
@@ -553,7 +575,7 @@ const AISettings: React.FC = () => {
               <div className="settings-sync-detail-head">
                 <div>
                   <h5 className="settings-sync-detail-title">{providerLabel(selected.id)}</h5>
-                  <p className="settings-sync-detail-desc">{t(PROVIDER_DESCRIPTION_KEYS[selected.id])}</p>
+                  <p className="settings-sync-detail-desc">{providerDescription(selected.id)}</p>
                 </div>
                 <div className="settings-sync-detail-badges">
                   {selected.enabled && (
@@ -663,7 +685,7 @@ const AISettings: React.FC = () => {
                   type="text"
                   value={selected.model}
                   onChange={(event) => updateProvider({ model: event.target.value })}
-                  placeholder={selected.id === 'custom' ? t('settings.ai.modelPlaceholder') : undefined}
+                  placeholder={isCustomLLMProviderId(selected.id) ? t('settings.ai.modelPlaceholder') : undefined}
                   autoCorrect="off"
                   autoCapitalize="off"
                   spellCheck={false}
