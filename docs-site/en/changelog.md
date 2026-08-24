@@ -7,6 +7,24 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.5
+
+2026-08-25
+
+### New features
+
+- Cloud-drive sync: put the library in a folder already synced by iCloud, Nutstore, OneDrive, or similar; the desktop client handles upload and download
+- On Git pull conflicts, the cloud version stays in the original file and your local content is saved as a "conflict version" copy so nothing is lost
+- AI settings can add multiple custom providers, so several OpenAI-compatible services can be used at once
+
+### Improvements
+
+- Sync settings are redesigned: Git versus cloud drive is easier to choose, and source lists plus everyday actions are clearer
+
+### Fixes
+
+- Fix unreadable auto-update notes in Windows dark mode
+
 ## v1.2.4
 
 2026-08-22

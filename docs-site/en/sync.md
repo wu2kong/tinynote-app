@@ -8,7 +8,7 @@ description: In TinyNote Pro, choose Git sync or cloud-drive sync, then authoriz
 Sync is a [TinyNote Pro](/en/pro) feature. In Settings → Sync, choose one method:
 
 - **Git sync**: connect the note library to TinyNote official, GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
-- **Cloud drive sync**: reserved, coming in a later version
+- **Cloud drive sync**: put the library in a local folder already synced by iCloud, Nutstore, OneDrive, or a similar desktop client
 
 ![Sync settings](/screenshots/sync.png)
 
@@ -58,4 +58,12 @@ Pull before you edit, then push when you finish. If the same note changed on bot
 
 ## Cloud drive sync
 
-iCloud, Nutstore, OneDrive, and similar providers are not available yet. Use Git sync for cross-device notes until that ships.
+Use this if you do not want Git. TinyNote reads and writes the folder you choose; the installed cloud-drive client uploads and downloads.
+
+1. Sign in to iCloud, Nutstore, OneDrive, or similar on this computer, and confirm that folder is syncing
+2. Open Settings → Sync and choose **Cloud drive sync**
+3. Click **Choose cloud folder** and select that synced directory
+
+Switching folders does not delete existing notes. Detected paths show the current mode (iCloud, OneDrive, Dropbox, Nutstore, Baidu, WebDAV, or local).
+
+Do not edit the same note on two devices at once: the cloud client may overwrite one side, and TinyNote will not keep a conflict copy the way Git sync does. Use Git sync if you want commits and diffs.
