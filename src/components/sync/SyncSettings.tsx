@@ -73,6 +73,7 @@ const SyncSettings: React.FC = () => {
   const [pulling, setPulling] = useState(false);
   const [pushing, setPushing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [conflictNotice, setConflictNotice] = useState<string | null>(null);
   const [copiedRemote, setCopiedRemote] = useState<string | null>(null);
   const [diffModal, setDiffModal] = useState<{ open: boolean; file: GitChangedFile | null; data: FileDiff | null; loading: boolean }>({
     open: false,
@@ -270,13 +271,23 @@ const SyncSettings: React.FC = () => {
     flushSync(() => {
       setPulling(true);
       setSyncError(null);
+      setConflictNotice(null);
     });
     try {
-      await gitPull(storagePath, {
+      const result = await gitPull(storagePath, {
         remote,
         auth: buildAuthByRemote(cfg)[remote] ?? null,
       });
-      showToast(t('settings.sync.pullComplete'));
+      const copies = result.conflictCopies ?? [];
+      if (copies.length > 0) {
+        const files = copies.join('\n');
+        showToast(t('settings.sync.pullCompleteWithConflicts', {
+          files: copies.join(', '),
+        }));
+        setConflictNotice(t('settings.sync.conflictCopiesHint', { files }));
+      } else {
+        showToast(t('settings.sync.pullComplete'));
+      }
       await useStore.getState().reloadSpaces();
       await refreshStatus();
     } catch (e) {
@@ -763,6 +774,11 @@ const SyncSettings: React.FC = () => {
               </button>
             </div>
 
+            {conflictNotice && (
+              <div className="settings-sync-notice">
+                <pre>{conflictNotice}</pre>
+              </div>
+            )}
             {syncError && (
               <div className="settings-sync-error">
                 <pre>{syncError}</pre>

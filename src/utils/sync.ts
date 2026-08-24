@@ -5,6 +5,7 @@ import type {
   GitChangeType,
   GitInitResult,
   GitPullOptions,
+  GitPullResult,
   GitPushOptions,
   GitPushResult,
   GitRemoteInfo,
@@ -13,6 +14,7 @@ import type {
 } from '@/adapters/sync';
 import { assertNetworkAvailable, TimeoutError, withTimeout } from '@/utils/async';
 import { t } from '@/i18n';
+import { formatLocalIsoDate } from '@/utils/syncConflictName';
 
 export type {
   FileDiff,
@@ -20,6 +22,7 @@ export type {
   GitChangeType,
   GitInitResult,
   GitPullOptions,
+  GitPullResult,
   GitPushOptions,
   GitPushResult,
   GitRemoteInfo,
@@ -89,8 +92,15 @@ export async function removeGitRemote(storagePath: string, name: string): Promis
   return getSyncAdapter().removeRemote(storagePath, name);
 }
 
-export async function gitPull(storagePath: string, options?: GitPullOptions): Promise<void> {
-  return runSyncNetworkOperation(() => getSyncAdapter().gitPull(storagePath, options));
+export function buildConflictCopySuffix(date = new Date()): string {
+  return t('settings.sync.conflictCopySuffix', { date: formatLocalIsoDate(date) });
+}
+
+export async function gitPull(storagePath: string, options?: GitPullOptions): Promise<GitPullResult> {
+  return runSyncNetworkOperation(() => getSyncAdapter().gitPull(storagePath, {
+    ...options,
+    conflictCopySuffix: options?.conflictCopySuffix || buildConflictCopySuffix(),
+  }));
 }
 
 export async function gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult> {

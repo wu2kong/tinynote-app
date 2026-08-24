@@ -3,6 +3,7 @@ import type {
   FileDiff,
   GitInitResult,
   GitPullOptions,
+  GitPullResult,
   GitPushOptions,
   GitPushResult,
   GitRemoteInfo,
@@ -33,11 +34,12 @@ export function createTauriRustSyncAdapter(): SyncAdapter {
     },
 
     gitPull(storagePath: string, options?: GitPullOptions) {
-      return invoke<void>('git_pull', {
+      return invoke<GitPullResult>('git_pull', {
         storagePath,
         remote: options?.remote ?? null,
         auth: options?.auth ?? null,
         allowUnrelated: options?.allowUnrelated ?? false,
+        conflictCopySuffix: options?.conflictCopySuffix ?? null,
       });
     },
 

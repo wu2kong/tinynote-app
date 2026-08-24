@@ -23,7 +23,7 @@
     "landing:verify": "node scripts/verify-landing-seo.mjs",
     "indexnow:setup": "node scripts/setup-indexnow.mjs",
     "indexnow:submit": "node scripts/submit-indexnow.mjs",
-    "test": "node --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/updateSource.test.mjs"
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/*.test.mjs src/utils/*.test.ts"
   },
   "dependencies": {
     "@choochmeque/tauri-plugin-iap-api": "^0.10.0-rc.8",

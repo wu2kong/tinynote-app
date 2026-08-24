@@ -25,6 +25,7 @@ export type {
   GitChangeType,
   GitInitResult,
   GitPullOptions,
+  GitPullResult,
   GitPushOptions,
   GitPushRemoteResult,
   GitPushResult,

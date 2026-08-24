@@ -73,6 +73,12 @@ pub struct GitPushResult {
     pub results: Vec<GitPushRemoteResult>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitPullResult {
+    pub conflict_copies: Vec<String>,
+}
+
 #[derive(Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GitAuthPayload {
@@ -187,6 +193,15 @@ fn run_git(repo_path: &str, args: &[&str]) -> Result<String, String> {
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
     } else {
         git_error_message(&output)
+    }
+}
+
+fn run_git_raw(repo_path: &str, args: &[&str]) -> Result<Vec<u8>, String> {
+    let output = run_git_output(repo_path, args)?;
+    if output.status.success() {
+        Ok(output.stdout)
+    } else {
+        git_error_message(&output).map(|_| Vec::new())
     }
 }
 
@@ -729,31 +744,296 @@ pub fn git_remove_remote(storage_path: &str, name: &str) -> Result<(), String> {
     run_git(&repo_path, &["remote", "remove", name]).map(|_| ())
 }
 
+fn with_conflict_copy_count(suffix: &str, n: usize) -> String {
+    if n <= 1 {
+        return suffix.to_string();
+    }
+    if let Some(rest) = suffix.strip_suffix('）') {
+        format!("{rest} {n}）")
+    } else if let Some(rest) = suffix.strip_suffix(')') {
+        format!("{rest} {n})")
+    } else {
+        format!("{suffix} {n}")
+    }
+}
+
+fn allocate_conflict_copy_path(repo: &Path, relative: &str, suffix: &str) -> Result<String, String> {
+    let normalized = relative.replace('\\', "/");
+    let (dir, base) = match normalized.rfind('/') {
+        Some(index) => (&normalized[..=index], &normalized[index + 1..]),
+        None => ("", normalized.as_str()),
+    };
+    let (stem, ext) = match base.rfind('.') {
+        Some(index) if index > 0 && index + 1 < base.len() => (&base[..index], &base[index..]),
+        _ => (base, ""),
+    };
+    for n in 1..=99 {
+        let candidate = format!("{dir}{stem}{}{ext}", with_conflict_copy_count(suffix, n));
+        if !repo_join(repo, &candidate).exists() {
+            return Ok(candidate);
+        }
+    }
+    Err("无法创建冲突副本文件".to_string())
+}
+
+fn repo_join(repo: &Path, relative: &str) -> PathBuf {
+    let mut path = repo.to_path_buf();
+    for part in relative.replace('\\', "/").split('/') {
+        if !part.is_empty() && part != "." {
+            path.push(part);
+        }
+    }
+    path
+}
+
+fn read_git_blob(repo_path: &str, spec: &str) -> Option<Vec<u8>> {
+    run_git_raw(repo_path, &["show", spec]).ok()
+}
+
+fn write_conflict_copy(
+    repo_path: &str,
+    original: &str,
+    content: &[u8],
+    suffix: &str,
+    copies: &mut Vec<String>,
+) -> Result<(), String> {
+    if original.is_empty() || original == ".git" || original.starts_with(".git/") {
+        return Ok(());
+    }
+    let repo = Path::new(repo_path);
+    let copy_path = allocate_conflict_copy_path(repo, original, suffix)?;
+    let full = repo_join(repo, &copy_path);
+    if let Some(parent) = full.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| format!("无法创建冲突副本目录：{e}"))?;
+    }
+    std::fs::write(&full, content).map_err(|e| format!("无法写入冲突副本：{e}"))?;
+    copies.push(copy_path);
+    Ok(())
+}
+
+fn has_head(repo_path: &str) -> bool {
+    run_git(repo_path, &["rev-parse", "--verify", "HEAD"]).is_ok()
+}
+
+fn merge_in_progress(repo_path: &str) -> bool {
+    run_git(repo_path, &["rev-parse", "-q", "--verify", "MERGE_HEAD"]).is_ok()
+}
+
+fn is_merge_conflict_message(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    lower.contains("conflict")
+        || lower.contains("fix conflicts")
+        || lower.contains("automatic merge failed")
+        || message.contains("冲突")
+}
+
+fn is_overwrite_message(message: &str) -> bool {
+    let lower = message.to_ascii_lowercase();
+    lower.contains("would be overwritten")
+        || lower.contains("please commit your changes")
+        || lower.contains("uncommitted changes")
+        || message.contains("将会被覆盖")
+}
+
+fn list_unmerged_paths(repo_path: &str) -> Result<Vec<String>, String> {
+    collect_name_only_paths(repo_path, &["diff", "--name-only", "--diff-filter=U"])
+}
+
+fn list_dirty_paths(repo_path: &str) -> Result<HashSet<String>, String> {
+    let mut paths = HashSet::new();
+    for args in [
+        &["diff", "--name-only"][..],
+        &["diff", "--cached", "--name-only"][..],
+        &["ls-files", "--others", "--exclude-standard"][..],
+    ] {
+        for path in collect_name_only_paths(repo_path, args)? {
+            paths.insert(path);
+        }
+    }
+    Ok(paths)
+}
+
+fn protect_dirty_files(
+    repo_path: &str,
+    suffix: &str,
+    copies: &mut Vec<String>,
+) -> Result<(), String> {
+    if !has_head(repo_path) {
+        return Ok(());
+    }
+    let incoming: HashSet<String> =
+        collect_name_only_paths(repo_path, &["diff", "--name-only", "HEAD", "FETCH_HEAD"])?
+            .into_iter()
+            .collect();
+    if incoming.is_empty() {
+        return Ok(());
+    }
+    for path in list_dirty_paths(repo_path)? {
+        if !incoming.contains(&path) {
+            continue;
+        }
+        let work_path = repo_join(Path::new(repo_path), &path);
+        let work = if work_path.is_file() {
+            std::fs::read(&work_path).ok()
+        } else {
+            None
+        };
+        let theirs = read_git_blob(repo_path, &format!("FETCH_HEAD:{path}"));
+        if let (Some(work_bytes), Some(their_bytes)) = (work.as_ref(), theirs.as_ref()) {
+            if work_bytes != their_bytes {
+                write_conflict_copy(repo_path, &path, work_bytes, suffix, copies)?;
+            }
+        } else if let Some(work_bytes) = work.as_ref() {
+            write_conflict_copy(repo_path, &path, work_bytes, suffix, copies)?;
+        }
+        if work_path.is_file() && read_git_blob(repo_path, &format!("HEAD:{path}")).is_none() {
+            let _ = std::fs::remove_file(&work_path);
+        } else {
+            let _ = run_git(repo_path, &["checkout", "--", &path]);
+        }
+    }
+    Ok(())
+}
+
+fn unmerged_has_stage(repo_path: &str, path: &str, stage: &str) -> bool {
+    read_git_blob(repo_path, &format!(":{stage}:{path}")).is_some()
+}
+
+fn resolve_merge_conflicts(
+    repo_path: &str,
+    suffix: &str,
+    copies: &mut Vec<String>,
+) -> Result<(), String> {
+    for path in list_unmerged_paths(repo_path)? {
+        let ours = read_git_blob(repo_path, &format!(":2:{path}"));
+        let theirs = read_git_blob(repo_path, &format!(":3:{path}"));
+        let has_ours = ours.is_some() || unmerged_has_stage(repo_path, &path, "2");
+        let has_theirs = theirs.is_some() || unmerged_has_stage(repo_path, &path, "3");
+
+        if has_ours && has_theirs {
+            if let (Some(ours_bytes), Some(theirs_bytes)) = (ours.as_ref(), theirs.as_ref()) {
+                if ours_bytes != theirs_bytes {
+                    write_conflict_copy(repo_path, &path, ours_bytes, suffix, copies)?;
+                }
+                let full = repo_join(Path::new(repo_path), &path);
+                if let Some(parent) = full.parent() {
+                    std::fs::create_dir_all(parent)
+                        .map_err(|e| format!("无法写入远程版本：{e}"))?;
+                }
+                std::fs::write(&full, theirs_bytes)
+                    .map_err(|e| format!("无法写入远程版本：{e}"))?;
+                run_git(repo_path, &["add", "--", &path])?;
+            }
+        } else if has_theirs {
+            let _ = run_git(repo_path, &["checkout", "--theirs", "--", &path]);
+            run_git(repo_path, &["add", "--", &path])?;
+        } else if has_ours {
+            if let Some(ours_bytes) = ours.as_ref() {
+                write_conflict_copy(repo_path, &path, ours_bytes, suffix, copies)?;
+            }
+            let _ = run_git(repo_path, &["rm", "-f", "--", &path]);
+        }
+    }
+    Ok(())
+}
+
+fn commit_conflict_copies(repo_path: &str, copies: &[String]) -> Result<(), String> {
+    for path in copies {
+        let _ = run_git(repo_path, &["add", "--", path]);
+    }
+    if merge_in_progress(repo_path) {
+        run_git(repo_path, &["commit", "--no-edit"]).map(|_| ())?;
+        return Ok(());
+    }
+    if copies.is_empty() {
+        return Ok(());
+    }
+    let staged = run_git(repo_path, &["diff", "--cached", "--name-only"]).unwrap_or_default();
+    if staged.is_empty() {
+        return Ok(());
+    }
+    run_git(
+        repo_path,
+        &["commit", "-m", "Keep local notes from sync conflict"],
+    )
+    .map(|_| ())
+}
+
+fn merge_fetch_head(repo_path: &str, allow_unrelated: bool) -> Result<(), String> {
+    let mut args = vec!["merge".to_string(), "--no-edit".to_string()];
+    if allow_unrelated {
+        args.insert(1, "--allow-unrelated-histories".to_string());
+    }
+    args.push("FETCH_HEAD".to_string());
+    run_git_timeout_args(repo_path, &args).map(|_| ())
+}
+
 pub fn git_pull(
     storage_path: &str,
     remote: Option<&str>,
     auth: Option<&GitAuthPayload>,
     allow_unrelated: bool,
-) -> Result<(), String> {
+    conflict_copy_suffix: Option<&str>,
+) -> Result<GitPullResult, String> {
     let repo_path = resolve_repo_path(storage_path)?;
     let remotes = list_remotes_in_repo(&repo_path)?;
     let target = pick_primary_remote(&remotes, remote)
         .ok_or_else(|| "还没有配置同步源".to_string())?;
     let branch = current_branch(&repo_path).unwrap_or_else(|| "main".to_string());
+    let suffix = conflict_copy_suffix
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or("（冲突版本）")
+        .to_string();
+    let mut copies = Vec::new();
 
-    let mut args = vec!["pull".to_string()];
-    if allow_unrelated {
-        args.push("--allow-unrelated-histories".to_string());
-        args.push("--no-edit".to_string());
+    if merge_in_progress(&repo_path) {
+        resolve_merge_conflicts(&repo_path, &suffix, &mut copies)?;
+        commit_conflict_copies(&repo_path, &copies)?;
     }
+
+    let mut fetch_args = vec!["fetch".to_string()];
     if let Some(auth) = auth {
-        args.push(embed_credentials(&target.url, auth)?);
-        args.push(branch);
+        fetch_args.push(embed_credentials(&target.url, auth)?);
     } else {
-        args.push(target.name.clone());
-        args.push(branch);
+        fetch_args.push(target.name.clone());
     }
-    run_git_timeout_args(&repo_path, &args).map(|_| ())
+    fetch_args.push(branch);
+    run_git_timeout_args(&repo_path, &fetch_args)?;
+
+    protect_dirty_files(&repo_path, &suffix, &mut copies)?;
+
+    match merge_fetch_head(&repo_path, allow_unrelated) {
+        Ok(()) => {}
+        Err(error) if is_overwrite_message(&error) => {
+            protect_dirty_files(&repo_path, &suffix, &mut copies)?;
+            match merge_fetch_head(&repo_path, allow_unrelated) {
+                Ok(()) => {}
+                Err(retry_error) if is_merge_conflict_message(&retry_error) => {
+                    resolve_merge_conflicts(&repo_path, &suffix, &mut copies)?;
+                }
+                Err(retry_error) => return Err(retry_error),
+            }
+        }
+        Err(error) if is_merge_conflict_message(&error) => {
+            resolve_merge_conflicts(&repo_path, &suffix, &mut copies)?;
+        }
+        Err(error) => return Err(error),
+    }
+
+    if merge_in_progress(&repo_path) {
+        let leftover = list_unmerged_paths(&repo_path)?;
+        if !leftover.is_empty() {
+            return Err("笔记冲突无法自动处理，请先备份笔记库后再试。".to_string());
+        }
+    }
+
+    commit_conflict_copies(&repo_path, &copies)?;
+    copies.sort();
+    copies.dedup();
+    Ok(GitPullResult {
+        conflict_copies: copies,
+    })
 }
 
 pub fn git_sync_push(

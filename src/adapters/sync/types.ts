@@ -61,6 +61,11 @@ export interface GitPullOptions {
   remote?: string | null;
   auth?: SyncAuth | null;
   allowUnrelated?: boolean;
+  conflictCopySuffix?: string;
+}
+
+export interface GitPullResult {
+  conflictCopies: string[];
 }
 
 export interface GitPushOptions {
@@ -74,7 +79,7 @@ export interface SyncAdapter {
   listRemotes(storagePath: string): Promise<GitRemoteInfo[]>;
   addRemote(storagePath: string, name: string, url: string): Promise<void>;
   removeRemote(storagePath: string, name: string): Promise<void>;
-  gitPull(storagePath: string, options?: GitPullOptions): Promise<void>;
+  gitPull(storagePath: string, options?: GitPullOptions): Promise<GitPullResult>;
   gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult>;
   getFileDiff(storagePath: string, filePath: string): Promise<FileDiff>;
   revertFileChange(storagePath: string, filePath: string): Promise<void>;

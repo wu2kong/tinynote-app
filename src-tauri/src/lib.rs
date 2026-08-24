@@ -21,7 +21,7 @@ use sync::{
     git_init as run_git_init, git_list_remotes as run_git_list_remotes,
     git_pull as run_git_pull, git_remove_remote as run_git_remove_remote,
     git_sync_push as run_git_sync_push, revert_file_change as run_revert_file_change,
-    FileDiff, GitAuthPayload, GitHttpResponse, GitInitResult, GitPushResult, GitRemoteInfo,
+    FileDiff, GitAuthPayload, GitHttpResponse, GitInitResult, GitPullResult, GitPushResult, GitRemoteInfo,
     GitSyncStatus,
 };
 
@@ -89,12 +89,14 @@ fn git_pull(
     remote: Option<String>,
     auth: Option<GitAuthPayload>,
     allow_unrelated: Option<bool>,
-) -> Result<(), String> {
+    conflict_copy_suffix: Option<String>,
+) -> Result<GitPullResult, String> {
     run_git_pull(
         &storage_path,
         remote.as_deref(),
         auth.as_ref(),
         allow_unrelated.unwrap_or(false),
+        conflict_copy_suffix.as_deref(),
     )
 }
 

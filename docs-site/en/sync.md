@@ -49,7 +49,7 @@ Tokens stay on this device. On a new computer, sign in again.
 | View changes | Preview a file diff |
 | Revert change | Restore a file to the last commit; new files are deleted |
 
-Pull before you edit, then push when you finish. If authorization fails, sign in again on the Sync page. If a conflict keeps happening, make a local backup first.
+Pull before you edit, then push when you finish. If the same note changed on both sides, Pull keeps the cloud version in the original file and saves your local content as a "conflict version" copy so nothing is lost. If authorization fails, sign in again on the Sync page.
 
 ## Desktop and web
 

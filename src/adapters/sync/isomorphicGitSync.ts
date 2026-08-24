@@ -6,6 +6,7 @@ import { isWeb } from '@/platform/detect';
 import { joinPath, normalizePath } from '@/utils/path';
 import { loadSyncRuntimeOptions } from '@/adapters/sync/runtime';
 import { t } from '@/i18n';
+import { allocateConflictCopyPath } from '@/utils/syncConflictName';
 import { createGitFsFromStorage, repoRelativePath } from './gitFs';
 import { TINYNOTE_GITIGNORE } from './gitignore';
 import type {
@@ -14,6 +15,7 @@ import type {
   GitChangeType,
   GitInitResult,
   GitPullOptions,
+  GitPullResult,
   GitPushOptions,
   GitPushResult,
   GitRemoteInfo,
@@ -170,6 +172,260 @@ async function currentBranchName(dir: string): Promise<string> {
   return await git.currentBranch({ fs: getGitFs(dir), dir, fullname: false }) ?? 'main';
 }
 
+function isMergeConflictError(error: unknown): error is {
+  code: string;
+  data?: {
+    filepaths?: string[];
+    bothModified?: string[];
+    deleteByUs?: string[];
+    deleteByTheirs?: string[];
+  };
+} {
+  return typeof error === 'object'
+    && error !== null
+    && 'code' in error
+    && (error as { code?: string }).code === 'MergeConflictError';
+}
+
+async function readFileAtOid(dir: string, oid: string, filepath: string): Promise<string | null> {
+  try {
+    const { blob } = await git.readBlob({ fs: getGitFs(dir), dir, oid, filepath });
+    return new TextDecoder().decode(blob);
+  } catch {
+    return null;
+  }
+}
+
+async function writeConflictCopy(
+  dir: string,
+  originalPath: string,
+  content: string,
+  suffix: string,
+  copies: string[],
+): Promise<string | null> {
+  if (!originalPath || originalPath.startsWith('.git/') || originalPath === '.git') return null;
+  const storage = getStorageAdapter();
+  const copyPath = await allocateConflictCopyPath(
+    originalPath,
+    suffix,
+    (candidate) => storage.exists(joinPath(dir, candidate)),
+  );
+  const absolute = joinPath(dir, copyPath);
+  const parent = absolute.slice(0, absolute.lastIndexOf('/'));
+  if (parent && parent !== absolute) {
+    try {
+      await storage.mkdir(parent, true);
+    } catch {
+      // exists
+    }
+  }
+  await storage.writeTextFile(absolute, content);
+  copies.push(copyPath);
+  return copyPath;
+}
+
+async function protectDirtyFiles(
+  dir: string,
+  headOid: string | null,
+  theirOid: string,
+  suffix: string,
+  copies: string[],
+): Promise<void> {
+  if (!headOid) return;
+  const fs = getGitFs(dir);
+  const storage = getStorageAdapter();
+  const matrix = await git.statusMatrix({ fs, dir });
+
+  for (const [filepath, head, workdir] of matrix) {
+    const locallyDirty = workdir === 2 || (head === 1 && workdir === 0);
+    if (!locallyDirty) continue;
+
+    const headContent = head === 0 ? null : await readFileAtOid(dir, headOid, filepath);
+    const theirContent = await readFileAtOid(dir, theirOid, filepath);
+    if (headContent === theirContent) continue;
+
+    const absolute = joinPath(dir, filepath);
+    const workContent = workdir === 0
+      ? null
+      : await storage.exists(absolute) ? await storage.readTextFile(absolute) : null;
+
+    if (workContent != null && workContent !== theirContent) {
+      await writeConflictCopy(dir, filepath, workContent, suffix, copies);
+    }
+
+    if (headContent == null) {
+      if (await storage.exists(absolute)) {
+        await storage.remove(absolute, false);
+      }
+    } else {
+      await git.checkout({ fs, dir, ref: 'HEAD', filepaths: [filepath], force: true });
+    }
+  }
+}
+
+async function completeConflictMerge(
+  dir: string,
+  branch: string,
+  theirOid: string,
+  error: {
+    data?: {
+      filepaths?: string[];
+      bothModified?: string[];
+      deleteByUs?: string[];
+      deleteByTheirs?: string[];
+    };
+  },
+  suffix: string,
+  copies: string[],
+  author: { name: string; email: string },
+): Promise<void> {
+  const fs = getGitFs(dir);
+  const storage = getStorageAdapter();
+  const ourOid = await git.resolveRef({ fs, dir, ref: branch });
+  const bothModified = error.data?.bothModified ?? error.data?.filepaths ?? [];
+  const deleteByUs = error.data?.deleteByUs ?? [];
+  const deleteByTheirs = error.data?.deleteByTheirs ?? [];
+
+  for (const filepath of bothModified) {
+    const ours = await readFileAtOid(dir, ourOid, filepath);
+    const theirs = await readFileAtOid(dir, theirOid, filepath);
+    if (ours != null && ours !== theirs) {
+      await writeConflictCopy(dir, filepath, ours, suffix, copies);
+    }
+    if (theirs != null) {
+      await storage.writeTextFile(joinPath(dir, filepath), theirs);
+      await git.add({ fs, dir, filepath });
+    } else if (await storage.exists(joinPath(dir, filepath))) {
+      await storage.remove(joinPath(dir, filepath), false);
+      try {
+        await git.remove({ fs, dir, filepath });
+      } catch {
+        // not in index
+      }
+    }
+  }
+
+  for (const filepath of deleteByUs) {
+    const theirs = await readFileAtOid(dir, theirOid, filepath);
+    if (theirs == null) continue;
+    await storage.writeTextFile(joinPath(dir, filepath), theirs);
+    await git.add({ fs, dir, filepath });
+  }
+
+  for (const filepath of deleteByTheirs) {
+    const ours = await readFileAtOid(dir, ourOid, filepath);
+    if (ours != null) {
+      await writeConflictCopy(dir, filepath, ours, suffix, copies);
+    }
+    if (await storage.exists(joinPath(dir, filepath))) {
+      await storage.remove(joinPath(dir, filepath), false);
+    }
+    try {
+      await git.remove({ fs, dir, filepath });
+    } catch {
+      // already removed
+    }
+  }
+
+  for (const copyPath of copies) {
+    if (await storage.exists(joinPath(dir, copyPath))) {
+      await git.add({ fs, dir, filepath: copyPath });
+    }
+  }
+
+  await git.commit({
+    fs,
+    dir,
+    ref: branch,
+    message: `Merge remote-tracking branch into ${branch}`,
+    parent: [ourOid, theirOid],
+    author,
+    committer: author,
+  });
+}
+
+async function commitConflictCopies(
+  dir: string,
+  copies: string[],
+  author: { name: string; email: string },
+): Promise<void> {
+  if (copies.length === 0) return;
+  const fs = getGitFs(dir);
+  const storage = getStorageAdapter();
+  let staged = false;
+  for (const copyPath of copies) {
+    if (!(await storage.exists(joinPath(dir, copyPath)))) continue;
+    await git.add({ fs, dir, filepath: copyPath });
+    staged = true;
+  }
+  if (!staged) return;
+  try {
+    await git.commit({
+      fs,
+      dir,
+      message: 'Keep local notes from sync conflict',
+      author,
+      committer: author,
+    });
+  } catch {
+    // Nothing new to commit.
+  }
+}
+
+async function listChangedFilepaths(dir: string, oldOid: string | null, newOid: string): Promise<Set<string>> {
+  const files = new Set<string>();
+  if (!oldOid || oldOid === newOid) return files;
+  await git.walk({
+    fs: getGitFs(dir),
+    dir,
+    trees: [git.TREE({ ref: oldOid }), git.TREE({ ref: newOid })],
+    map: async (filepath, [before, after]) => {
+      if (!filepath || filepath === '.') return;
+      const beforeType = before ? await before.type() : null;
+      const afterType = after ? await after.type() : null;
+      if (beforeType === 'tree' && afterType === 'tree') return;
+      const beforeOid = before ? await before.oid() : null;
+      const afterOid = after ? await after.oid() : null;
+      if (beforeOid !== afterOid) files.add(filepath);
+    },
+  });
+  return files;
+}
+
+type DirtySnapshot = { filepath: string; content: string | null };
+
+async function snapshotDirtyExcept(dir: string, except: Set<string>): Promise<DirtySnapshot[]> {
+  const fs = getGitFs(dir);
+  const storage = getStorageAdapter();
+  const matrix = await git.statusMatrix({ fs, dir });
+  const snap: DirtySnapshot[] = [];
+  for (const [filepath, head, workdir] of matrix) {
+    if (except.has(filepath)) continue;
+    const dirty = workdir === 2 || (head === 1 && workdir === 0);
+    if (!dirty) continue;
+    const absolute = joinPath(dir, filepath);
+    const content = workdir === 0 || !(await storage.exists(absolute))
+      ? null
+      : await storage.readTextFile(absolute);
+    snap.push({ filepath, content });
+  }
+  return snap;
+}
+
+async function restoreDirtySnapshot(dir: string, snap: DirtySnapshot[]): Promise<void> {
+  const storage = getStorageAdapter();
+  for (const { filepath, content } of snap) {
+    const absolute = joinPath(dir, filepath);
+    if (content == null) {
+      if (await storage.exists(absolute)) {
+        await storage.remove(absolute, false);
+      }
+    } else {
+      await storage.writeTextFile(absolute, content);
+    }
+  }
+}
+
 function emptyStatus(hostname: string, error: string | null): GitSyncStatus {
   return {
     isRepo: false,
@@ -279,23 +535,74 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
       await git.deleteRemote({ fs: getGitFs(dir), dir, remote: name });
     },
 
-    async gitPull(storagePath: string, options?: GitPullOptions): Promise<void> {
+    async gitPull(storagePath: string, options?: GitPullOptions): Promise<GitPullResult> {
       const dir = await getRepoDir(storagePath);
       const branch = await currentBranchName(dir);
       const remotes = await listRepoRemotes(dir);
       const remote = pickPrimaryRemote(remotes, options?.remote)?.name ?? 'origin';
       const httpOptions = await getHttpOptions(options?.auth);
+      const suffix = options?.conflictCopySuffix || t('settings.sync.conflictCopySuffix', { date: 'conflict' });
+      const author = { name: getHostname(), email: 'tinynote@local' };
+      const fs = getGitFs(dir);
+      const copies: string[] = [];
 
-      await git.pull({
-        fs: getGitFs(dir),
+      const fetchResult = await git.fetch({
+        fs,
         dir,
-        ref: branch,
         remote,
+        ref: branch,
         singleBranch: true,
-        author: { name: getHostname(), email: 'tinynote@local' },
-        committer: { name: getHostname(), email: 'tinynote@local' },
         ...httpOptions,
       });
+      if (!fetchResult.fetchHead) {
+        return { conflictCopies: [] };
+      }
+
+      let headOid: string | null = null;
+      try {
+        headOid = await git.resolveRef({ fs, dir, ref: branch });
+      } catch {
+        headOid = null;
+      }
+
+      await protectDirtyFiles(dir, headOid, fetchResult.fetchHead, suffix, copies);
+
+      try {
+        await git.merge({
+          fs,
+          dir,
+          ours: branch,
+          theirs: fetchResult.fetchHead,
+          author,
+          committer: author,
+          abortOnConflict: false,
+          allowUnrelatedHistories: options?.allowUnrelated ?? false,
+          mergeDriver: async ({ path, contents }) => {
+            const ours = contents[1] ?? '';
+            const theirs = contents[2] ?? ours;
+            if (ours && ours !== theirs) {
+              await writeConflictCopy(dir, path, ours, suffix, copies);
+            }
+            return { cleanMerge: true, mergedText: theirs };
+          },
+        });
+      } catch (error) {
+        if (!isMergeConflictError(error)) throw error;
+        await completeConflictMerge(dir, branch, fetchResult.fetchHead, error, suffix, copies, author);
+      }
+
+      const newOid = await git.resolveRef({ fs, dir, ref: branch });
+      const changed = await listChangedFilepaths(dir, headOid, newOid);
+      const unrelatedDirty = await snapshotDirtyExcept(dir, changed);
+      try {
+        await git.checkout({ fs, dir, ref: branch, force: true });
+      } catch {
+        // Checkout is best-effort; conflict copies are already on disk.
+      }
+      await restoreDirtySnapshot(dir, unrelatedDirty);
+
+      await commitConflictCopies(dir, copies, author);
+      return { conflictCopies: copies };
     },
 
     async gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult> {
