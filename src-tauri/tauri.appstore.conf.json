@@ -6,7 +6,16 @@
   },
   "app": {
     "security": {
-      "capabilities": ["default", "appstore"]
+      "capabilities": [
+        "default",
+        {
+          "identifier": "appstore",
+          "description": "Enables StoreKit purchases in the Mac App Store build",
+          "platforms": ["macOS"],
+          "windows": ["*"],
+          "permissions": ["iap:default"]
+        }
+      ]
     }
   },
   "bundle": {
