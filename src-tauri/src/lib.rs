@@ -1,5 +1,6 @@
 mod backup;
 mod sync;
+#[cfg(not(feature = "app-store"))]
 mod updater;
 #[cfg(windows)]
 mod winsparkle;
@@ -126,19 +127,40 @@ fn revert_file_change(storage_path: String, file_path: String) -> Result<(), Str
     run_revert_file_change(&storage_path, &file_path)
 }
 
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn fetch_latest_release() -> Result<updater::LatestRelease, String> {
     updater::fetch_latest_release()
 }
 
+#[cfg(feature = "app-store")]
+#[tauri::command]
+fn fetch_latest_release() -> Result<serde_json::Value, String> {
+    Err("Mac App Store 版本由 App Store 提供更新".to_string())
+}
+
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn resolve_appcast_url() -> String {
     updater::resolve_appcast_url().to_string()
 }
 
+#[cfg(feature = "app-store")]
+#[tauri::command]
+fn resolve_appcast_url() -> String {
+    String::new()
+}
+
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn download_release_asset(url: String, filename: String) -> Result<String, String> {
     updater::download_release_asset(&url, &filename)
+}
+
+#[cfg(feature = "app-store")]
+#[tauri::command]
+fn download_release_asset(_url: String, _filename: String) -> Result<String, String> {
+    Err("Mac App Store 版本由 App Store 提供更新".to_string())
 }
 
 #[tauri::command]
@@ -462,12 +484,13 @@ fn chat_with_llm(
 pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init());
 
-    #[cfg(target_os = "macos")]
+    #[cfg(all(target_os = "macos", feature = "sparkle-updater", not(feature = "app-store")))]
     let builder = builder.plugin(tauri_plugin_sparkle_updater::init());
 
     let app = builder

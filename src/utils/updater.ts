@@ -5,6 +5,7 @@ import { GITHUB_APPCAST_URL, GITHUB_RELEASES_API, QINIU_APPCAST_URL, QINIU_LATES
 import { isTauri } from '@/platform/detect';
 import { t } from '@/i18n';
 import { forcedUpdateSource, updateSourceOrder } from '@/utils/updateSource';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 export interface GitHubReleaseAsset {
   name: string;
@@ -41,7 +42,7 @@ function detectPlatform(): Platform {
 
 /** macOS 正式包走 Sparkle 原生对话框；dev / 非 macOS 返回 false。 */
 export async function checkWithSparkle(): Promise<boolean> {
-  if (!isTauri() || !isMacOS()) return false;
+  if (IS_MAC_APP_STORE || !isTauri() || !isMacOS()) return false;
   try {
     const sparkle = await import('tauri-plugin-sparkle-updater-api');
     if (!(await sparkle.canCheckForUpdates())) return false;
@@ -78,6 +79,7 @@ export async function checkWithWinSparkle(): Promise<boolean> {
 }
 
 export async function checkWithNativeUpdater(): Promise<boolean> {
+  if (IS_MAC_APP_STORE) return false;
   if (await checkWithSparkle()) return true;
   return checkWithWinSparkle();
 }
@@ -97,7 +99,7 @@ async function resolveAppcastUrl(): Promise<string> {
 
 /** Probe GitHub first; only switch Sparkle / WinSparkle to Qiniu when GitHub is unreachable. */
 export async function configureNativeUpdaterFeed(): Promise<void> {
-  if (!isTauri()) return;
+  if (IS_MAC_APP_STORE || !isTauri()) return;
   const url = await resolveAppcastUrl();
   if (isMacOS()) {
     try {
@@ -169,6 +171,7 @@ export async function getAppVersion(): Promise<string> {
 }
 
 export async function checkForUpdate(): Promise<UpdateInfo | null> {
+  if (IS_MAC_APP_STORE) return null;
   const currentVersion = await getAppVersion();
   const release = await loadLatestRelease();
   const latestVersion = release.tag_name.replace(/^v/i, '');
@@ -231,6 +234,9 @@ async function loadLatestRelease(): Promise<LatestReleasePayload> {
 }
 
 export async function downloadAndInstall(asset: GitHubReleaseAsset): Promise<void> {
+  if (IS_MAC_APP_STORE) {
+    throw new Error('Mac App Store 版本由 App Store 提供更新');
+  }
   const filePath = await invoke<string>('download_release_asset', {
     url: asset.browser_download_url,
     filename: asset.name,

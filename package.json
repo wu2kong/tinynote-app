@@ -13,6 +13,8 @@
     "tauri": "tauri",
     "release": "node scripts/release.mjs",
     "build:packages": "node scripts/build-packages.mjs",
+    "build:appstore": "node scripts/build-appstore.mjs",
+    "build:appstore:prepare": "node scripts/build-appstore.mjs --prepare-only",
     "docs:dev": "npm run dev --prefix docs-site",
     "docs:build": "npm run build --prefix docs-site",
     "docs:preview": "npm run preview --prefix docs-site",

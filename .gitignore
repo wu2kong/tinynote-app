@@ -35,6 +35,11 @@ src-tauri/Sparkle.framework
 src-tauri/sparkle-bin
 src-tauri/sparkle_eddsa_private.key
 
+# Mac App Store local signing assets
+*.provisionprofile
+src-tauri/tauri.appstore.local.conf.json
+dist-packages/*-mac-app-store.pkg
+
 # WinSparkle (downloaded by scripts/download-winsparkle.sh)
 src-tauri/winsparkle/
 

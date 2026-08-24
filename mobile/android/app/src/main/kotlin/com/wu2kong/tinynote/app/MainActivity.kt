@@ -1,4 +1,4 @@
-package com.wu2kong.tinynote.tinynote_mobile
+package com.wu2kong.tinynote.app
 
 import io.flutter.embedding.android.FlutterActivity
 

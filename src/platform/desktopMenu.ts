@@ -25,6 +25,7 @@ import {
 import { checkWithNativeUpdater } from '@/utils/updater';
 import { HOMEPAGE_URL, DOCS_URL } from '@/constants/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 const APP_NAME = 'TinyNote';
 const MAX_RECENT = 10;
@@ -203,16 +204,18 @@ async function buildAppSubmenu(): Promise<Submenu> {
         text: t('menu.aboutApp', { app: APP_NAME }),
         action: openSettingsFromMenu,
       }),
-      await MenuItem.new({
-        id: 'check-for-updates',
-        text: t('menu.checkForUpdates'),
-        action: () => {
-          void checkWithNativeUpdater().then((opened) => {
-            if (!opened) openSettingsFromMenu();
-          });
-        },
-      }),
-      await PredefinedMenuItem.new({ item: 'Separator' }),
+      ...(!IS_MAC_APP_STORE ? [
+        await MenuItem.new({
+          id: 'check-for-updates',
+          text: t('menu.checkForUpdates'),
+          action: () => {
+            void checkWithNativeUpdater().then((opened) => {
+              if (!opened) openSettingsFromMenu();
+            });
+          },
+        }),
+        await PredefinedMenuItem.new({ item: 'Separator' }),
+      ] : []),
       await MenuItem.new({
         id: 'settings',
         text: t('menu.settings'),

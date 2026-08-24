@@ -10,6 +10,7 @@ import {
   validateLicenseKey,
   type StoredLicense,
 } from '@/utils/license';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 export interface GateContext {
   parentPath: string;
@@ -38,7 +39,7 @@ interface LicenseState {
 
 export const useLicenseStore = create<LicenseState>((set, get) => ({
   hydrated: false,
-  isPro: false,
+  isPro: IS_MAC_APP_STORE,
   license: null,
   busy: false,
   error: null,
@@ -47,6 +48,18 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
   gateContext: null,
 
   hydrate: async () => {
+    if (IS_MAC_APP_STORE) {
+      set({
+        hydrated: true,
+        license: null,
+        isPro: true,
+        error: null,
+        gateOpen: false,
+        gateFeature: null,
+        gateContext: null,
+      });
+      return;
+    }
     const license = await loadStoredLicense();
     set({
       hydrated: true,
@@ -120,7 +133,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   openGate: (feature, context = null) => set({
-    gateOpen: true,
+    gateOpen: !IS_MAC_APP_STORE,
     gateFeature: feature,
     gateContext: context ?? null,
   }),
@@ -128,7 +141,7 @@ export const useLicenseStore = create<LicenseState>((set, get) => ({
   closeGate: () => set({ gateOpen: false, gateFeature: null, gateContext: null }),
 
   requirePro: (feature) => {
-    if (get().isPro) return true;
+    if (IS_MAC_APP_STORE || get().isPro) return true;
     set({ gateOpen: true, gateFeature: feature, gateContext: null });
     return false;
   },

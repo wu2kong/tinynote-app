@@ -2,10 +2,13 @@ import { readTextFile, writeTextFile, mkdir, exists, BaseDirectory } from '@taur
 import { isWeb } from '@/platform/detect';
 import { basename, normalizePath } from '@/utils/path';
 import type { GitRemoteAuth, LLMProviderConfig } from '@/utils/configTypes';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { appDataDir, join } from '@tauri-apps/api/path';
 
 const HOME_CONFIG_DIR = '.tinynotes';
 const WORKSPACES_FILE = '.tinynotes/work-spaces.json';
 const HOME = BaseDirectory.Home;
+const NATIVE_CONFIG_BASE = IS_MAC_APP_STORE ? BaseDirectory.AppData : HOME;
 const WEB_REGISTRY_KEY = 'tinynote.work-spaces.v1';
 
 export interface WorkspaceLocalSettings {
@@ -39,11 +42,11 @@ const SESSION_WORKSPACE_KEY = 'tinynote.sessionWorkspace';
 async function ensureHomeConfigDir(): Promise<void> {
   if (isWeb()) return;
   try {
-    if (!(await exists(HOME_CONFIG_DIR, { baseDir: HOME }))) {
-      await mkdir(HOME_CONFIG_DIR, { recursive: true, baseDir: HOME });
+    if (!(await exists(HOME_CONFIG_DIR, { baseDir: NATIVE_CONFIG_BASE }))) {
+      await mkdir(HOME_CONFIG_DIR, { recursive: true, baseDir: NATIVE_CONFIG_BASE });
     }
   } catch {
-    await mkdir(HOME_CONFIG_DIR, { recursive: true, baseDir: HOME });
+    await mkdir(HOME_CONFIG_DIR, { recursive: true, baseDir: NATIVE_CONFIG_BASE });
   }
 }
 
@@ -76,7 +79,7 @@ export async function loadWorkspacesRegistry(): Promise<WorkspacesRegistry> {
 
   try {
     await ensureHomeConfigDir();
-    const content = await readTextFile(WORKSPACES_FILE, { baseDir: HOME });
+    const content = await readTextFile(WORKSPACES_FILE, { baseDir: NATIVE_CONFIG_BASE });
     const parsed = JSON.parse(content) as WorkspacesRegistry;
     return { ...DEFAULT_REGISTRY, ...parsed, version: 1 };
   } catch {
@@ -93,7 +96,7 @@ export async function saveWorkspacesRegistry(registry: WorkspacesRegistry): Prom
   await ensureHomeConfigDir();
   await writeTextFile(WORKSPACES_FILE, JSON.stringify(payload, null, 2), {
     create: true,
-    baseDir: HOME,
+    baseDir: NATIVE_CONFIG_BASE,
   });
 }
 
@@ -182,6 +185,9 @@ export async function resolveStartupWorkspacePath(): Promise<string | null> {
 export async function getWorkspacesRegistryDisplayPath(): Promise<string> {
   if (isWeb()) return `localStorage://${WEB_REGISTRY_KEY}`;
   await ensureHomeConfigDir();
+  if (IS_MAC_APP_STORE) {
+    return normalizePath(await join(await appDataDir(), WORKSPACES_FILE));
+  }
   return normalizePath(`~/${WORKSPACES_FILE}`);
 }
 

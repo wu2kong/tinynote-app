@@ -1,0 +1,23 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "identifier": "com.wu2kong.tinynote.app",
+  "build": {
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "security": {
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "Productivity",
+    "targets": ["app"],
+    "macOS": {
+      "frameworks": [],
+      "entitlements": "./Entitlements.appstore.plist",
+      "infoPlist": "./Info.appstore.plist",
+      "hardenedRuntime": true
+    }
+  }
+}

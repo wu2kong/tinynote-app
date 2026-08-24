@@ -21,6 +21,7 @@ import { showToast } from './Toast';
 import { t as globalT } from '@/i18n';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 type SettingsModule = 'general' | 'ai' | 'data' | 'sampleLibrary' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
 
@@ -37,7 +38,7 @@ const MODULES: { id: SettingsModule; icon: React.ReactNode }[] = [
   { id: 'backup', icon: <Archive size={16} /> },
   { id: 'ai', icon: <Bot size={16} /> },
   { id: 'shortcuts', icon: <KeyRound size={16} /> },
-  { id: 'pro', icon: <Crown size={16} /> },
+  ...(!IS_MAC_APP_STORE ? [{ id: 'pro' as const, icon: <Crown size={16} /> }] : []),
   { id: 'feedback', icon: <MessageSquare size={16} /> },
   { id: 'about', icon: <Info size={16} /> },
 ];
@@ -1328,7 +1329,7 @@ const AboutSettings: React.FC = () => {
           <div className="settings-about-name">TinyNote</div>
           <div className="settings-about-version-row">
             <div className="settings-about-version">{t('settings.about.version', { version: version || '...' })}</div>
-            <button
+            {!IS_MAC_APP_STORE && <button
               type="button"
               className={`settings-about-check${checking ? ' is-loading' : ''}`}
               onClick={(event) => {
@@ -1340,13 +1341,13 @@ const AboutSettings: React.FC = () => {
             >
               <RefreshCw size={13} className={checking ? 'settings-spin' : undefined} />
               {checking ? t('settings.about.checking') : t('settings.about.checkUpdate')}
-            </button>
+            </button>}
           </div>
           <div className="settings-about-desc">{t('utils.app.description')}</div>
         </div>
       </div>
 
-      <div className="settings-about-update">
+      {!IS_MAC_APP_STORE && <div className="settings-about-update">
         {updateInfo && (
           <div className="settings-update-actions">
             <button
@@ -1375,7 +1376,7 @@ const AboutSettings: React.FC = () => {
             {checkMessage}
           </p>
         )}
-      </div>
+      </div>}
 
       <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
@@ -1420,7 +1421,7 @@ const AboutSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="settings-row settings-row-vertical">
+      {!IS_MAC_APP_STORE && <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.about.downloadPages')}</span>
           <span className="settings-row-desc">{t('settings.about.downloadPagesDesc')}</span>
@@ -1460,7 +1461,7 @@ const AboutSettings: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </div>}
 
     </div>
   );
@@ -1505,7 +1506,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {activeModule === 'sync' && <SyncSettingsGate onGoToPro={() => setActiveModule('pro')} />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}
-            {activeModule === 'pro' && <ProSettings />}
+            {!IS_MAC_APP_STORE && activeModule === 'pro' && <ProSettings />}
             {activeModule === 'feedback' && <FeedbackSettings />}
             {activeModule === 'about' && <AboutSettings />}
           </div>

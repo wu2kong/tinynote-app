@@ -27,6 +27,7 @@ import { serializeNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 class EditorAreaErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -246,7 +247,7 @@ const App: React.FC = () => {
       <Toast />
       {settingsModal}
       {aiChatModal}
-      <ProUpgradeModal />
+      {!IS_MAC_APP_STORE && <ProUpgradeModal />}
       <OfficialSampleLibraryModal
         open={showSampleLibrary}
         onClose={() => setShowSampleLibrary(false)}

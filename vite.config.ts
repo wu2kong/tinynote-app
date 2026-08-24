@@ -22,11 +22,17 @@ const webStubs: Record<string, string> = {
 
 export default defineConfig(({ mode: viteMode }) => {
   const webBuild = viteMode === 'web';
+  const macAppStoreBuild = process.env.VITE_DISTRIBUTION === 'mac-app-store';
 
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
+        ...(macAppStoreBuild
+          ? {
+              '@/store/useLicenseStore': path.resolve(__dirname, 'src/store/useLicenseStore.appstore.ts'),
+            }
+          : {}),
         '@': path.resolve(__dirname, 'src'),
         ...(webBuild ? webStubs : {}),
       },

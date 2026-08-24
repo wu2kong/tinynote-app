@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.wu2kong.tinynote.tinynote_mobile"
+    namespace = "com.wu2kong.tinynote.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -15,8 +15,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.wu2kong.tinynote.tinynote_mobile"
+        // Store builds share com.wu2kong.tinynote.app with Mac/iOS App Store.
+        applicationId = "com.wu2kong.tinynote.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

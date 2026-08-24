@@ -5,6 +5,7 @@ import { getBoundWorkspacePath } from '@/utils/config';
 import { getWorkspacesRegistryDisplayPath } from '@/utils/workspaces';
 import { getWorkspaceConfigJsoncPath } from '@/utils/workspaceConfig';
 import { normalizePath } from './path';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 const LEGACY_HOME_CONFIG = '.tinynotes/configs.json';
 
@@ -16,6 +17,9 @@ export async function getConfigFilePath(workspacePath?: string | null): Promise<
   if (isWeb()) {
     return getWorkspacesRegistryDisplayPath();
   }
+  if (IS_MAC_APP_STORE) {
+    return getWorkspacesRegistryDisplayPath();
+  }
   try {
     const home = await homeDir();
     return normalizePath(await join(home, LEGACY_HOME_CONFIG));
@@ -25,7 +29,7 @@ export async function getConfigFilePath(workspacePath?: string | null): Promise<
 }
 
 export async function getWorkspacesFilePath(): Promise<string> {
-  if (isWeb()) {
+  if (isWeb() || IS_MAC_APP_STORE) {
     return getWorkspacesRegistryDisplayPath();
   }
   try {

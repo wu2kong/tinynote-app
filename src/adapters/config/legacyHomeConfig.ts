@@ -1,6 +1,7 @@
 import { readTextFile, writeTextFile, remove, exists, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { isTauri, isWeb } from '@/platform/detect';
 import type { AppConfig } from '@/utils/configTypes';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 const LEGACY_CONFIG_FILE = '.tinynotes/configs.json';
 const LEGACY_CONFIG_ARCHIVED = '.tinynotes/configs.json.migrated';
@@ -25,6 +26,7 @@ async function readHomeJson(relativePath: string): Promise<AppConfig | null> {
 }
 
 export async function loadLegacyHomeConfig(): Promise<AppConfig | null> {
+  if (IS_MAC_APP_STORE) return null;
   if (isTauri()) {
     const active = await readHomeJson(LEGACY_CONFIG_FILE);
     if (active) return active;
@@ -45,6 +47,7 @@ export async function loadLegacyHomeConfig(): Promise<AppConfig | null> {
 }
 
 export async function hasPendingLegacyHomeConfig(): Promise<boolean> {
+  if (IS_MAC_APP_STORE) return false;
   if (isWeb()) {
     return Boolean(localStorage.getItem(WEB_LEGACY_KEY));
   }
@@ -53,6 +56,7 @@ export async function hasPendingLegacyHomeConfig(): Promise<boolean> {
 }
 
 export async function archiveLegacyHomeConfig(): Promise<void> {
+  if (IS_MAC_APP_STORE) return;
   if (isWeb()) {
     localStorage.removeItem(WEB_LEGACY_KEY);
     return;
