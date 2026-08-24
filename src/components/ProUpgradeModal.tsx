@@ -96,25 +96,6 @@ const ProUpgradeModal: React.FC = () => {
     };
   }, [gateOpen, gateFeature, clearError, refreshCurrentSpaceTree]);
 
-  if (!gateOpen) return null;
-
-  if (IS_MAC_APP_STORE) {
-    return (
-      <div className="modal-overlay pro-upgrade-overlay" onClick={closeGate}>
-        <div className="modal pro-upgrade-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="pro-upgrade-header">
-            <h3 className="modal-title">{t('pro.gate.title')}</h3>
-            <button type="button" className="icon-btn" onClick={closeGate} title={t('common.close')}>
-              <X size={16} />
-            </button>
-          </div>
-          <p className="modal-message">{t(featureMessageKey(gateFeature))}</p>
-          <AppStorePurchaseControls onSuccess={closeGate} />
-        </div>
-      </div>
-    );
-  }
-
   const handlePurchase = async () => {
     try {
       await openUrl(PURCHASE_URL);
@@ -159,6 +140,68 @@ const ProUpgradeModal: React.FC = () => {
     closeGate();
   };
 
+  if (!gateOpen) return null;
+
+  const trialHint = gateFeature === 'articleNotebook' ? (
+    <p className="pro-upgrade-trial-hint">
+      {existingSample
+        ? t('pro.trial.articleExists', { name: existingSample.name })
+        : t('pro.trial.articleHint')}
+    </p>
+  ) : null;
+
+  const sampleActions = (
+    <>
+      {canCreateSample && (
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => void handleCreateSample()}
+          disabled={creatingSample}
+        >
+          {creatingSample ? <Loader2 size={14} className="settings-spin" /> : <FilePlus size={14} />}
+          {t('pro.trial.createSample')}
+        </button>
+      )}
+      {showSampleAction && existingSample && (
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => void handleOpenSample()}
+        >
+          <FolderOpen size={14} />
+          {t('pro.trial.openSample')}
+        </button>
+      )}
+    </>
+  );
+
+  if (IS_MAC_APP_STORE) {
+    return (
+      <div className="modal-overlay pro-upgrade-overlay" onClick={closeGate}>
+        <div className="modal pro-upgrade-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="pro-upgrade-header">
+            <h3 className="modal-title">{t('pro.gate.title')}</h3>
+            <button type="button" className="icon-btn" onClick={closeGate} title={t('common.close')}>
+              <X size={16} />
+            </button>
+          </div>
+          <p className="modal-message">{t(featureMessageKey(gateFeature))}</p>
+          {trialHint}
+          {(canCreateSample || (showSampleAction && existingSample)) && (
+            <div className="modal-actions pro-upgrade-actions pro-upgrade-sample-actions">
+              <button type="button" className="btn btn-secondary" onClick={closeGate}>
+                {t('common.cancel')}
+              </button>
+              {sampleActions}
+            </div>
+          )}
+          <AppStorePurchaseControls onSuccess={closeGate} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="modal-overlay pro-upgrade-overlay" onClick={closeGate}>
       <div className="modal pro-upgrade-modal" onClick={(e) => e.stopPropagation()}>
@@ -172,40 +215,14 @@ const ProUpgradeModal: React.FC = () => {
         <p className="modal-message">{t(featureMessageKey(gateFeature))}</p>
         <p className="pro-upgrade-hint">{t('pro.gate.hint')}</p>
 
-        {gateFeature === 'articleNotebook' && (
-          <p className="pro-upgrade-trial-hint">
-            {existingSample
-              ? t('pro.trial.articleExists', { name: existingSample.name })
-              : t('pro.trial.articleHint')}
-          </p>
-        )}
+        {trialHint}
 
         {!showActivate ? (
           <div className="modal-actions pro-upgrade-actions">
             <button type="button" className="btn btn-secondary" onClick={closeGate}>
               {t('common.cancel')}
             </button>
-            {canCreateSample && (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => void handleCreateSample()}
-                disabled={creatingSample}
-              >
-                {creatingSample ? <Loader2 size={14} className="settings-spin" /> : <FilePlus size={14} />}
-                {t('pro.trial.createSample')}
-              </button>
-            )}
-            {showSampleAction && existingSample && (
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => void handleOpenSample()}
-              >
-                <FolderOpen size={14} />
-                {t('pro.trial.openSample')}
-              </button>
-            )}
+            {sampleActions}
             <button type="button" className="btn btn-secondary" onClick={() => setShowActivate(true)}>
               <KeyRound size={14} />
               {t('pro.gate.activate')}

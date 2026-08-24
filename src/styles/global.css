@@ -5083,13 +5083,13 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
 }
 
 .pro-upgrade-hint {
-  margin: 0 0 16px;
-  font-size: 12px;
+  margin: 0 0 8px;
+  font-size: 13px;
   color: var(--text-tertiary);
 }
 
 .pro-upgrade-trial-hint {
-  margin: -4px 0 16px;
+  margin: -4px 0 10px;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -5101,6 +5101,10 @@ html[data-minimal-style="true"][data-theme-id][data-theme] textarea:focus {
 
 .pro-upgrade-actions {
   flex-wrap: wrap;
+}
+
+.pro-upgrade-sample-actions {
+  margin-bottom: 30px;
 }
 
 .pro-activate-form {
