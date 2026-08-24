@@ -3163,7 +3163,7 @@ body.directory-panel-resizing {
   border-radius: var(--radius-lg);
   width: 720px;
   max-width: calc(100vw - 16px);
-  height: min(580px, calc(100vh - 16px));
+  height: min(640px, calc(100vh - 16px));
   max-height: calc(100vh - 16px);
   display: flex;
   flex-direction: column;
@@ -3446,8 +3446,8 @@ body.directory-panel-resizing {
   overflow: hidden;
 }
 
-.settings-panel--fill:has(.settings-sync-workspace) {
-  overflow-y: auto;
+.settings-panel--fill:has(.settings-sync-shell) {
+  overflow: hidden;
 }
 
 .settings-panel-head-actions {
@@ -3844,7 +3844,7 @@ body.directory-panel-resizing {
 }
 
 .settings-sync-file-list {
-  max-height: 120px;
+  max-height: none;
 }
 
 .settings-sync-file-item {
@@ -4061,6 +4061,38 @@ body.directory-panel-resizing {
   transition: border-color var(--transition), background var(--transition);
 }
 
+.settings-sync-mode-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.settings-sync-mode-tag {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 2px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.settings-sync-mode-tag.is-basic {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.settings-sync-mode-tag.is-pro {
+  background: color-mix(in srgb, #c27803 16%, transparent);
+  color: #b45309;
+}
+
+[data-theme="dark"] .settings-sync-mode-tag.is-pro {
+  color: #f0b429;
+}
+
 .settings-sync-mode-card:hover,
 .settings-sync-mode-card.is-active {
   border-color: var(--accent);
@@ -4173,7 +4205,7 @@ body.directory-panel-resizing {
 
 .settings-sync-workspace {
   display: flex;
-  min-height: 200px;
+  min-height: 128px;
   margin-bottom: 8px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -4182,8 +4214,8 @@ body.directory-panel-resizing {
 }
 
 .settings-panel--fill .settings-sync-workspace {
-  flex: 1 1 220px;
-  min-height: 200px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .settings-panel--fill.ai-settings .settings-sync-workspace {
@@ -4191,16 +4223,103 @@ body.directory-panel-resizing {
   margin-bottom: 0;
 }
 
-.settings-panel--fill .settings-backup-list {
-  flex: 0 1 96px;
-  min-height: 64px;
+.settings-sync-shell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.settings-sync-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
-.settings-panel--fill .settings-backup-list-items {
+.settings-sync-main-head {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.settings-sync-shell .settings-sync-source-detail {
+  flex: none;
+  overflow: visible;
+}
+
+.settings-sync-shell .settings-sync-info,
+.settings-sync-shell .settings-sync-status,
+.settings-sync-shell .settings-sync-actions,
+.settings-sync-shell .settings-sync-error {
+  flex-shrink: 0;
+}
+
+.settings-sync-shell .settings-sync-info {
+  margin-bottom: 6px;
+}
+
+.settings-sync-shell .settings-sync-status {
+  padding: 0 10px;
+}
+
+.settings-sync-shell .settings-sync-status .settings-sync-info {
+  margin-bottom: 4px;
+}
+
+.settings-sync-shell .settings-sync-summary {
+  margin-bottom: 2px;
+}
+
+.settings-sync-shell .settings-sync-commit-preview {
+  margin-bottom: 6px;
+}
+
+.settings-sync-shell .settings-sync-actions {
+  margin: 0 10px 8px;
+}
+
+.settings-sync-shell .settings-sync-error {
+  margin: 0 10px 8px;
+}
+
+.settings-sync-shell .settings-backup-list {
+  flex: 1 1 0;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  margin: 0 10px 10px;
+}
+
+.settings-sync-shell .settings-backup-list-header {
+  flex-shrink: 0;
+}
+
+.settings-sync-shell .settings-backup-list-items {
+  flex: 1;
   max-height: none;
   min-height: 0;
+}
+
+.settings-sync-main:not(:has(.settings-backup-list)) .settings-sync-main-head {
+  flex: 1;
+}
+
+.settings-sync-shell .settings-sync-detail-desc {
+  display: none;
+}
+
+.settings-sync-shell .settings-sync-detail-head {
+  margin-bottom: 6px;
+}
+
+.settings-sync-shell .settings-sync-detail-actions {
+  margin-top: 6px;
 }
 
 .settings-sync-source-nav {
@@ -4210,6 +4329,8 @@ body.directory-panel-resizing {
   flex-direction: column;
   border-right: 1px solid var(--border-color);
   background: var(--bg-secondary);
+  position: relative;
+  z-index: 2;
 }
 
 .settings-sync-source-items {
@@ -4320,7 +4441,7 @@ body.directory-panel-resizing {
   position: absolute;
   left: 0;
   bottom: 28px;
-  z-index: 6;
+  z-index: 20;
   min-width: 168px;
   padding: 4px;
   border: 1px solid var(--border-color);

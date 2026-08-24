@@ -405,21 +405,27 @@ const SyncSettings: React.FC = () => {
     <div className="settings-sync-mode-grid">
       <button
         type="button"
-        className={`settings-sync-mode-card ${syncMode === 'git' ? 'is-active' : ''}`}
-        onClick={() => handleChooseMode('git')}
-      >
-        <GitBranch size={18} />
-        <span className="settings-sync-mode-title">{t('settings.sync.modeGitTitle')}</span>
-        <span className="settings-sync-mode-desc">{t('settings.sync.modeGitDesc')}</span>
-      </button>
-      <button
-        type="button"
         className={`settings-sync-mode-card ${syncMode === 'cloud' ? 'is-active' : ''}`}
         onClick={() => handleChooseMode('cloud')}
       >
-        <Cloud size={18} />
+        <span className="settings-sync-mode-card-head">
+          <Cloud size={18} />
+          <span className="settings-sync-mode-tag is-basic">{t('settings.sync.modeCloudRecommend')}</span>
+        </span>
         <span className="settings-sync-mode-title">{t('settings.sync.modeCloudTitle')}</span>
         <span className="settings-sync-mode-desc">{t('settings.sync.modeCloudDesc')}</span>
+      </button>
+      <button
+        type="button"
+        className={`settings-sync-mode-card ${syncMode === 'git' ? 'is-active' : ''}`}
+        onClick={() => handleChooseMode('git')}
+      >
+        <span className="settings-sync-mode-card-head">
+          <GitBranch size={18} />
+          <span className="settings-sync-mode-tag is-pro">{t('settings.sync.modeGitRecommend')}</span>
+        </span>
+        <span className="settings-sync-mode-title">{t('settings.sync.modeGitTitle')}</span>
+        <span className="settings-sync-mode-desc">{t('settings.sync.modeGitDesc')}</span>
       </button>
     </div>
   ), [handleChooseMode, syncMode, t]);
@@ -515,69 +521,70 @@ const SyncSettings: React.FC = () => {
           </div>
         </>
       ) : (
-        <>
-          <div className="settings-sync-workspace">
-            <div className="settings-sync-source-nav">
-              <div className="settings-sync-source-items">
-                {remotes.length === 0 ? (
-                  <div className="settings-sync-source-empty">{t('settings.sync.sourceListEmpty')}</div>
-                ) : (
-                  remotes.map((remote) => {
-                    const authorized = isRemoteAuthorized(remote, authorizedNames);
-                    return (
-                      <button
-                        key={remote.id}
-                        type="button"
-                        className={`settings-sync-source-item ${selectedRemoteId === remote.id ? 'is-active' : ''}`}
-                        onClick={() => setSelectedRemoteId(remote.id)}
-                      >
-                        <span className="settings-sync-source-item-name">{remoteListLabel(remote, t)}</span>
-                        <span className={`settings-sync-source-dot ${authorized ? 'is-ok' : 'is-warn'}`} />
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-              <div className="settings-sync-source-toolbar">
-                <div className="settings-sync-add-wrap" ref={addMenuRef}>
-                  <button
-                    type="button"
-                    className="settings-sync-source-tool"
-                    title={t('settings.sync.addRemote')}
-                    onClick={() => setAddMenuOpen((open) => !open)}
-                  >
-                    <Plus size={14} />
-                  </button>
-                  {addMenuOpen && (
-                    <div className="settings-sync-add-menu" onClick={(e) => e.stopPropagation()}>
-                      {addableProviders.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className="settings-sync-add-menu-item"
-                          disabled={item.comingSoon}
-                          onClick={() => void handleAddSource(item.id)}
-                        >
-                          <span>{t(`settings.sync.providers.${item.id}`)}</span>
-                          {item.comingSoon && <span className="settings-sync-soon">{t('settings.sync.modeCloudSoon')}</span>}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+        <div className="settings-sync-shell">
+          <div className="settings-sync-source-nav">
+            <div className="settings-sync-source-items">
+              {remotes.length === 0 ? (
+                <div className="settings-sync-source-empty">{t('settings.sync.sourceListEmpty')}</div>
+              ) : (
+                remotes.map((remote) => {
+                  const authorized = isRemoteAuthorized(remote, authorizedNames);
+                  return (
+                    <button
+                      key={remote.id}
+                      type="button"
+                      className={`settings-sync-source-item ${selectedRemoteId === remote.id ? 'is-active' : ''}`}
+                      onClick={() => setSelectedRemoteId(remote.id)}
+                    >
+                      <span className="settings-sync-source-item-name">{remoteListLabel(remote, t)}</span>
+                      <span className={`settings-sync-source-dot ${authorized ? 'is-ok' : 'is-warn'}`} />
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            <div className="settings-sync-source-toolbar">
+              <div className="settings-sync-add-wrap" ref={addMenuRef}>
                 <button
                   type="button"
                   className="settings-sync-source-tool"
-                  title={t('settings.sync.removeRemote')}
-                  disabled={!selectedRemote}
-                  onClick={handleRemoveSelected}
+                  title={t('settings.sync.addRemote')}
+                  onClick={() => setAddMenuOpen((open) => !open)}
                 >
-                  <Minus size={14} />
+                  <Plus size={14} />
                 </button>
+                {addMenuOpen && (
+                  <div className="settings-sync-add-menu" onClick={(e) => e.stopPropagation()}>
+                    {addableProviders.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className="settings-sync-add-menu-item"
+                        disabled={item.comingSoon}
+                        onClick={() => void handleAddSource(item.id)}
+                      >
+                        <span>{t(`settings.sync.providers.${item.id}`)}</span>
+                        {item.comingSoon && <span className="settings-sync-soon">{t('settings.sync.modeCloudSoon')}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
+              <button
+                type="button"
+                className="settings-sync-source-tool"
+                title={t('settings.sync.removeRemote')}
+                disabled={!selectedRemote}
+                onClick={handleRemoveSelected}
+              >
+                <Minus size={14} />
+              </button>
             </div>
+          </div>
 
-            <div className="settings-sync-source-detail">
+          <div className="settings-sync-main">
+            <div className="settings-sync-main-head">
+              <div className="settings-sync-source-detail">
               {!selectedRemote ? (
                 <div className="settings-sync-empty">
                   <p>{t('settings.sync.noSourceSelected')}</p>
@@ -671,147 +678,148 @@ const SyncSettings: React.FC = () => {
                 </>
               )}
             </div>
-          </div>
 
-          {status?.isRepo && (
-            <>
+            {status?.isRepo && (
+              <div className="settings-sync-status">
+                <div className="settings-sync-info">
+                  <div className="settings-sync-info-row">
+                    <span className="settings-sync-info-label">{t('settings.sync.currentRepo')}</span>
+                    <div className="settings-sync-info-value-row">
+                      <span className="settings-sync-remote" title={storagePath ?? undefined}>{storagePath}</span>
+                      <button type="button" className="settings-path-btn" onClick={handleOpenRepo} title={t('settings.path.openInFileManager')}>
+                        <FolderOpen size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  {status.branch && (
+                    <div className="settings-sync-info-row">
+                      <span className="settings-sync-info-label">{t('settings.sync.currentBranch', { branch: status.branch })}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="settings-backup-summary settings-sync-summary">
+                  <span>{t('settings.sync.pendingMdFiles', { count: status.changedMdCount })}</span>
+                  {(status.ahead > 0 || status.behind > 0) && (
+                    <>
+                      <span className="settings-backup-summary-sep">·</span>
+                      {status.behind > 0 && <span>{t('settings.sync.behindRemote', { count: status.behind })}</span>}
+                      {status.behind > 0 && status.ahead > 0 && <span className="settings-backup-summary-sep">·</span>}
+                      {status.ahead > 0 && <span>{t('settings.sync.aheadRemote', { count: status.ahead })}</span>}
+                    </>
+                  )}
+                </div>
+                <div className="settings-sync-commit-preview">
+                  {t('settings.sync.commitPreview', { message: commitPreview })}
+                </div>
+              </div>
+            )}
+
+            {!usesSystemGit && (
               <div className="settings-sync-info">
                 <div className="settings-sync-info-row">
-                  <span className="settings-sync-info-label">{t('settings.sync.currentRepo')}</span>
-                  <div className="settings-sync-info-value-row">
-                    <span className="settings-sync-remote" title={storagePath ?? undefined}>{storagePath}</span>
-                    <button type="button" className="settings-path-btn" onClick={handleOpenRepo} title={t('settings.path.openInFileManager')}>
-                      <FolderOpen size={14} />
-                    </button>
-                  </div>
+                  <span className="settings-sync-info-label">{t('settings.sync.corsProxy')}</span>
+                  <input
+                    className="settings-input"
+                    value={gitCorsProxy}
+                    onChange={(e) => setGitCorsProxy(e.target.value)}
+                    placeholder="https://cors.isomorphic-git.org"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                  />
                 </div>
-                {status.branch && (
-                  <div className="settings-sync-info-row">
-                    <span className="settings-sync-info-label">{t('settings.sync.currentBranch', { branch: status.branch })}</span>
-                  </div>
+                {isWeb() && (
+                  <p className="settings-sync-empty-hint">{t('settings.sync.webSshUnsupported')}</p>
                 )}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveCors} disabled={busy}>
+                  {t('settings.sync.saveConfig')}
+                </button>
               </div>
+            )}
 
-              <div className="settings-backup-summary settings-sync-summary">
-                <span>{t('settings.sync.pendingMdFiles', { count: status.changedMdCount })}</span>
-                {(status.ahead > 0 || status.behind > 0) && (
-                  <>
-                    <span className="settings-backup-summary-sep">·</span>
-                    {status.behind > 0 && <span>{t('settings.sync.behindRemote', { count: status.behind })}</span>}
-                    {status.behind > 0 && status.ahead > 0 && <span className="settings-backup-summary-sep">·</span>}
-                    {status.ahead > 0 && <span>{t('settings.sync.aheadRemote', { count: status.ahead })}</span>}
-                  </>
-                )}
-              </div>
-              <div className="settings-sync-commit-preview">
-                {t('settings.sync.commitPreview', { message: commitPreview })}
-              </div>
-            </>
-          )}
-
-          {!usesSystemGit && (
-            <div className="settings-sync-info">
-              <div className="settings-sync-info-row">
-                <span className="settings-sync-info-label">{t('settings.sync.corsProxy')}</span>
-                <input
-                  className="settings-input"
-                  value={gitCorsProxy}
-                  onChange={(e) => setGitCorsProxy(e.target.value)}
-                  placeholder="https://cors.isomorphic-git.org"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
-                />
-              </div>
-              {isWeb() && (
-                <p className="settings-sync-empty-hint">{t('settings.sync.webSshUnsupported')}</p>
-              )}
-              <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveCors} disabled={busy}>
-                {t('settings.sync.saveConfig')}
+            <div className="settings-backup-actions settings-sync-actions">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handlePull}
+                disabled={enabledCount === 0 || busy}
+                title={enabledCount === 0 ? t('settings.sync.addRemoteFirst') : undefined}
+              >
+                {pulling ? <Loader2 size={13} className="settings-spin" /> : <ArrowDownToLine size={13} />}
+                {pulling ? t('settings.sync.pulling') : t('settings.sync.pullLatest')}
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handlePush}
+                disabled={enabledCount === 0 || busy}
+                title={enabledCount === 0 ? t('settings.sync.addRemoteFirst') : undefined}
+              >
+                {pushing ? <Loader2 size={13} className="settings-spin" /> : <Upload size={13} />}
+                {pushing
+                  ? t('settings.sync.pushing')
+                  : t('settings.sync.pushToAll', { count: Math.max(enabledCount, 1) })}
               </button>
             </div>
-          )}
 
-          <div className="settings-backup-actions settings-sync-actions">
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={handlePull}
-              disabled={enabledCount === 0 || busy}
-              title={enabledCount === 0 ? t('settings.sync.addRemoteFirst') : undefined}
-            >
-              {pulling ? <Loader2 size={13} className="settings-spin" /> : <ArrowDownToLine size={13} />}
-              {pulling ? t('settings.sync.pulling') : t('settings.sync.pullLatest')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              onClick={handlePush}
-              disabled={enabledCount === 0 || busy}
-              title={enabledCount === 0 ? t('settings.sync.addRemoteFirst') : undefined}
-            >
-              {pushing ? <Loader2 size={13} className="settings-spin" /> : <Upload size={13} />}
-              {pushing
-                ? t('settings.sync.pushing')
-                : t('settings.sync.pushToAll', { count: Math.max(enabledCount, 1) })}
-            </button>
-          </div>
-
-          {syncError && (
-            <div className="settings-sync-error">
-              <pre>{syncError}</pre>
+            {syncError && (
+              <div className="settings-sync-error">
+                <pre>{syncError}</pre>
+              </div>
+            )}
             </div>
-          )}
 
-          {status?.isRepo && (
-            <div className="settings-backup-list">
-              <div className="settings-backup-list-header">
-                <span>{t('settings.sync.changedMarkdownFiles')}</span>
-                {status.changedFiles.length > 0 && (
-                  <span className="settings-backup-list-count">{status.changedFiles.length}</span>
+            {status?.isRepo && (
+              <div className="settings-backup-list">
+                <div className="settings-backup-list-header">
+                  <span>{t('settings.sync.changedMarkdownFiles')}</span>
+                  {status.changedFiles.length > 0 && (
+                    <span className="settings-backup-list-count">{status.changedFiles.length}</span>
+                  )}
+                </div>
+                {status.changedFiles.length === 0 ? (
+                  <div className="settings-backup-list-empty">{t('settings.sync.noPendingMdChanges')}</div>
+                ) : (
+                  <ul className="settings-backup-list-items settings-sync-file-list">
+                    {status.changedFiles.map((file) => (
+                      <li
+                        key={file.path}
+                        className="settings-sync-file-item"
+                        title={getChangeTooltip(file.changeType, file.path)}
+                      >
+                        <span className={`settings-sync-file-badge is-${file.changeType}`}>
+                          {getChangeBadge(file.changeType)}
+                        </span>
+                        <div className="settings-sync-file-path-wrap">
+                          <span className="settings-sync-file-path">{file.path}</span>
+                        </div>
+                        <div className="settings-sync-file-actions">
+                          <button
+                            type="button"
+                            className="settings-sync-file-link"
+                            onClick={() => handleViewDiff(file)}
+                            disabled={busy || revertingPath === file.path}
+                          >
+                            {t('settings.sync.viewDiff')}
+                          </button>
+                          <button
+                            type="button"
+                            className="settings-sync-file-link settings-sync-file-link-muted"
+                            onClick={() => setRevertTarget(file)}
+                            disabled={busy || revertingPath === file.path}
+                          >
+                            {revertingPath === file.path ? t('settings.sync.reverting') : t('settings.sync.revertChange')}
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
-              {status.changedFiles.length === 0 ? (
-                <div className="settings-backup-list-empty">{t('settings.sync.noPendingMdChanges')}</div>
-              ) : (
-                <ul className="settings-backup-list-items settings-sync-file-list">
-                  {status.changedFiles.map((file) => (
-                    <li
-                      key={file.path}
-                      className="settings-sync-file-item"
-                      title={getChangeTooltip(file.changeType, file.path)}
-                    >
-                      <span className={`settings-sync-file-badge is-${file.changeType}`}>
-                        {getChangeBadge(file.changeType)}
-                      </span>
-                      <div className="settings-sync-file-path-wrap">
-                        <span className="settings-sync-file-path">{file.path}</span>
-                      </div>
-                      <div className="settings-sync-file-actions">
-                        <button
-                          type="button"
-                          className="settings-sync-file-link"
-                          onClick={() => handleViewDiff(file)}
-                          disabled={busy || revertingPath === file.path}
-                        >
-                          {t('settings.sync.viewDiff')}
-                        </button>
-                        <button
-                          type="button"
-                          className="settings-sync-file-link settings-sync-file-link-muted"
-                          onClick={() => setRevertTarget(file)}
-                          disabled={busy || revertingPath === file.path}
-                        >
-                          {revertingPath === file.path ? t('settings.sync.reverting') : t('settings.sync.revertChange')}
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </>
+            )}
+          </div>
+        </div>
       )}
 
       <SyncDiffModal
