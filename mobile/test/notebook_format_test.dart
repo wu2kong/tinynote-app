@@ -9,6 +9,16 @@ void main() {
       expect(detectNotebookFormat('a.blk.md'), NotebookFormat.blocks);
       expect(detectNotebookFormat('a.md'), NotebookFormat.blocks);
       expect(detectNotebookFormat('A.WRITER.MD'), NotebookFormat.writer);
+      expect(detectNotebookFormat('map.treemind.md'), NotebookFormat.unsupported);
+      expect(detectNotebookFormat('todo.checklist.md'), NotebookFormat.unsupported);
+    });
+  });
+
+  group('unknownNotebookFormatSuffix', () {
+    test('returns compound suffix only for unregistered formats', () {
+      expect(unknownNotebookFormatSuffix('map.treemind.md'), '.treemind.md');
+      expect(unknownNotebookFormatSuffix('Guide.mk.md'), isNull);
+      expect(unknownNotebookFormatSuffix('Legacy.md'), isNull);
     });
   });
 
@@ -18,6 +28,7 @@ void main() {
       expect(notebookDisplayName('Guide.mk.md'), 'Guide');
       expect(notebookDisplayName('Essay.writer.md'), 'Essay');
       expect(notebookDisplayName('Legacy.md'), 'Legacy');
+      expect(notebookDisplayName('map.treemind.md'), 'map');
     });
   });
 
@@ -87,6 +98,8 @@ void main() {
     expect(NotebookFormat.blocks.swappableArticleFormat, isNull);
     expect(NotebookFormat.markdown.isDocument, isTrue);
     expect(NotebookFormat.blocks.isDocument, isFalse);
+    expect(NotebookFormat.unsupported.isDocument, isFalse);
+    expect(NotebookFormat.unsupported.isUnsupported, isTrue);
   });
 
   test('plain .md becomes writer, marked files stay', () {
@@ -108,5 +121,20 @@ void main() {
       resolveImportedNotebookFileName('essay.writer.md').fileName,
       'essay.writer.md',
     );
+    expect(
+      resolveImportedNotebookFileName('map.treemind.md').fileName,
+      'map.treemind.md',
+    );
+    expect(resolveImportedNotebookFileName('map.treemind.md').converted, isFalse);
+  });
+
+  test('rename keeps an unknown future format suffix', () {
+    final resolved = resolveNotebookFileName(
+      'Renamed',
+      preferredFormat: NotebookFormat.unsupported,
+      preserveExtension: '.treemind.md',
+    );
+    expect(resolved.fileName, 'Renamed.treemind.md');
+    expect(resolved.format, NotebookFormat.unsupported);
   });
 }

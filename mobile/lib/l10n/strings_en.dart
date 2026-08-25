@@ -181,6 +181,7 @@ final stringsEn = AppStrings(
   formatBlocks: 'Block notebook',
   formatMarkdown: 'Markdown',
   formatWriter: 'Article',
+  formatUnsupported: 'Unknown format',
   convertToMarkdown: 'Convert to Markdown note',
   convertToWriter: 'Convert to article note',
   convertFormatFailed: 'Failed to convert note type',
@@ -190,6 +191,12 @@ final stringsEn = AppStrings(
   documentSaved: 'Saved',
   openLinkFailed: 'Could not open the link',
   documentBlocksUnsupported: 'Document notes do not support note blocks',
+  unsupportedFormatTitle: 'This note format is not supported',
+  unsupportedFormatMessage:
+      'This note uses the "{suffix}" format, which is not included in the current version. Upgrade TinyNote, or open it with a Markdown-compatible editor. Opening it in an older editor may damage the note structure.',
+  unsupportedFormatUpgrade: 'Get the latest version',
+  unsupportedFormatOpenMarkdown: 'Open as Markdown',
+  unsupportedFormatOpenFailed: 'Could not open the download page',
   importNotes: 'Import Notes',
   importNotesDesc:
       'Import Markdown files into the root of the current note space. Please read the rules below first:',

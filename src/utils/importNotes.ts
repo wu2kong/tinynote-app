@@ -2,6 +2,7 @@ import { getStorageAdapter } from '@/adapters/storage';
 import { basename, dirname, isSubPath, joinPath, normalizePath } from '@/utils/path';
 import {
   detectNotebookFormat,
+  getMatchedNotebookSuffix,
   getNotebookDisplayName,
   isMarkdownNotebookFileName,
   resolveImportedNotebookFileName,
@@ -63,9 +64,12 @@ async function allocateUniqueFilePath(destPath: string): Promise<string> {
   const fileName = basename(destPath);
   const format = detectNotebookFormat(fileName);
   const displayName = getNotebookDisplayName(fileName);
+  const preserveExtension = format === 'unsupported'
+    ? getMatchedNotebookSuffix(fileName)
+    : undefined;
   let n = 2;
   while (true) {
-    const nextName = resolveNotebookFileName(`${displayName} (${n})`, format).fileName;
+    const nextName = resolveNotebookFileName(`${displayName} (${n})`, format, { preserveExtension }).fileName;
     const nextPath = joinPath(parentPath, nextName);
     if (!(await storage().exists(nextPath))) return nextPath;
     n += 1;

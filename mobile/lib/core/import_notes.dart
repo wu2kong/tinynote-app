@@ -73,11 +73,14 @@ Future<String> _allocateUniqueFilePath(
   final fileName = basename(destPath);
   final format = detectNotebookFormat(fileName);
   final displayName = notebookDisplayName(fileName);
+  final preserveExtension =
+      format.isUnsupported ? matchedNotebookSuffix(fileName) : null;
   var n = 2;
   while (true) {
     final nextName = resolveNotebookFileName(
       '$displayName ($n)',
       preferredFormat: format,
+      preserveExtension: preserveExtension,
     ).fileName;
     final nextPath = joinPath(parentPath, nextName);
     if (!await storage.exists(nextPath)) return nextPath;

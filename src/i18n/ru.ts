@@ -553,7 +553,8 @@ export const ruMessages = {
     "formats": {
       "blocks": "Блочный блокнот",
       "markdown": "Markdown",
-      "writer": "Статья"
+      "writer": "Статья",
+      "unsupported": "Неизвестный формат"
     },
     "groupName": "Название каталога",
     "searchNotebook": "Поиск заметок...",
@@ -610,6 +611,13 @@ export const ruMessages = {
     "addNote": "Добавить заметку",
     "pasteNote": "Вставить заметку",
     "selectNotebook": "Выберите заметку, чтобы просмотреть содержимое",
+    "unsupportedFormat": {
+      "title": "Этот формат заметки не поддерживается",
+      "message": "Эта заметка использует формат «{suffix}», который не входит в текущую версию. Обновите TinyNote или откройте её в редакторе, совместимом с Markdown. Открытие в старом редакторе может повредить структуру заметки.",
+      "upgrade": "Получить новую версию",
+      "openAsMarkdown": "Открыть как Markdown",
+      "compatBadge": "Совместимость с Markdown"
+    },
     "searchNote": "Поиск заметок...",
     "listView": "Вид списком",
     "cardView": "Вид карточками",

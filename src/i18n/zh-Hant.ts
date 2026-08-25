@@ -553,7 +553,8 @@ export const zhHantMessages = {
     "formats": {
       "blocks": "塊筆記本",
       "markdown": "Markdown",
-      "writer": "文章"
+      "writer": "文章",
+      "unsupported": "未知格式"
     },
     "groupName": "目錄名稱",
     "searchNotebook": "搜尋筆記...",
@@ -610,6 +611,13 @@ export const zhHantMessages = {
     "addNote": "新增筆記",
     "pasteNote": "貼上筆記",
     "selectNotebook": "選擇一個筆記以檢視內容",
+    "unsupportedFormat": {
+      "title": "目前版本不支援此筆記格式",
+      "message": "這份筆記使用了「{suffix}」格式，目前版本尚未預置。請升級 TinyNote，或使用 Markdown 相容編輯器開啟。直接用舊編輯器開啟可能會破壞筆記結構。",
+      "upgrade": "取得新版本",
+      "openAsMarkdown": "使用 Markdown 編輯器開啟",
+      "compatBadge": "Markdown 相容"
+    },
     "searchNote": "搜尋筆記...",
     "listView": "列表檢視",
     "cardView": "卡片檢視",

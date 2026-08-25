@@ -122,6 +122,16 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
+      if (format.isUnsupported) {
+        return Notebook(
+          id: stableIdFromPath(normalizedPath),
+          name: name,
+          path: normalizedPath,
+          format: format,
+          content: content,
+          noteBlocks: const [],
+        );
+      }
       if (format.isDocument) {
         final now = DateTime.now().toUtc().toIso8601String();
         return Notebook(
@@ -158,7 +168,13 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
-    if (notebook.format.isDocument) {
+    if (notebook.format.isUnsupported && !notebook.compatOpenAsMarkdown) {
+      return;
+    }
+    if (shouldSaveAsDocument(
+      notebook.format,
+      compatOpenAsMarkdown: notebook.compatOpenAsMarkdown,
+    )) {
       await storage.writeTextFile(notebook.path, notebook.documentContent);
       return;
     }
@@ -202,10 +218,20 @@ class FileSystemService {
     String name, {
     NotebookFormat format = NotebookFormat.blocks,
   }) async {
-    final resolved = resolveNotebookFileName(
+    var resolved = resolveNotebookFileName(
       name,
-      preferredFormat: format,
+      preferredFormat: format == NotebookFormat.unsupported
+          ? NotebookFormat.blocks
+          : format,
     );
+    if (resolved.format.isUnsupported) {
+      resolved = resolveNotebookFileName(
+        resolved.displayName,
+        preferredFormat: format == NotebookFormat.unsupported
+            ? NotebookFormat.blocks
+            : format,
+      );
+    }
     final filePath = joinPath(parentPath, resolved.fileName);
     if (await storage.exists(filePath)) {
       throw NotebookExistsException(resolved.displayName);

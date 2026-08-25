@@ -169,6 +169,7 @@ class AppStrings {
     required this.formatBlocks,
     required this.formatMarkdown,
     required this.formatWriter,
+    required this.formatUnsupported,
     required this.convertToMarkdown,
     required this.convertToWriter,
     required this.convertFormatFailed,
@@ -178,6 +179,11 @@ class AppStrings {
     required this.documentSaved,
     required this.openLinkFailed,
     required this.documentBlocksUnsupported,
+    required this.unsupportedFormatTitle,
+    required this.unsupportedFormatMessage,
+    required this.unsupportedFormatUpgrade,
+    required this.unsupportedFormatOpenMarkdown,
+    required this.unsupportedFormatOpenFailed,
     required this.importNotes,
     required this.importNotesDesc,
     required this.importNotesRuleMarkdownOnly,
@@ -397,6 +403,7 @@ class AppStrings {
   final String formatBlocks;
   final String formatMarkdown;
   final String formatWriter;
+  final String formatUnsupported;
   final String convertToMarkdown;
   final String convertToWriter;
   final String convertFormatFailed;
@@ -406,6 +413,11 @@ class AppStrings {
   final String documentSaved;
   final String openLinkFailed;
   final String documentBlocksUnsupported;
+  final String unsupportedFormatTitle;
+  final String unsupportedFormatMessage;
+  final String unsupportedFormatUpgrade;
+  final String unsupportedFormatOpenMarkdown;
+  final String unsupportedFormatOpenFailed;
   final String importNotes;
   final String importNotesDesc;
   final String importNotesRuleMarkdownOnly;
@@ -462,6 +474,7 @@ class AppStrings {
       NotebookFormat.blocks => formatBlocks,
       NotebookFormat.markdown => formatMarkdown,
       NotebookFormat.writer => formatWriter,
+      NotebookFormat.unsupported => formatUnsupported,
     };
   }
 

@@ -4,6 +4,7 @@ import { isArticleNotebookFormat } from '@/constants/pro';
 import { parseNoteBlocks, serializeNoteBlocks } from './noteParser';
 import {
   detectNotebookFormat,
+  shouldSaveAsDocument,
   getMatchedNotebookSuffix,
   getNotebookDisplayName,
   getSwappableArticleFormat,
@@ -219,9 +220,12 @@ export async function loadNotebook(filePath: string): Promise<Notebook | null> {
 }
 
 export async function saveNotebook(notebook: Notebook): Promise<void> {
-  const content = notebook.format === 'blocks'
-    ? serializeNoteBlocks(notebook.noteBlocks)
-    : notebook.content;
+  if (notebook.format === 'unsupported' && !notebook.compatOpenAsMarkdown) {
+    return;
+  }
+  const content = shouldSaveAsDocument(notebook.format, notebook.compatOpenAsMarkdown)
+    ? notebook.content
+    : serializeNoteBlocks(notebook.noteBlocks);
   await storage().writeTextFile(notebook.path, content);
 }
 
@@ -262,7 +266,11 @@ export async function createNotebook(
   name: string,
   preferredFormat: NotebookFormatId = 'blocks',
 ): Promise<Notebook> {
-  const { fileName, format, displayName } = resolveNotebookFileName(name, preferredFormat);
+  const createFormat = preferredFormat === 'unsupported' ? 'blocks' : preferredFormat;
+  let { fileName, format, displayName } = resolveNotebookFileName(name, createFormat);
+  if (format === 'unsupported') {
+    ({ fileName, format, displayName } = resolveNotebookFileName(displayName, createFormat));
+  }
   const filePath = joinPath(parentPath, fileName);
   await storage().writeTextFile(filePath, initialNotebookContent(format, displayName));
   const notebook = await loadNotebook(filePath);
@@ -279,14 +287,17 @@ export async function duplicateNotebook(sourcePath: string): Promise<Notebook> {
   const format = detectNotebookFormat(sourceFileName);
   const sourceName = getNotebookDisplayName(sourceFileName);
   const content = await storage().readTextFile(normalizedSource);
+  const preserveExtension = format === 'unsupported'
+    ? getMatchedNotebookSuffix(sourceFileName)
+    : undefined;
 
   let copyName = t('common.copySuffix', { name: sourceName });
-  let { fileName } = resolveNotebookFileName(copyName, format);
+  let { fileName } = resolveNotebookFileName(copyName, format, { preserveExtension });
   let copyPath = joinPath(parentPath, fileName);
   let counter = 2;
   while (await storage().exists(copyPath)) {
     copyName = t('common.copySuffixN', { name: sourceName, n: counter });
-    fileName = resolveNotebookFileName(copyName, format).fileName;
+    fileName = resolveNotebookFileName(copyName, format, { preserveExtension }).fileName;
     copyPath = joinPath(parentPath, fileName);
     counter++;
   }

@@ -580,7 +580,8 @@ export const zhHansMessages = {
     "formats": {
       "blocks": "块笔记本",
       "markdown": "Markdown",
-      "writer": "文章"
+      "writer": "文章",
+      "unsupported": "未知格式"
     },
     "groupName": "目录名称",
     "searchNotebook": "搜索笔记...",
@@ -637,6 +638,13 @@ export const zhHansMessages = {
     "addNote": "添加笔记",
     "pasteNote": "粘贴笔记",
     "selectNotebook": "选择一个笔记以查看内容",
+    "unsupportedFormat": {
+      "title": "当前版本不支持此笔记格式",
+      "message": "这份笔记使用了 “{suffix}” 格式，当前版本尚未预置。请升级 TinyNote，或使用 Markdown 兼容编辑器打开。直接用旧编辑器打开可能会破坏笔记结构。",
+      "upgrade": "获取新版本",
+      "openAsMarkdown": "使用 Markdown 编辑器打开",
+      "compatBadge": "Markdown 兼容"
+    },
     "searchNote": "搜索笔记...",
     "listView": "列表视图",
     "cardView": "卡片视图",

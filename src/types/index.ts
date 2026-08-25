@@ -25,6 +25,11 @@ export interface Notebook {
   /** Raw document body for non-block formats (markdown, future writer/treemind, …). */
   content: string;
   isSourceMode: boolean;
+  /**
+   * User chose to open an unknown future-format note in the Markdown editor.
+   * Filename is unchanged; saves write the raw document body.
+   */
+  compatOpenAsMarkdown?: boolean;
 }
 
 export interface RecentNotebookHistoryItem {

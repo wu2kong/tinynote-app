@@ -1,7 +1,8 @@
-export type NotebookFormatId = 'blocks' | 'markdown' | 'writer';
+export type RegisteredNotebookFormatId = 'blocks' | 'markdown' | 'writer';
+export type NotebookFormatId = RegisteredNotebookFormatId | 'unsupported';
 
 export interface NotebookFormatDef {
-  id: NotebookFormatId;
+  id: RegisteredNotebookFormatId;
   /** Canonical compound extension including `.md` for newly created files. */
   extension: string;
   /** Legacy suffixes that still map to this format (e.g. plain `.md` → blocks). */
@@ -22,26 +23,52 @@ export const NOTEBOOK_FORMATS: readonly NotebookFormatDef[] = [
 
 const FORMAT_BY_ID = Object.fromEntries(
   NOTEBOOK_FORMATS.map((format) => [format.id, format]),
-) as Record<NotebookFormatId, NotebookFormatDef>;
+) as Record<RegisteredNotebookFormatId, NotebookFormatDef>;
 
 /** All known suffixes sorted longest-first for unambiguous matching. */
-const SUFFIX_MATCHERS: readonly { format: NotebookFormatId; suffix: string }[] = NOTEBOOK_FORMATS
+const SUFFIX_MATCHERS: readonly { format: RegisteredNotebookFormatId; suffix: string }[] = NOTEBOOK_FORMATS
   .flatMap((format) => [
     { format: format.id, suffix: format.extension },
     ...(format.aliases ?? []).map((suffix) => ({ format: format.id, suffix })),
   ])
   .sort((a, b) => b.suffix.length - a.suffix.length);
 
+/** Extra token before `.md`, e.g. `.treemind.md` / `.checklist.md`. */
+const COMPOUND_MD_SUFFIX_RE = /(\.[^./\\]+)\.md$/i;
+
 export function getFormatDef(format: NotebookFormatId): NotebookFormatDef {
+  if (format === 'unsupported') return FORMAT_BY_ID.blocks;
   return FORMAT_BY_ID[format] ?? FORMAT_BY_ID.blocks;
 }
 
 /** Canonical extension used when creating new notebooks of this format. */
 export function getFormatExtension(format: NotebookFormatId): string {
+  if (format === 'unsupported') return FORMAT_BY_ID.blocks.extension;
   return getFormatDef(format).extension;
 }
 
+/**
+ * Compound `.token.md` suffix that is not registered in this app version.
+ * Plain legacy `.md` and known format markers are not unknown.
+ */
+export function getUnknownNotebookFormatSuffix(fileName: string): string | null {
+  const lower = fileName.toLowerCase();
+  if (!lower.endsWith('.md')) return null;
+
+  for (const { suffix } of SUFFIX_MATCHERS) {
+    if (suffix === '.md') continue;
+    if (lower.endsWith(suffix)) return null;
+  }
+
+  const match = COMPOUND_MD_SUFFIX_RE.exec(lower);
+  if (!match) return null;
+  return fileName.slice(fileName.length - match[0].length);
+}
+
 export function getMatchedNotebookSuffix(fileName: string): string | null {
+  const unknown = getUnknownNotebookFormatSuffix(fileName);
+  if (unknown) return unknown;
+
   const lower = fileName.toLowerCase();
   for (const { suffix } of SUFFIX_MATCHERS) {
     if (lower.endsWith(suffix)) return fileName.slice(fileName.length - suffix.length);
@@ -50,6 +77,8 @@ export function getMatchedNotebookSuffix(fileName: string): string | null {
 }
 
 export function detectNotebookFormat(fileName: string): NotebookFormatId {
+  if (getUnknownNotebookFormatSuffix(fileName)) return 'unsupported';
+
   const lower = fileName.toLowerCase();
   for (const { format, suffix } of SUFFIX_MATCHERS) {
     if (lower.endsWith(suffix)) return format;
@@ -66,7 +95,27 @@ export function getNotebookDisplayName(fileName: string): string {
 }
 
 export function isDocumentNotebookFormat(format: NotebookFormatId): boolean {
-  return format !== 'blocks';
+  return format === 'markdown' || format === 'writer';
+}
+
+export function isUnsupportedNotebookFormat(format: NotebookFormatId): boolean {
+  return format === 'unsupported';
+}
+
+/** Markdown editor, including compatibility mode for unknown future suffixes. */
+export function shouldUseMarkdownEditor(
+  format: NotebookFormatId,
+  compatOpenAsMarkdown?: boolean,
+): boolean {
+  return format === 'markdown' || !!compatOpenAsMarkdown;
+}
+
+/** Persist the raw document body instead of serializing note blocks. */
+export function shouldSaveAsDocument(
+  format: NotebookFormatId,
+  compatOpenAsMarkdown?: boolean,
+): boolean {
+  return isDocumentNotebookFormat(format) || !!compatOpenAsMarkdown;
 }
 
 /**
@@ -160,6 +209,9 @@ function normalizePreserveExtension(
 ): string {
   const normalized = extension.startsWith('.') ? extension : `.${extension}`;
   const lower = normalized.toLowerCase();
+  if (getUnknownNotebookFormatSuffix(`stem${lower}`)) {
+    return normalized;
+  }
   for (const { format, suffix } of SUFFIX_MATCHERS) {
     if (suffix === lower && format === preferredFormat) {
       return normalized;
@@ -176,10 +228,16 @@ export function isMarkdownNotebookFileName(fileName: string): boolean {
   return /\.md$/i.test(fileName);
 }
 
-/** True when the filename already carries a canonical `.blk.md` / `.mk.md` / `.writer.md` marker. */
+/**
+ * True when the filename already carries a canonical format marker,
+ * or an unknown compound `.token.md` suffix that a newer version may own.
+ */
 export function hasExplicitNotebookFormatMarker(fileName: string): boolean {
   const lower = fileName.toLowerCase();
-  return NOTEBOOK_FORMATS.some((format) => lower.endsWith(format.extension.toLowerCase()));
+  if (NOTEBOOK_FORMATS.some((format) => lower.endsWith(format.extension.toLowerCase()))) {
+    return true;
+  }
+  return getUnknownNotebookFormatSuffix(fileName) != null;
 }
 
 /**

@@ -184,6 +184,7 @@ final stringsIt = AppStrings(
   formatBlocks: 'Taccuino a blocchi',
   formatMarkdown: 'Markdown',
   formatWriter: 'Articolo',
+  formatUnsupported: 'Formato sconosciuto',
   convertToMarkdown: 'Converti in nota Markdown',
   convertToWriter: 'Converti in nota articolo',
   convertFormatFailed: 'Conversione non riuscita',
@@ -193,6 +194,12 @@ final stringsIt = AppStrings(
   documentSaved: 'Salvato',
   openLinkFailed: 'Impossibile aprire il collegamento',
   documentBlocksUnsupported: 'Le note documento non supportano i blocchi',
+  unsupportedFormatTitle: 'Questo formato di nota non è supportato',
+  unsupportedFormatMessage:
+      'Questa nota usa il formato "{suffix}", non incluso nella versione attuale. Aggiorna TinyNote oppure aprila con un editor compatibile con Markdown. Aprirla in un editor precedente può danneggiare la struttura della nota.',
+  unsupportedFormatUpgrade: 'Scarica l’ultima versione',
+  unsupportedFormatOpenMarkdown: 'Apri come Markdown',
+  unsupportedFormatOpenFailed: 'Impossibile aprire la pagina di download',
   importNotes: 'Importa note',
   importNotesDesc:
       'Importa file Markdown nella radice dello spazio note corrente. Leggi prima le regole seguenti:',

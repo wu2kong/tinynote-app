@@ -63,6 +63,7 @@ interface AppActions {
   deleteNotebook: (notebook: Notebook) => Promise<void>;
   renameNotebook: (notebook: Notebook, newName: string) => Promise<void>;
   convertNotebookFormat: (notebook: Notebook, targetFormat: NotebookFormatId) => Promise<void>;
+  openUnsupportedAsMarkdown: () => void;
   addNoteBlock: (contentType?: ContentType) => Promise<void>;
   addNoteBlockAtIndex: (index: number, contentType?: ContentType) => Promise<void>;
   duplicateNoteBlock: (id: string, index: number) => Promise<void>;
@@ -1271,6 +1272,12 @@ export const useStore = create<AppStore>((set, get) => ({
     config.saveConfig(configUpdate);
   },
 
+  openUnsupportedAsMarkdown: () => {
+    const current = get().currentNotebook;
+    if (!current || current.format !== 'unsupported') return;
+    set({ currentNotebook: { ...current, compatOpenAsMarkdown: true } });
+  },
+
   addNoteBlock: async (contentType = 'text') => {
     const { currentNotebook } = get();
     if (!currentNotebook) return;
@@ -1371,6 +1378,7 @@ export const useStore = create<AppStore>((set, get) => ({
     const isCurrent = !!current && normalizePath(current.path) === normalizePath(targetPath);
     const notebook = isCurrent ? current : await fs.loadNotebook(targetPath);
     if (!notebook || notebook.format === 'blocks') return;
+    if (notebook.format === 'unsupported' && !notebook.compatOpenAsMarkdown) return;
 
     const updated = { ...notebook, content };
     await fs.saveNotebook(updated);

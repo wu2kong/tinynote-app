@@ -553,7 +553,8 @@ export const itMessages = {
     "formats": {
       "blocks": "Blocchi nota",
       "markdown": "Markdown",
-      "writer": "Articolo"
+      "writer": "Articolo",
+      "unsupported": "Formato sconosciuto"
     },
     "groupName": "Nome directory",
     "searchNotebook": "Cerca note...",
@@ -610,6 +611,13 @@ export const itMessages = {
     "addNote": "Aggiungi nota",
     "pasteNote": "Incolla nota",
     "selectNotebook": "Seleziona una nota per visualizzarne il contenuto",
+    "unsupportedFormat": {
+      "title": "Questo formato di nota non è supportato",
+      "message": "Questa nota usa il formato “{suffix}”, non incluso nella versione attuale. Aggiorna TinyNote oppure aprila con un editor compatibile con Markdown. Aprirla in un editor precedente può danneggiare la struttura della nota.",
+      "upgrade": "Scarica l’ultima versione",
+      "openAsMarkdown": "Apri come Markdown",
+      "compatBadge": "Compatibilità Markdown"
+    },
     "searchNote": "Cerca note...",
     "listView": "Vista elenco",
     "cardView": "Vista schede",

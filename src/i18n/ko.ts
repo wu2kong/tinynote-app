@@ -553,7 +553,8 @@ export const koMessages = {
     "formats": {
       "blocks": "블록 노트",
       "markdown": "Markdown",
-      "writer": "글"
+      "writer": "글",
+      "unsupported": "알 수 없는 형식"
     },
     "groupName": "디렉터리 이름",
     "searchNotebook": "노트 검색...",
@@ -610,6 +611,13 @@ export const koMessages = {
     "addNote": "노트 추가",
     "pasteNote": "노트 붙여넣기",
     "selectNotebook": "내용을 보려면 노트를 선택하세요",
+    "unsupportedFormat": {
+      "title": "이 노트 형식은 현재 버전에서 지원되지 않습니다",
+      "message": "이 노트는 “{suffix}” 형식을 사용하며 현재 버전에는 포함되어 있지 않습니다. TinyNote를 업그레이드하거나 Markdown 호환 편집기로 여세요. 이전 편집기로 열면 노트 구조가 손상될 수 있습니다.",
+      "upgrade": "최신 버전 받기",
+      "openAsMarkdown": "Markdown으로 열기",
+      "compatBadge": "Markdown 호환"
+    },
     "searchNote": "노트 검색...",
     "listView": "목록 보기",
     "cardView": "카드 보기",

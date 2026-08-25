@@ -553,7 +553,8 @@ export const deMessages = {
     "formats": {
       "blocks": "Notizblöcke",
       "markdown": "Markdown",
-      "writer": "Artikel"
+      "writer": "Artikel",
+      "unsupported": "Unbekanntes Format"
     },
     "groupName": "Verzeichnisname",
     "searchNotebook": "Notizen suchen...",
@@ -610,6 +611,13 @@ export const deMessages = {
     "addNote": "Notiz hinzufügen",
     "pasteNote": "Notiz einfügen",
     "selectNotebook": "Wähle eine Notiz, um den Inhalt anzuzeigen",
+    "unsupportedFormat": {
+      "title": "Dieses Notizformat wird in dieser Version nicht unterstützt",
+      "message": "Diese Notiz verwendet das Format „{suffix}“, das in der aktuellen Version nicht enthalten ist. Aktualisiere TinyNote oder öffne sie mit einem Markdown-kompatiblen Editor. Das Öffnen in einem älteren Editor kann die Notizstruktur beschädigen.",
+      "upgrade": "Neueste Version holen",
+      "openAsMarkdown": "Als Markdown öffnen",
+      "compatBadge": "Markdown-Kompatibilität"
+    },
     "searchNote": "Notizen suchen...",
     "listView": "Listenansicht",
     "cardView": "Kartenansicht",

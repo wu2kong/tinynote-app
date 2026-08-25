@@ -57,6 +57,7 @@ class Notebook {
     required this.noteBlocks,
     this.format = NotebookFormat.blocks,
     this.content,
+    this.compatOpenAsMarkdown = false,
   });
 
   final String id;
@@ -65,6 +66,7 @@ class Notebook {
   final List<NoteBlock> noteBlocks;
   final NotebookFormat format;
   final String? content;
+  final bool compatOpenAsMarkdown;
 
   String get documentContent =>
       content ?? (noteBlocks.isNotEmpty ? noteBlocks.first.content : '');
@@ -76,6 +78,7 @@ class Notebook {
     List<NoteBlock>? noteBlocks,
     NotebookFormat? format,
     String? content,
+    bool? compatOpenAsMarkdown,
   }) {
     return Notebook(
       id: id ?? this.id,
@@ -84,6 +87,7 @@ class Notebook {
       noteBlocks: noteBlocks ?? this.noteBlocks,
       format: format ?? this.format,
       content: content ?? this.content,
+      compatOpenAsMarkdown: compatOpenAsMarkdown ?? this.compatOpenAsMarkdown,
     );
   }
 }

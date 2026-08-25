@@ -1232,6 +1232,47 @@ body.directory-panel-resizing {
   font-size: 13px;
 }
 
+.unsupported-notebook-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 28px;
+  text-align: center;
+  background: var(--bg-primary);
+}
+
+.unsupported-notebook-icon {
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.unsupported-notebook-panel h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.unsupported-notebook-panel p {
+  margin: 0;
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.unsupported-notebook-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .note-panel-add {
   margin: 8px;
   padding: 10px;

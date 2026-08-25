@@ -553,7 +553,8 @@ export const jaMessages = {
     "formats": {
       "blocks": "ブロックノート",
       "markdown": "Markdown",
-      "writer": "記事"
+      "writer": "記事",
+      "unsupported": "未知の形式"
     },
     "groupName": "ディレクトリ名",
     "searchNotebook": "ノートを検索...",
@@ -610,6 +611,13 @@ export const jaMessages = {
     "addNote": "ノートを追加",
     "pasteNote": "ノートを貼り付け",
     "selectNotebook": "内容を表示するノートを選択してください",
+    "unsupportedFormat": {
+      "title": "このノート形式は現在のバージョンで未対応です",
+      "message": "このノートは「{suffix}」形式を使っていますが、現在のバージョンには含まれていません。TinyNote をアップデートするか、Markdown 互換エディタで開いてください。古いエディタで開くとノート構造が壊れる可能性があります。",
+      "upgrade": "最新版を入手",
+      "openAsMarkdown": "Markdown エディタで開く",
+      "compatBadge": "Markdown 互換"
+    },
     "searchNote": "ノートを検索...",
     "listView": "リスト表示",
     "cardView": "カード表示",

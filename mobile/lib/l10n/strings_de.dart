@@ -185,6 +185,7 @@ final stringsDe = AppStrings(
   formatBlocks: 'Block-Notizbuch',
   formatMarkdown: 'Markdown',
   formatWriter: 'Artikel',
+  formatUnsupported: 'Unbekanntes Format',
   convertToMarkdown: 'In Markdown-Notiz umwandeln',
   convertToWriter: 'In Artikelnotiz umwandeln',
   convertFormatFailed: 'Notiztyp konnte nicht umgewandelt werden',
@@ -194,6 +195,12 @@ final stringsDe = AppStrings(
   documentSaved: 'Gespeichert',
   openLinkFailed: 'Link konnte nicht geöffnet werden',
   documentBlocksUnsupported: 'Dokumentnotizen unterstützen keine Notizblöcke',
+  unsupportedFormatTitle: 'Dieses Notizformat wird in dieser Version nicht unterstützt',
+  unsupportedFormatMessage:
+      'Diese Notiz verwendet das Format "{suffix}", das in der aktuellen Version nicht enthalten ist. Aktualisiere TinyNote oder öffne sie mit einem Markdown-kompatiblen Editor. Das Öffnen in einem älteren Editor kann die Notizstruktur beschädigen.',
+  unsupportedFormatUpgrade: 'Neueste Version holen',
+  unsupportedFormatOpenMarkdown: 'Als Markdown öffnen',
+  unsupportedFormatOpenFailed: 'Download-Seite konnte nicht geöffnet werden',
   importNotes: 'Notizen importieren',
   importNotesDesc:
       'Importiere Markdown-Dateien in das Stammverzeichnis des aktuellen Notizbereichs. Bitte lies zuerst die folgenden Regeln:',

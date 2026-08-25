@@ -6,6 +6,7 @@ import NotePanel from '@/components/NotePanel';
 import PropertyPanel from '@/components/PropertyPanel';
 import MarkdownNotebookPanel from '@/components/MarkdownNotebookPanel';
 import WriterNotebookPanel from '@/components/WriterNotebookPanel';
+import UnsupportedNotebookPanel from '@/components/UnsupportedNotebookPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -283,7 +284,10 @@ const App: React.FC = () => {
   }
 
   const isSourceMode = currentNotebook?.isSourceMode;
-  const isMarkdownNotebook = currentNotebook?.format === 'markdown';
+  const isUnsupportedNotebook = currentNotebook?.format === 'unsupported'
+    && !currentNotebook.compatOpenAsMarkdown;
+  const isMarkdownNotebook = currentNotebook?.format === 'markdown'
+    || !!currentNotebook?.compatOpenAsMarkdown;
   const isWriterNotebook = currentNotebook?.format === 'writer';
 
   return (
@@ -297,7 +301,9 @@ const App: React.FC = () => {
           </div>
         }
       >
-        {isWriterNotebook ? (
+        {isUnsupportedNotebook ? (
+          <UnsupportedNotebookPanel />
+        ) : isWriterNotebook ? (
           <WriterNotebookPanel />
         ) : isMarkdownNotebook ? (
           <MarkdownNotebookPanel />

@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook, NotebookFormatId } from '@/types';
 import {
-  Search, X, Folder, FileText, FileCode, PenLine, ChevronRight, ChevronDown,
+  Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
@@ -80,6 +80,13 @@ function findParentAndIndices(
     }
   }
   return null;
+}
+
+function NotebookTreeIcon({ format }: { format: NotebookFormatId }) {
+  if (format === 'markdown') return <FileCode size={14} className="tree-file-icon" />;
+  if (format === 'writer') return <PenLine size={14} className="tree-file-icon" />;
+  if (format === 'unsupported') return <FileQuestion size={14} className="tree-file-icon" />;
+  return <FileText size={14} className="tree-file-icon" />;
 }
 
 const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
@@ -196,11 +203,7 @@ const SortableTreeItem: React.FC<SortableTreeItemProps> = ({
       <span className="tree-icon" style={{ visibility: 'hidden' } as React.CSSProperties}>
         <ChevronRight size={14} />
       </span>
-      {notebook.format === 'markdown'
-        ? <FileCode size={14} className="tree-file-icon" />
-        : notebook.format === 'writer'
-          ? <PenLine size={14} className="tree-file-icon" />
-          : <FileText size={14} className="tree-file-icon" />}
+      <NotebookTreeIcon format={notebook.format} />
       <span className="tree-name" title={notebook.name}>{notebook.name}</span>
     </div>
   );
@@ -620,11 +623,7 @@ const DirectoryPanel: React.FC = () => {
           <span className="tree-icon" style={{ visibility: 'hidden' } as React.CSSProperties}>
             <ChevronRight size={14} />
           </span>
-          {notebook.format === 'markdown'
-            ? <FileCode size={14} className="tree-file-icon" />
-            : notebook.format === 'writer'
-              ? <PenLine size={14} className="tree-file-icon" />
-              : <FileText size={14} className="tree-file-icon" />}
+          <NotebookTreeIcon format={notebook.format} />
           <span className="tree-name" title={notebook.name}>{notebook.name}</span>
         </div>
       );

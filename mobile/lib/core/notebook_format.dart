@@ -1,4 +1,4 @@
-enum NotebookFormat { blocks, markdown, writer }
+enum NotebookFormat { blocks, markdown, writer, unsupported }
 
 class NotebookFormatDef {
   const NotebookFormatDef({
@@ -43,10 +43,16 @@ final _suffixMatchers = () {
   return List<_SuffixMatcher>.unmodifiable(matchers);
 }();
 
-extension NotebookFormatX on NotebookFormat {
-  bool get isDocument => this != NotebookFormat.blocks;
+final _compoundMdSuffix = RegExp(r'(\.[^./\\]+)\.md$', caseSensitive: false);
 
-  String get extension => (_formatById[this] ?? _formatById[NotebookFormat.blocks]!).extension;
+extension NotebookFormatX on NotebookFormat {
+  bool get isDocument =>
+      this == NotebookFormat.markdown || this == NotebookFormat.writer;
+
+  bool get isUnsupported => this == NotebookFormat.unsupported;
+
+  String get extension =>
+      (_formatById[this] ?? _formatById[NotebookFormat.blocks]!).extension;
 
   NotebookFormat? get swappableArticleFormat {
     if (this == NotebookFormat.markdown) return NotebookFormat.writer;
@@ -55,13 +61,39 @@ extension NotebookFormatX on NotebookFormat {
   }
 }
 
+bool shouldUseMarkdownEditor(NotebookFormat format, {bool compatOpenAsMarkdown = false}) {
+  return format == NotebookFormat.markdown || compatOpenAsMarkdown;
+}
+
+bool shouldSaveAsDocument(NotebookFormat format, {bool compatOpenAsMarkdown = false}) {
+  return format.isDocument || compatOpenAsMarkdown;
+}
+
 NotebookFormatDef getFormatDef(NotebookFormat format) {
   return _formatById[format] ?? _formatById[NotebookFormat.blocks]!;
 }
 
 String getFormatExtension(NotebookFormat format) => getFormatDef(format).extension;
 
+/// Compound `.token.md` suffix that is not registered in this app version.
+String? unknownNotebookFormatSuffix(String fileName) {
+  final lower = fileName.toLowerCase();
+  if (!lower.endsWith('.md')) return null;
+
+  for (final matcher in _suffixMatchers) {
+    if (matcher.suffix == '.md') continue;
+    if (lower.endsWith(matcher.suffix)) return null;
+  }
+
+  final match = _compoundMdSuffix.firstMatch(lower);
+  if (match == null) return null;
+  return fileName.substring(fileName.length - match[0]!.length);
+}
+
 String? matchedNotebookSuffix(String fileName) {
+  final unknown = unknownNotebookFormatSuffix(fileName);
+  if (unknown != null) return unknown;
+
   final lower = fileName.toLowerCase();
   for (final matcher in _suffixMatchers) {
     if (lower.endsWith(matcher.suffix)) {
@@ -72,6 +104,9 @@ String? matchedNotebookSuffix(String fileName) {
 }
 
 NotebookFormat detectNotebookFormat(String fileName) {
+  if (unknownNotebookFormatSuffix(fileName) != null) {
+    return NotebookFormat.unsupported;
+  }
   final lower = fileName.toLowerCase();
   for (final matcher in _suffixMatchers) {
     if (lower.endsWith(matcher.suffix)) return matcher.format;
@@ -156,6 +191,9 @@ ResolvedNotebookFileName resolveNotebookFileName(
 String _normalizePreserveExtension(String extension, NotebookFormat preferredFormat) {
   final normalized = extension.startsWith('.') ? extension : '.$extension';
   final lower = normalized.toLowerCase();
+  if (unknownNotebookFormatSuffix('stem$lower') != null) {
+    return normalized;
+  }
   for (final matcher in _suffixMatchers) {
     if (matcher.suffix == lower && matcher.format == preferredFormat) {
       return normalized;
@@ -187,9 +225,12 @@ bool isMarkdownNotebookFileName(String fileName) {
 
 bool hasExplicitNotebookFormatMarker(String fileName) {
   final lower = fileName.toLowerCase();
-  return notebookFormats.any(
+  if (notebookFormats.any(
     (format) => lower.endsWith(format.extension.toLowerCase()),
-  );
+  )) {
+    return true;
+  }
+  return unknownNotebookFormatSuffix(fileName) != null;
 }
 
 /// Keep files that already have a built-in format marker.

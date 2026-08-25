@@ -13,6 +13,7 @@ import '../widgets/document_notebook_view.dart';
 import '../widgets/library_drawer.dart';
 import '../widgets/note_block_card.dart';
 import '../widgets/note_block_sheet.dart';
+import '../widgets/unsupported_notebook_view.dart';
 import 'note_block_editor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -223,15 +224,25 @@ class _HomeScreenState extends State<HomeScreen> {
     final showFab =
         notebook != null &&
         !library.notebookLoading &&
-        !notebook.format.isDocument;
+        notebook.format == NotebookFormat.blocks;
     final edgeWidth = MediaQuery.paddingOf(context).left + 72;
+
+    final showUnsupportedGate =
+        notebook != null &&
+        notebook.format.isUnsupported &&
+        !notebook.compatOpenAsMarkdown;
+    final showDocumentView =
+        notebook != null &&
+        (notebook.format.isDocument || notebook.compatOpenAsMarkdown);
 
     final body =
         notebook == null
             ? _EmptyScaffold(spaceName: space?.name)
             : library.notebookLoading
             ? Center(child: CircularProgressIndicator(color: colors.accent))
-            : notebook.format.isDocument
+            : showUnsupportedGate
+            ? UnsupportedNotebookView(library: library, notebook: notebook)
+            : showDocumentView
             ? DocumentNotebookView(
               library: library,
               notebook: notebook,

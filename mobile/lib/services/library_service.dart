@@ -373,6 +373,9 @@ class LibraryService extends ChangeNotifier {
   }
 
   Future<void> selectNotebook(Notebook notebook) async {
+    final keepCompat =
+        currentNotebook?.path == notebook.path &&
+        (currentNotebook?.compatOpenAsMarkdown ?? false);
     currentNotebook = notebook;
     notebookLoading = true;
     notifyListeners();
@@ -380,12 +383,20 @@ class LibraryService extends ChangeNotifier {
     try {
       final fresh = await _fileSystem?.loadNotebook(notebook.path);
       if (fresh != null) {
-        currentNotebook = fresh;
+        currentNotebook =
+            keepCompat ? fresh.copyWith(compatOpenAsMarkdown: true) : fresh;
       }
     } finally {
       notebookLoading = false;
       notifyListeners();
     }
+  }
+
+  void openUnsupportedAsMarkdown() {
+    final notebook = currentNotebook;
+    if (notebook == null || !notebook.format.isUnsupported) return;
+    currentNotebook = notebook.copyWith(compatOpenAsMarkdown: true);
+    notifyListeners();
   }
 
   /// Navigate to a global search hit: switch space, expand ancestors, open notebook.
@@ -636,7 +647,7 @@ class LibraryService extends ChangeNotifier {
   }) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
-    if (notebook.format.isDocument) {
+    if (notebook.format != NotebookFormat.blocks) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }
     final now = DateTime.now().toUtc().toIso8601String();
@@ -714,7 +725,7 @@ class LibraryService extends ChangeNotifier {
   Future<void> deleteNoteBlock(String id) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
-    if (notebook.format.isDocument) {
+    if (notebook.format != NotebookFormat.blocks) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }
     final updated = Notebook(
@@ -733,7 +744,7 @@ class LibraryService extends ChangeNotifier {
   Future<void> updateNotebookContent(String content) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
-    if (!notebook.format.isDocument) {
+    if (!notebook.format.isDocument && !notebook.compatOpenAsMarkdown) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }
     final now = DateTime.now().toUtc().toIso8601String();

@@ -183,6 +183,7 @@ final stringsRu = AppStrings(
   formatBlocks: 'Блочный блокнот',
   formatMarkdown: 'Markdown',
   formatWriter: 'Статья',
+  formatUnsupported: 'Неизвестный формат',
   convertToMarkdown: 'Преобразовать в заметку Markdown',
   convertToWriter: 'Преобразовать в заметку-статью',
   convertFormatFailed: 'Не удалось преобразовать тип заметки',
@@ -192,6 +193,12 @@ final stringsRu = AppStrings(
   documentSaved: 'Сохранено',
   openLinkFailed: 'Не удалось открыть ссылку',
   documentBlocksUnsupported: 'Документные заметки не поддерживают блоки',
+  unsupportedFormatTitle: 'Этот формат заметки не поддерживается',
+  unsupportedFormatMessage:
+      'Эта заметка использует формат «{suffix}», который не входит в текущую версию. Обновите TinyNote или откройте её в редакторе, совместимом с Markdown. Открытие в старом редакторе может повредить структуру заметки.',
+  unsupportedFormatUpgrade: 'Получить новую версию',
+  unsupportedFormatOpenMarkdown: 'Открыть как Markdown',
+  unsupportedFormatOpenFailed: 'Не удалось открыть страницу загрузки',
   importNotes: 'Импортировать заметки',
   importNotesDesc:
       'Импортируйте файлы Markdown в корень текущего пространства заметок. Сначала ознакомьтесь с правилами:',

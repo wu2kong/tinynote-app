@@ -580,7 +580,8 @@ export const enMessages = {
     "formats": {
       "blocks": "Block Notebook",
       "markdown": "Markdown",
-      "writer": "Article"
+      "writer": "Article",
+      "unsupported": "Unknown format"
     },
     "groupName": "Directory Name",
     "searchNotebook": "Search notes...",
@@ -637,6 +638,13 @@ export const enMessages = {
     "addNote": "Add Note",
     "pasteNote": "Paste Note",
     "selectNotebook": "Select a note to view its content",
+    "unsupportedFormat": {
+      "title": "This note format is not supported",
+      "message": "This note uses the “{suffix}” format, which is not included in the current version. Upgrade TinyNote, or open it with a Markdown-compatible editor. Opening it in an older editor may damage the note structure.",
+      "upgrade": "Get the latest version",
+      "openAsMarkdown": "Open as Markdown",
+      "compatBadge": "Markdown compatibility"
+    },
     "searchNote": "Search notes...",
     "listView": "List View",
     "cardView": "Card View",

@@ -52,7 +52,7 @@ const MarkdownNotebookPanel: React.FC = () => {
   flushPendingSaveRef.current = flushPendingSave;
 
   useEffect(() => {
-    if (!currentNotebook || currentNotebook.format !== 'markdown') return;
+    if (!currentNotebook || (currentNotebook.format !== 'markdown' && !currentNotebook.compatOpenAsMarkdown)) return;
     if (notebookPathRef.current !== currentNotebook.path) {
       notebookPathRef.current = currentNotebook.path;
       setLocalContent(currentNotebook.content ?? '');
@@ -91,7 +91,7 @@ const MarkdownNotebookPanel: React.FC = () => {
 
   const extensions = useMemo(() => getMarkdownNotebookExtensions(), []);
 
-  if (!currentNotebook || currentNotebook.format !== 'markdown') {
+  if (!currentNotebook || (currentNotebook.format !== 'markdown' && !currentNotebook.compatOpenAsMarkdown)) {
     return (
       <div className="markdown-notebook-panel">
         <div className="markdown-notebook-empty">{t('note.selectNotebook')}</div>
@@ -125,7 +125,11 @@ const MarkdownNotebookPanel: React.FC = () => {
           </button>
           <div className="markdown-notebook-title-wrap">
             <h3>{currentNotebook.name}</h3>
-            <span className="markdown-notebook-format-badge">{t('directory.formats.markdown')}</span>
+            <span className="markdown-notebook-format-badge">
+              {currentNotebook.compatOpenAsMarkdown
+                ? t('note.unsupportedFormat.compatBadge')
+                : t('directory.formats.markdown')}
+            </span>
           </div>
         </div>
         <label className="markdown-notebook-mode-select-wrap">
