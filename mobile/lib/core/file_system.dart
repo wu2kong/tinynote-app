@@ -122,7 +122,7 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
-      if (format != NotebookFormat.blocks) {
+      if (format.isDocument) {
         final now = DateTime.now().toUtc().toIso8601String();
         return Notebook(
           id: stableIdFromPath(normalizedPath),
@@ -158,10 +158,8 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
-    if (notebook.format != NotebookFormat.blocks) {
-      final raw = notebook.content ??
-          (notebook.noteBlocks.isNotEmpty ? notebook.noteBlocks.first.content : '');
-      await storage.writeTextFile(notebook.path, raw);
+    if (notebook.format.isDocument) {
+      await storage.writeTextFile(notebook.path, notebook.documentContent);
       return;
     }
     final content = serializeNoteBlocks(notebook.noteBlocks);
@@ -199,23 +197,23 @@ class FileSystemService {
     );
   }
 
-  Future<Notebook> createNotebook(String parentPath, String name) async {
-    final fileName = name.endsWith('.md') ? name : '$name.md';
-    final filePath = joinPath(parentPath, fileName);
+  Future<Notebook> createNotebook(
+    String parentPath,
+    String name, {
+    NotebookFormat format = NotebookFormat.blocks,
+  }) async {
+    final resolved = resolveNotebookFileName(
+      name,
+      preferredFormat: format,
+    );
+    final filePath = joinPath(parentPath, resolved.fileName);
     if (await storage.exists(filePath)) {
-      throw StateError(
-        appStrings.fill(appStrings.notebookExists, {'name': name}),
-      );
+      throw NotebookExistsException(resolved.displayName);
     }
-    final now = DateTime.now().toUtc().toIso8601String();
-    final initialContent =
-        '---\n'
-        'title: $name\n'
-        'tags: []\n'
-        'createdAt: $now\n'
-        'updatedAt: $now\n'
-        '---\n\n';
-    await storage.writeTextFile(filePath, initialContent);
+    await storage.writeTextFile(
+      filePath,
+      initialNotebookContent(resolved.format, resolved.displayName),
+    );
     final notebook = await loadNotebook(filePath);
     if (notebook == null) {
       throw StateError('Failed to load created notebook');
@@ -255,13 +253,38 @@ class FileSystemService {
 
   Future<String> renameNotebook(String oldPath, String newName) async {
     final parentPath = dirname(oldPath);
-    final newFileName = newName.endsWith('.md') ? newName : '$newName.md';
-    final newPath = joinPath(parentPath, newFileName);
+    final oldFileName = basename(oldPath);
+    final currentFormat = detectNotebookFormat(oldFileName);
+    final resolved = resolveNotebookFileName(
+      newName,
+      preferredFormat: currentFormat,
+      preserveExtension: matchedNotebookSuffix(oldFileName),
+    );
+    final newPath = joinPath(parentPath, resolved.fileName);
     if (normalizePath(oldPath) == normalizePath(newPath)) return newPath;
     if (await storage.exists(newPath)) {
-      throw StateError(
-        appStrings.fill(appStrings.notebookExists, {'name': newName}),
-      );
+      throw NotebookExistsException(resolved.displayName);
+    }
+    await storage.rename(oldPath, newPath);
+    return newPath;
+  }
+
+  Future<String> convertNotebookFormat(
+    String oldPath,
+    NotebookFormat targetFormat,
+  ) async {
+    final parentPath = dirname(oldPath);
+    final oldFileName = basename(oldPath);
+    final currentFormat = detectNotebookFormat(oldFileName);
+    if (currentFormat == targetFormat) return oldPath;
+    if (currentFormat.swappableArticleFormat != targetFormat) {
+      throw const NotebookFormatNotSwappableException();
+    }
+    final fileName = replaceNotebookFormatSuffix(oldFileName, targetFormat);
+    final newPath = joinPath(parentPath, fileName);
+    if (normalizePath(oldPath) == normalizePath(newPath)) return oldPath;
+    if (await storage.exists(newPath)) {
+      throw NotebookExistsException(notebookDisplayName(fileName));
     }
     await storage.rename(oldPath, newPath);
     return newPath;

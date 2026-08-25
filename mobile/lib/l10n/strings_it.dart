@@ -179,4 +179,18 @@ final stringsIt = AppStrings(
   themeMatchaGreenLabel: 'Verde matcha',
   themeMatchaGreenDesc:
       'Un tema matcha fresco e naturale per lunghe sessioni di lettura.',
+  createMarkdownNotebook: 'Nuova nota Markdown',
+  createWriterNotebook: 'Nuova nota articolo',
+  formatBlocks: 'Taccuino a blocchi',
+  formatMarkdown: 'Markdown',
+  formatWriter: 'Articolo',
+  convertToMarkdown: 'Converti in nota Markdown',
+  convertToWriter: 'Converti in nota articolo',
+  convertFormatFailed: 'Conversione non riuscita',
+  convertFormatExists: 'Esiste già una nota del tipo di destinazione con lo stesso nome',
+  previewDocument: 'Anteprima',
+  documentContentHint: 'Scrivi il documento. Markdown supportato…',
+  documentSaved: 'Salvato',
+  openLinkFailed: 'Impossibile aprire il collegamento',
+  documentBlocksUnsupported: 'Le note documento non supportano i blocchi',
 );

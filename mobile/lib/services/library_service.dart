@@ -427,7 +427,7 @@ class LibraryService extends ChangeNotifier {
     }
 
     final loaded = currentNotebook;
-    if (loaded == null) return null;
+    if (loaded == null || loaded.format.isDocument) return null;
     for (final block in loaded.noteBlocks) {
       if (block.title == result.blockTitleKey) return block;
     }
@@ -456,16 +456,30 @@ class LibraryService extends ChangeNotifier {
     );
   }
 
-  Future<void> createNotebook(String parentPath, String name) async {
+  Future<void> createNotebook(
+    String parentPath,
+    String name, {
+    NotebookFormat format = NotebookFormat.blocks,
+  }) async {
     final trimmed = name.trim();
     if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
-    final notebook = await _fileSystem!.createNotebook(parentPath, trimmed);
-    expandedGroupPaths.add(parentPath);
-    await _reloadTree(
-      preserveNotebookPath: notebook.path,
-      preserveExpanded: true,
-    );
-    await selectNotebook(notebook);
+    try {
+      final notebook = await _fileSystem!.createNotebook(
+        parentPath,
+        trimmed,
+        format: format,
+      );
+      expandedGroupPaths.add(parentPath);
+      await _reloadTree(
+        preserveNotebookPath: notebook.path,
+        preserveExpanded: true,
+      );
+      await selectNotebook(notebook);
+    } on NotebookExistsException catch (error) {
+      throw StateError(
+        appStrings.fill(appStrings.notebookExists, {'name': error.name}),
+      );
+    }
   }
 
   Future<void> renameGroup(Group group, String newName) async {
@@ -499,11 +513,42 @@ class LibraryService extends ChangeNotifier {
     final trimmed = newName.trim();
     if (trimmed.isEmpty) throw StateError(appStrings.nameRequired);
     final wasSelected = currentNotebook?.path == notebook.path;
-    final newPath = await _fileSystem!.renameNotebook(notebook.path, trimmed);
-    await _reloadTree(
-      preserveNotebookPath: wasSelected ? newPath : currentNotebook?.path,
-      preserveExpanded: true,
-    );
+    try {
+      final newPath = await _fileSystem!.renameNotebook(notebook.path, trimmed);
+      await _reloadTree(
+        preserveNotebookPath: wasSelected ? newPath : currentNotebook?.path,
+        preserveExpanded: true,
+      );
+    } on NotebookExistsException catch (error) {
+      throw StateError(
+        appStrings.fill(appStrings.notebookExists, {'name': error.name}),
+      );
+    }
+  }
+
+  Future<void> convertNotebookFormat(
+    Notebook notebook,
+    NotebookFormat targetFormat,
+  ) async {
+    if (notebook.format == targetFormat) return;
+    if (notebook.format.swappableArticleFormat != targetFormat) {
+      throw StateError(appStrings.convertFormatFailed);
+    }
+    final wasSelected = currentNotebook?.path == notebook.path;
+    try {
+      final newPath = await _fileSystem!.convertNotebookFormat(
+        notebook.path,
+        targetFormat,
+      );
+      await _reloadTree(
+        preserveNotebookPath: wasSelected ? newPath : currentNotebook?.path,
+        preserveExpanded: true,
+      );
+    } on NotebookExistsException {
+      throw StateError(appStrings.convertFormatExists);
+    } on NotebookFormatNotSwappableException {
+      throw StateError(appStrings.convertFormatFailed);
+    }
   }
 
   Future<void> deleteGroup(Group group) async {
@@ -537,6 +582,9 @@ class LibraryService extends ChangeNotifier {
   }) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
+    if (notebook.format.isDocument) {
+      throw StateError(appStrings.documentBlocksUnsupported);
+    }
     final now = DateTime.now().toUtc().toIso8601String();
     final block =
         existing != null
@@ -597,9 +645,11 @@ class LibraryService extends ChangeNotifier {
       name: notebook.name,
       path: notebook.path,
       format: notebook.format,
-      content: notebook.format == NotebookFormat.blocks
-          ? notebook.content
-          : (updatedBlocks.isNotEmpty ? updatedBlocks.first.content : notebook.content),
+      content: notebook.format.isDocument
+          ? (updatedBlocks.isNotEmpty
+              ? updatedBlocks.first.content
+              : notebook.content)
+          : notebook.content,
       noteBlocks: updatedBlocks,
     );
     await _fileSystem!.saveNotebook(updated);
@@ -610,6 +660,9 @@ class LibraryService extends ChangeNotifier {
   Future<void> deleteNoteBlock(String id) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
+    if (notebook.format.isDocument) {
+      throw StateError(appStrings.documentBlocksUnsupported);
+    }
     final updated = Notebook(
       id: notebook.id,
       name: notebook.name,
@@ -617,6 +670,35 @@ class LibraryService extends ChangeNotifier {
       format: notebook.format,
       content: notebook.content,
       noteBlocks: notebook.noteBlocks.where((b) => b.id != id).toList(),
+    );
+    await _fileSystem!.saveNotebook(updated);
+    currentNotebook = updated;
+    notifyListeners();
+  }
+
+  Future<void> updateNotebookContent(String content) async {
+    final notebook = currentNotebook;
+    if (notebook == null) throw StateError(appStrings.noNotebookSelected);
+    if (!notebook.format.isDocument) {
+      throw StateError(appStrings.documentBlocksUnsupported);
+    }
+    final now = DateTime.now().toUtc().toIso8601String();
+    final updated = notebook.copyWith(
+      content: content,
+      noteBlocks: [
+        NoteBlock(
+          id: notebook.id,
+          title: notebook.name,
+          content: content,
+          contentType: ContentType.markdown,
+          tags: const [],
+          createdAt:
+              notebook.noteBlocks.isNotEmpty
+                  ? notebook.noteBlocks.first.createdAt
+                  : now,
+          updatedAt: now,
+        ),
+      ],
     );
     await _fileSystem!.saveNotebook(updated);
     currentNotebook = updated;

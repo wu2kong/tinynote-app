@@ -1,3 +1,7 @@
+import 'notebook_format.dart';
+
+export 'notebook_format.dart';
+
 enum ContentType {
   text,
   json,
@@ -45,25 +49,6 @@ class NoteBlock {
   final String updatedAt;
 }
 
-enum NotebookFormat { blocks, markdown, writer }
-
-NotebookFormat detectNotebookFormat(String fileName) {
-  final lower = fileName.toLowerCase();
-  if (lower.endsWith('.writer.md')) return NotebookFormat.writer;
-  if (lower.endsWith('.mk.md')) return NotebookFormat.markdown;
-  return NotebookFormat.blocks;
-}
-
-String notebookDisplayName(String fileName) {
-  final lower = fileName.toLowerCase();
-  for (final suffix in ['.writer.md', '.mk.md', '.blk.md', '.md']) {
-    if (lower.endsWith(suffix)) {
-      return fileName.substring(0, fileName.length - suffix.length);
-    }
-  }
-  return fileName;
-}
-
 class Notebook {
   const Notebook({
     required this.id,
@@ -80,6 +65,27 @@ class Notebook {
   final List<NoteBlock> noteBlocks;
   final NotebookFormat format;
   final String? content;
+
+  String get documentContent =>
+      content ?? (noteBlocks.isNotEmpty ? noteBlocks.first.content : '');
+
+  Notebook copyWith({
+    String? id,
+    String? name,
+    String? path,
+    List<NoteBlock>? noteBlocks,
+    NotebookFormat? format,
+    String? content,
+  }) {
+    return Notebook(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      path: path ?? this.path,
+      noteBlocks: noteBlocks ?? this.noteBlocks,
+      format: format ?? this.format,
+      content: content ?? this.content,
+    );
+  }
 }
 
 class Group {

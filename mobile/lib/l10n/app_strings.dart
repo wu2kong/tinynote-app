@@ -1,3 +1,5 @@
+import '../core/notebook_format.dart';
+
 class AppStrings {
   AppStrings({
     required this.appTitle,
@@ -162,6 +164,20 @@ class AppStrings {
     required this.themePaperGrayDesc,
     required this.themeMatchaGreenLabel,
     required this.themeMatchaGreenDesc,
+    required this.createMarkdownNotebook,
+    required this.createWriterNotebook,
+    required this.formatBlocks,
+    required this.formatMarkdown,
+    required this.formatWriter,
+    required this.convertToMarkdown,
+    required this.convertToWriter,
+    required this.convertFormatFailed,
+    required this.convertFormatExists,
+    required this.previewDocument,
+    required this.documentContentHint,
+    required this.documentSaved,
+    required this.openLinkFailed,
+    required this.documentBlocksUnsupported,
   });
 
   final String appTitle;
@@ -326,6 +342,28 @@ class AppStrings {
   final String themePaperGrayDesc;
   final String themeMatchaGreenLabel;
   final String themeMatchaGreenDesc;
+  final String createMarkdownNotebook;
+  final String createWriterNotebook;
+  final String formatBlocks;
+  final String formatMarkdown;
+  final String formatWriter;
+  final String convertToMarkdown;
+  final String convertToWriter;
+  final String convertFormatFailed;
+  final String convertFormatExists;
+  final String previewDocument;
+  final String documentContentHint;
+  final String documentSaved;
+  final String openLinkFailed;
+  final String documentBlocksUnsupported;
+
+  String formatLabel(NotebookFormat format) {
+    return switch (format) {
+      NotebookFormat.blocks => formatBlocks,
+      NotebookFormat.markdown => formatMarkdown,
+      NotebookFormat.writer => formatWriter,
+    };
+  }
 
   String tr(String template, [Map<String, String>? params]) {
     if (params == null || params.isEmpty) return template;

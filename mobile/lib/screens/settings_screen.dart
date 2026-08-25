@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../utils/open_url.dart';
 
 import '../constants/app.dart';
 import '../l10n/l10n.dart';
@@ -182,19 +182,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
 
-    Future<bool> tryLaunch(LaunchMode mode) async {
-      try {
-        return await launchUrl(uri, mode: mode);
-      } catch (_) {
-        return false;
-      }
-    }
-
-    // Prefer system browser; fall back for simulator / restricted environments.
-    final opened =
-        await tryLaunch(LaunchMode.externalApplication) ||
-        await tryLaunch(LaunchMode.platformDefault) ||
-        await tryLaunch(LaunchMode.inAppBrowserView);
+    final opened = await openExternalUrl(url);
     if (!opened && mounted) {
       showAppToast(context, failureMessage);
     }

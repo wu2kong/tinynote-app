@@ -317,17 +317,26 @@ class LibraryDrawer extends StatelessWidget {
     }
   }
 
-  Future<void> _createNotebook(BuildContext context, String parentPath) async {
+  Future<void> _createNotebook(
+    BuildContext context,
+    String parentPath, {
+    NotebookFormat format = NotebookFormat.blocks,
+  }) async {
     final s = context.s;
+    final title = switch (format) {
+      NotebookFormat.blocks => s.createNotebook,
+      NotebookFormat.markdown => s.createMarkdownNotebook,
+      NotebookFormat.writer => s.createWriterNotebook,
+    };
     final name = await showNamePromptDialog(
       context,
-      title: s.createNotebook,
+      title: title,
       hint: s.notebookName,
       confirmLabel: s.commonCreate,
     );
     if (name == null || !context.mounted) return;
     try {
-      await library.createNotebook(parentPath, name);
+      await library.createNotebook(parentPath, name, format: format);
       if (context.mounted) Navigator.of(context).pop();
     } catch (error) {
       if (context.mounted) await _handleError(context, error);
@@ -466,17 +475,40 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.folderPlus,
         ),
         AppContextMenuItem(
-          value: 'notebook',
+          value: 'blocks',
           label: s.createNotebook,
-          icon: LucideIcons.filePlus,
+          icon: LucideIcons.boxes,
+        ),
+        AppContextMenuItem(
+          value: 'markdown',
+          label: s.createMarkdownNotebook,
+          icon: LucideIcons.fileCode,
+        ),
+        AppContextMenuItem(
+          value: 'writer',
+          label: s.createWriterNotebook,
+          icon: LucideIcons.penLine,
         ),
       ],
     );
     if (!context.mounted || action == null) return;
-    if (action == 'group') {
-      await _createGroup(context, parentPath);
-    } else if (action == 'notebook') {
-      await _createNotebook(context, parentPath);
+    switch (action) {
+      case 'group':
+        await _createGroup(context, parentPath);
+      case 'blocks':
+        await _createNotebook(context, parentPath);
+      case 'markdown':
+        await _createNotebook(
+          context,
+          parentPath,
+          format: NotebookFormat.markdown,
+        );
+      case 'writer':
+        await _createNotebook(
+          context,
+          parentPath,
+          format: NotebookFormat.writer,
+        );
     }
   }
 
@@ -496,9 +528,19 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.folderPlus,
         ),
         AppContextMenuItem(
-          value: 'notebook',
+          value: 'blocks',
           label: s.createNotebook,
-          icon: LucideIcons.filePlus,
+          icon: LucideIcons.boxes,
+        ),
+        AppContextMenuItem(
+          value: 'markdown',
+          label: s.createMarkdownNotebook,
+          icon: LucideIcons.fileCode,
+        ),
+        AppContextMenuItem(
+          value: 'writer',
+          label: s.createWriterNotebook,
+          icon: LucideIcons.penLine,
         ),
         AppContextMenuItem(
           value: 'rename',
@@ -517,8 +559,20 @@ class LibraryDrawer extends StatelessWidget {
     switch (action) {
       case 'group':
         await _createGroup(context, group.path);
-      case 'notebook':
+      case 'blocks':
         await _createNotebook(context, group.path);
+      case 'markdown':
+        await _createNotebook(
+          context,
+          group.path,
+          format: NotebookFormat.markdown,
+        );
+      case 'writer':
+        await _createNotebook(
+          context,
+          group.path,
+          format: NotebookFormat.writer,
+        );
       case 'rename':
         await _renameGroup(context, group);
       case 'delete':
@@ -532,10 +586,23 @@ class LibraryDrawer extends StatelessWidget {
     Offset? globalPosition,
   }) async {
     final s = context.s;
+    final swap = notebook.format.swappableArticleFormat;
     final action = await showAppContextMenu<String>(
       context: context,
       globalPosition: globalPosition,
       items: [
+        if (swap == NotebookFormat.markdown)
+          AppContextMenuItem(
+            value: 'convert',
+            label: s.convertToMarkdown,
+            icon: LucideIcons.fileCode,
+          ),
+        if (swap == NotebookFormat.writer)
+          AppContextMenuItem(
+            value: 'convert',
+            label: s.convertToWriter,
+            icon: LucideIcons.penLine,
+          ),
         AppContextMenuItem(
           value: 'rename',
           label: s.commonRename,
@@ -551,6 +618,13 @@ class LibraryDrawer extends StatelessWidget {
     );
     if (!context.mounted || action == null) return;
     switch (action) {
+      case 'convert':
+        if (swap == null) return;
+        try {
+          await library.convertNotebookFormat(notebook, swap);
+        } catch (error) {
+          if (context.mounted) await _handleError(context, error);
+        }
       case 'rename':
         await _renameNotebook(context, notebook);
       case 'delete':
@@ -911,7 +985,7 @@ class LibraryDrawer extends StatelessWidget {
                       child: Row(
                         children: [
                           Icon(
-                            LucideIcons.fileText,
+                            _notebookIcon(notebook.format),
                             size: 16,
                             color: selected ? colors.accent : colors.body,
                           ),
@@ -955,6 +1029,14 @@ class LibraryDrawer extends StatelessWidget {
     }
     return widgets;
   }
+}
+
+IconData _notebookIcon(NotebookFormat format) {
+  return switch (format) {
+    NotebookFormat.blocks => LucideIcons.boxes,
+    NotebookFormat.markdown => LucideIcons.fileCode,
+    NotebookFormat.writer => LucideIcons.penLine,
+  };
 }
 
 class _HeaderIconButton extends StatelessWidget {

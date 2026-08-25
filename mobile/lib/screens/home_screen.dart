@@ -9,6 +9,7 @@ import '../core/types.dart';
 import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/document_notebook_view.dart';
 import '../widgets/library_drawer.dart';
 import '../widgets/note_block_card.dart';
 import '../widgets/note_block_sheet.dart';
@@ -219,7 +220,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final space = library.currentSpace;
     final spaceName = space?.name ?? s.appTitle;
 
-    final showFab = notebook != null && !library.notebookLoading;
+    final showFab =
+        notebook != null &&
+        !library.notebookLoading &&
+        !notebook.format.isDocument;
     final edgeWidth = MediaQuery.paddingOf(context).left + 72;
 
     final body =
@@ -227,6 +231,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ? _EmptyScaffold(spaceName: space?.name)
             : library.notebookLoading
             ? Center(child: CircularProgressIndicator(color: colors.accent))
+            : notebook.format.isDocument
+            ? DocumentNotebookView(
+              library: library,
+              notebook: notebook,
+              spaceName: spaceName,
+              breadcrumb: _breadcrumb(space, notebook),
+            )
             : _NotesScaffold(
               spaceName: spaceName,
               breadcrumb: _breadcrumb(space, notebook),

@@ -180,4 +180,18 @@ final stringsDe = AppStrings(
   themeMatchaGreenLabel: 'Matcha-Grün',
   themeMatchaGreenDesc:
       'Ein frisches, natürliches Matcha-Thema für lange Lesesitzungen.',
+  createMarkdownNotebook: 'Neue Markdown-Notiz',
+  createWriterNotebook: 'Neue Artikelnotiz',
+  formatBlocks: 'Block-Notizbuch',
+  formatMarkdown: 'Markdown',
+  formatWriter: 'Artikel',
+  convertToMarkdown: 'In Markdown-Notiz umwandeln',
+  convertToWriter: 'In Artikelnotiz umwandeln',
+  convertFormatFailed: 'Notiztyp konnte nicht umgewandelt werden',
+  convertFormatExists: 'Eine Notiz des Zieltyps mit diesem Namen existiert bereits',
+  previewDocument: 'Vorschau',
+  documentContentHint: 'Dokument schreiben. Markdown wird unterstützt…',
+  documentSaved: 'Gespeichert',
+  openLinkFailed: 'Link konnte nicht geöffnet werden',
+  documentBlocksUnsupported: 'Dokumentnotizen unterstützen keine Notizblöcke',
 );

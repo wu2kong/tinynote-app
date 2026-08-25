@@ -41,7 +41,7 @@ Future<T?> showAppContextMenu<T>({
       borderRadius: BorderRadius.circular(14),
       side: BorderSide(color: colors.border),
     ),
-    constraints: const BoxConstraints(minWidth: 168, maxWidth: 260),
+    constraints: const BoxConstraints(minWidth: 168, maxWidth: 300),
     items: [
       for (final item in items)
         PopupMenuItem<T>(
