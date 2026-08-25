@@ -190,4 +190,70 @@ final stringsEn = AppStrings(
   documentSaved: 'Saved',
   openLinkFailed: 'Could not open the link',
   documentBlocksUnsupported: 'Document notes do not support note blocks',
+  importNotes: 'Import Notes',
+  importNotesDesc:
+      'Import Markdown files into the root of the current note space. Please read the rules below first:',
+  importNotesRuleMarkdownOnly:
+      'Only files ending with .md are imported; other files are ignored.',
+  importNotesRuleFormats:
+      'Files that already have blk, mk, or writer markers (.blk.md / .mk.md / .writer.md) keep their original format.',
+  importNotesRuleUnmarked:
+      'Plain .md files without those markers are converted to article notes (.writer.md).',
+  importNotesRuleTarget:
+      'Both notes and directories are imported into the root of the current note space; directories keep their internal structure.',
+  importNotesRuleMultiple:
+      'Both Import Notes and Import Directory support multiple selection.',
+  importNotesFiles: 'Import Notes',
+  importNotesDirectories: 'Import Directory',
+  importNotesNoSpace: 'Please select a note space first',
+  importNotesNoMarkdown: 'No Markdown files to import',
+  importNotesCompleted:
+      'Imported {imported} notes ({converted} converted to article notes)',
+  importNotesFailed: 'Failed to import notes',
+  sampleLibraryPanelTitle: 'Official Sample Library',
+  sampleLibraryPanelDesc:
+      'Import an editable starter space with guides and realistic examples',
+  sampleLibraryImportLabel: 'Import sample space',
+  sampleLibraryImportDesc:
+      'Never overwrites existing notes. You can import again anytime',
+  sampleLibraryImportAction: 'Import Starter Kit',
+  sampleLibraryTitle: 'Explore TinyNote with a Starter Kit',
+  sampleLibraryDescription:
+      'Import a ready-made space that teaches TinyNote while showing practical ways to capture projects, reference material, code, and long-form writing.',
+  sampleLibraryBlocksTitle: 'Block notes',
+  sampleLibraryBlocksDesc: 'Feature tour, project board, and reusable snippets',
+  sampleLibraryMarkdownTitle: 'Markdown note',
+  sampleLibraryMarkdownDesc:
+      'Syntax guide with tasks, tables, chart, code, and diagram source',
+  sampleLibraryWriterTitle: 'Article note',
+  sampleLibraryWriterDesc:
+      'A polished weekly-review example for focused writing',
+  sampleLibraryContentLanguage: 'Sample content language',
+  sampleLibrarySafeImportNote:
+      'The selected language applies to space names, note titles, and content. Importing never overwrites existing notes.',
+  sampleLibraryNotNow: 'Not Now',
+  sampleLibraryImporting: 'Importing...',
+  sampleLibraryImported: 'Imported {name} with {count} sample notes',
+  sampleLibraryImportFailed: 'Could not import the Starter Kit',
+  feedbackPanelTitle: 'Feedback',
+  feedbackPanelDesc:
+      'Send feedback by email. Version info is attached automatically when you write an email, or you can copy it separately.',
+  feedbackEmail: 'Feedback Email',
+  feedbackEmailDesc: 'Please send your feedback to this address',
+  feedbackWriteEmail: 'Write Email',
+  feedbackCopyEmail: 'Copy Email',
+  feedbackEmailCopied: 'Email copied',
+  feedbackCopyInfo: 'Copy version info',
+  feedbackCopied: 'Copied',
+  feedbackInfoCopied: 'Version info copied',
+  feedbackBugHint:
+      'When reporting a bug, writing an email attaches version info automatically. You do not need to view it on this page.',
+  feedbackMailSubject: 'TinyNote Feedback',
+  feedbackMailBodyHint:
+      'Please describe your issue or suggestion above. If reporting a bug, keep the version info below.',
+  feedbackOpenMailFailed: 'Unable to open the mail client',
+  feedbackRuntimeMobile: 'Mobile',
+  copyFailed: 'Copy failed',
+  helpDocs: 'Help Documentation',
+  openHelpDocsFailed: 'Unable to open the help documentation',
 );

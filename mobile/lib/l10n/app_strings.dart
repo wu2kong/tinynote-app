@@ -178,6 +178,56 @@ class AppStrings {
     required this.documentSaved,
     required this.openLinkFailed,
     required this.documentBlocksUnsupported,
+    required this.importNotes,
+    required this.importNotesDesc,
+    required this.importNotesRuleMarkdownOnly,
+    required this.importNotesRuleFormats,
+    required this.importNotesRuleUnmarked,
+    required this.importNotesRuleTarget,
+    required this.importNotesRuleMultiple,
+    required this.importNotesFiles,
+    required this.importNotesDirectories,
+    required this.importNotesNoSpace,
+    required this.importNotesNoMarkdown,
+    required this.importNotesCompleted,
+    required this.importNotesFailed,
+    required this.sampleLibraryPanelTitle,
+    required this.sampleLibraryPanelDesc,
+    required this.sampleLibraryImportLabel,
+    required this.sampleLibraryImportDesc,
+    required this.sampleLibraryImportAction,
+    required this.sampleLibraryTitle,
+    required this.sampleLibraryDescription,
+    required this.sampleLibraryBlocksTitle,
+    required this.sampleLibraryBlocksDesc,
+    required this.sampleLibraryMarkdownTitle,
+    required this.sampleLibraryMarkdownDesc,
+    required this.sampleLibraryWriterTitle,
+    required this.sampleLibraryWriterDesc,
+    required this.sampleLibraryContentLanguage,
+    required this.sampleLibrarySafeImportNote,
+    required this.sampleLibraryNotNow,
+    required this.sampleLibraryImporting,
+    required this.sampleLibraryImported,
+    required this.sampleLibraryImportFailed,
+    required this.feedbackPanelTitle,
+    required this.feedbackPanelDesc,
+    required this.feedbackEmail,
+    required this.feedbackEmailDesc,
+    required this.feedbackWriteEmail,
+    required this.feedbackCopyEmail,
+    required this.feedbackEmailCopied,
+    required this.feedbackCopyInfo,
+    required this.feedbackCopied,
+    required this.feedbackInfoCopied,
+    required this.feedbackBugHint,
+    required this.feedbackMailSubject,
+    required this.feedbackMailBodyHint,
+    required this.feedbackOpenMailFailed,
+    required this.feedbackRuntimeMobile,
+    required this.copyFailed,
+    required this.helpDocs,
+    required this.openHelpDocsFailed,
   });
 
   final String appTitle;
@@ -356,6 +406,56 @@ class AppStrings {
   final String documentSaved;
   final String openLinkFailed;
   final String documentBlocksUnsupported;
+  final String importNotes;
+  final String importNotesDesc;
+  final String importNotesRuleMarkdownOnly;
+  final String importNotesRuleFormats;
+  final String importNotesRuleUnmarked;
+  final String importNotesRuleTarget;
+  final String importNotesRuleMultiple;
+  final String importNotesFiles;
+  final String importNotesDirectories;
+  final String importNotesNoSpace;
+  final String importNotesNoMarkdown;
+  final String importNotesCompleted;
+  final String importNotesFailed;
+  final String sampleLibraryPanelTitle;
+  final String sampleLibraryPanelDesc;
+  final String sampleLibraryImportLabel;
+  final String sampleLibraryImportDesc;
+  final String sampleLibraryImportAction;
+  final String sampleLibraryTitle;
+  final String sampleLibraryDescription;
+  final String sampleLibraryBlocksTitle;
+  final String sampleLibraryBlocksDesc;
+  final String sampleLibraryMarkdownTitle;
+  final String sampleLibraryMarkdownDesc;
+  final String sampleLibraryWriterTitle;
+  final String sampleLibraryWriterDesc;
+  final String sampleLibraryContentLanguage;
+  final String sampleLibrarySafeImportNote;
+  final String sampleLibraryNotNow;
+  final String sampleLibraryImporting;
+  final String sampleLibraryImported;
+  final String sampleLibraryImportFailed;
+  final String feedbackPanelTitle;
+  final String feedbackPanelDesc;
+  final String feedbackEmail;
+  final String feedbackEmailDesc;
+  final String feedbackWriteEmail;
+  final String feedbackCopyEmail;
+  final String feedbackEmailCopied;
+  final String feedbackCopyInfo;
+  final String feedbackCopied;
+  final String feedbackInfoCopied;
+  final String feedbackBugHint;
+  final String feedbackMailSubject;
+  final String feedbackMailBodyHint;
+  final String feedbackOpenMailFailed;
+  final String feedbackRuntimeMobile;
+  final String copyFailed;
+  final String helpDocs;
+  final String openHelpDocsFailed;
 
   String formatLabel(NotebookFormat format) {
     return switch (format) {

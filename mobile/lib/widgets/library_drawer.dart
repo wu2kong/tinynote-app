@@ -10,6 +10,7 @@ import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import 'app_context_menu.dart';
 import 'global_search_sheet.dart';
+import 'import_notes_sheet.dart';
 import 'name_prompt_dialog.dart';
 
 class LibraryDrawer extends StatelessWidget {
@@ -489,6 +490,11 @@ class LibraryDrawer extends StatelessWidget {
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
         ),
+        AppContextMenuItem(
+          value: 'import',
+          label: s.importNotes,
+          icon: LucideIcons.fileInput,
+        ),
       ],
     );
     if (!context.mounted || action == null) return;
@@ -509,6 +515,8 @@ class LibraryDrawer extends StatelessWidget {
           parentPath,
           format: NotebookFormat.writer,
         );
+      case 'import':
+        await showImportNotesSheet(context: context, library: library);
     }
   }
 

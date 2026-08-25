@@ -181,6 +181,32 @@ String initialNotebookContent(NotebookFormat format, String displayName) {
       '---\n\n';
 }
 
+bool isMarkdownNotebookFileName(String fileName) {
+  return RegExp(r'\.md$', caseSensitive: false).hasMatch(fileName);
+}
+
+bool hasExplicitNotebookFormatMarker(String fileName) {
+  final lower = fileName.toLowerCase();
+  return notebookFormats.any(
+    (format) => lower.endsWith(format.extension.toLowerCase()),
+  );
+}
+
+/// Keep files that already have a built-in format marker.
+/// Plain `.md` (no blk / mk / writer marker) is rewritten to `.writer.md`.
+({String fileName, bool converted}) resolveImportedNotebookFileName(String fileName) {
+  if (hasExplicitNotebookFormatMarker(fileName)) {
+    return (fileName: fileName, converted: false);
+  }
+  return (
+    fileName: buildNotebookFileName(
+      notebookDisplayName(fileName),
+      NotebookFormat.writer,
+    ),
+    converted: true,
+  );
+}
+
 class NotebookExistsException implements Exception {
   const NotebookExistsException(this.name);
   final String name;

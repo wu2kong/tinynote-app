@@ -88,4 +88,25 @@ void main() {
     expect(NotebookFormat.markdown.isDocument, isTrue);
     expect(NotebookFormat.blocks.isDocument, isFalse);
   });
+
+  test('plain .md becomes writer, marked files stay', () {
+    expect(
+      resolveImportedNotebookFileName('plain.md').fileName,
+      'plain.writer.md',
+    );
+    expect(resolveImportedNotebookFileName('plain.md').converted, isTrue);
+    expect(
+      resolveImportedNotebookFileName('guide.mk.md').fileName,
+      'guide.mk.md',
+    );
+    expect(resolveImportedNotebookFileName('guide.mk.md').converted, isFalse);
+    expect(
+      resolveImportedNotebookFileName('cards.blk.md').fileName,
+      'cards.blk.md',
+    );
+    expect(
+      resolveImportedNotebookFileName('essay.writer.md').fileName,
+      'essay.writer.md',
+    );
+  });
 }

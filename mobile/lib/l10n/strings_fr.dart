@@ -67,16 +67,16 @@ final stringsFr = AppStrings(
       'Supprimer l’espace "{name}" ainsi que tous ses dossiers et carnets ? Cette action est irréversible.',
   createFolder: 'Nouveau dossier',
   folderName: 'Nom du dossier',
-  createNotebook: 'Nouveau carnet',
+  createNotebook: 'Nouveau carnet par blocs',
   notebookName: 'Nom du carnet',
   renameFolder: 'Renommer le dossier',
   renameNotebook: 'Renommer le carnet',
   deleteFolder: 'Supprimer le dossier',
   deleteFolderMessage:
       'Supprimer le dossier "{name}" ainsi que tous ses sous-dossiers et carnets ? Cette action est irréversible.',
-  deleteNotebook: 'Supprimer le carnet',
+  deleteNotebook: 'Supprimer',
   deleteNotebookMessage:
-      'Supprimer le carnet "{name}" ? Cette action est irréversible.',
+      'Supprimer "{name}" ? Cette action est irréversible.',
   createSubfolder: 'Nouveau sous-dossier',
   spaceSection: 'Espaces',
   chooseSpace: 'Choisir un espace',
@@ -85,7 +85,7 @@ final stringsFr = AppStrings(
   createNew: 'Nouveau',
   chooseSpaceToBrowse: 'Choisissez un espace pour parcourir les dossiers',
   emptySpace: 'Cet espace est vide',
-  createFolderOrNotebook: 'Nouveau dossier ou carnet',
+  createFolderOrNotebook: 'Nouveau dossier ou note',
   libraryPath: 'Chemin de la bibliothèque : {path}',
   storagePathTemplate: 'Chemin de stockage : {path}',
   noNotebookSelected: 'Aucun carnet sélectionné',
@@ -193,4 +193,69 @@ final stringsFr = AppStrings(
   documentSaved: 'Enregistré',
   openLinkFailed: 'Impossible d’ouvrir le lien',
   documentBlocksUnsupported: 'Les notes document ne prennent pas en charge les blocs',
+  importNotes: 'Importer des notes',
+  importNotesDesc:
+      'Importez des fichiers Markdown à la racine de l\'espace de notes actuel. Veuillez d\'abord lire les règles ci-dessous :',
+  importNotesRuleMarkdownOnly:
+      'Seuls les fichiers se terminant par .md sont importés ; les autres fichiers sont ignorés.',
+  importNotesRuleFormats:
+      'Les fichiers qui portent déjà les marqueurs blk, mk ou writer (.blk.md / .mk.md / .writer.md) conservent leur format d\'origine.',
+  importNotesRuleUnmarked:
+      'Les fichiers .md sans ces marqueurs sont automatiquement convertis en notes article (.writer.md).',
+  importNotesRuleTarget:
+      'Les notes et les répertoires sont importés à la racine de l\'espace de notes actuel ; les répertoires conservent leur structure interne.',
+  importNotesRuleMultiple:
+      'Importer des notes et Importer un répertoire prennent tous deux en charge la sélection multiple.',
+  importNotesFiles: 'Importer des notes',
+  importNotesDirectories: 'Importer un répertoire',
+  importNotesNoSpace: 'Veuillez d\'abord sélectionner un espace de notes',
+  importNotesNoMarkdown: 'Aucun fichier Markdown à importer',
+  importNotesCompleted:
+      '{imported} notes importées ({converted} converties en notes article)',
+  importNotesFailed: 'Échec de l\'import des notes',
+  sampleLibraryPanelTitle: 'Bibliothèque d’exemples officielle',
+  sampleLibraryPanelDesc:
+      'Importer un espace de démarrage modifiable, avec guides et exemples pratiques',
+  sampleLibraryImportLabel: 'Importer un espace d’exemple',
+  sampleLibraryImportDesc:
+      'N’écrase jamais les notes existantes. Vous pouvez réimporter à tout moment',
+  sampleLibraryImportAction: 'Importer le kit de démarrage',
+  sampleLibraryTitle: 'Découvrir TinyNote avec un kit de démarrage',
+  sampleLibraryDescription:
+      'Importez un espace prêt à l’emploi qui présente TinyNote avec des exemples concrets de projets, références, code et rédaction longue.',
+  sampleLibraryBlocksTitle: 'Notes par blocs',
+  sampleLibraryBlocksDesc: 'Visite des fonctions, tableau de projet et extraits réutilisables',
+  sampleLibraryMarkdownTitle: 'Note Markdown',
+  sampleLibraryMarkdownDesc:
+      'Guide avec tâches, tableaux, graphique, code et source de diagramme',
+  sampleLibraryWriterTitle: 'Note article',
+  sampleLibraryWriterDesc: 'Un exemple de bilan hebdomadaire pour écrire sans distraction',
+  sampleLibraryContentLanguage: 'Langue du contenu d’exemple',
+  sampleLibrarySafeImportNote:
+      'La langue choisie s’applique aux noms des espaces, aux titres et au contenu. Aucune note existante n’est remplacée.',
+  sampleLibraryNotNow: 'Plus tard',
+  sampleLibraryImporting: 'Importation...',
+  sampleLibraryImported: '{name} importé avec {count} notes d’exemple',
+  sampleLibraryImportFailed: 'Impossible d’importer le kit de démarrage',
+  feedbackPanelTitle: 'Commentaires',
+  feedbackPanelDesc:
+      'Envoyez vos commentaires par e-mail. Les informations de version sont jointes automatiquement à la rédaction, ou vous pouvez les copier séparément.',
+  feedbackEmail: 'E-mail de feedback',
+  feedbackEmailDesc: 'Veuillez envoyer vos commentaires à cette adresse',
+  feedbackWriteEmail: 'Écrire un e-mail',
+  feedbackCopyEmail: 'Copier l\'e-mail',
+  feedbackEmailCopied: 'E-mail copié',
+  feedbackCopyInfo: 'Copier les infos de version',
+  feedbackCopied: 'Copié',
+  feedbackInfoCopied: 'Informations de version copiées',
+  feedbackBugHint:
+      'Pour signaler un bug, rédiger un e-mail joint automatiquement les informations de version. Vous n’avez pas besoin de les afficher ici.',
+  feedbackMailSubject: 'Commentaires TinyNote',
+  feedbackMailBodyHint:
+      'Décrivez votre problème ou suggestion ci-dessus. Pour un bug, conservez les informations de version ci-dessous.',
+  feedbackOpenMailFailed: 'Impossible d\'ouvrir le client mail',
+  feedbackRuntimeMobile: 'Mobile',
+  copyFailed: 'Échec de la copie',
+  helpDocs: 'Documentation',
+  openHelpDocsFailed: 'Impossible d’ouvrir la documentation',
 );

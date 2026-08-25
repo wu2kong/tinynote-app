@@ -3,7 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/file_system.dart';
 import '../core/global_search.dart';
+import '../core/import_notes.dart';
 import '../core/note_parser.dart';
+import '../core/official_sample_library.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';
@@ -480,6 +482,58 @@ class LibraryService extends ChangeNotifier {
         appStrings.fill(appStrings.notebookExists, {'name': error.name}),
       );
     }
+  }
+
+  Future<ImportNotesResult> importNotesToCurrentSpace(
+    List<ImportNoteSource> sources,
+  ) async {
+    final storage = _storage;
+    final space = currentSpace;
+    if (storage == null || space == null) {
+      throw StateError(appStrings.importNotesNoSpace);
+    }
+    final result = await importNotesToSpaceRoot(
+      storage: storage,
+      spacePath: space.path,
+      sources: sources,
+    );
+    await _reloadTree(
+      preserveNotebookPath: currentNotebook?.path,
+      preserveExpanded: true,
+    );
+    return result;
+  }
+
+  Future<OfficialSampleLibraryImportResult> importOfficialSampleLibrary(
+    AppLocale locale,
+  ) async {
+    final storage = _storage;
+    final root = storagePath;
+    if (storage == null || root == null) {
+      throw StateError(appStrings.libraryNotReady);
+    }
+    final result = await importOfficialSampleLibraryToStorage(
+      storage: storage,
+      storagePath: root,
+      locale: locale,
+    );
+    await _reloadTree(preserveExpanded: false);
+    final space = _findSpaceByPath(result.spacePath);
+    if (space != null) {
+      await selectSpace(space);
+      for (final path in _ancestorPaths(
+        space.groups,
+        result.welcomeNotebookPath,
+      )) {
+        expandedGroupPaths.add(path);
+      }
+      notifyListeners();
+      final notebook = _findNotebook(result.welcomeNotebookPath);
+      if (notebook != null) {
+        await selectNotebook(notebook);
+      }
+    }
+    return result;
   }
 
   Future<void> renameGroup(Group group, String newName) async {

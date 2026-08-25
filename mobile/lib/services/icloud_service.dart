@@ -49,6 +49,16 @@ class ICloudService {
     }
   }
 
+  /// Pick a folder and copy its `.md` files into a sandbox temp directory.
+  static Future<String?> pickImportFolder() async {
+    if (!isSupported) return null;
+    try {
+      return await _channel.invokeMethod<String>('pickImportFolder');
+    } on PlatformException catch (error) {
+      throw StateError(error.message ?? appStrings.pickFolderFailed);
+    }
+  }
+
   /// Restores previously bookmarked folder access for this app session.
   static Future<String?> restoreLibraryAccess() async {
     if (!isSupported) return null;

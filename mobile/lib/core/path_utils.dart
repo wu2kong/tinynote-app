@@ -56,3 +56,9 @@ String dirname(String filePath) {
   final idx = normalized.lastIndexOf('/');
   return idx >= 0 ? normalized.substring(0, idx) : '';
 }
+
+bool isSubPath(String parentPath, String childPath) {
+  final parent = normalizePath(parentPath);
+  final child = normalizePath(childPath);
+  return child == parent || child.startsWith('$parent/');
+}

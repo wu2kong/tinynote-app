@@ -30,6 +30,7 @@
 	<array>
 		<string>https</string>
 		<string>http</string>
+		<string>mailto</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

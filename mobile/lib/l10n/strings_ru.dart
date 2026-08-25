@@ -67,16 +67,16 @@ final stringsRu = AppStrings(
       'Удалить пространство "{name}" со всеми папками и блокнотами? Это действие нельзя отменить.',
   createFolder: 'Новая папка',
   folderName: 'Название папки',
-  createNotebook: 'Новый блокнот',
+  createNotebook: 'Новый блочный блокнот',
   notebookName: 'Название блокнота',
   renameFolder: 'Переименовать папку',
   renameNotebook: 'Переименовать блокнот',
   deleteFolder: 'Удалить папку',
   deleteFolderMessage:
       'Удалить папку "{name}" со всеми подпапками и блокнотами? Это действие нельзя отменить.',
-  deleteNotebook: 'Удалить блокнот',
+  deleteNotebook: 'Удалить',
   deleteNotebookMessage:
-      'Удалить блокнот "{name}"? Это действие нельзя отменить.',
+      'Удалить "{name}"? Это действие нельзя отменить.',
   createSubfolder: 'Новая подпапка',
   spaceSection: 'Пространства',
   chooseSpace: 'Выберите пространство',
@@ -85,7 +85,7 @@ final stringsRu = AppStrings(
   createNew: 'Создать',
   chooseSpaceToBrowse: 'Выберите пространство для просмотра папок',
   emptySpace: 'Это пространство пусто',
-  createFolderOrNotebook: 'Новая папка или блокнот',
+  createFolderOrNotebook: 'Новая папка или заметка',
   libraryPath: 'Путь библиотеки: {path}',
   storagePathTemplate: 'Путь хранилища: {path}',
   noNotebookSelected: 'Блокнот не выбран',
@@ -192,4 +192,69 @@ final stringsRu = AppStrings(
   documentSaved: 'Сохранено',
   openLinkFailed: 'Не удалось открыть ссылку',
   documentBlocksUnsupported: 'Документные заметки не поддерживают блоки',
+  importNotes: 'Импортировать заметки',
+  importNotesDesc:
+      'Импортируйте файлы Markdown в корень текущего пространства заметок. Сначала ознакомьтесь с правилами:',
+  importNotesRuleMarkdownOnly:
+      'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
+  importNotesRuleFormats:
+      'Файлы, у которых уже есть маркеры blk, mk или writer (.blk.md / .mk.md / .writer.md), сохраняют исходный формат.',
+  importNotesRuleUnmarked:
+      'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
+  importNotesRuleTarget:
+      'И заметки, и каталоги импортируются в корень текущего пространства; каталоги сохраняют внутреннюю структуру.',
+  importNotesRuleMultiple:
+      'И «Импортировать заметки», и «Импортировать каталог» поддерживают множественный выбор.',
+  importNotesFiles: 'Импортировать заметки',
+  importNotesDirectories: 'Импортировать каталог',
+  importNotesNoSpace: 'Сначала выберите пространство заметок',
+  importNotesNoMarkdown: 'Нет файлов Markdown для импорта',
+  importNotesCompleted:
+      'Импортировано {imported} заметок ({converted} преобразованы в статьи)',
+  importNotesFailed: 'Не удалось импортировать заметки',
+  sampleLibraryPanelTitle: 'Официальная библиотека примеров',
+  sampleLibraryPanelDesc:
+      'Импортируйте редактируемое стартовое пространство с руководствами и практическими примерами',
+  sampleLibraryImportLabel: 'Импортировать пространство примеров',
+  sampleLibraryImportDesc:
+      'Существующие заметки не перезаписываются. Можно импортировать снова в любой момент',
+  sampleLibraryImportAction: 'Импортировать стартовый набор',
+  sampleLibraryTitle: 'Познакомьтесь с TinyNote через стартовый набор',
+  sampleLibraryDescription:
+      'Импортируйте готовое пространство, которое знакомит с TinyNote на практических примерах проектов, справочных материалов, кода и больших текстов.',
+  sampleLibraryBlocksTitle: 'Блочные заметки',
+  sampleLibraryBlocksDesc: 'Обзор функций, доска проекта и повторно используемые фрагменты',
+  sampleLibraryMarkdownTitle: 'Заметка Markdown',
+  sampleLibraryMarkdownDesc:
+      'Руководство с задачами, таблицами, диаграммой, кодом и исходником схемы',
+  sampleLibraryWriterTitle: 'Заметка-статья',
+  sampleLibraryWriterDesc: 'Пример еженедельного обзора для сосредоточенного письма',
+  sampleLibraryContentLanguage: 'Язык содержимого примеров',
+  sampleLibrarySafeImportNote:
+      'Выбранный язык применяется к названиям пространств, заголовкам и тексту. Существующие заметки не перезаписываются.',
+  sampleLibraryNotNow: 'Не сейчас',
+  sampleLibraryImporting: 'Импорт...',
+  sampleLibraryImported: 'Импортировано: {name}, примеров заметок: {count}',
+  sampleLibraryImportFailed: 'Не удалось импортировать стартовый набор',
+  feedbackPanelTitle: 'Обратная связь',
+  feedbackPanelDesc:
+      'Отправьте отзыв по электронной почте. При написании письма сведения о версии добавляются автоматически, их также можно скопировать отдельно.',
+  feedbackEmail: 'Email для отзывов',
+  feedbackEmailDesc: 'Отправьте отзыв на этот адрес',
+  feedbackWriteEmail: 'Написать письмо',
+  feedbackCopyEmail: 'Копировать email',
+  feedbackEmailCopied: 'Email скопирован',
+  feedbackCopyInfo: 'Копировать сведения о версии',
+  feedbackCopied: 'Скопировано',
+  feedbackInfoCopied: 'Информация о версии скопирована',
+  feedbackBugHint:
+      'При сообщении об ошибке сведения о версии автоматически добавляются в письмо. Их не нужно просматривать на этой странице.',
+  feedbackMailSubject: 'Отзыв о TinyNote',
+  feedbackMailBodyHint:
+      'Опишите проблему или предложение выше. При сообщении об ошибке сохраните информацию о версии ниже.',
+  feedbackOpenMailFailed: 'Не удалось открыть почтовый клиент',
+  feedbackRuntimeMobile: 'Мобильный',
+  copyFailed: 'Не удалось скопировать',
+  helpDocs: 'Документация',
+  openHelpDocsFailed: 'Не удалось открыть документацию',
 );

@@ -67,16 +67,16 @@ final stringsDe = AppStrings(
       'Bereich "{name}" und alle Ordner und Notizbücher löschen? Dies kann nicht rückgängig gemacht werden.',
   createFolder: 'Neuer Ordner',
   folderName: 'Ordnername',
-  createNotebook: 'Neues Notizbuch',
+  createNotebook: 'Neues Block-Notizbuch',
   notebookName: 'Notizbuchname',
   renameFolder: 'Ordner umbenennen',
   renameNotebook: 'Notizbuch umbenennen',
   deleteFolder: 'Ordner löschen',
   deleteFolderMessage:
       'Ordner "{name}" und alle Unterordner und Notizbücher löschen? Dies kann nicht rückgängig gemacht werden.',
-  deleteNotebook: 'Notizbuch löschen',
+  deleteNotebook: 'Löschen',
   deleteNotebookMessage:
-      'Notizbuch "{name}" löschen? Dies kann nicht rückgängig gemacht werden.',
+      '"{name}" löschen? Dies kann nicht rückgängig gemacht werden.',
   createSubfolder: 'Neuer Unterordner',
   spaceSection: 'Bereiche',
   chooseSpace: 'Bereich auswählen',
@@ -85,7 +85,7 @@ final stringsDe = AppStrings(
   createNew: 'Neu',
   chooseSpaceToBrowse: 'Wähle einen Bereich, um Ordner zu durchsuchen',
   emptySpace: 'Dieser Bereich ist leer',
-  createFolderOrNotebook: 'Neuer Ordner oder neues Notizbuch',
+  createFolderOrNotebook: 'Neuer Ordner oder neue Notiz',
   libraryPath: 'Bibliothekspfad: {path}',
   storagePathTemplate: 'Speicherpfad: {path}',
   noNotebookSelected: 'Kein Notizbuch ausgewählt',
@@ -194,4 +194,69 @@ final stringsDe = AppStrings(
   documentSaved: 'Gespeichert',
   openLinkFailed: 'Link konnte nicht geöffnet werden',
   documentBlocksUnsupported: 'Dokumentnotizen unterstützen keine Notizblöcke',
+  importNotes: 'Notizen importieren',
+  importNotesDesc:
+      'Importiere Markdown-Dateien in das Stammverzeichnis des aktuellen Notizbereichs. Bitte lies zuerst die folgenden Regeln:',
+  importNotesRuleMarkdownOnly:
+      'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
+  importNotesRuleFormats:
+      'Dateien, die bereits blk-, mk- oder writer-Kennzeichen (.blk.md / .mk.md / .writer.md) haben, behalten ihr ursprüngliches Format.',
+  importNotesRuleUnmarked:
+      'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
+  importNotesRuleTarget:
+      'Notizen und Verzeichnisse werden in das Stammverzeichnis des aktuellen Notizbereichs importiert; Verzeichnisse behalten ihre interne Struktur.',
+  importNotesRuleMultiple:
+      'Sowohl „Notizen importieren“ als auch „Verzeichnis importieren“ unterstützen Mehrfachauswahl.',
+  importNotesFiles: 'Notizen importieren',
+  importNotesDirectories: 'Verzeichnis importieren',
+  importNotesNoSpace: 'Bitte zuerst einen Notizbereich auswählen',
+  importNotesNoMarkdown: 'Keine Markdown-Dateien zum Importieren',
+  importNotesCompleted:
+      '{imported} Notizen importiert ({converted} in Artikelnotizen umgewandelt)',
+  importNotesFailed: 'Import der Notizen fehlgeschlagen',
+  sampleLibraryPanelTitle: 'Offizielle Beispielbibliothek',
+  sampleLibraryPanelDesc:
+      'Einen bearbeitbaren Einstiegsbereich mit Anleitungen und Praxisbeispielen importieren',
+  sampleLibraryImportLabel: 'Beispielbereich importieren',
+  sampleLibraryImportDesc:
+      'Bestehende Notizen werden nicht überschrieben. Du kannst jederzeit erneut importieren',
+  sampleLibraryImportAction: 'Starter-Kit importieren',
+  sampleLibraryTitle: 'TinyNote mit einem Starter-Kit erkunden',
+  sampleLibraryDescription:
+      'Importiere einen fertigen Bereich, der TinyNote erklärt und praktische Beispiele für Projekte, Referenzen, Code und längere Texte zeigt.',
+  sampleLibraryBlocksTitle: 'Blocknotizen',
+  sampleLibraryBlocksDesc: 'Funktionstour, Projektboard und wiederverwendbare Snippets',
+  sampleLibraryMarkdownTitle: 'Markdown-Notiz',
+  sampleLibraryMarkdownDesc:
+      'Syntaxleitfaden mit Aufgaben, Tabellen, Diagramm, Code und Diagrammquelle',
+  sampleLibraryWriterTitle: 'Artikelnotiz',
+  sampleLibraryWriterDesc: 'Ein Beispiel für einen fokussierten Wochenrückblick',
+  sampleLibraryContentLanguage: 'Sprache der Beispielinhalte',
+  sampleLibrarySafeImportNote:
+      'Die gewählte Sprache gilt für Bereichsnamen, Notiztitel und Inhalte. Vorhandene Notizen werden nie überschrieben.',
+  sampleLibraryNotNow: 'Nicht jetzt',
+  sampleLibraryImporting: 'Wird importiert...',
+  sampleLibraryImported: '{name} mit {count} Beispielnotizen wurde importiert',
+  sampleLibraryImportFailed: 'Starter-Kit konnte nicht importiert werden',
+  feedbackPanelTitle: 'Feedback',
+  feedbackPanelDesc:
+      'Sende Feedback per E-Mail. Beim Schreiben einer E-Mail werden Versionsinformationen automatisch angehängt; du kannst sie auch separat kopieren.',
+  feedbackEmail: 'Feedback-E-Mail',
+  feedbackEmailDesc: 'Bitte sende dein Feedback an diese Adresse',
+  feedbackWriteEmail: 'E-Mail schreiben',
+  feedbackCopyEmail: 'E-Mail kopieren',
+  feedbackEmailCopied: 'E-Mail kopiert',
+  feedbackCopyInfo: 'Versionsinfo kopieren',
+  feedbackCopied: 'Kopiert',
+  feedbackInfoCopied: 'Versionsinformationen kopiert',
+  feedbackBugHint:
+      'Beim Melden eines Bugs werden Versionsinformationen automatisch an die E-Mail angehängt. Du musst sie auf dieser Seite nicht ansehen.',
+  feedbackMailSubject: 'TinyNote Feedback',
+  feedbackMailBodyHint:
+      'Bitte beschreibe dein Problem oder deinen Vorschlag oben. Bei Bug-Meldungen behalte die Versionsinformationen unten bei.',
+  feedbackOpenMailFailed: 'E-Mail-Client konnte nicht geöffnet werden',
+  feedbackRuntimeMobile: 'Mobil',
+  copyFailed: 'Kopieren fehlgeschlagen',
+  helpDocs: 'Hilfedokumentation',
+  openHelpDocsFailed: 'Hilfedokumentation konnte nicht geöffnet werden',
 );

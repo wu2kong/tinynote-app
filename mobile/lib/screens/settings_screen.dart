@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../utils/open_url.dart';
 
 import '../constants/app.dart';
 import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/diagnostic_info.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/import_notes_sheet.dart';
+import '../widgets/sample_library_sheet.dart';
 import '../widgets/sheet_drag_area.dart';
 
 const _settingsPreviewSize = 0.75;
@@ -52,6 +57,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _sheetController = DraggableScrollableController();
   var _isFull = false;
+  var _appVersion = '';
 
   LibraryService get library => widget.library;
 
@@ -61,6 +67,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     library.addListener(_onLibraryChanged);
     library.refreshICloudStatus();
     _sheetController.addListener(_onSheetSizeChanged);
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _appVersion = info.version);
+    } catch (_) {}
   }
 
   @override
@@ -344,6 +359,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (selected != null) {
       await controller.setLocale(selected);
     }
+  }
+
+  String get _diagnosticInfo {
+    return buildDiagnosticInfo(
+      version: _appVersion,
+      runtimeLabel: context.s.feedbackRuntimeMobile,
+    );
+  }
+
+  Future<void> _copyText(String text, String successMessage) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+      if (mounted) showAppToast(context, successMessage);
+    } catch (_) {
+      if (mounted) showAppToast(context, context.s.copyFailed);
+    }
+  }
+
+  Future<void> _writeFeedbackEmail() async {
+    final s = context.s;
+    final subject = Uri.encodeComponent(s.feedbackMailSubject);
+    final body = Uri.encodeComponent(
+      '${s.feedbackMailBodyHint}\n\n---\n$_diagnosticInfo\n',
+    );
+    final opened = await openExternalUrl(
+      'mailto:$feedbackEmail?subject=$subject&body=$body',
+    );
+    if (!opened && mounted) {
+      showAppToast(context, s.feedbackOpenMailFailed);
+    }
+  }
+
+  Future<void> _openImportNotes() async {
+    if (library.currentSpace == null) {
+      showAppToast(context, context.s.importNotesNoSpace);
+      return;
+    }
+    await showImportNotesSheet(context: context, library: library);
+  }
+
+  Future<void> _openSampleLibrary() async {
+    if (library.storagePath == null) {
+      showAppToast(context, context.s.libraryNotReady);
+      return;
+    }
+    await showSampleLibrarySheet(context: context, library: library);
   }
 
   @override
@@ -658,6 +719,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         ),
                               ),
                             ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.fileInput,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.importNotes,
+                              subtitle: s.importNotesDesc,
+                              trailing: Icon(
+                                LucideIcons.chevronRight,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap: _openImportNotes,
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.sparkles,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.sampleLibraryImportLabel,
+                              subtitle: s.sampleLibraryImportDesc,
+                              trailing: Icon(
+                                LucideIcons.chevronRight,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap: _openSampleLibrary,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _SectionCard(
+                        title: s.feedbackPanelTitle,
+                        child: Column(
+                          children: [
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.mail,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.feedbackWriteEmail,
+                              subtitle: feedbackEmail,
+                              trailing: Icon(
+                                LucideIcons.externalLink,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap: _writeFeedbackEmail,
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.copy,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.feedbackCopyEmail,
+                              subtitle: s.feedbackEmailDesc,
+                              onTap:
+                                  () => _copyText(
+                                    feedbackEmail,
+                                    s.feedbackEmailCopied,
+                                  ),
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.clipboardList,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.feedbackCopyInfo,
+                              subtitle: s.feedbackBugHint,
+                              onTap:
+                                  () => _copyText(
+                                    _diagnosticInfo,
+                                    s.feedbackInfoCopied,
+                                  ),
+                            ),
                           ],
                         ),
                       ),
@@ -720,7 +866,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 color: colors.accent,
                               ),
                               title: s.appTitle,
-                              subtitle: s.appDescription,
+                              subtitle:
+                                  _appVersion.isEmpty
+                                      ? s.appDescription
+                                      : '${s.appDescription} · $_appVersion',
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.bookOpen,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.helpDocs,
+                              subtitle: docsUrl,
+                              trailing: Icon(
+                                LucideIcons.externalLink,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    docsUrl,
+                                    failureMessage: s.openHelpDocsFailed,
+                                  ),
                             ),
                             Divider(height: 1, color: colors.border),
                             _CompactTile(
