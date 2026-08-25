@@ -16,6 +16,7 @@
     "build:packages": "node scripts/build-packages.mjs",
     "build:appstore": "node scripts/build-appstore.mjs",
     "build:appstore:prepare": "node scripts/build-appstore.mjs --prepare-only",
+    "build:appstore:local": "node scripts/build-appstore.mjs --local-iap",
     "docs:dev": "npm run dev --prefix docs-site",
     "docs:build": "npm run build --prefix docs-site",
     "docs:preview": "npm run preview --prefix docs-site",

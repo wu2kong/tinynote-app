@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 import {
+  cpSync,
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -47,6 +50,7 @@ function run(command, args, options = {}) {
 function parseArgs(argv) {
   const options = {
     prepareOnly: false,
+    localIap: false,
     upload: false,
     profile: process.env.APPLE_PROVISIONING_PROFILE || '',
     appIdentity: process.env.APPLE_SIGNING_IDENTITY || '',
@@ -60,6 +64,8 @@ function parseArgs(argv) {
     const argument = argv[index];
     if (argument === '--prepare-only') {
       options.prepareOnly = true;
+    } else if (argument === '--local-iap') {
+      options.localIap = true;
     } else if (argument === '--upload') {
       options.upload = true;
     } else if (argument === '--profile') {
@@ -79,11 +85,13 @@ function parseArgs(argv) {
 TinyNote Mac App Store 构建
 
   npm run build:appstore:prepare
+  npm run build:appstore:local
   npm run build:appstore -- --profile /path/TinyNote.provisionprofile
   npm run build:appstore -- --profile /path/TinyNote.provisionprofile --upload
 
 选项：
   --prepare-only                 只验证前端和 App Store Rust feature
+  --local-iap                   用 Apple Development 签名，供本机沙盒测 IAP（不能上传商店）
   --profile PATH                Mac App Store Connect provisioning profile
   --app-identity NAME           Apple Distribution 签名身份
   --installer-identity NAME     Mac Installer Distribution 签名身份
@@ -100,43 +108,130 @@ TinyNote Mac App Store 构建
   return options;
 }
 
-function identityList() {
+function identityList(codesigningOnly = false) {
+  const args = codesigningOnly
+    ? ['find-identity', '-v', '-p', 'codesigning']
+    : ['find-identity', '-v'];
   try {
-    return run('security', ['find-identity', '-v', '-p', 'codesigning'], { capture: true });
+    return run('security', args, { capture: true });
   } catch {
     return '';
   }
 }
 
-function findAppIdentity() {
-  const output = identityList();
-  const names = [...output.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
-  const isMacAppStoreIdentity = (name) =>
-    name.includes('Apple Distribution:')
+function parseIdentities(output) {
+  return [...output.matchAll(/^\s*\d+\)\s+([A-F0-9]{40})\s+"([^"]+)"/gim)].map((match) => ({
+    hash: match[1].toUpperCase(),
+    name: match[2],
+  }));
+}
+
+function isMacAppStoreAppIdentity(name) {
+  return name.includes('Apple Distribution:')
     || name.includes('Mac App Distribution:')
     || name.includes('3rd Party Mac Developer Application:');
-  const matches = names.filter(isMacAppStoreIdentity);
-  return matches.find((name) => name.includes(`(${TEAM_ID})`))
-    || matches[0]
-    || '';
 }
 
-function findInstallerIdentity() {
-  let output = '';
-  try {
-    output = run('security', ['find-certificate', '-a'], { capture: true });
-  } catch {
+function isMacAppStoreInstallerIdentity(name) {
+  return name.includes('Mac Installer Distribution:')
+    || name.includes('3rd Party Mac Developer Installer:');
+}
+
+function formatIdentity(identity) {
+  return identity ? `${identity.name} [${identity.hash}]` : '';
+}
+
+function resolveNamedOrHashedIdentity(requested, identities, label) {
+  if (/^[A-Fa-f0-9]{40}$/.test(requested)) {
+    return requested.toUpperCase();
+  }
+  const named = identities.filter((item) => item.name === requested);
+  if (named.length === 0) {
+    throw new Error(`未找到${label}签名身份：${requested}`);
+  }
+  return named[0].hash;
+}
+
+function resolveAppIdentity(requested, profilePath) {
+  const identities = parseIdentities(identityList(true)).filter((item) =>
+    isMacAppStoreAppIdentity(item.name)
+  );
+  const teamIdentities = identities.filter((item) => item.name.includes(`(${TEAM_ID})`));
+  const pool = teamIdentities.length ? teamIdentities : identities;
+  const profileHashes = new Set(decodeProfile(profilePath)?.DeveloperCertificatesSha1 || []);
+
+  if (requested) {
+    if (/^[A-Fa-f0-9]{40}$/.test(requested)) {
+      return requested.toUpperCase();
+    }
+    const named = pool.filter((item) => item.name === requested);
+    if (named.length === 0) {
+      throw new Error(`未找到 Apple Distribution 签名身份：${requested}`);
+    }
+    if (profileHashes.size) {
+      const matched = named.filter((item) => profileHashes.has(item.hash));
+      if (matched.length >= 1) return matched[0].hash;
+    }
+    if (named.length > 1) {
+      throw new Error(
+        `签名身份名称有歧义：${requested}。请删除钥匙串中的重复证书，或改用 SHA-1：${named.map(formatIdentity).join('; ')}`,
+      );
+    }
+    return named[0].hash;
+  }
+
+  if (profileHashes.size) {
+    const matched = pool.filter((item) => profileHashes.has(item.hash));
+    if (matched.length >= 1) return matched[0].hash;
+    if (pool.length > 0) {
+      throw new Error(
+        `Provisioning profile 绑定的证书不在钥匙串中（SHA-1: ${[...profileHashes].join(', ')}）。`
+        + `当前 Mac App Store 身份：${pool.map(formatIdentity).join('; ') || '无'}`,
+      );
+    }
     return '';
   }
-  const labels = [...output.matchAll(/"labl"<blob>="([^"]+)"/g)].map((match) => match[1]);
-  return labels.find((label) =>
-    (label.includes('Mac Installer Distribution:')
-      || label.includes('3rd Party Mac Developer Installer:'))
-    && label.includes(`(${TEAM_ID})`)
-  ) || labels.find((label) =>
-    label.includes('Mac Installer Distribution:')
-      || label.includes('3rd Party Mac Developer Installer:')
-  ) || '';
+
+  return pool[0]?.hash || '';
+}
+
+function resolveInstallerIdentity(requested) {
+  const identities = parseIdentities(identityList(false)).filter((item) =>
+    isMacAppStoreInstallerIdentity(item.name)
+  );
+  if (requested) {
+    return resolveNamedOrHashedIdentity(requested, identities, ' Mac Installer Distribution ');
+  }
+  const teamMatches = identities.filter((item) => item.name.includes(`(${TEAM_ID})`));
+  const matches = teamMatches.length ? teamMatches : identities;
+  return matches[0]?.hash || '';
+}
+
+function resolveDevelopmentIdentity(requested) {
+  const identities = parseIdentities(identityList(true)).filter((item) =>
+    item.name.includes('Apple Development:')
+  );
+  if (requested) {
+    return resolveNamedOrHashedIdentity(requested, identities, ' Apple Development ');
+  }
+  return identities[0]?.hash || '';
+}
+
+function identityDisplay(hashOrName) {
+  const match = parseIdentities(identityList(false)).find((item) =>
+    item.hash === hashOrName.toUpperCase() || item.name === hashOrName
+  );
+  return formatIdentity(match) || hashOrName;
+}
+
+function extractCertificateSha1s(plist) {
+  const block = plist.match(/<key>DeveloperCertificates<\/key>\s*<array>([\s\S]*?)<\/array>/)?.[1] || '';
+  return [...block.matchAll(/<data>([\s\S]*?)<\/data>/g)].map((match) =>
+    createHash('sha1')
+      .update(Buffer.from(match[1].replace(/\s+/g, ''), 'base64'))
+      .digest('hex')
+      .toUpperCase()
+  );
 }
 
 function decodeProfile(path) {
@@ -151,6 +246,7 @@ function decodeProfile(path) {
     if (openssl.status !== 0) return null;
     plist = openssl.stdout;
   }
+  const certificateSha1s = extractCertificateSha1s(plist);
   const converted = spawnSync(
     'plutil',
     ['-convert', 'json', '-o', '-', '--', '-'],
@@ -158,7 +254,10 @@ function decodeProfile(path) {
   );
   if (converted.status === 0) {
     try {
-      return JSON.parse(converted.stdout);
+      return {
+        ...JSON.parse(converted.stdout),
+        DeveloperCertificatesSha1: certificateSha1s,
+      };
     } catch {
       // Fall through to the XML parser below.
     }
@@ -182,6 +281,7 @@ function decodeProfile(path) {
     Entitlements: { 'com.apple.application-identifier': appIdentifier },
     Platform: [platform],
     ExpirationDate: expirationDate,
+    DeveloperCertificatesSha1: certificateSha1s,
   };
 }
 
@@ -228,6 +328,35 @@ function buildLocalConfig(profilePath, appIdentity, buildNumber) {
   writeFileSync(LOCAL_CONFIG, `${JSON.stringify(config, null, 2)}\n`);
 }
 
+function buildLocalIapConfig(appIdentity, buildNumber) {
+  const config = JSON.parse(readFileSync(TEMPLATE_CONFIG, 'utf8'));
+  config.bundle.macOS.entitlements = './Entitlements.appstore-local.plist';
+  config.bundle.macOS.signingIdentity = appIdentity;
+  config.bundle.macOS.hardenedRuntime = false;
+  delete config.bundle.macOS.files;
+  if (buildNumber) config.bundle.macOS.bundleVersion = buildNumber;
+  writeFileSync(LOCAL_CONFIG, `${JSON.stringify(config, null, 2)}\n`);
+}
+
+const APP_BUNDLE_DIR = join(TAURI_DIR, 'target', TARGET, 'release', 'bundle', 'macos');
+const APP_PATH = join(APP_BUNDLE_DIR, `${APP_NAME}.app`);
+const LOCAL_IAP_APP_PATH = join(APP_BUNDLE_DIR, `${APP_NAME}-local.app`);
+
+function signLocalIapApp(appIdentity) {
+  const profilePath = join(APP_PATH, 'Contents', 'embedded.provisionprofile');
+  if (existsSync(profilePath)) rmSync(profilePath);
+  run('codesign', [
+    '--force',
+    '--deep',
+    '--sign', appIdentity,
+    '--entitlements', join(TAURI_DIR, 'Entitlements.appstore-local.plist'),
+    APP_PATH,
+  ]);
+  rmSync(LOCAL_IAP_APP_PATH, { recursive: true, force: true });
+  cpSync(APP_PATH, LOCAL_IAP_APP_PATH, { recursive: true });
+  run('codesign', ['--verify', '--deep', '--strict', '--verbose=2', LOCAL_IAP_APP_PATH]);
+}
+
 function verifyProfile(profilePath) {
   if (!existsSync(profilePath)) {
     throw new Error(`找不到 provisioning profile：${profilePath}`);
@@ -256,19 +385,55 @@ function main() {
     throw new Error('Mac App Store 构建必须在 macOS 上运行');
   }
   const options = parseArgs(process.argv.slice(2));
-  prepare();
+  if (!options.localIap) {
+    prepare();
+  }
   if (options.prepareOnly) {
     console.log('App Store 代码与配置预检通过。');
     return;
   }
 
+  if (options.localIap) {
+    if (options.upload) {
+      throw new Error('--local-iap 产物不能上传 App Store，请去掉 --upload');
+    }
+    const appIdentity = resolveDevelopmentIdentity(options.appIdentity);
+    if (!appIdentity) {
+      throw new Error('未找到 Apple Development 证书及其私钥，请先安装到登录钥匙串');
+    }
+    buildLocalIapConfig(appIdentity, options.buildNumber);
+    console.log('构建本机可启动的商店版 .app（Apple Development 签名，用于 Sandbox IAP）…');
+    console.log(`使用 app 签名身份：${identityDisplay(appIdentity)}`);
+    run('npx', [
+      'tauri', 'build',
+      '--no-bundle',
+      '--target', TARGET,
+      '--features', 'app-store',
+      '--config', LOCAL_CONFIG,
+      '--', '--no-default-features',
+    ], { env: { APPLE_SIGNING_IDENTITY: appIdentity } });
+    run('npx', [
+      'tauri', 'bundle',
+      '--bundles', 'app',
+      '--target', TARGET,
+      '--features', 'app-store',
+      '--config', LOCAL_CONFIG,
+    ], { env: { APPLE_SIGNING_IDENTITY: appIdentity } });
+    if (!existsSync(APP_PATH)) throw new Error(`未找到构建产物：${APP_PATH}`);
+    signLocalIapApp(appIdentity);
+    console.log(`完成：${LOCAL_IAP_APP_PATH}`);
+    console.log(`启动：open "${LOCAL_IAP_APP_PATH}"`);
+    console.log('这是本机 IAP 测试包，不要上传 App Store Connect。');
+    return;
+  }
+
   const profilePath = options.profile ? resolve(options.profile) : findProvisioningProfile();
-  const appIdentity = options.appIdentity || findAppIdentity();
-  const installerIdentity = options.installerIdentity || findInstallerIdentity();
   if (!profilePath) {
     throw new Error(`未找到 ${BUNDLE_ID} 的 Mac App Store Connect provisioning profile，请使用 --profile 指定`);
   }
   verifyProfile(profilePath);
+  const appIdentity = resolveAppIdentity(options.appIdentity, profilePath);
+  const installerIdentity = resolveInstallerIdentity(options.installerIdentity);
   if (!appIdentity) {
     throw new Error('未找到 Apple Distribution 证书及其私钥，请先安装到登录钥匙串');
   }
@@ -279,8 +444,8 @@ function main() {
   const version = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8')).version;
   buildLocalConfig(profilePath, appIdentity, options.buildNumber);
 
-  console.log(`使用 app 签名身份：${appIdentity}`);
-  console.log(`使用 installer 签名身份：${installerIdentity}`);
+  console.log(`使用 app 签名身份：${identityDisplay(appIdentity)}`);
+  console.log(`使用 installer 签名身份：${identityDisplay(installerIdentity)}`);
   run('npx', [
     'tauri', 'build',
     '--no-bundle',
@@ -297,7 +462,7 @@ function main() {
     '--config', LOCAL_CONFIG,
   ], { env: { APPLE_SIGNING_IDENTITY: appIdentity } });
 
-  const appPath = join(TAURI_DIR, 'target', TARGET, 'release', 'bundle', 'macos', `${APP_NAME}.app`);
+  const appPath = APP_PATH;
   if (!existsSync(appPath)) throw new Error(`未找到构建产物：${appPath}`);
   run('codesign', ['--verify', '--deep', '--strict', '--verbose=2', appPath]);
 
