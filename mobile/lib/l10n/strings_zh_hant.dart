@@ -103,6 +103,7 @@ final stringsZhHant = AppStrings(
   openSpaceAndFolders: '從左側開啟空間與目錄',
   chooseNotebookInSpace: '在「{name}」中選擇筆記',
   openDirectoryInstructions: '從螢幕左緣向右滑動開啟目錄，選擇筆記後即可瀏覽與編輯筆記區塊。',
+  selectNoteBlockHint: '在左側選擇一則筆記以預覽',
   globalSearch: '全域搜尋…',
   matchScope: '比對範圍：',
   enterKeywordSearch: '輸入關鍵字後按 Return 搜尋',

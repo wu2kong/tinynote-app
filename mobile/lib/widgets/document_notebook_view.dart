@@ -17,12 +17,14 @@ class DocumentNotebookView extends StatefulWidget {
     required this.notebook,
     required this.spaceName,
     required this.breadcrumb,
+    this.showDirectoryButton = true,
   });
 
   final LibraryService library;
   final Notebook notebook;
   final String spaceName;
   final String breadcrumb;
+  final bool showDirectoryButton;
 
   @override
   State<DocumentNotebookView> createState() => _DocumentNotebookViewState();
@@ -150,23 +152,25 @@ class _DocumentNotebookViewState extends State<DocumentNotebookView> {
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
             child: Row(
               children: [
-                IconButton(
-                  tooltip: s.openDirectory,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.surface,
-                    side: BorderSide(color: colors.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                if (widget.showDirectoryButton) ...[
+                  IconButton(
+                    tooltip: s.openDirectory,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: colors.surface,
+                      side: BorderSide(color: colors.border),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(
+                      LucideIcons.panelLeft,
+                      size: 20,
+                      color: colors.title,
                     ),
                   ),
-                  icon: Icon(
-                    LucideIcons.panelLeft,
-                    size: 20,
-                    color: colors.title,
-                  ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

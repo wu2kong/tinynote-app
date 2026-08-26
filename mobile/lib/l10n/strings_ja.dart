@@ -105,6 +105,7 @@ final stringsJa = AppStrings(
   chooseNotebookInSpace: '「{name}」でノートブックを選択',
   openDirectoryInstructions:
       '画面左端から右へスワイプしてディレクトリを開き、ノートブックを選ぶとメモブロックを閲覧・編集できます。',
+  selectNoteBlockHint: '左側のメモを選んでプレビュー',
   globalSearch: 'グローバル検索...',
   matchScope: '検索範囲:',
   enterKeywordSearch: 'キーワードを入力し Return で検索',

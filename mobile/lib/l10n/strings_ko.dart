@@ -105,6 +105,7 @@ final stringsKo = AppStrings(
   chooseNotebookInSpace: '"{name}"에서 노트북 선택',
   openDirectoryInstructions:
       '화면 왼쪽 가장자리에서 오른쪽으로 밀어 디렉터리를 열고, 노트북을 선택해 메모 블록을 탐색하고 편집하세요.',
+  selectNoteBlockHint: '왼쪽에서 메모를 선택해 미리보기',
   globalSearch: '전체 검색...',
   matchScope: '검색 범위:',
   enterKeywordSearch: '키워드를 입력하고 Return을 눌러 검색',

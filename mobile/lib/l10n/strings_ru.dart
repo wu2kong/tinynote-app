@@ -108,6 +108,7 @@ final stringsRu = AppStrings(
   chooseNotebookInSpace: 'Выберите блокнот в "{name}"',
   openDirectoryInstructions:
       'Проведите вправо от левого края экрана, чтобы открыть каталог. Выберите блокнот для просмотра и редактирования блоков заметок.',
+  selectNoteBlockHint: 'Выберите заметку слева для просмотра',
   globalSearch: 'Глобальный поиск...',
   matchScope: 'Область поиска:',
   enterKeywordSearch: 'Введите ключевые слова и нажмите Return для поиска',

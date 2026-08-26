@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../core/layout_breakpoints.dart';
 import '../core/note_parser.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
@@ -12,6 +13,7 @@ import '../theme/app_colors.dart';
 import '../widgets/document_notebook_view.dart';
 import '../widgets/library_drawer.dart';
 import '../widgets/note_block_card.dart';
+import '../widgets/note_block_detail_pane.dart';
 import '../widgets/note_block_sheet.dart';
 import '../widgets/unsupported_notebook_view.dart';
 import 'note_block_editor_screen.dart';
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
   String _query = '';
   String? _selectedBlockId;
+  String? _selectedNotebookPath;
 
   LibraryService get library => widget.library;
 
@@ -36,6 +39,44 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _syncSelectionForNotebook(Notebook? notebook) {
+    final path = notebook?.path;
+    final pathChanged = path != _selectedNotebookPath;
+    final missingSelection =
+        notebook != null &&
+        _selectedBlockId != null &&
+        !notebook.noteBlocks.any((b) => b.id == _selectedBlockId);
+
+    if (!pathChanged && !missingSelection) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        if (path != _selectedNotebookPath) {
+          _selectedNotebookPath = path;
+          _selectedBlockId = null;
+          _query = '';
+          _searchController.clear();
+          return;
+        }
+        if (notebook == null || _selectedBlockId == null) return;
+        final exists = notebook.noteBlocks.any((b) => b.id == _selectedBlockId);
+        if (!exists) {
+          _selectedBlockId = null;
+        }
+      });
+    });
+  }
+
+  NoteBlock? _selectedBlock(Notebook? notebook) {
+    final id = _selectedBlockId;
+    if (notebook == null || id == null) return null;
+    for (final block in notebook.noteBlocks) {
+      if (block.id == id) return block;
+    }
+    return null;
   }
 
   Future<void> _openEditor({
@@ -56,12 +97,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _openNoteBlock(NoteBlock block) async {
+  Future<void> _openNoteBlock(NoteBlock block, {required bool splitDetail}) async {
     final notebook = library.currentNotebook;
     final space = library.currentSpace;
     if (notebook == null) return;
 
     setState(() => _selectedBlockId = block.id);
+
+    if (splitDetail) {
+      return;
+    }
+
     await showNoteBlockSheet(
       context: context,
       library: library,
@@ -167,10 +213,122 @@ class _HomeScreenState extends State<HomeScreen> {
     return [...folders, notebook.name].join(' / ');
   }
 
+  Widget _buildMainContent({
+    required bool wide,
+    required bool splitDetail,
+  }) {
+    final colors = context.colors;
+    final s = context.s;
+    final notebook = library.currentNotebook;
+    final space = library.currentSpace;
+    final spaceName = space?.name ?? s.appTitle;
+    final showDirectoryButton = !wide;
+
+    final showUnsupportedGate =
+        notebook != null &&
+        notebook.format.isUnsupported &&
+        !notebook.compatOpenAsMarkdown;
+    final showDocumentView =
+        notebook != null &&
+        (notebook.format.isDocument || notebook.compatOpenAsMarkdown);
+    final showBlocksView =
+        notebook != null &&
+        !library.notebookLoading &&
+        notebook.format == NotebookFormat.blocks;
+
+    if (notebook == null) {
+      return _EmptyScaffold(
+        spaceName: space?.name,
+        showDirectoryButton: showDirectoryButton,
+        wideLayout: wide,
+      );
+    }
+    if (library.notebookLoading) {
+      return Center(child: CircularProgressIndicator(color: colors.accent));
+    }
+    if (showUnsupportedGate) {
+      return UnsupportedNotebookView(library: library, notebook: notebook);
+    }
+    if (showDocumentView) {
+      return DocumentNotebookView(
+        library: library,
+        notebook: notebook,
+        spaceName: spaceName,
+        breadcrumb: _breadcrumb(space, notebook),
+        showDirectoryButton: showDirectoryButton,
+      );
+    }
+    if (!showBlocksView) {
+      return UnsupportedNotebookView(library: library, notebook: notebook);
+    }
+
+    final filtered = _filteredBlocks(notebook.noteBlocks);
+    final selected = _selectedBlock(notebook);
+    final list = _NotesScaffold(
+      spaceName: spaceName,
+      breadcrumb: _breadcrumb(space, notebook),
+      searchController: _searchController,
+      query: _query,
+      onQueryChanged: (value) => setState(() => _query = value),
+      onCreate: _createNoteBlock,
+      onRefresh: () => library.selectNotebook(notebook),
+      blocks: filtered,
+      totalCount: notebook.noteBlocks.length,
+      selectedBlockId: _selectedBlockId,
+      highlightFirstWhenNone: !splitDetail,
+      showDirectoryButton: showDirectoryButton,
+      showSwipeHint: !splitDetail,
+      onSelect: (block) => _openNoteBlock(block, splitDetail: splitDetail),
+      onDelete: _confirmAndDelete,
+    );
+
+    if (!splitDetail) {
+      return list;
+    }
+
+    return Row(
+      children: [
+        SizedBox(
+          width: kNotesListPaneWidth,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: colors.border)),
+            ),
+            child: list,
+          ),
+        ),
+        Expanded(
+          child:
+              selected == null
+                  ? const NoteBlockDetailEmpty()
+                  : NoteBlockDetailPane(
+                    key: ValueKey(selected.id),
+                    library: library,
+                    block: selected,
+                    breadcrumb: _breadcrumb(space, notebook),
+                    spaceName: spaceName,
+                    onDeleted: (deleted) async {
+                      if (_selectedBlockId == deleted.id) {
+                        setState(() => _selectedBlockId = null);
+                      }
+                    },
+                    onChanged: (updated) {
+                      setState(() => _selectedBlockId = updated.id);
+                    },
+                  ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final s = context.s;
+    final wide = isWideLayout(context);
+    final splitDetail = isSplitDetailLayout(context);
+
+    _syncSelectionForNotebook(library.currentNotebook);
 
     if (library.loading && !library.ready) {
       return Scaffold(
@@ -218,55 +376,50 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final notebook = library.currentNotebook;
-    final space = library.currentSpace;
-    final spaceName = space?.name ?? s.appTitle;
-
     final showFab =
         notebook != null &&
         !library.notebookLoading &&
-        notebook.format == NotebookFormat.blocks;
+        notebook.format == NotebookFormat.blocks &&
+        !splitDetail;
+
+    final libraryPanel = LibraryDrawer(
+      library: library,
+      onOpenNoteBlock: (block) => _openNoteBlock(block, splitDetail: splitDetail),
+      asSidebar: wide,
+      width: kSidebarWidth,
+    );
+
+    final body = _buildMainContent(wide: wide, splitDetail: splitDetail);
+
+    if (wide) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        floatingActionButton:
+            showFab
+                ? FloatingActionButton(
+                  onPressed: _createNoteBlock,
+                  tooltip: s.newNoteBlock,
+                  backgroundColor: colors.accent,
+                  foregroundColor: Colors.white,
+                  elevation: 4,
+                  child: const Icon(LucideIcons.plus, size: 24),
+                )
+                : null,
+        body: Row(
+          children: [
+            libraryPanel,
+            VerticalDivider(width: 1, thickness: 1, color: colors.border),
+            Expanded(child: body),
+          ],
+        ),
+      );
+    }
+
     final edgeWidth = MediaQuery.paddingOf(context).left + 72;
-
-    final showUnsupportedGate =
-        notebook != null &&
-        notebook.format.isUnsupported &&
-        !notebook.compatOpenAsMarkdown;
-    final showDocumentView =
-        notebook != null &&
-        (notebook.format.isDocument || notebook.compatOpenAsMarkdown);
-
-    final body =
-        notebook == null
-            ? _EmptyScaffold(spaceName: space?.name)
-            : library.notebookLoading
-            ? Center(child: CircularProgressIndicator(color: colors.accent))
-            : showUnsupportedGate
-            ? UnsupportedNotebookView(library: library, notebook: notebook)
-            : showDocumentView
-            ? DocumentNotebookView(
-              library: library,
-              notebook: notebook,
-              spaceName: spaceName,
-              breadcrumb: _breadcrumb(space, notebook),
-            )
-            : _NotesScaffold(
-              spaceName: spaceName,
-              breadcrumb: _breadcrumb(space, notebook),
-              searchController: _searchController,
-              query: _query,
-              onQueryChanged: (value) => setState(() => _query = value),
-              onCreate: _createNoteBlock,
-              onRefresh: () => library.selectNotebook(notebook),
-              blocks: _filteredBlocks(notebook.noteBlocks),
-              totalCount: notebook.noteBlocks.length,
-              selectedBlockId: _selectedBlockId,
-              onSelect: _openNoteBlock,
-              onDelete: _confirmAndDelete,
-            );
 
     return Scaffold(
       backgroundColor: colors.background,
-      drawer: LibraryDrawer(library: library, onOpenNoteBlock: _openNoteBlock),
+      drawer: libraryPanel,
       // Default drawer needs ~50% width dragged; use a short custom edge swipe instead.
       drawerEnableOpenDragGesture: false,
       floatingActionButton:
@@ -373,6 +526,9 @@ class _NotesScaffold extends StatelessWidget {
     required this.selectedBlockId,
     required this.onSelect,
     required this.onDelete,
+    this.showDirectoryButton = true,
+    this.highlightFirstWhenNone = true,
+    this.showSwipeHint = true,
   });
 
   final String spaceName;
@@ -387,6 +543,9 @@ class _NotesScaffold extends StatelessWidget {
   final String? selectedBlockId;
   final ValueChanged<NoteBlock> onSelect;
   final ValueChanged<NoteBlock> onDelete;
+  final bool showDirectoryButton;
+  final bool highlightFirstWhenNone;
+  final bool showSwipeHint;
 
   @override
   Widget build(BuildContext context) {
@@ -401,23 +560,25 @@ class _NotesScaffold extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
             child: Row(
               children: [
-                IconButton(
-                  tooltip: s.openDirectory,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.surface,
-                    side: BorderSide(color: colors.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                if (showDirectoryButton) ...[
+                  IconButton(
+                    tooltip: s.openDirectory,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: colors.surface,
+                      side: BorderSide(color: colors.border),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(
+                      LucideIcons.panelLeft,
+                      size: 20,
+                      color: colors.title,
                     ),
                   ),
-                  icon: Icon(
-                    LucideIcons.panelLeft,
-                    size: 20,
-                    color: colors.title,
-                  ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -532,10 +693,11 @@ class _NotesScaffold extends StatelessWidget {
                     style: TextStyle(fontSize: 12, color: colors.muted),
                   ),
                 const Spacer(),
-                Text(
-                  s.swipeLeftToDelete,
-                  style: TextStyle(fontSize: 12, color: colors.muted),
-                ),
+                if (showSwipeHint)
+                  Text(
+                    s.swipeLeftToDelete,
+                    style: TextStyle(fontSize: 12, color: colors.muted),
+                  ),
               ],
             ),
           ),
@@ -583,7 +745,9 @@ class _NotesScaffold extends StatelessWidget {
                             final block = blocks[index];
                             final selected =
                                 selectedBlockId == block.id ||
-                                (selectedBlockId == null && index == 0);
+                                (highlightFirstWhenNone &&
+                                    selectedBlockId == null &&
+                                    index == 0);
                             return _SwipeDeleteTile(
                               key: ValueKey(block.id),
                               onDelete: () => onDelete(block),
@@ -663,9 +827,15 @@ class _SwipeDeleteTile extends StatelessWidget {
 }
 
 class _EmptyScaffold extends StatelessWidget {
-  const _EmptyScaffold({required this.spaceName});
+  const _EmptyScaffold({
+    required this.spaceName,
+    this.showDirectoryButton = true,
+    this.wideLayout = false,
+  });
 
   final String? spaceName;
+  final bool showDirectoryButton;
+  final bool wideLayout;
 
   @override
   Widget build(BuildContext context) {
@@ -679,23 +849,25 @@ class _EmptyScaffold extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
             child: Row(
               children: [
-                IconButton(
-                  tooltip: s.openDirectory,
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: colors.surface,
-                    side: BorderSide(color: colors.border),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                if (showDirectoryButton) ...[
+                  IconButton(
+                    tooltip: s.openDirectory,
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: colors.surface,
+                      side: BorderSide(color: colors.border),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: Icon(
+                      LucideIcons.panelLeft,
+                      size: 20,
+                      color: colors.title,
                     ),
                   ),
-                  icon: Icon(
-                    LucideIcons.panelLeft,
-                    size: 20,
-                    color: colors.title,
-                  ),
-                ),
-                const SizedBox(width: 10),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   child: Text(
                     spaceName ?? s.appTitle,
@@ -747,22 +919,28 @@ class _EmptyScaffold extends StatelessWidget {
                         color: colors.title,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      s.openDirectoryInstructions,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.4,
-                        color: colors.body,
+                    if (!wideLayout || spaceName != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        wideLayout
+                            ? s.openSpaceAndFolders
+                            : s.openDirectoryInstructions,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.4,
+                          color: colors.body,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    OutlinedButton.icon(
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                      icon: const Icon(LucideIcons.menu, size: 18),
-                      label: Text(s.openDirectory),
-                    ),
+                    ],
+                    if (showDirectoryButton) ...[
+                      const SizedBox(height: 20),
+                      OutlinedButton.icon(
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                        icon: const Icon(LucideIcons.menu, size: 18),
+                        label: Text(s.openDirectory),
+                      ),
+                    ],
                   ],
                 ),
               ),

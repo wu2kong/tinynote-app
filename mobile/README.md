@@ -34,6 +34,8 @@ flutter run
 flutter run -d <device-id>
 ```
 
+发给朋友请打 TestFlight 包，不要把 `flutter run` 的开发安装发出去。步骤见 [iOS TestFlight 教程](../docs/IOS_TESTFLIGHT.md)。
+
 ## 项目结构
 
 ```

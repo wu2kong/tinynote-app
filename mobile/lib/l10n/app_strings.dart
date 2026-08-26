@@ -103,6 +103,7 @@ class AppStrings {
     required this.openSpaceAndFolders,
     required this.chooseNotebookInSpace,
     required this.openDirectoryInstructions,
+    required this.selectNoteBlockHint,
     required this.globalSearch,
     required this.matchScope,
     required this.enterKeywordSearch,
@@ -337,6 +338,7 @@ class AppStrings {
   final String openSpaceAndFolders;
   final String chooseNotebookInSpace;
   final String openDirectoryInstructions;
+  final String selectNoteBlockHint;
   final String globalSearch;
   final String matchScope;
   final String enterKeywordSearch;

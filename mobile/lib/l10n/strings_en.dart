@@ -107,6 +107,7 @@ final stringsEn = AppStrings(
   chooseNotebookInSpace: 'Choose a note in "{name}"',
   openDirectoryInstructions:
       'Swipe right from the left edge to open the directory. Choose a note to browse and edit note blocks.',
+  selectNoteBlockHint: 'Select a note on the left to preview',
   globalSearch: 'Global search...',
   matchScope: 'Match scope:',
   enterKeywordSearch: 'Enter keywords and press Return to search',

@@ -103,6 +103,7 @@ final stringsZhHans = AppStrings(
   openSpaceAndFolders: '从左侧打开空间与目录',
   chooseNotebookInSpace: '在「{name}」中选择笔记',
   openDirectoryInstructions: '从屏幕左缘向右滑动打开目录，选择笔记后即可浏览与编辑笔记块。',
+  selectNoteBlockHint: '在左侧选择一条笔记以预览',
   globalSearch: '全局搜索…',
   matchScope: '匹配范围：',
   enterKeywordSearch: '输入关键词后按回车搜索',

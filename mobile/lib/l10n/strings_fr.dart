@@ -108,6 +108,7 @@ final stringsFr = AppStrings(
   chooseNotebookInSpace: 'Choisir un carnet dans "{name}"',
   openDirectoryInstructions:
       'Balayez vers la droite depuis le bord gauche de l’écran pour ouvrir le répertoire. Choisissez un carnet pour parcourir et modifier les blocs de note.',
+  selectNoteBlockHint: 'Sélectionnez une note à gauche pour l’aperçu',
   globalSearch: 'Recherche globale...',
   matchScope: 'Périmètre :',
   enterKeywordSearch: 'Saisissez des mots-clés puis appuyez sur Return',

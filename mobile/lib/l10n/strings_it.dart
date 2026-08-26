@@ -108,6 +108,7 @@ final stringsIt = AppStrings(
   chooseNotebookInSpace: 'Scegli un notebook in "{name}"',
   openDirectoryInstructions:
       'Scorri verso destra dal bordo sinistro dello schermo per aprire la directory. Scegli un notebook per sfogliare e modificare i blocchi nota.',
+  selectNoteBlockHint: 'Seleziona una nota a sinistra per l’anteprima',
   globalSearch: 'Ricerca globale...',
   matchScope: 'Ambito:',
   enterKeywordSearch: 'Inserisci parole chiave e premi Return per cercare',

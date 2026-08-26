@@ -14,7 +14,7 @@ Mac App Store 相关标识：
 
 Mac App Store 构建会启用 App Sandbox、关闭 Sparkle 与站外授权/购买界面，并把用户通过系统对话框选择的工作区授权持久化。官网下载版仍保留 Sparkle 更新能力。
 
-日常开发、测试、编译和发布时，先看 [分发路线总览](./DISTRIBUTION_WORKFLOWS.md)。它明确区分官网版与 Mac App Store 版，并说明为什么 `npm run dev:appstore` 不能直接测试 IAP。
+日常开发、测试、编译和发布时，先看 [分发路线总览](./DISTRIBUTION_WORKFLOWS.md)。它明确区分官网版与 Mac App Store 版，并说明为什么 `npm run dev:appstore` 不能直接测试 IAP。iOS 给朋友体验走 [IOS_TESTFLIGHT.md](./IOS_TESTFLIGHT.md)，与本页的 Mac 商店 `.pkg` 不是同一条命令。
 
 ## 1. 在 Apple Developer 注册 App ID
 

@@ -1,16 +1,16 @@
 # TinyNote 日常开发、测试与发布路线
 
-TinyNote 有两条**独立**的 macOS 分发路线。先判断要验证或交付哪一条，再运行命令；不要把两条路线的 Bundle ID、签名、购买方式或安装包混在一起。
+TinyNote 有两条**独立**的 macOS 分发路线，以及一条 iOS TestFlight 路线。先判断要验证或交付哪一条，再运行命令；不要把两条 macOS 路线的 Bundle ID、签名、购买方式或安装包混在一起。
 
-| 项目 | 官网下载版 | Mac App Store 版 |
-| --- | --- | --- |
-| Bundle ID | `com.wu2kong.tinynote` | `com.wu2kong.tinynote.app` |
-| 收费方式 | 官网购买 + 许可证 | Apple In-App Purchase / StoreKit |
-| 自动更新 | Sparkle | App Store 自动更新 |
-| 本地开发启动 | `npm run dev` | `npm run dev:appstore`（只检查界面与集成） |
-| 可测试 IAP 的启动方式 | 不适用 | 已签名的 `TinyNote.app`，不是 `tauri dev` |
-| 交付物 | DMG（以及 Windows/Linux 安装包） | 签名 `.pkg` 上传 App Store Connect |
-| 发布入口 | GitHub Release / 官网下载 | App Store Connect + App Review |
+| 项目 | 官网下载版 | Mac App Store 版 | iOS TestFlight |
+| --- | --- | --- | --- |
+| Bundle ID | `com.wu2kong.tinynote` | `com.wu2kong.tinynote.app` | `com.wu2kong.tinynote.app` |
+| 收费方式 | 官网购买 + 许可证 | Apple In-App Purchase / StoreKit | 当前无 IAP（与商店 App 同一记录） |
+| 自动更新 | Sparkle | App Store 自动更新 | TestFlight / 日后 App Store |
+| 本地开发启动 | `npm run dev` | `npm run dev:appstore`（只检查界面与集成） | `cd mobile && flutter run` |
+| 可测试 IAP 的启动方式 | 不适用 | 已签名的 `TinyNote.app`，不是 `tauri dev` | 不适用 |
+| 交付物 | DMG（以及 Windows/Linux 安装包） | 签名 `.pkg` 上传 App Store Connect | 签名 `.ipa` 上传 TestFlight |
+| 发布入口 | GitHub Release / 官网下载 | App Store Connect + App Review | [TestFlight iOS](https://appstoreconnect.apple.com/apps/6804570106/testflight/ios) |
 
 ## 先记住这四条
 
@@ -159,6 +159,32 @@ TestFlight 是可选的后续 beta 分发渠道，不是本机 IAP 开发或 San
 
 ---
 
+## C. iOS TestFlight：打包给朋友体验
+
+iOS 客户端在 `mobile/`，与 Mac 商店版共用 Bundle ID `com.wu2kong.tinynote.app`，上传到同一条 App Store Connect 记录（TinyNote 轻记）。
+
+本机插线调试：
+
+```bash
+cd mobile
+flutter run -d <device-id>
+```
+
+发给朋友必须打 IPA 并上传 TestFlight，逐步命令、构建号规则和邀请步骤见 [IOS_TESTFLIGHT.md](./IOS_TESTFLIGHT.md)。最短路径：
+
+```bash
+# 先把 mobile/pubspec.yaml 的 version 从 1.0.0+N 改成 1.0.0+(N+1)
+export PATH="$PWD/.flutter-sdk/bin:$PATH"
+cd mobile
+flutter build ipa --release --export-options-plist ios/ExportOptions.plist
+```
+
+然后按该文档第 3 节上传，再在 TestFlight 把朋友加进外部测试组。
+
+不要把 `flutter run` 装上的开发包发给朋友；那是设备绑定的开发签名。
+
+---
+
 ## 每次改动时怎么选
 
 | 你改了什么 | 至少要跑什么 |
@@ -168,6 +194,7 @@ TestFlight 是可选的后续 beta 分发渠道，不是本机 IAP 开发或 San
 | 商店购买页、产品 ID、Pro 权益、恢复购买 | `npm test` + `npm run dev:appstore` + 已签名 `TinyNote.app` 的 Sandbox 测试 |
 | 商店沙盒、权限、签名、Rust feature | `npm run build:appstore:prepare` + 已签名 `TinyNote.app` 启动验证 |
 | 任何对外发布 | 对应渠道安装包的干净安装/升级测试，再进入发布步骤 |
+| iOS 给朋友体验 | `cd mobile && flutter run` 真机确认后，按 [IOS_TESTFLIGHT.md](./IOS_TESTFLIGHT.md) 打 IPA 上传 |
 
 ## 常见误区
 

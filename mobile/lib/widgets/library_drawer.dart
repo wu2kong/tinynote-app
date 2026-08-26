@@ -14,10 +14,29 @@ import 'import_notes_sheet.dart';
 import 'name_prompt_dialog.dart';
 
 class LibraryDrawer extends StatelessWidget {
-  const LibraryDrawer({super.key, required this.library, this.onOpenNoteBlock});
+  const LibraryDrawer({
+    super.key,
+    required this.library,
+    this.onOpenNoteBlock,
+    this.asSidebar = false,
+    this.width = 288,
+  });
 
   final LibraryService library;
   final ValueChanged<NoteBlock>? onOpenNoteBlock;
+
+  /// When true, render as a permanent side panel (tablet) instead of a Drawer.
+  final bool asSidebar;
+  final double width;
+
+  void _closeDrawerIfNeeded(BuildContext context) {
+    if (asSidebar) return;
+    if (!context.mounted) return;
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    }
+  }
 
   Future<void> _handleError(BuildContext context, Object error) async {
     if (!context.mounted) return;
@@ -339,7 +358,7 @@ class LibraryDrawer extends StatelessWidget {
     if (name == null || !context.mounted) return;
     try {
       await library.createNotebook(parentPath, name, format: format);
-      if (context.mounted) Navigator.of(context).pop();
+      if (context.mounted) _closeDrawerIfNeeded(context);
     } catch (error) {
       if (context.mounted) await _handleError(context, error);
     }
@@ -456,7 +475,7 @@ class LibraryDrawer extends StatelessWidget {
     if (!context.mounted) return;
 
     if (shouldCloseDrawer) {
-      Navigator.of(context).pop();
+      _closeDrawerIfNeeded(context);
     }
 
     if (block != null && onOpenNoteBlock != null) {
@@ -647,12 +666,11 @@ class LibraryDrawer extends StatelessWidget {
     final s = context.s;
     final currentSpace = library.currentSpace;
 
-    return Drawer(
-      backgroundColor: colors.surface,
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+    final panel = SafeArea(
+      right: !asSidebar,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
               child: Row(
@@ -883,7 +901,21 @@ class LibraryDrawer extends StatelessWidget {
               ),
           ],
         ),
-      ),
+    );
+
+    if (asSidebar) {
+      return SizedBox(
+        width: width,
+        child: Material(
+          color: colors.surface,
+          child: panel,
+        ),
+      );
+    }
+
+    return Drawer(
+      backgroundColor: colors.surface,
+      child: panel,
     );
   }
 
@@ -980,7 +1012,7 @@ class LibraryDrawer extends StatelessWidget {
                   onTap: () async {
                     await library.selectNotebook(notebook);
                     if (context.mounted) {
-                      Navigator.of(context).pop();
+                      _closeDrawerIfNeeded(context);
                     }
                   },
                   onLongPress: () => _showNotebookMenu(itemContext, notebook),

@@ -108,6 +108,7 @@ final stringsDe = AppStrings(
   chooseNotebookInSpace: 'Notizbuch in "{name}" auswählen',
   openDirectoryInstructions:
       'Wische vom linken Bildschirmrand nach rechts, um das Verzeichnis zu öffnen. Wähle ein Notizbuch, um Notizblöcke zu durchsuchen und zu bearbeiten.',
+  selectNoteBlockHint: 'Wähle links eine Notiz zur Vorschau',
   globalSearch: 'Globale Suche...',
   matchScope: 'Suchbereich:',
   enterKeywordSearch: 'Suchbegriffe eingeben und Return drücken',
