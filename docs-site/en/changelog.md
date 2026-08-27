@@ -7,6 +7,23 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.6
+
+2026-08-27
+
+### New features
+
+- Note blocks can be configured to copy their body on double-click
+- The mobile app can connect to the same Git repository with an HTTPS URL and access token, then pull or commit-and-push
+- Mobile now supports Markdown notebooks and document notebooks, aligned with desktop
+- Mobile can import the official sample library or notes from files, and includes a feedback entry
+- Improved iOS / iPadOS large-screen layout
+
+### Improvements
+
+- Git sync is built into the app, so desktop no longer depends on a system Git install
+- Unsupported notebook formats show a safe prompt instead of interrupting unexpectedly
+
 ## v1.2.5
 
 2026-08-25
@@ -19,8 +36,6 @@ Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
 ### Improvements
 
-- Git sync is built into the app, so desktop no longer depends on a system Git install
-- The mobile app can connect to the same Git repository with an HTTPS URL and access token, then pull or commit-and-push
 - Sync settings are redesigned: Git versus cloud drive is easier to choose, and source lists plus everyday actions are clearer
 
 ### Fixes
