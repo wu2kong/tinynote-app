@@ -10,6 +10,7 @@ import '../services/library_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/diagnostic_info.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/git_sync_sheet.dart';
 import '../widgets/import_notes_sheet.dart';
 import '../widgets/sample_library_sheet.dart';
 import '../widgets/sheet_drag_area.dart';
@@ -66,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     library.addListener(_onLibraryChanged);
     library.refreshICloudStatus();
+    library.refreshGitStatus();
     _sheetController.addListener(_onSheetSizeChanged);
     _loadVersion();
   }
@@ -391,6 +393,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _openGitSync() async {
+    await showGitSyncSheet(context: context, library: library);
+  }
+
   Future<void> _openImportNotes() async {
     if (library.currentSpace == null) {
       showAppToast(context, context.s.importNotesNoSpace);
@@ -629,6 +635,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 onTap: library.syncBusy ? null : _changeFolder,
                               ),
                             ],
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.folderGit2,
+                                size: 18,
+                                color:
+                                    library.gitConnected
+                                        ? colors.accent
+                                        : colors.muted,
+                              ),
+                              title: s.gitSync,
+                              subtitle:
+                                  library.gitConnected
+                                      ? (library.gitStatus.remoteUrl ??
+                                          s.gitSyncRemoteBound)
+                                      : s.gitSyncNotConnected,
+                              trailing: Icon(
+                                LucideIcons.chevronRight,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap: library.syncBusy ? null : _openGitSync,
+                            ),
                             if (library.syncBusy) ...[
                               const SizedBox(height: 8),
                               LinearProgressIndicator(

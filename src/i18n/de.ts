@@ -99,6 +99,10 @@ export const deMessages = {
       "hideBordersDesc": "Aktiviert einen minimalistischen Stil, indem unnötige Oberflächenrahmen entfernt werden",
       "defaultView": "Standardansicht",
       "defaultViewDesc": "Standardlayout für die Notizliste",
+      "noteBlockDoubleClick": "Doppelklick-Aktion für Notizblöcke",
+      "noteBlockDoubleClickDesc": "Aktion beim Doppelklick auf einen Notizblock",
+      "doubleClickNone": "Keine",
+      "doubleClickCopyContent": "Notizblock-Inhalt kopieren",
       "zoom": "Oberflächenzoom",
       "zoomDesc": "Passt die Skalierung der Oberfläche an",
       "viewList": "Liste",
@@ -173,8 +177,8 @@ export const deMessages = {
     "sync": {
       "panelTitle": "Git-Synchronisierung",
       "panelDesc": "Wähle eine Synchronisierungsmethode. Git kann Notizen auf mehreren Hosting-Plattformen sichern; Cloud-Laufwerk-Sync folgt später.",
-      "desktopDesc": "Die Desktop-App nutzt das System-Git und unterstützt SSH- / HTTPS-Remotes wie Gitea, GitHub und Gitee",
-      "webDesc": "Die Web-Version nutzt isomorphic-git + CORS-Proxy (nur HTTPS-Token)",
+      "desktopDesc": "Die Desktop-App bringt Git mit, eine separate Git-Installation ist nicht nötig. Synchronisiere per HTTPS-Token mit GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit und eigenen Remotes",
+      "webDesc": "Die Web-Version bringt ebenfalls Git mit und nutzt ein HTTPS-Token. Im Browser wird ein CORS-Proxy benötigt, SSH wird nicht unterstützt.",
       "chooseModeHint": "Wähle, wie Notizen synchronisiert werden sollen. Das kannst du später ändern.",
       "modeGitTitle": "Git-Synchronisierung",
       "modeGitDesc": "Synchronisiere diese Notizbibliothek mit GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit oder einem eigenen Git-Server. Du kannst mehrere Plattformen hinzufügen.",
@@ -299,8 +303,8 @@ export const deMessages = {
       "corsProxy": "CORS-Proxy",
       "gitToken": "Git-Token",
       "gitTokenPlaceholder": "HTTPS-Personalzugriffstoken",
-      "webSshUnsupported": "Die Web-Version unterstützt keine SSH-Remotes. Verwende für Gitea/GitHub eine HTTPS-URL und einen Token.",
-      "systemGitHint": "SSH-Remotes wie git@gitea.example.com:user/repo.git werden vom System-Git und lokalen Zugangsdaten verarbeitet; hier ist kein Token erforderlich.",
+      "webSshUnsupported": "Es werden nur HTTPS-Remotes unterstützt. Verwende eine HTTPS-URL und ein Token. SSH wird nicht unterstützt, Git muss nicht installiert werden.",
+      "systemGitHint": "Es werden nur HTTPS-Remotes unterstützt. War der Remote bisher SSH, stelle auf HTTPS um und hinterlege ein Token.",
       "pullLatest": "Neueste Änderungen abrufen",
       "pulling": "Wird abgerufen...",
       "pullComplete": "Abruf abgeschlossen",
@@ -398,7 +402,9 @@ export const deMessages = {
       "history": "Zugriffsverlauf anzeigen",
       "aiChat": "KI-Chat",
       "workspaceSearch": "Aktuelle Workspace-Suche",
-      "globalSearch": "Globale Notizsuche"
+      "globalSearch": "Globale Notizsuche",
+      "hideSpaceSidebar": "Bereichsleiste ausblenden",
+      "hideDirectoryPanel": "Verzeichnisbereich ausblenden"
     },
     "about": {
       "panelTitle": "Über TinyNote",

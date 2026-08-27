@@ -7,7 +7,7 @@ description: 备忘录跟系统走、同步方便。TinyNote 给开发者：本�
 
 苹果备忘录（Apple Notes）在 iPhone、Mac 之间同步几乎无感，适合购物清单、随手拍、家庭共享。它不是为「把一段 shell 贴进终端」设计的，Windows / Linux 上也没有对等客户端。
 
-TinyNote 桌面端覆盖 macOS / Windows / Linux。数据是文件夹里的 Markdown，可以用 Git，也可以[本地备份](/backup)。移动端目前是块笔记 MVP，可用 iCloud 文件夹和桌面库对齐，功能比桌面少。
+TinyNote 桌面端覆盖 macOS / Windows / Linux。数据是文件夹里的 Markdown，可以用 Git，也可以[本地备份](/backup)。移动端可用 iCloud 文件夹或 Git（HTTPS）与桌面库对齐，功能仍比桌面少。
 
 ## 怎么选
 

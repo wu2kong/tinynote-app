@@ -28,7 +28,7 @@ Sync covers files in the library (mostly `.md` and workspace config). AI API key
 4. Follow the in-app sign-in guide, or paste an access token
 5. Create a private repository or choose an existing one
 
-TinyNote initializes and connects the repository in the app. You do **not** need to run `git init` or `git pull` in a terminal.
+TinyNote initializes and connects the repository in the app. You do **not** need to install Git, and you do **not** need to run `git init` or `git pull` in a terminal.
 
 You can add multiple sources. Pull uses the primary source; commit-and-push updates every connected source.
 
@@ -53,8 +53,13 @@ Pull before you edit, then push when you finish. If the same note changed on bot
 
 ## Desktop and web
 
-- Desktop uses system Git. Sources added by the wizard use HTTPS tokens. Existing SSH remotes can still use local keys.
-- Web supports HTTPS + token only.
+- Desktop includes Git, so you do not need to install Git. Sources added by the wizard use HTTPS tokens
+- Web also includes Git and supports HTTPS + token only (a CORS proxy is required in the browser)
+- SSH is not supported. If a remote still uses an SSH URL, switch it to HTTPS and add a token again
+
+## Mobile app
+
+On iOS and Android, open **Settings → Sync → Git sync**, paste the same HTTPS URL and access token, then pull or commit-and-push. You do not need to install Git. SSH is not supported. Conflicts match desktop: the cloud version stays in the original file, and local content is saved as a conflict copy. Tokens stay on the device.
 
 ## Cloud drive sync
 

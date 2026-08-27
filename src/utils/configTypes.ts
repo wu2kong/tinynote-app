@@ -84,6 +84,8 @@ export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig[] = [
   { ...CUSTOM_LLM_PROVIDER_TEMPLATE },
 ];
 
+export type NoteBlockDoubleClickAction = 'none' | 'copyContent';
+
 export interface AppConfig {
   isDarkTheme: boolean;
   colorThemeId: string;
@@ -97,6 +99,8 @@ export interface AppConfig {
   appBarWidth: number;
   hideElementBorders: boolean;
   viewMode: string;
+  /** Action when double-clicking a note block in the list. */
+  noteBlockDoubleClickAction: NoteBlockDoubleClickAction;
   storagePath: string | null;
   backupDir: string | null;
   spaceOrder: string[];
@@ -139,6 +143,7 @@ export const DEFAULT_CONFIG: AppConfig = {
   appBarWidth: 200,
   hideElementBorders: false,
   viewMode: 'list',
+  noteBlockDoubleClickAction: 'none',
   storagePath: null,
   backupDir: null,
   spaceOrder: [],

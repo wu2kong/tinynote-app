@@ -10,6 +10,8 @@ commands.allow = [
   "git_pull",
   "git_sync_push",
   "git_http_request",
+  "git_http_binary",
+  "get_hostname",
   "get_file_diff",
   "revert_file_change"
 ]

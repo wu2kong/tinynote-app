@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import {
   AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId,
   RecentNotebookHistoryItem, ContentType, AppLocale, SpaceGroupDisplayMode,
-  NotebookFormatId,
+  NotebookFormatId, NoteBlockDoubleClickAction,
 } from '@/types';
 import { applyTheme, applyMinimalStyle } from '@/utils/theme';
 import { DEFAULT_COLOR_THEME_ID, isColorThemeId } from '@/themes';
@@ -34,6 +34,7 @@ interface AppActions {
   toggleDirectoryPanel: () => void;
   toggleHideElementBorders: () => void;
   setViewMode: (mode: ViewMode) => void;
+  setNoteBlockDoubleClickAction: (action: NoteBlockDoubleClickAction) => void;
   setSearchQuery: (query: string) => void;
   setStoragePath: (path: string | null) => Promise<void>;
   initApp: () => Promise<void>;
@@ -320,6 +321,7 @@ export const useStore = create<AppStore>((set, get) => ({
   showDirectoryPanel: true,
   hideElementBorders: false,
   viewMode: 'list' as ViewMode,
+  noteBlockDoubleClickAction: 'none' as NoteBlockDoubleClickAction,
   zoomLevel: 1,
   searchQuery: '',
   storagePath: null,
@@ -340,6 +342,11 @@ export const useStore = create<AppStore>((set, get) => ({
     set({ viewMode: mode });
     config.saveConfig({ viewMode: mode });
     refreshDesktopMenuIfNeeded();
+  },
+
+  setNoteBlockDoubleClickAction: (action) => {
+    set({ noteBlockDoubleClickAction: action });
+    config.saveConfig({ noteBlockDoubleClickAction: action });
   },
 
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -503,6 +510,7 @@ export const useStore = create<AppStore>((set, get) => ({
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
+          noteBlockDoubleClickAction: cfg.noteBlockDoubleClickAction ?? 'none',
           spaceGroups: activeCfg.spaceGroups ?? [],
           currentSpaceGroupId: activeCfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
           spaceGroupDisplayMode: activeCfg.spaceGroupDisplayMode ?? 'dropdown',
@@ -520,6 +528,7 @@ export const useStore = create<AppStore>((set, get) => ({
           showDirectoryPanel: cfg.showDirectoryPanel ?? true,
           hideElementBorders: cfg.hideElementBorders ?? false,
           viewMode: cfg.viewMode as ViewMode,
+          noteBlockDoubleClickAction: cfg.noteBlockDoubleClickAction ?? 'none',
           spaceGroups: activeCfg.spaceGroups ?? [],
           currentSpaceGroupId: activeCfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
           spaceGroupDisplayMode: activeCfg.spaceGroupDisplayMode ?? 'dropdown',
@@ -537,6 +546,7 @@ export const useStore = create<AppStore>((set, get) => ({
         showDirectoryPanel: cfg.showDirectoryPanel ?? true,
         hideElementBorders: cfg.hideElementBorders ?? false,
         viewMode: cfg.viewMode as ViewMode,
+        noteBlockDoubleClickAction: cfg.noteBlockDoubleClickAction ?? 'none',
         spaceGroups: cfg.spaceGroups ?? [],
         currentSpaceGroupId: cfg.currentSpaceGroupId || ALL_SPACE_GROUP_ID,
         spaceGroupDisplayMode: cfg.spaceGroupDisplayMode ?? 'dropdown',

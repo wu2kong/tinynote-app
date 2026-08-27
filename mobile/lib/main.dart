@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:git2dart/git2dart.dart';
 
 import 'l10n/l10n.dart';
 import 'screens/home_screen.dart';
 import 'services/library_service.dart';
 import 'theme/app_colors.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await PlatformSpecific.initialize();
+  } catch (error) {
+    debugPrint('git2dart init failed: $error');
+  }
   runApp(const TinyNoteApp());
 }
 

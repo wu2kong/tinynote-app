@@ -24,7 +24,7 @@
     "landing:verify": "node scripts/verify-landing-seo.mjs",
     "indexnow:setup": "node scripts/setup-indexnow.mjs",
     "indexnow:submit": "node scripts/submit-indexnow.mjs",
-    "test": "node --experimental-strip-types --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/*.test.mjs src/utils/*.test.ts"
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs scripts/lib/*.test.mjs src/utils/*.test.mjs src/utils/*.test.ts src/adapters/sync/*.test.ts"
   },
   "dependencies": {
     "@choochmeque/tauri-plugin-iap-api": "^0.10.0-rc.8",
@@ -57,6 +57,7 @@
     "@tauri-apps/plugin-opener": "^2.5.3",
     "@tauri-apps/plugin-shell": "^2.3.5",
     "@uiw/react-codemirror": "^4.25.11",
+    "buffer": "^6.0.3",
     "highlight.js": "^11.11.1",
     "isomorphic-git": "^1.38.4",
     "lucide-react": "^1.8.0",

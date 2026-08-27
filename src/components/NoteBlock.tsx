@@ -34,6 +34,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
   const duplicateNoteBlock = useStore((s) => s.duplicateNoteBlock);
   const deleteNoteBlock = useStore((s) => s.deleteNoteBlock);
   const pasteNoteBlock = useStore((s) => s.pasteNoteBlock);
+  const noteBlockDoubleClickAction = useStore((s) => s.noteBlockDoubleClickAction);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -56,6 +57,16 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    const success = await copyToClipboard(block.content);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDoubleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (noteBlockDoubleClickAction !== 'copyContent') return;
     const success = await copyToClipboard(block.content);
     if (success) {
       setCopied(true);
@@ -242,6 +253,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           style={style}
           className={`note-block-compact ${isSelected ? 'selected' : ''}`}
           onClick={onSelect}
+          onDoubleClick={handleDoubleClick}
           onContextMenu={handleContextMenu}
         >
           <span className="note-block-drag-handle" {...attributes} {...listeners}>
@@ -265,6 +277,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
           style={style}
           className={`note-block-card ${isSelected ? 'selected' : ''}`}
           onClick={onSelect}
+          onDoubleClick={handleDoubleClick}
           onContextMenu={handleContextMenu}
         >
           <div className="note-block-card-header">
@@ -296,6 +309,7 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
         style={style}
         className={`note-block-list ${isSelected ? 'selected' : ''}`}
         onClick={onSelect}
+        onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
       >
         <span className="note-block-drag-handle" {...attributes} {...listeners}>

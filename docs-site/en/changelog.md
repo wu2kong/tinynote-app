@@ -19,6 +19,8 @@ Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
 ### Improvements
 
+- Git sync is built into the app, so desktop no longer depends on a system Git install
+- The mobile app can connect to the same Git repository with an HTTPS URL and access token, then pull or commit-and-push
 - Sync settings are redesigned: Git versus cloud drive is easier to choose, and source lists plus everyday actions are clearer
 
 ### Fixes

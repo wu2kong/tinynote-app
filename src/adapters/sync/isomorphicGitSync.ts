@@ -1,5 +1,6 @@
+import '@/polyfills/nodeBuffer';
 import git from 'isomorphic-git';
-import http from 'isomorphic-git/http/web';
+import { invoke } from '@tauri-apps/api/core';
 import { getStorageAdapter } from '@/adapters/storage';
 import { getWebLightningFs } from '@/adapters/storage/webStorage';
 import { isWeb } from '@/platform/detect';
@@ -9,6 +10,9 @@ import { t } from '@/i18n';
 import { allocateConflictCopyPath } from '@/utils/syncConflictName';
 import { createGitFsFromStorage, repoRelativePath } from './gitFs';
 import { TINYNOTE_GITIGNORE } from './gitignore';
+import { getGitHttpClient } from './gitHttpClient';
+import { toHttpsRemoteUrl } from './gitProviders';
+import { mapMatrixStatus } from './gitStatusMatrix';
 import type {
   FileDiff,
   GitChangedFile,
@@ -26,8 +30,18 @@ import type {
 
 const DEFAULT_CORS_PROXY = 'https://cors.isomorphic-git.org';
 
-function getHostname(): string {
-  return isWeb() ? 'tinynote-web' : 'tinynote-desktop';
+let cachedHostname: string | null = null;
+
+async function resolveHostname(): Promise<string> {
+  if (isWeb()) return 'tinynote-web';
+  if (cachedHostname) return cachedHostname;
+  try {
+    const name = (await invoke<string>('get_hostname')).trim();
+    cachedHostname = name || 'tinynote-desktop';
+  } catch {
+    cachedHostname = 'tinynote-desktop';
+  }
+  return cachedHostname;
 }
 
 function isMdFile(path: string): boolean {
@@ -75,22 +89,13 @@ async function getRepoDir(storagePath: string): Promise<string> {
   return root;
 }
 
-function mapMatrixStatus(headStatus: number, workdirStatus: number, stageStatus: number): GitChangeType | null {
-  if (headStatus === 0 && workdirStatus === 0 && stageStatus === 0) return null;
-  if (headStatus === 0 && workdirStatus === 2) return 'added';
-  if (headStatus === 1 && workdirStatus === 2 && stageStatus === 2) return 'deleted';
-  if (workdirStatus === 2 || stageStatus === 2) return 'modified';
-  if (headStatus === 0) return 'added';
-  return 'modified';
-}
-
 async function collectChangedMdFiles(dir: string): Promise<GitChangedFile[]> {
   const matrix = await git.statusMatrix({ fs: getGitFs(dir), dir });
   const files: GitChangedFile[] = [];
 
-  for (const [filepath, head, workdir, stage] of matrix) {
+  for (const [filepath, head, workdir] of matrix) {
     if (!isMdFile(filepath)) continue;
-    const changeType = mapMatrixStatus(head, workdir, stage);
+    const changeType = mapMatrixStatus(head, workdir);
     if (!changeType) continue;
     files.push({ path: filepath, changeType });
   }
@@ -128,12 +133,24 @@ async function getHttpOptions(auth?: SyncAuth | null) {
   const options = await loadSyncRuntimeOptions();
   const resolved = auth ?? options.auth;
   return {
-    http,
-    corsProxy: options.corsProxy || DEFAULT_CORS_PROXY,
+    http: getGitHttpClient(),
+    ...(isWeb() ? { corsProxy: options.corsProxy || DEFAULT_CORS_PROXY } : {}),
     onAuth: resolved
       ? async () => resolved
       : undefined,
   };
+}
+
+async function ensureHttpsRemotes(dir: string): Promise<void> {
+  const fs = getGitFs(dir);
+  const remotes = await git.listRemotes({ fs, dir });
+  for (const remote of remotes) {
+    if (!remote.remote) continue;
+    const https = toHttpsRemoteUrl(remote.url);
+    if (https === remote.url) continue;
+    await git.deleteRemote({ fs, dir, remote: remote.remote });
+    await git.addRemote({ fs, dir, remote: remote.remote, url: https });
+  }
 }
 
 async function listRepoRemotes(dir: string): Promise<GitRemoteInfo[]> {
@@ -446,7 +463,7 @@ function emptyStatus(hostname: string, error: string | null): GitSyncStatus {
 export function createIsomorphicGitSyncAdapter(): SyncAdapter {
   return {
     async getGitStatus(storagePath: string, primaryRemote?: string | null): Promise<GitSyncStatus> {
-      const hostname = getHostname();
+      const hostname = await resolveHostname();
       const dir = normalizePath(storagePath);
 
       if (!(await getStorageAdapter().exists(dir))) {
@@ -458,6 +475,7 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
       }
 
       const repoDir = await getRepoDir(dir);
+      await ensureHttpsRemotes(repoDir);
 
       try {
         const remotes = await listRepoRemotes(repoDir);
@@ -517,17 +535,20 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
 
     async listRemotes(storagePath: string): Promise<GitRemoteInfo[]> {
       if (!(await isGitRepo(storagePath))) return [];
-      return listRepoRemotes(await getRepoDir(storagePath));
+      const dir = await getRepoDir(storagePath);
+      await ensureHttpsRemotes(dir);
+      return listRepoRemotes(dir);
     },
 
     async addRemote(storagePath: string, name: string, url: string): Promise<void> {
       const dir = await getRepoDir(storagePath);
       const fs = getGitFs(dir);
+      const https = toHttpsRemoteUrl(url);
       const remotes = await listRepoRemotes(dir);
       if (remotes.some((remote) => remote.name === name)) {
         await git.deleteRemote({ fs, dir, remote: name });
       }
-      await git.addRemote({ fs, dir, remote: name, url });
+      await git.addRemote({ fs, dir, remote: name, url: https });
     },
 
     async removeRemote(storagePath: string, name: string): Promise<void> {
@@ -537,12 +558,13 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
 
     async gitPull(storagePath: string, options?: GitPullOptions): Promise<GitPullResult> {
       const dir = await getRepoDir(storagePath);
+      await ensureHttpsRemotes(dir);
       const branch = await currentBranchName(dir);
       const remotes = await listRepoRemotes(dir);
       const remote = pickPrimaryRemote(remotes, options?.remote)?.name ?? 'origin';
       const httpOptions = await getHttpOptions(options?.auth);
       const suffix = options?.conflictCopySuffix || t('settings.sync.conflictCopySuffix', { date: 'conflict' });
-      const author = { name: getHostname(), email: 'tinynote@local' };
+      const author = { name: await resolveHostname(), email: 'tinynote@local' };
       const fs = getGitFs(dir);
       const copies: string[] = [];
 
@@ -607,9 +629,10 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
 
     async gitSyncPush(storagePath: string, options?: GitPushOptions): Promise<GitPushResult> {
       const dir = await getRepoDir(storagePath);
+      await ensureHttpsRemotes(dir);
       const changedFiles = await collectChangedMdFiles(dir);
       const fs = getGitFs(dir);
-      const hostname = getHostname();
+      const hostname = await resolveHostname();
       let message = `${hostname} sync push`;
 
       if (changedFiles.length > 0) {
@@ -673,7 +696,7 @@ export function createIsomorphicGitSyncAdapter(): SyncAdapter {
       const matrix = await git.statusMatrix({ fs, dir });
       const row = matrix.find(([path]) => path === relative);
       if (row) {
-        const mapped = mapMatrixStatus(row[1], row[2], row[3]);
+        const mapped = mapMatrixStatus(row[1], row[2]);
         if (mapped) changeType = mapped;
         if (row[1] === 0) isNewFile = true;
       }

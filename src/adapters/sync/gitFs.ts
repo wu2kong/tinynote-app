@@ -1,5 +1,5 @@
-import { joinPath, normalizePath } from '@/utils/path';
-import type { StorageAdapter } from '@/adapters/storage/types';
+import { joinPath, normalizePath } from '../../utils/path.ts';
+import type { StorageAdapter } from '../storage/types.ts';
 
 type FsStat = {
   isFile(): boolean;
@@ -7,7 +7,29 @@ type FsStat = {
   isSymbolicLink(): boolean;
   mode?: number;
   size?: number;
+  mtimeMs?: number;
+  ctimeMs?: number;
+  mtime?: Date;
+  ctime?: Date;
+  uid?: number;
+  gid?: number;
+  ino?: number;
+  dev?: number;
 };
+
+class FsError extends Error {
+  code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = 'FsError';
+    this.code = code;
+  }
+}
+
+function enoent(syscall: string, filepath: string): FsError {
+  return new FsError('ENOENT', `ENOENT: no such file or directory, ${syscall} '${filepath}'`);
+}
 
 function resolvePath(rootDir: string, filepath: string): string {
   const root = normalizePath(rootDir);
@@ -29,14 +51,37 @@ export function createGitFsFromStorage(storage: StorageAdapter, rootDir: string)
     const resolved = resolvePath(root, filepath);
     try {
       const info = await storage.stat(resolved);
+      const size = info.size ?? 0;
+      const mtimeMs = info.mtimeMs ?? Date.now();
+      const mtime = new Date(mtimeMs);
       return {
         isFile: () => info.isFile,
         isDirectory: () => info.isDirectory,
         isSymbolicLink: () => false,
         mode: info.isDirectory ? 0o40755 : 0o100644,
+        size,
+        mtimeMs,
+        ctimeMs: mtimeMs,
+        mtime,
+        ctime: mtime,
+        uid: 0,
+        gid: 0,
+        ino: 0,
+        dev: 0,
       };
     } catch {
-      throw new Error(`ENOENT: no such file or directory, stat '${filepath}'`);
+      throw enoent('stat', filepath);
+    }
+  }
+
+  async function ensureParent(resolved: string): Promise<void> {
+    const parent = resolved.slice(0, resolved.lastIndexOf('/'));
+    if (parent && parent !== resolved) {
+      try {
+        await storage.mkdir(parent, true);
+      } catch {
+        // exists
+      }
     }
   }
 
@@ -44,39 +89,60 @@ export function createGitFsFromStorage(storage: StorageAdapter, rootDir: string)
     promises: {
       async readFile(filepath: string, options?: { encoding?: string }) {
         const resolved = resolvePath(root, filepath);
-        const content = await storage.readTextFile(resolved);
-        if (options?.encoding === 'utf8') return content;
-        return new TextEncoder().encode(content);
+        try {
+          if (options?.encoding === 'utf8') {
+            return await storage.readTextFile(resolved);
+          }
+          const bytes = await storage.readBinaryFile(resolved);
+          return bytes instanceof Uint8Array ? bytes.slice() : new Uint8Array(bytes);
+        } catch {
+          throw enoent('open', filepath);
+        }
       },
 
-      async writeFile(filepath: string, data: string | Uint8Array, options?: { encoding?: string }) {
+      async writeFile(
+        filepath: string,
+        data: string | Uint8Array,
+        _options?: { encoding?: string; mode?: number },
+      ) {
         const resolved = resolvePath(root, filepath);
-        const parent = resolved.slice(0, resolved.lastIndexOf('/'));
-        if (parent && parent !== resolved) {
-          try {
-            await storage.mkdir(parent, true);
-          } catch {
-            // exists
-          }
+        await ensureParent(resolved);
+        if (typeof data === 'string') {
+          await storage.writeTextFile(resolved, data);
+          return;
         }
-        const text = typeof data === 'string'
-          ? data
-          : new TextDecoder(options?.encoding ?? 'utf8').decode(data);
-        await storage.writeTextFile(resolved, text);
+        await storage.writeBinaryFile(
+          resolved,
+          data instanceof Uint8Array ? data.slice() : new Uint8Array(data),
+        );
       },
 
       async mkdir(filepath: string, options?: { recursive?: boolean }) {
-        await storage.mkdir(resolvePath(root, filepath), options?.recursive ?? false);
+        const resolved = resolvePath(root, filepath);
+        try {
+          await storage.mkdir(resolved, options?.recursive ?? false);
+        } catch (error) {
+          if (await storage.exists(resolved)) return;
+          throw error;
+        }
       },
 
       async rmdir(filepath: string) {
-        await storage.remove(resolvePath(root, filepath), false);
+        try {
+          await storage.remove(resolvePath(root, filepath), false);
+        } catch {
+          throw enoent('rmdir', filepath);
+        }
       },
 
       async readdir(filepath: string) {
         const resolved = resolvePath(root, filepath);
-        const entries = await storage.readDir(resolved);
-        return entries.map((entry) => entry.name).filter(Boolean);
+        try {
+          const entries = await storage.readDir(resolved);
+          return entries.map((entry) => entry.name).filter(Boolean);
+        } catch {
+          throw enoent('scandir', filepath);
+        }
       },
 
       stat,
@@ -86,11 +152,30 @@ export function createGitFsFromStorage(storage: StorageAdapter, rootDir: string)
       },
 
       async unlink(filepath: string) {
-        await storage.remove(resolvePath(root, filepath), false);
+        try {
+          await storage.remove(resolvePath(root, filepath), false);
+        } catch {
+          throw enoent('unlink', filepath);
+        }
       },
 
       async rename(oldPath: string, newPath: string) {
-        await storage.rename(resolvePath(root, oldPath), resolvePath(root, newPath));
+        const from = resolvePath(root, oldPath);
+        const to = resolvePath(root, newPath);
+        await ensureParent(to);
+        await storage.rename(from, to);
+      },
+
+      async chmod(_filepath: string, _mode: number) {
+        // Note library files do not need POSIX execute bits.
+      },
+
+      async readlink(filepath: string): Promise<string> {
+        throw new FsError('EINVAL', `EINVAL: invalid argument, readlink '${filepath}'`);
+      },
+
+      async symlink(_target: string, filepath: string) {
+        throw new FsError('EPERM', `EPERM: operation not permitted, symlink '${filepath}'`);
       },
     },
   };

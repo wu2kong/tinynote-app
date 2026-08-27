@@ -266,4 +266,46 @@ final stringsFr = AppStrings(
   copyFailed: 'Échec de la copie',
   helpDocs: 'Documentation',
   openHelpDocsFailed: 'Impossible d’ouvrir la documentation',
+  gitSync: 'Sync Git',
+  gitSyncDesc:
+      'Partager la bibliothèque avec le bureau via HTTPS. Pas besoin d’installer Git',
+  gitSyncHttpsOnly:
+      'Seuls les dépôts HTTPS sont pris en charge. Utilisez une URL HTTPS et un jeton d’accès. SSH n’est pas pris en charge, et vous n’avez pas besoin d’installer Git.',
+  gitSyncConnect: 'Connecter le dépôt',
+  gitSyncDisconnect: 'Déconnecter',
+  gitSyncDisconnectTitle: 'Déconnecter la sync Git',
+  gitSyncDisconnectMessage:
+      'L’app ne synchronisera plus avec le dépôt distant. Les notes locales et le dossier .git restent sur l’appareil ; vous pourrez reconnecter plus tard.',
+  gitSyncUrl: 'URL HTTPS du dépôt',
+  gitSyncUrlHint: 'https://github.com/user/notes.git',
+  gitSyncToken: 'Jeton d’accès',
+  gitSyncTokenHint: 'Collez un jeton d’accès personnel',
+  gitSyncUsername: 'Nom d’utilisateur (facultatif)',
+  gitSyncPull: 'Récupérer les dernières',
+  gitSyncPush: 'Commit et push',
+  gitSyncPulling: 'Récupération...',
+  gitSyncPushing: 'Envoi...',
+  gitSyncConnecting: 'Initialisation et connexion…',
+  gitSyncConnected: 'Dépôt Git connecté',
+  gitSyncDisconnected: 'Sync Git déconnectée',
+  gitSyncPullComplete: 'Récupération terminée',
+  gitSyncPullCompleteWithConflicts:
+      'Récupération terminée. Versions locales en conflit enregistrées sous : {files}',
+  gitSyncPushed: 'Envoyé',
+  gitSyncNoChanges: 'Aucune modification à valider',
+  gitSyncUrlRequired: 'Saisissez l’URL HTTPS du dépôt',
+  gitSyncTokenRequired: 'Collez d’abord un jeton d’accès',
+  gitSyncConnectFailed:
+      'La connexion a échoué. Vérifiez l’URL et le jeton, puis réessayez.',
+  gitSyncPullFailed: 'Échec de la récupération',
+  gitSyncPushFailed: 'Échec de l’envoi',
+  gitSyncConflictCopySuffix: ' (version en conflit {date})',
+  gitSyncConflictHint:
+      'Les notes locales et distantes peuvent être en conflit. Réessayez d’extraire plus tard. Si cela échoue encore, faites d’abord une sauvegarde locale.',
+  gitSyncNotReady: 'La bibliothèque de notes n’est pas encore prête',
+  gitSyncOpenTokenPage: 'Ouvrir la page de création de jeton',
+  gitSyncAuthFailed: 'Autorisation échouée. Vérifiez le jeton et réessayez.',
+  gitSyncRemoteBound: 'Dépôt HTTPS connecté',
+  gitSyncNotConnected:
+      'Saisissez une URL et un jeton pour synchroniser avec le dépôt du bureau',
 );

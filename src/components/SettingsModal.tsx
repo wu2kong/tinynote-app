@@ -5,7 +5,7 @@ import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { invoke } from '@tauri-apps/api/core';
 import { useStore } from '@/store/useStore';
-import { ColorThemeId, SpaceGroupDisplayMode, ViewMode } from '@/types';
+import { ColorThemeId, NoteBlockDoubleClickAction, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
 import { HOMEPAGE_URL, DOCS_URL, DOWNLOAD_PAGE_URL, GITHUB_RELEASES_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
 import { checkForUpdate, checkWithNativeUpdater, downloadAndInstall, formatUpdateError, getAppVersion, UpdateInfo } from '@/utils/updater';
@@ -92,6 +92,11 @@ const VIEW_MODE_OPTIONS: { value: ViewMode; labelKey: string }[] = [
   { value: 'compact', labelKey: 'settings.general.viewCompact' },
 ];
 
+const NOTE_BLOCK_DOUBLE_CLICK_OPTIONS: { value: NoteBlockDoubleClickAction; labelKey: string }[] = [
+  { value: 'none', labelKey: 'settings.general.doubleClickNone' },
+  { value: 'copyContent', labelKey: 'settings.general.doubleClickCopyContent' },
+];
+
 const SPACE_GROUP_DISPLAY_OPTIONS: { value: SpaceGroupDisplayMode; labelKey: string }[] = [
   { value: 'disabled', labelKey: 'settings.general.spaceGroupDisabled' },
   { value: 'dropdown', labelKey: 'settings.general.spaceGroupDropdown' },
@@ -117,6 +122,7 @@ const GeneralSettings: React.FC = () => {
   const showAppBar = useStore((s) => s.showAppBar);
   const hideElementBorders = useStore((s) => s.hideElementBorders);
   const viewMode = useStore((s) => s.viewMode);
+  const noteBlockDoubleClickAction = useStore((s) => s.noteBlockDoubleClickAction);
   const spaceGroupDisplayMode = useStore((s) => s.spaceGroupDisplayMode);
   const zoomLevel = useStore((s) => s.zoomLevel);
   const toggleTheme = useStore((s) => s.toggleTheme);
@@ -124,6 +130,7 @@ const GeneralSettings: React.FC = () => {
   const toggleAppBar = useStore((s) => s.toggleAppBar);
   const toggleHideElementBorders = useStore((s) => s.toggleHideElementBorders);
   const setViewMode = useStore((s) => s.setViewMode);
+  const setNoteBlockDoubleClickAction = useStore((s) => s.setNoteBlockDoubleClickAction);
   const setSpaceGroupDisplayMode = useStore((s) => s.setSpaceGroupDisplayMode);
   const zoomIn = useStore((s) => s.zoomIn);
   const zoomOut = useStore((s) => s.zoomOut);
@@ -218,6 +225,22 @@ const GeneralSettings: React.FC = () => {
           onChange={(e) => setViewMode(e.target.value as ViewMode)}
         >
           {VIEW_MODE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="settings-row">
+        <div className="settings-row-info">
+          <span className="settings-row-label">{t('settings.general.noteBlockDoubleClick')}</span>
+          <span className="settings-row-desc">{t('settings.general.noteBlockDoubleClickDesc')}</span>
+        </div>
+        <select
+          className="settings-select"
+          value={noteBlockDoubleClickAction}
+          onChange={(e) => setNoteBlockDoubleClickAction(e.target.value as NoteBlockDoubleClickAction)}
+        >
+          {NOTE_BLOCK_DOUBLE_CLICK_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
           ))}
         </select>
@@ -714,11 +737,13 @@ function getModifierKeyLabel(): string {
   return /mac|darwin|iphone|ipad|ipod/.test(platform) ? 'Cmd' : 'Ctrl';
 }
 
-const SHORTCUT_ITEMS: { key: 'P' | 'I' | 'F' | 'Shift+F'; descriptionKey: string }[] = [
+const SHORTCUT_ITEMS: { key: 'P' | 'I' | 'F' | 'Shift+F' | '1' | '2'; descriptionKey: string }[] = [
   { key: 'P', descriptionKey: 'settings.shortcuts.history' },
   { key: 'I', descriptionKey: 'settings.shortcuts.aiChat' },
   { key: 'F', descriptionKey: 'settings.shortcuts.workspaceSearch' },
   { key: 'Shift+F', descriptionKey: 'settings.shortcuts.globalSearch' },
+  { key: '1', descriptionKey: 'settings.shortcuts.hideSpaceSidebar' },
+  { key: '2', descriptionKey: 'settings.shortcuts.hideDirectoryPanel' },
 ];
 
 function formatShortcut(key: string): string {

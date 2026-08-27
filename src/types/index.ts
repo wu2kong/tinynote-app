@@ -59,6 +59,8 @@ export interface Space {
 
 export type ViewMode = 'list' | 'card' | 'compact';
 
+export type NoteBlockDoubleClickAction = 'none' | 'copyContent';
+
 export type ColorThemeId = 'default' | 'qinglan' | 'sunset' | 'paper' | 'matcha';
 
 export type SpaceGroupDisplayMode = 'disabled' | 'dropdown' | 'collapse';
@@ -86,6 +88,7 @@ export interface AppState {
   showDirectoryPanel: boolean;
   hideElementBorders: boolean;
   viewMode: ViewMode;
+  noteBlockDoubleClickAction: NoteBlockDoubleClickAction;
   zoomLevel: number;
   searchQuery: string;
   storagePath: string | null;

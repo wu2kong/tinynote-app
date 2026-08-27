@@ -17,12 +17,12 @@ use tauri::ipc::Channel;
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
 use sync::{
     get_file_diff as run_get_file_diff, get_git_status as run_get_git_status,
-    git_add_remote as run_git_add_remote, git_http_request as run_git_http_request,
-    git_init as run_git_init, git_list_remotes as run_git_list_remotes,
-    git_pull as run_git_pull, git_remove_remote as run_git_remove_remote,
-    git_sync_push as run_git_sync_push, revert_file_change as run_revert_file_change,
-    FileDiff, GitAuthPayload, GitHttpResponse, GitInitResult, GitPullResult, GitPushResult, GitRemoteInfo,
-    GitSyncStatus,
+    git_add_remote as run_git_add_remote, git_http_binary as run_git_http_binary,
+    git_http_request as run_git_http_request, git_init as run_git_init,
+    git_list_remotes as run_git_list_remotes, git_pull as run_git_pull,
+    git_remove_remote as run_git_remove_remote, git_sync_push as run_git_sync_push,
+    revert_file_change as run_revert_file_change, FileDiff, GitAuthPayload, GitHttpBinaryResponse,
+    GitHttpResponse, GitInitResult, GitPullResult, GitPushResult, GitRemoteInfo, GitSyncStatus,
 };
 
 static LLM_STREAM_CANCELLATIONS: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> = OnceLock::new();
@@ -117,6 +117,21 @@ fn git_http_request(
     body: Option<String>,
 ) -> Result<GitHttpResponse, String> {
     run_git_http_request(&method, &url, headers, body)
+}
+
+#[tauri::command]
+fn git_http_binary(
+    method: String,
+    url: String,
+    headers: Option<HashMap<String, String>>,
+    body_base64: Option<String>,
+) -> Result<GitHttpBinaryResponse, String> {
+    run_git_http_binary(&method, &url, headers, body_base64.as_deref())
+}
+
+#[tauri::command]
+fn get_hostname() -> String {
+    sync::get_hostname()
 }
 
 #[tauri::command]
@@ -521,6 +536,8 @@ pub fn run() {
             git_pull,
             git_sync_push,
             git_http_request,
+            git_http_binary,
+            get_hostname,
             get_file_diff,
             revert_file_change,
             download_release_asset,

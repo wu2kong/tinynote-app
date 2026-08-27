@@ -12,6 +12,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   file_picker: ^10.3.10
+  git2dart: ^0.5.4
   flutter_markdown_plus: ^1.0.12
   flutter_slidable: ^4.0.3
   lucide_icons_flutter: ^3.1.15

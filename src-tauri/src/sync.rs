@@ -120,7 +120,7 @@ fn read_command_hostname(program: &str, args: &[&str]) -> Option<String> {
     trim_hostname(String::from_utf8_lossy(&output.stdout).into_owned())
 }
 
-fn get_hostname() -> String {
+pub fn get_hostname() -> String {
     #[cfg(windows)]
     {
         if let Ok(name) = std::env::var("COMPUTERNAME") {
@@ -1176,6 +1176,90 @@ pub fn git_http_request(
 pub struct GitHttpResponse {
     pub status: u16,
     pub text: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitHttpBinaryResponse {
+    pub url: String,
+    pub status: u16,
+    pub status_text: String,
+    pub headers: HashMap<String, String>,
+    pub body_base64: String,
+}
+
+pub fn git_http_binary(
+    method: &str,
+    url: &str,
+    headers: Option<HashMap<String, String>>,
+    body_base64: Option<&str>,
+) -> Result<GitHttpBinaryResponse, String> {
+    use base64::Engine;
+
+    let parsed = reqwest::Url::parse(url).map_err(|_| "请求地址无效".to_string())?;
+    if !matches!(parsed.scheme(), "https" | "http") {
+        return Err("仅支持 HTTP 或 HTTPS".to_string());
+    }
+
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(120))
+        .redirect(reqwest::redirect::Policy::limited(10))
+        .build()
+        .map_err(|e| format!("无法创建网络请求: {e}"))?;
+
+    let mut request = match method.to_ascii_uppercase().as_str() {
+        "GET" => client.get(parsed),
+        "POST" => client.post(parsed),
+        "PUT" => client.put(parsed),
+        "PATCH" => client.patch(parsed),
+        "HEAD" => client.head(parsed),
+        _ => return Err("不支持的请求方法".to_string()),
+    };
+
+    if let Some(headers) = headers {
+        for (key, value) in headers {
+            request = request.header(key, value);
+        }
+    }
+    if let Some(body_base64) = body_base64.filter(|value| !value.is_empty()) {
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(body_base64)
+            .map_err(|_| "请求内容无效".to_string())?;
+        request = request.body(bytes);
+    }
+
+    let response = request.send().map_err(|e| {
+        if e.is_connect() || e.is_timeout() || e.is_request() {
+            "网络请求失败，请检查网络连接".to_string()
+        } else {
+            format!("请求失败: {e}")
+        }
+    })?;
+
+    let status = response.status();
+    let status_text = status.canonical_reason().unwrap_or("").to_string();
+    let final_url = response.url().to_string();
+    let mut response_headers = HashMap::new();
+    for (key, value) in response.headers().iter() {
+        let name = key.as_str().to_ascii_lowercase();
+        if matches!(name.as_str(), "content-encoding" | "content-length" | "transfer-encoding") {
+            continue;
+        }
+        if let Ok(text) = value.to_str() {
+            response_headers.insert(name, text.to_string());
+        }
+    }
+
+    let bytes = response
+        .bytes()
+        .map_err(|e| format!("读取响应失败: {e}"))?;
+    Ok(GitHttpBinaryResponse {
+        url: final_url,
+        status: status.as_u16(),
+        status_text,
+        headers: response_headers,
+        body_base64: base64::engine::general_purpose::STANDARD.encode(bytes),
+    })
 }
 
 pub fn get_file_diff(storage_path: &str, file_path: &str) -> Result<FileDiff, String> {

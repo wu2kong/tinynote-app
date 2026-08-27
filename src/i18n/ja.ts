@@ -99,6 +99,10 @@ export const jaMessages = {
       "hideBordersDesc": "不要なインターフェイスの境界線を取り除き、ミニマルな表示にします",
       "defaultView": "既定の表示",
       "defaultViewDesc": "ノート一覧の既定レイアウト",
+      "noteBlockDoubleClick": "ノートブロックのダブルクリック動作",
+      "noteBlockDoubleClickDesc": "ノートブロックをダブルクリックしたときの動作",
+      "doubleClickNone": "なし",
+      "doubleClickCopyContent": "ノートブロック本文をコピー",
       "zoom": "インターフェイスのズーム",
       "zoomDesc": "インターフェイスの表示倍率を調整します",
       "viewList": "リスト",
@@ -173,8 +177,8 @@ export const jaMessages = {
     "sync": {
       "panelTitle": "Git 同期",
       "panelDesc": "同期方法を 1 つ選んでください。Git なら複数のホスティングにノートをバックアップできます。クラウドドライブ同期は近日公開です。",
-      "desktopDesc": "デスクトップ版はシステム Git を使用し、Gitea、GitHub、Gitee などの SSH / HTTPS リモートをサポートします",
-      "webDesc": "Web 版は isomorphic-git + CORS プロキシを使用します（HTTPS Token のみ）",
+      "desktopDesc": "デスクトップ版は Git を内蔵しており、別途 Git をインストールする必要はありません。HTTPS Token で GitHub、Gitee、GitLab、Alibaba Cloud Codeup、AtomGit、カスタムリモートに同期できます",
+      "webDesc": "Web 版も Git を内蔵し、HTTPS Token を使用します。ブラウザでは CORS プロキシが必要で、SSH は非対応です。",
       "chooseModeHint": "ノートの同期方法を選んでください。あとから変更できます。",
       "modeGitTitle": "Git 同期",
       "modeGitDesc": "ノートライブラリを GitHub、Gitee、GitLab、Alibaba Cloud Codeup、AtomGit、またはカスタム Git サーバーに同期できます。複数のプラットフォームを同時に接続することもできます。",
@@ -299,8 +303,8 @@ export const jaMessages = {
       "corsProxy": "CORS Proxy",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "HTTPS 個人アクセストークン",
-      "webSshUnsupported": "Web 版は SSH リモートをサポートしていません。Gitea/GitHub には HTTPS URL と Token を使用してください。",
-      "systemGitHint": "git@gitea.example.com:user/repo.git のような SSH リモートは、システム Git とローカル認証情報で処理されます。ここでは Token は不要です。",
+      "webSshUnsupported": "HTTPS リモートのみ対応です。HTTPS URL と Token を使用してください。SSH は非対応で、Git のインストールも不要です。",
+      "systemGitHint": "HTTPS リモートのみ対応です。SSH の場合は HTTPS に切り替えて Token を設定してください。",
       "pullLatest": "最新を取得",
       "pulling": "取得中...",
       "pullComplete": "取得が完了しました",
@@ -398,7 +402,9 @@ export const jaMessages = {
       "history": "アクセス履歴を表示",
       "aiChat": "AI チャット",
       "workspaceSearch": "現在のワークスペースを検索",
-      "globalSearch": "全ノートを検索"
+      "globalSearch": "全ノートを検索",
+      "hideSpaceSidebar": "スペースサイドバーを隠す",
+      "hideDirectoryPanel": "ディレクトリパネルを隠す"
     },
     "about": {
       "panelTitle": "TinyNote について",

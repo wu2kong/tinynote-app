@@ -1,4 +1,6 @@
-import { readDir, readTextFile, writeTextFile, mkdir, remove, rename, exists, stat as tauriStat } from '@tauri-apps/plugin-fs';
+import {
+  readDir, readFile, readTextFile, writeFile, writeTextFile, mkdir, remove, rename, exists, stat as tauriStat,
+} from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { normalizePath } from '@/utils/path';
 import type { DirEntry, StorageAdapter } from './types';
@@ -34,6 +36,14 @@ export function createTauriStorageAdapter(): StorageAdapter {
       return writeTextFile(normalizePath(path), content, { create: true });
     },
 
+    readBinaryFile(path) {
+      return readFile(normalizePath(path));
+    },
+
+    writeBinaryFile(path, content) {
+      return writeFile(normalizePath(path), content, { create: true });
+    },
+
     mkdir(path, recursive = false) {
       return mkdir(normalizePath(path), { recursive });
     },
@@ -55,6 +65,8 @@ export function createTauriStorageAdapter(): StorageAdapter {
       return {
         isFile: info.isFile,
         isDirectory: info.isDirectory,
+        size: info.size,
+        mtimeMs: info.mtime ? info.mtime.getTime() : undefined,
       };
     },
   };

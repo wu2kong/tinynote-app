@@ -99,6 +99,10 @@ export const zhHantMessages = {
       "hideBordersDesc": "移除不必要的介面邊框，啟用極簡風格",
       "defaultView": "預設檢視",
       "defaultViewDesc": "筆記列表的預設版面配置",
+      "noteBlockDoubleClick": "筆記塊雙擊動作",
+      "noteBlockDoubleClickDesc": "雙擊筆記塊時執行的操作",
+      "doubleClickNone": "無",
+      "doubleClickCopyContent": "複製筆記塊正文",
       "zoom": "介面縮放",
       "zoomDesc": "調整介面顯示比例",
       "viewList": "列表",
@@ -173,8 +177,8 @@ export const zhHantMessages = {
     "sync": {
       "panelTitle": "Git 同步",
       "panelDesc": "請選擇一種同步方式。Git 可以把筆記備份到多個程式碼託管平台；雲端硬碟同步稍後推出。",
-      "desktopDesc": "桌面端使用系統 Git，支援 Gitea、GitHub、Gitee 等 SSH / HTTPS 遠端倉庫",
-      "webDesc": "Web 端使用 isomorphic-git + CORS 代理（僅支援 HTTPS Token）",
+      "desktopDesc": "桌面端內建 Git，不必另外安裝 Git 軟體。使用 HTTPS 存取權杖即可同步到 GitHub、Gitee、GitLab、阿里雲 Codeup、AtomGit 和自訂倉庫",
+      "webDesc": "Web 端同樣內建 Git，使用 HTTPS Token。瀏覽器需要 CORS 代理，不支援 SSH。",
       "chooseModeHint": "請選擇筆記同步方式，之後仍可更換。",
       "modeGitTitle": "Git 同步",
       "modeGitDesc": "把筆記庫同步到 GitHub、Gitee、GitLab、阿里雲 Codeup、AtomGit 或自訂 Git 伺服器，也可以同時連線多個平台。",
@@ -299,8 +303,8 @@ export const zhHantMessages = {
       "corsProxy": "CORS 代理",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "HTTPS 個人存取 Token",
-      "webSshUnsupported": "Web 端不支援 SSH 遠端倉庫。請為 Gitea/GitHub 使用 HTTPS URL 和 Token。",
-      "systemGitHint": "git@gitea.example.com:user/repo.git 等 SSH 遠端倉庫由系統 Git 和本機憑證處理，此處不需要 Token。",
+      "webSshUnsupported": "僅支援 HTTPS 遠端倉庫，請使用 HTTPS URL 和 Token。不支援 SSH，也不必安裝 Git。",
+      "systemGitHint": "僅支援 HTTPS 遠端倉庫。若倉庫原本使用 SSH，請改為 HTTPS 並填寫 Token。",
       "pullLatest": "拉取最新",
       "pulling": "正在拉取...",
       "pullComplete": "拉取完成",
@@ -398,7 +402,9 @@ export const zhHantMessages = {
       "history": "檢視存取歷史",
       "aiChat": "AI 聊天",
       "workspaceSearch": "目前工作區搜尋",
-      "globalSearch": "全域筆記搜尋"
+      "globalSearch": "全域筆記搜尋",
+      "hideSpaceSidebar": "隱藏空間側邊欄",
+      "hideDirectoryPanel": "隱藏目錄面板"
     },
     "about": {
       "panelTitle": "關於 TinyNote",

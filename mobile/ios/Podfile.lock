@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - git2dart_binaries (1.11.2):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - git2dart_binaries (from `.symlinks/plugins/git2dart_binaries/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  git2dart_binaries:
+    :path: ".symlinks/plugins/git2dart_binaries/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  git2dart_binaries: 3943924072c1c78a03d761d0165d29ef4cce48aa
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.17.0

@@ -266,4 +266,46 @@ final stringsIt = AppStrings(
   copyFailed: 'Copia non riuscita',
   helpDocs: 'Documentazione',
   openHelpDocsFailed: 'Impossibile aprire la documentazione',
+  gitSync: 'Sincronizzazione Git',
+  gitSyncDesc:
+      'Condividi la libreria con il desktop via HTTPS. Non serve installare Git',
+  gitSyncHttpsOnly:
+      'Sono supportati solo i remote HTTPS. Usa un URL HTTPS e un token di accesso. SSH non è supportato e non serve installare Git.',
+  gitSyncConnect: 'Collega repository',
+  gitSyncDisconnect: 'Disconnetti',
+  gitSyncDisconnectTitle: 'Disconnetti sincronizzazione Git',
+  gitSyncDisconnectMessage:
+      'Dopo la disconnessione non si sincronizza più con il repository remoto. Note locali e cartella .git restano sul dispositivo; puoi ricollegarti in seguito.',
+  gitSyncUrl: 'URL HTTPS del repository',
+  gitSyncUrlHint: 'https://github.com/user/notes.git',
+  gitSyncToken: 'Token di accesso',
+  gitSyncTokenHint: 'Incolla un token di accesso personale',
+  gitSyncUsername: 'Nome utente (facoltativo)',
+  gitSyncPull: 'Recupera gli ultimi',
+  gitSyncPush: 'Commit e push',
+  gitSyncPulling: 'Recupero...',
+  gitSyncPushing: 'Push in corso...',
+  gitSyncConnecting: 'Inizializzazione e connessione…',
+  gitSyncConnected: 'Repository Git collegato',
+  gitSyncDisconnected: 'Sincronizzazione Git disconnessa',
+  gitSyncPullComplete: 'Recupero completato',
+  gitSyncPullCompleteWithConflicts:
+      'Recupero completato. Versioni locali in conflitto salvate come: {files}',
+  gitSyncPushed: 'Push completato',
+  gitSyncNoChanges: 'Nessuna modifica da committare',
+  gitSyncUrlRequired: 'Inserisci l’URL HTTPS del repository',
+  gitSyncTokenRequired: 'Incolla prima un token di accesso',
+  gitSyncConnectFailed:
+      'Connessione non completata. Controlla URL e token e riprova.',
+  gitSyncPullFailed: 'Recupero non riuscito',
+  gitSyncPushFailed: 'Push non riuscito',
+  gitSyncConflictCopySuffix: ' (versione in conflitto {date})',
+  gitSyncConflictHint:
+      'Le note locali e remote potrebbero essere in conflitto. Riprova il pull più tardi. Se continua a fallire, fai prima un backup locale.',
+  gitSyncNotReady: 'La libreria di note non è ancora pronta',
+  gitSyncOpenTokenPage: 'Apri la pagina di creazione del token',
+  gitSyncAuthFailed: 'Autorizzazione non riuscita. Controlla il token e riprova.',
+  gitSyncRemoteBound: 'Repository HTTPS collegato',
+  gitSyncNotConnected:
+      'Inserisci URL e token per sincronizzare con il repository del desktop',
 );

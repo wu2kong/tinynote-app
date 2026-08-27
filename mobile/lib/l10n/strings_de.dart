@@ -267,4 +267,46 @@ final stringsDe = AppStrings(
   copyFailed: 'Kopieren fehlgeschlagen',
   helpDocs: 'Hilfedokumentation',
   openHelpDocsFailed: 'Hilfedokumentation konnte nicht geöffnet werden',
+  gitSync: 'Git-Sync',
+  gitSyncDesc:
+      'Die Bibliothek per HTTPS mit dem Desktop teilen. Keine Git-Installation nötig',
+  gitSyncHttpsOnly:
+      'Nur HTTPS-Remotes werden unterstützt. Nutze eine HTTPS-URL und ein Zugriffstoken. SSH wird nicht unterstützt, Git muss nicht installiert sein.',
+  gitSyncConnect: 'Repository verbinden',
+  gitSyncDisconnect: 'Trennen',
+  gitSyncDisconnectTitle: 'Git-Sync trennen',
+  gitSyncDisconnectMessage:
+      'Danach wird nicht mehr mit dem Remote-Repository synchronisiert. Lokale Notizen und der .git-Ordner bleiben erhalten, eine erneute Verbindung ist jederzeit möglich.',
+  gitSyncUrl: 'Repository-HTTPS-URL',
+  gitSyncUrlHint: 'https://github.com/user/notes.git',
+  gitSyncToken: 'Zugriffstoken',
+  gitSyncTokenHint: 'Persönliches Zugriffstoken einfügen',
+  gitSyncUsername: 'Benutzername (optional)',
+  gitSyncPull: 'Neueste holen',
+  gitSyncPush: 'Committen und pushen',
+  gitSyncPulling: 'Wird geholt...',
+  gitSyncPushing: 'Wird gepusht...',
+  gitSyncConnecting: 'Wird initialisiert und verbunden…',
+  gitSyncConnected: 'Git-Repository verbunden',
+  gitSyncDisconnected: 'Git-Sync getrennt',
+  gitSyncPullComplete: 'Abruf abgeschlossen',
+  gitSyncPullCompleteWithConflicts:
+      'Abruf abgeschlossen. Lokale Konfliktversionen gespeichert als: {files}',
+  gitSyncPushed: 'Gepusht',
+  gitSyncNoChanges: 'Keine Änderungen zum Committen',
+  gitSyncUrlRequired: 'Bitte die HTTPS-URL des Repositorys eingeben',
+  gitSyncTokenRequired: 'Bitte zuerst ein Zugriffstoken einfügen',
+  gitSyncConnectFailed:
+      'Verbindung nicht abgeschlossen. URL und Token prüfen und erneut versuchen.',
+  gitSyncPullFailed: 'Abruf fehlgeschlagen',
+  gitSyncPushFailed: 'Push fehlgeschlagen',
+  gitSyncConflictCopySuffix: ' (Konfliktversion {date})',
+  gitSyncConflictHint:
+      'Lokale und entfernte Notizen können in Konflikt stehen. Versuche später erneut abzurufen. Wenn es weiter scheitert, erstelle zuerst ein lokales Backup.',
+  gitSyncNotReady: 'Die Notizbibliothek ist noch nicht bereit',
+  gitSyncOpenTokenPage: 'Token-Seite öffnen',
+  gitSyncAuthFailed: 'Autorisierung fehlgeschlagen. Token prüfen und erneut versuchen.',
+  gitSyncRemoteBound: 'HTTPS-Repository verbunden',
+  gitSyncNotConnected:
+      'URL und Token eingeben, um mit dem Desktop-Repository zu synchronisieren',
 );

@@ -10,6 +10,10 @@ import '../core/path_utils.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';
 import '../storage/local_storage.dart';
+import '../utils/sync_conflict_name.dart';
+import 'git_providers.dart';
+import 'git_sync_config.dart';
+import 'git_sync_service.dart';
 import 'icloud_service.dart';
 
 class LibraryService extends ChangeNotifier {
@@ -30,8 +34,20 @@ class LibraryService extends ChangeNotifier {
   bool syncBusy = false;
   String? syncMessage;
 
+  GitSyncConfig gitConfig = GitSyncConfig.empty;
+  GitRepoStatus gitStatus = const GitRepoStatus(
+    isRepo: false,
+    hasRemote: false,
+    remoteUrl: null,
+    remoteName: null,
+    branch: null,
+    changedCount: 0,
+  );
+
   LocalStorage? _storage;
   FileSystemService? _fileSystem;
+  final _gitConfigStore = GitSyncConfigStore();
+  final _gitSync = GitSyncService();
 
   static const _storagePathKey = 'tinynote.storagePath';
   static const _currentSpaceIdKey = 'tinynote.currentSpaceId';
@@ -84,6 +100,7 @@ class LibraryService extends ChangeNotifier {
 
       spaces = await _fileSystem!.loadSpaces(rootPath);
       await _restoreSelection(prefs);
+      await _loadGitState(rootPath);
       ready = true;
     } catch (error, stackTrace) {
       debugPrint('Library bootstrap failed: $error\n$stackTrace');
@@ -100,6 +117,147 @@ class LibraryService extends ChangeNotifier {
   Future<void> refreshICloudStatus() async {
     iCloudAvailable = await ICloudService.isAvailable();
     notifyListeners();
+  }
+
+  bool get gitConnected => gitConfig.connected;
+
+  Future<void> refreshGitStatus() async {
+    final root = storagePath;
+    if (root == null) return;
+    await _loadGitState(root);
+    notifyListeners();
+  }
+
+  Future<void> connectGit({
+    required String url,
+    required String token,
+    String username = '',
+  }) async {
+    final root = storagePath;
+    if (root == null) throw StateError(appStrings.gitSyncNotReady);
+    if (syncBusy) return;
+
+    final httpsUrl = toHttpsRemoteUrl(url);
+    if (!isHttpsGitUrl(httpsUrl)) {
+      throw StateError(appStrings.gitSyncUrlRequired);
+    }
+    if (token.trim().isEmpty) {
+      throw StateError(appStrings.gitSyncTokenRequired);
+    }
+
+    syncBusy = true;
+    syncMessage = appStrings.gitSyncConnecting;
+    notifyListeners();
+
+    try {
+      final next = gitConfig.copyWith(
+        connected: true,
+        url: httpsUrl,
+        token: token.trim(),
+        username: username.trim(),
+        remoteName: gitConfig.remoteName.isEmpty ? 'origin' : gitConfig.remoteName,
+      );
+      final remoteName = await _gitSync.connect(libraryPath: root, config: next);
+      final saved = next.copyWith(remoteName: remoteName);
+      await _gitConfigStore.save(saved);
+      gitConfig = saved;
+      await _openRoot(root, prefs: await SharedPreferences.getInstance());
+      await _loadGitState(root);
+      syncMessage = appStrings.gitSyncConnected;
+    } catch (error) {
+      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncConnectFailed);
+      rethrow;
+    } finally {
+      syncBusy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> disconnectGit() async {
+    final root = storagePath;
+    if (root == null) throw StateError(appStrings.gitSyncNotReady);
+    if (syncBusy) return;
+
+    syncBusy = true;
+    syncMessage = null;
+    notifyListeners();
+
+    try {
+      await _gitSync.disconnect(root, gitConfig.remoteName);
+      await _gitConfigStore.clear();
+      gitConfig = GitSyncConfig.empty;
+      await _loadGitState(root);
+      syncMessage = appStrings.gitSyncDisconnected;
+    } catch (error) {
+      syncMessage = '$error';
+      rethrow;
+    } finally {
+      syncBusy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<List<String>> pullGit() async {
+    final root = storagePath;
+    if (root == null) throw StateError(appStrings.gitSyncNotReady);
+    if (!gitConfig.connected) throw StateError(appStrings.gitSyncConnectFailed);
+    if (syncBusy) return const [];
+
+    syncBusy = true;
+    syncMessage = appStrings.gitSyncPulling;
+    notifyListeners();
+
+    try {
+      final suffix = appStrings.fill(appStrings.gitSyncConflictCopySuffix, {
+        'date': formatLocalIsoDate(),
+      });
+      final result = await _gitSync.pull(
+        libraryPath: root,
+        config: gitConfig,
+        conflictSuffix: suffix,
+      );
+      await _openRoot(root, prefs: await SharedPreferences.getInstance());
+      await _loadGitState(root);
+      syncMessage =
+          result.conflictCopies.isEmpty
+              ? appStrings.gitSyncPullComplete
+              : appStrings.fill(appStrings.gitSyncPullCompleteWithConflicts, {
+                'files': result.conflictCopies.join(', '),
+              });
+      return result.conflictCopies;
+    } catch (error) {
+      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncPullFailed);
+      rethrow;
+    } finally {
+      syncBusy = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> pushGit() async {
+    final root = storagePath;
+    if (root == null) throw StateError(appStrings.gitSyncNotReady);
+    if (!gitConfig.connected) throw StateError(appStrings.gitSyncConnectFailed);
+    if (syncBusy) return;
+
+    syncBusy = true;
+    syncMessage = appStrings.gitSyncPushing;
+    notifyListeners();
+
+    try {
+      final result = await _gitSync.push(libraryPath: root, config: gitConfig);
+      await _loadGitState(root);
+      syncMessage =
+          result.committed || result.pushed
+              ? appStrings.gitSyncPushed
+              : appStrings.gitSyncNoChanges;
+    } catch (error) {
+      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncPushFailed);
+      rethrow;
+    } finally {
+      syncBusy = false;
+      notifyListeners();
+    }
   }
 
   /// Enable sync by letting the user pick an iCloud Drive / Files folder.
@@ -794,6 +952,7 @@ class LibraryService extends ChangeNotifier {
 
     spaces = await _fileSystem!.loadSpaces(rootPath);
     await _restoreSelection(prefs);
+    await _loadGitState(rootPath);
     ready = true;
     loading = false;
   }
@@ -922,5 +1081,34 @@ class LibraryService extends ChangeNotifier {
 
     search(items);
     return ancestors;
+  }
+
+  Future<void> _loadGitState(String rootPath) async {
+    gitConfig = await _gitConfigStore.load();
+    try {
+      gitStatus = await _gitSync.status(rootPath, gitConfig);
+      if (!gitConfig.connected) return;
+      final liveUrl = gitStatus.remoteUrl;
+      if (liveUrl != null && liveUrl.isNotEmpty && liveUrl != gitConfig.url) {
+        gitConfig = gitConfig.copyWith(url: liveUrl);
+      }
+      if (gitStatus.remoteName != null &&
+          gitStatus.remoteName!.isNotEmpty &&
+          gitStatus.remoteName != gitConfig.remoteName) {
+        gitConfig = gitConfig.copyWith(remoteName: gitStatus.remoteName);
+      }
+    } catch (error) {
+      debugPrint('Git status failed: $error');
+    }
+  }
+
+  String _gitErrorMessage(Object error, {required String fallback}) {
+    if (error is StateError) return error.message;
+    final text = error is GitSyncException ? error.message : '$error';
+    if (text == 'auth') return appStrings.gitSyncAuthFailed;
+    if (text == 'HTTPS URL required') return appStrings.gitSyncUrlRequired;
+    if (text == 'token required') return appStrings.gitSyncTokenRequired;
+    if (text == fallback) return fallback;
+    return '$fallback: $text';
   }
 }

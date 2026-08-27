@@ -235,6 +235,41 @@ class AppStrings {
     required this.copyFailed,
     required this.helpDocs,
     required this.openHelpDocsFailed,
+    required this.gitSync,
+    required this.gitSyncDesc,
+    required this.gitSyncHttpsOnly,
+    required this.gitSyncConnect,
+    required this.gitSyncDisconnect,
+    required this.gitSyncDisconnectTitle,
+    required this.gitSyncDisconnectMessage,
+    required this.gitSyncUrl,
+    required this.gitSyncUrlHint,
+    required this.gitSyncToken,
+    required this.gitSyncTokenHint,
+    required this.gitSyncUsername,
+    required this.gitSyncPull,
+    required this.gitSyncPush,
+    required this.gitSyncPulling,
+    required this.gitSyncPushing,
+    required this.gitSyncConnecting,
+    required this.gitSyncConnected,
+    required this.gitSyncDisconnected,
+    required this.gitSyncPullComplete,
+    required this.gitSyncPullCompleteWithConflicts,
+    required this.gitSyncPushed,
+    required this.gitSyncNoChanges,
+    required this.gitSyncUrlRequired,
+    required this.gitSyncTokenRequired,
+    required this.gitSyncConnectFailed,
+    required this.gitSyncPullFailed,
+    required this.gitSyncPushFailed,
+    required this.gitSyncConflictCopySuffix,
+    required this.gitSyncConflictHint,
+    required this.gitSyncNotReady,
+    required this.gitSyncOpenTokenPage,
+    required this.gitSyncAuthFailed,
+    required this.gitSyncRemoteBound,
+    required this.gitSyncNotConnected,
   });
 
   final String appTitle;
@@ -470,6 +505,41 @@ class AppStrings {
   final String copyFailed;
   final String helpDocs;
   final String openHelpDocsFailed;
+  final String gitSync;
+  final String gitSyncDesc;
+  final String gitSyncHttpsOnly;
+  final String gitSyncConnect;
+  final String gitSyncDisconnect;
+  final String gitSyncDisconnectTitle;
+  final String gitSyncDisconnectMessage;
+  final String gitSyncUrl;
+  final String gitSyncUrlHint;
+  final String gitSyncToken;
+  final String gitSyncTokenHint;
+  final String gitSyncUsername;
+  final String gitSyncPull;
+  final String gitSyncPush;
+  final String gitSyncPulling;
+  final String gitSyncPushing;
+  final String gitSyncConnecting;
+  final String gitSyncConnected;
+  final String gitSyncDisconnected;
+  final String gitSyncPullComplete;
+  final String gitSyncPullCompleteWithConflicts;
+  final String gitSyncPushed;
+  final String gitSyncNoChanges;
+  final String gitSyncUrlRequired;
+  final String gitSyncTokenRequired;
+  final String gitSyncConnectFailed;
+  final String gitSyncPullFailed;
+  final String gitSyncPushFailed;
+  final String gitSyncConflictCopySuffix;
+  final String gitSyncConflictHint;
+  final String gitSyncNotReady;
+  final String gitSyncOpenTokenPage;
+  final String gitSyncAuthFailed;
+  final String gitSyncRemoteBound;
+  final String gitSyncNotConnected;
 
   String formatLabel(NotebookFormat format) {
     return switch (format) {

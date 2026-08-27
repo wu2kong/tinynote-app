@@ -99,6 +99,10 @@ export const ruMessages = {
       "hideBordersDesc": "Включить минималистичный стиль, убрав лишние границы интерфейса",
       "defaultView": "Вид по умолчанию",
       "defaultViewDesc": "Стандартная раскладка списка заметок",
+      "noteBlockDoubleClick": "Действие при двойном щелчке по блоку",
+      "noteBlockDoubleClickDesc": "Действие при двойном щелчке по блоку заметки",
+      "doubleClickNone": "Нет",
+      "doubleClickCopyContent": "Копировать текст блока",
       "zoom": "Масштаб интерфейса",
       "zoomDesc": "Настройте масштаб интерфейса",
       "viewList": "Список",
@@ -173,8 +177,8 @@ export const ruMessages = {
     "sync": {
       "panelTitle": "Синхронизация Git",
       "panelDesc": "Выберите один способ синхронизации. Git может сохранять заметки на нескольких площадках хостинга; синхронизация через облачный диск появится позже.",
-      "desktopDesc": "Настольная версия использует системный Git и поддерживает SSH / HTTPS-удаленные репозитории, например Gitea, GitHub и Gitee",
-      "webDesc": "Веб-версия использует isomorphic-git + CORS-прокси (только HTTPS Token)",
+      "desktopDesc": "Настольная версия включает встроенный Git, отдельно устанавливать Git не нужно. Синхронизация с GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit и своими удалёнными репозиториями через HTTPS-токен",
+      "webDesc": "Веб-версия тоже включает Git и использует HTTPS-токен. В браузере нужен CORS-прокси, SSH не поддерживается.",
       "chooseModeHint": "Выберите, как синхронизировать заметки. Позже это можно изменить.",
       "modeGitTitle": "Синхронизация Git",
       "modeGitDesc": "Синхронизируйте эту библиотеку заметок с GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit или своим Git-сервером. Можно подключить несколько платформ.",
@@ -299,8 +303,8 @@ export const ruMessages = {
       "corsProxy": "CORS Proxy",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "Персональный токен доступа HTTPS",
-      "webSshUnsupported": "Веб-версия не поддерживает SSH-удаленные репозитории. Для Gitea/GitHub используйте HTTPS URL и Token.",
-      "systemGitHint": "SSH-удаленные репозитории вроде git@gitea.example.com:user/repo.git обрабатываются системным Git и локальными учетными данными; Token здесь не нужен.",
+      "webSshUnsupported": "Поддерживаются только HTTPS-удалённые репозитории. Используйте HTTPS URL и токен. SSH не поддерживается, устанавливать Git не нужно.",
+      "systemGitHint": "Поддерживаются только HTTPS-удалённые репозитории. Если раньше использовался SSH, переключитесь на HTTPS и укажите токен.",
       "pullLatest": "Получить последние изменения",
       "pulling": "Получение...",
       "pullComplete": "Получение завершено",
@@ -398,7 +402,9 @@ export const ruMessages = {
       "history": "Просмотреть историю доступа",
       "aiChat": "AI-чат",
       "workspaceSearch": "Поиск в текущем рабочем пространстве",
-      "globalSearch": "Глобальный поиск заметок"
+      "globalSearch": "Глобальный поиск заметок",
+      "hideSpaceSidebar": "Скрыть панель пространств",
+      "hideDirectoryPanel": "Скрыть панель каталогов"
     },
     "about": {
       "panelTitle": "О TinyNote",

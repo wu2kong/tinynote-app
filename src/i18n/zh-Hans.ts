@@ -110,6 +110,10 @@ export const zhHansMessages = {
       "hideBordersDesc": "移除不必要的界面边框，启用极简风格",
       "defaultView": "默认视图",
       "defaultViewDesc": "笔记列表的默认布局",
+      "noteBlockDoubleClick": "笔记块双击动作",
+      "noteBlockDoubleClickDesc": "双击笔记块时执行的操作",
+      "doubleClickNone": "无",
+      "doubleClickCopyContent": "复制笔记块正文",
       "zoom": "界面缩放",
       "zoomDesc": "调整界面显示比例",
       "viewList": "列表",
@@ -184,8 +188,8 @@ export const zhHansMessages = {
     "sync": {
       "panelTitle": "笔记同步",
       "panelDesc": "请选择一种同步方式。Git 可以把笔记备份到多个代码托管平台；云盘同步使用本机云盘客户端管理的文件夹。",
-      "desktopDesc": "桌面端使用系统 Git，可同步到 GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 和自定义仓库",
-      "webDesc": "网页端使用 HTTPS 访问令牌。浏览器中不支持 SSH。",
+      "desktopDesc": "桌面端内置 Git，无需安装 Git 软件。使用 HTTPS 访问令牌即可同步到 GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 和自定义仓库",
+      "webDesc": "网页端同样内置 Git，使用 HTTPS 访问令牌。浏览器中需要 CORS 代理，不支持 SSH。",
       "chooseModeHint": "请选择笔记同步方式，之后仍可更换。",
       "modeGitTitle": "Git 同步",
       "modeGitDesc": "把笔记库同步到 GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义 Git 服务器，也可以同时连接多个平台。",
@@ -326,8 +330,8 @@ export const zhHansMessages = {
       "corsProxy": "CORS 代理",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "HTTPS 个人访问 Token",
-      "webSshUnsupported": "网页端只支持 HTTPS 远程仓库，请使用 HTTPS 地址和令牌。",
-      "systemGitHint": "如果远程仓库已经使用 SSH，系统 Git 可以继续使用本机已有密钥。",
+      "webSshUnsupported": "仅支持 HTTPS 远程仓库，请使用 HTTPS 地址和访问令牌。不支持 SSH，也无需安装 Git 软件。",
+      "systemGitHint": "仅支持 HTTPS 远程仓库。若仓库原先使用 SSH，请改用 HTTPS 地址并填写访问令牌。",
       "pullLatest": "拉取最新",
       "pulling": "正在拉取...",
       "pullComplete": "拉取完成",
@@ -425,7 +429,9 @@ export const zhHansMessages = {
       "history": "查看访问历史",
       "aiChat": "AI 聊天",
       "workspaceSearch": "当前工作区搜索",
-      "globalSearch": "全局笔记搜索"
+      "globalSearch": "全局笔记搜索",
+      "hideSpaceSidebar": "隐藏空间侧边栏",
+      "hideDirectoryPanel": "隐藏目录面板"
     },
     "about": {
       "panelTitle": "关于 TinyNote",

@@ -265,4 +265,46 @@ final stringsRu = AppStrings(
   copyFailed: 'Не удалось скопировать',
   helpDocs: 'Документация',
   openHelpDocsFailed: 'Не удалось открыть документацию',
+  gitSync: 'Синхронизация Git',
+  gitSyncDesc:
+      'Общий репозиторий с компьютером по HTTPS. Устанавливать Git не нужно',
+  gitSyncHttpsOnly:
+      'Поддерживаются только HTTPS-удалённые репозитории. Используйте HTTPS-адрес и токен доступа. SSH не поддерживается, Git устанавливать не нужно.',
+  gitSyncConnect: 'Подключить репозиторий',
+  gitSyncDisconnect: 'Отключить',
+  gitSyncDisconnectTitle: 'Отключить синхронизацию Git',
+  gitSyncDisconnectMessage:
+      'После отключения синхронизация с удалённым репозиторием прекратится. Локальные заметки и папка .git останутся на устройстве; позже можно подключить снова.',
+  gitSyncUrl: 'HTTPS-адрес репозитория',
+  gitSyncUrlHint: 'https://github.com/user/notes.git',
+  gitSyncToken: 'Токен доступа',
+  gitSyncTokenHint: 'Вставьте персональный токен доступа',
+  gitSyncUsername: 'Имя пользователя (необязательно)',
+  gitSyncPull: 'Получить последние',
+  gitSyncPush: 'Зафиксировать и отправить',
+  gitSyncPulling: 'Получение...',
+  gitSyncPushing: 'Отправка...',
+  gitSyncConnecting: 'Инициализация и подключение…',
+  gitSyncConnected: 'Репозиторий Git подключён',
+  gitSyncDisconnected: 'Синхронизация Git отключена',
+  gitSyncPullComplete: 'Получение завершено',
+  gitSyncPullCompleteWithConflicts:
+      'Получение завершено. Локальные конфликтные версии сохранены как: {files}',
+  gitSyncPushed: 'Отправлено',
+  gitSyncNoChanges: 'Нет изменений для коммита',
+  gitSyncUrlRequired: 'Укажите HTTPS-адрес репозитория',
+  gitSyncTokenRequired: 'Сначала вставьте токен доступа',
+  gitSyncConnectFailed:
+      'Не удалось подключиться. Проверьте адрес и токен и повторите попытку.',
+  gitSyncPullFailed: 'Не удалось получить',
+  gitSyncPushFailed: 'Не удалось отправить',
+  gitSyncConflictCopySuffix: ' (конфликтная версия {date})',
+  gitSyncConflictHint:
+      'Локальные и удалённые заметки могут конфликтовать. Повторите получение позже. Если ошибка повторяется, сначала сделайте локальную резервную копию.',
+  gitSyncNotReady: 'Библиотека заметок ещё не готова',
+  gitSyncOpenTokenPage: 'Открыть страницу создания токена',
+  gitSyncAuthFailed: 'Ошибка авторизации. Проверьте токен и повторите попытку.',
+  gitSyncRemoteBound: 'HTTPS-репозиторий подключён',
+  gitSyncNotConnected:
+      'Введите адрес и токен, чтобы синхронизироваться с репозиторием на компьютере',
 );

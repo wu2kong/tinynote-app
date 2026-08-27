@@ -92,6 +92,27 @@ export function createWebStorageAdapter(): StorageAdapter {
       await getPromises().writeFile(filePath, content);
     },
 
+    async readBinaryFile(path) {
+      const content = await getPromises().readFile(toVirtualPath(path));
+      if (typeof content === 'string') {
+        return new TextEncoder().encode(content);
+      }
+      return content instanceof Uint8Array ? content : new Uint8Array(content);
+    },
+
+    async writeBinaryFile(path, content) {
+      const filePath = toVirtualPath(path);
+      const parent = filePath.slice(0, filePath.lastIndexOf('/'));
+      if (parent) {
+        try {
+          await getPromises().mkdir(parent);
+        } catch {
+          // parent may exist
+        }
+      }
+      await getPromises().writeFile(filePath, content);
+    },
+
     async mkdir(path, recursive = false) {
       const dirPath = toVirtualPath(path);
       if (recursive) {
@@ -150,9 +171,12 @@ export function createWebStorageAdapter(): StorageAdapter {
 
     async stat(path) {
       const info = await statEntry(path);
+      const extra = info as { size?: number; mtimeMs?: number };
       return {
         isFile: info.isFile(),
         isDirectory: info.isDirectory(),
+        size: typeof extra.size === 'number' ? extra.size : undefined,
+        mtimeMs: typeof extra.mtimeMs === 'number' ? extra.mtimeMs : undefined,
       };
     },
   };

@@ -99,6 +99,10 @@ export const koMessages = {
       "hideBordersDesc": "불필요한 인터페이스 테두리를 제거해 미니멀한 스타일을 적용합니다",
       "defaultView": "기본 보기",
       "defaultViewDesc": "노트 목록의 기본 레이아웃",
+      "noteBlockDoubleClick": "노트 블록 더블클릭 동작",
+      "noteBlockDoubleClickDesc": "노트 블록을 더블클릭할 때 실행할 동작",
+      "doubleClickNone": "없음",
+      "doubleClickCopyContent": "노트 블록 본문 복사",
       "zoom": "인터페이스 확대/축소",
       "zoomDesc": "인터페이스 배율을 조정합니다",
       "viewList": "목록",
@@ -173,8 +177,8 @@ export const koMessages = {
     "sync": {
       "panelTitle": "Git 동기화",
       "panelDesc": "동기화 방식을 하나 선택하세요. Git으로는 여러 호스팅 플랫폼에 노트를 백업할 수 있습니다. 클라우드 드라이브 동기화는 곧 제공됩니다.",
-      "desktopDesc": "데스크톱은 시스템 Git을 사용하며 Gitea, GitHub, Gitee 같은 SSH / HTTPS 원격 저장소를 지원합니다",
-      "webDesc": "웹은 isomorphic-git + CORS 프록시를 사용합니다(HTTPS Token만 지원)",
+      "desktopDesc": "데스크톱은 Git을 내장하므로 따로 Git을 설치할 필요가 없습니다. HTTPS Token으로 GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, 사용자 지정 원격에 동기화할 수 있습니다",
+      "webDesc": "웹도 Git을 내장하며 HTTPS Token을 사용합니다. 브라우저에서는 CORS 프록시가 필요하고 SSH는 지원하지 않습니다.",
       "chooseModeHint": "노트를 동기화할 방식을 고르세요. 나중에 바꿀 수 있습니다.",
       "modeGitTitle": "Git 동기화",
       "modeGitDesc": "노트 라이브러리를 GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit 또는 사용자 지정 Git 서버에 동기화할 수 있습니다. 여러 플랫폼을 동시에 연결할 수도 있습니다.",
@@ -299,8 +303,8 @@ export const koMessages = {
       "corsProxy": "CORS Proxy",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "HTTPS 개인 액세스 토큰",
-      "webSshUnsupported": "웹은 SSH 원격 저장소를 지원하지 않습니다. Gitea/GitHub에는 HTTPS URL과 Token을 사용하세요.",
-      "systemGitHint": "git@gitea.example.com:user/repo.git 같은 SSH 원격 저장소는 시스템 Git과 로컬 자격 증명으로 처리됩니다. 여기서는 Token이 필요하지 않습니다.",
+      "webSshUnsupported": "HTTPS 원격만 지원합니다. HTTPS URL과 Token을 사용하세요. SSH는 지원하지 않으며 Git 설치도 필요 없습니다.",
+      "systemGitHint": "HTTPS 원격만 지원합니다. SSH를 쓰던 저장소는 HTTPS로 바꾸고 Token을 입력하세요.",
       "pullLatest": "최신 내용 가져오기",
       "pulling": "가져오는 중...",
       "pullComplete": "가져오기 완료",
@@ -398,7 +402,9 @@ export const koMessages = {
       "history": "접근 기록 보기",
       "aiChat": "AI 대화",
       "workspaceSearch": "현재 작업 공간 검색",
-      "globalSearch": "전체 노트 검색"
+      "globalSearch": "전체 노트 검색",
+      "hideSpaceSidebar": "스페이스 사이드바 숨기기",
+      "hideDirectoryPanel": "디렉터리 패널 숨기기"
     },
     "about": {
       "panelTitle": "TinyNote 정보",

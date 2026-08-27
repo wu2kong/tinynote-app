@@ -29,7 +29,7 @@ Free allows 5 spaces and 100 notes per space. Delete unused items or upgrade to 
 
 ## Git sync is not connected yet?
 
-Open Settings → Sync, choose Git sync, and add a source. TinyNote initializes and authorizes inside the app; you do not need the command line. The web app only supports HTTPS + token.
+Open Settings → Sync, choose Git sync, and add a source. TinyNote initializes and authorizes inside the app; you do not need to install Git or use the command line. The web app only supports HTTPS + token.
 
 ## Update check failed or download is slow?
 

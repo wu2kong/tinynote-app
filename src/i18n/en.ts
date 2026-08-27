@@ -110,6 +110,10 @@ export const enMessages = {
       "hideBordersDesc": "Enable a minimal style by removing unnecessary interface borders",
       "defaultView": "Default View",
       "defaultViewDesc": "Default layout for the note list",
+      "noteBlockDoubleClick": "Note Block Double-Click Action",
+      "noteBlockDoubleClickDesc": "Action when double-clicking a note block",
+      "doubleClickNone": "None",
+      "doubleClickCopyContent": "Copy Note Block Body",
       "zoom": "Interface Zoom",
       "zoomDesc": "Adjust the interface scale",
       "viewList": "List",
@@ -184,8 +188,8 @@ export const enMessages = {
     "sync": {
       "panelTitle": "Note Sync",
       "panelDesc": "Choose one sync method. Git can back up notes to multiple hosting platforms; cloud drive sync uses a folder managed by your desktop sync client.",
-      "desktopDesc": "Desktop uses system Git and can sync to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, and custom remotes",
-      "webDesc": "Web uses HTTPS and an access token. SSH remotes are not supported in the browser.",
+      "desktopDesc": "Desktop includes Git, so you do not need to install Git separately. Sync to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, and custom remotes with an HTTPS token",
+      "webDesc": "Web also includes Git and uses an HTTPS token. The browser needs a CORS proxy. SSH remotes are not supported.",
       "chooseModeHint": "Pick the way you want to keep notes in sync. You can change this later.",
       "modeGitTitle": "Git sync",
       "modeGitDesc": "Sync this note library to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git server. You can add more than one platform.",
@@ -326,8 +330,8 @@ export const enMessages = {
       "corsProxy": "CORS Proxy",
       "gitToken": "Git Token",
       "gitTokenPlaceholder": "HTTPS Personal Access Token",
-      "webSshUnsupported": "The web app only supports HTTPS remotes. Use an HTTPS URL and token.",
-      "systemGitHint": "If a remote already uses SSH, system Git can keep using your existing keys.",
+      "webSshUnsupported": "Only HTTPS remotes are supported. Use an HTTPS URL and access token. SSH is not supported, and you do not need to install Git.",
+      "systemGitHint": "Only HTTPS remotes are supported. If a remote still uses SSH, switch it to HTTPS and add an access token.",
       "pullLatest": "Pull Latest",
       "pulling": "Pulling...",
       "pullComplete": "Pull complete",
@@ -425,7 +429,9 @@ export const enMessages = {
       "history": "View access history",
       "aiChat": "AI Chat",
       "workspaceSearch": "Current workspace search",
-      "globalSearch": "Global note search"
+      "globalSearch": "Global note search",
+      "hideSpaceSidebar": "Hide space sidebar",
+      "hideDirectoryPanel": "Hide directory panel"
     },
     "about": {
       "panelTitle": "About TinyNote",

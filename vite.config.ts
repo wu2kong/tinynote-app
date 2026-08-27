@@ -34,6 +34,7 @@ export default defineConfig(({ mode: viteMode }) => {
             }
           : {}),
         '@': path.resolve(__dirname, 'src'),
+        buffer: path.resolve(__dirname, 'node_modules/buffer'),
         ...(webBuild ? webStubs : {}),
       },
       // Prevent duplicate CodeMirror runtime copies (breaks instanceof / extensions).
@@ -70,6 +71,8 @@ export default defineConfig(({ mode: viteMode }) => {
         '@milkdown/crepe',
         '@milkdown/react',
         '@milkdown/kit',
+        'buffer',
+        'isomorphic-git',
       ],
     },
     define: {

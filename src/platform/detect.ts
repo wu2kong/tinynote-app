@@ -29,13 +29,12 @@ export function getPlatform(): Platform {
 }
 
 /**
- * Web 端：isomorphic-git + CORS 代理（仅 HTTPS）。
- * 桌面/移动 Tauri：默认系统 git（支持 SSH / Gitea 等），可通过 VITE_SYNC_BACKEND=isomorphic-git 覆盖。
+ * 桌面 / Web 都使用内置 isomorphic-git，不依赖系统 Git。
+ * 网页端走 CORS 代理；桌面端走 Tauri 原生 HTTP。
+ * 可用 VITE_SYNC_BACKEND=tauri-rust 临时回退到系统 Git（仅桌面调试）。
  */
 export function getSyncBackend(): 'isomorphic-git' | 'tauri-rust' {
   const override = import.meta.env.VITE_SYNC_BACKEND;
-  if (override === 'isomorphic-git') return 'isomorphic-git';
   if (override === 'tauri-rust' && isTauri()) return 'tauri-rust';
-  if (isTauri()) return 'tauri-rust';
   return 'isomorphic-git';
 }

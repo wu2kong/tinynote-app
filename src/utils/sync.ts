@@ -30,7 +30,7 @@ export type {
   SyncAuth,
 };
 
-const SYNC_NETWORK_TIMEOUT_MS = 60_000;
+const SYNC_NETWORK_TIMEOUT_MS = 120_000;
 const syncTimeoutMessage = () => t('utils.sync.timeout');
 
 export function formatSyncError(error: unknown, fallback: string): string {

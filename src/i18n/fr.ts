@@ -99,6 +99,10 @@ export const frMessages = {
       "hideBordersDesc": "Activer un style minimal en supprimant les bordures d'interface inutiles",
       "defaultView": "Vue par défaut",
       "defaultViewDesc": "Disposition par défaut de la liste des notes",
+      "noteBlockDoubleClick": "Action du double-clic sur un bloc",
+      "noteBlockDoubleClickDesc": "Action lors d'un double-clic sur un bloc de note",
+      "doubleClickNone": "Aucune",
+      "doubleClickCopyContent": "Copier le corps du bloc",
       "zoom": "Zoom de l'interface",
       "zoomDesc": "Ajuster l'échelle de l'interface",
       "viewList": "Liste",
@@ -173,8 +177,8 @@ export const frMessages = {
     "sync": {
       "panelTitle": "Synchronisation Git",
       "panelDesc": "Choisissez une méthode de synchronisation. Git peut sauvegarder les notes sur plusieurs plateformes d’hébergement ; la synchro via disque cloud arrivera plus tard.",
-      "desktopDesc": "La version desktop utilise le Git du système et prend en charge les remotes SSH / HTTPS comme Gitea, GitHub et Gitee",
-      "webDesc": "La version web utilise isomorphic-git + proxy CORS (Token HTTPS uniquement)",
+      "desktopDesc": "La version desktop intègre Git : inutile d’installer Git à part. Synchronisez vers GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit et des dépôts personnalisés avec un jeton HTTPS",
+      "webDesc": "La version web intègre aussi Git et utilise un jeton HTTPS. Un proxy CORS est nécessaire dans le navigateur ; SSH n’est pas pris en charge.",
       "chooseModeHint": "Choisissez comment synchroniser vos notes. Vous pourrez changer plus tard.",
       "modeGitTitle": "Synchronisation Git",
       "modeGitDesc": "Synchronisez cette bibliothèque de notes vers GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit ou un serveur Git personnalisé. Vous pouvez ajouter plusieurs plateformes.",
@@ -299,8 +303,8 @@ export const frMessages = {
       "corsProxy": "Proxy CORS",
       "gitToken": "Token Git",
       "gitTokenPlaceholder": "Jeton d'accès personnel HTTPS",
-      "webSshUnsupported": "La version web ne prend pas en charge les remotes SSH. Utilisez une URL HTTPS et un Token pour Gitea/GitHub.",
-      "systemGitHint": "Les remotes SSH comme git@gitea.example.com:user/repo.git sont gérés par le Git du système et les identifiants locaux; aucun Token n'est nécessaire ici.",
+      "webSshUnsupported": "Seuls les dépôts HTTPS sont pris en charge. Utilisez une URL HTTPS et un jeton. SSH n’est pas pris en charge et il n’est pas nécessaire d’installer Git.",
+      "systemGitHint": "Seuls les dépôts HTTPS sont pris en charge. Si le dépôt utilisait SSH, passez en HTTPS et renseignez un jeton.",
       "pullLatest": "Récupérer les dernières modifications",
       "pulling": "Récupération...",
       "pullComplete": "Pull terminé",
@@ -398,7 +402,9 @@ export const frMessages = {
       "history": "Afficher l'historique d'accès",
       "aiChat": "Chat IA",
       "workspaceSearch": "Recherche dans le workspace actuel",
-      "globalSearch": "Recherche globale dans les notes"
+      "globalSearch": "Recherche globale dans les notes",
+      "hideSpaceSidebar": "Masquer la barre des espaces",
+      "hideDirectoryPanel": "Masquer le panneau de répertoires"
     },
     "about": {
       "panelTitle": "À propos de TinyNote",

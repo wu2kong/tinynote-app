@@ -99,6 +99,10 @@ export const itMessages = {
       "hideBordersDesc": "Attiva uno stile minimale rimuovendo i bordi non necessari dell'interfaccia",
       "defaultView": "Vista predefinita",
       "defaultViewDesc": "Layout predefinito per l'elenco delle note",
+      "noteBlockDoubleClick": "Azione doppio clic sul blocco",
+      "noteBlockDoubleClickDesc": "Azione al doppio clic su un blocco nota",
+      "doubleClickNone": "Nessuna",
+      "doubleClickCopyContent": "Copia corpo del blocco",
       "zoom": "Zoom interfaccia",
       "zoomDesc": "Regola la scala dell'interfaccia",
       "viewList": "Elenco",
@@ -173,8 +177,8 @@ export const itMessages = {
     "sync": {
       "panelTitle": "Sincronizzazione Git",
       "panelDesc": "Scegli un metodo di sincronizzazione. Git può salvare le note su più piattaforme di hosting; la sincronizzazione con disco cloud arriverà più avanti.",
-      "desktopDesc": "La versione desktop usa il Git di sistema e supporta remote SSH / HTTPS come Gitea, GitHub e Gitee",
-      "webDesc": "La versione web usa isomorphic-git + proxy CORS (solo Token HTTPS)",
+      "desktopDesc": "La versione desktop include Git, non serve installare Git a parte. Sincronizza con GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit e remote personalizzati tramite token HTTPS",
+      "webDesc": "Anche la versione web include Git e usa un token HTTPS. Nel browser serve un proxy CORS; SSH non è supportato.",
       "chooseModeHint": "Scegli come tenere allineate le note. Potrai cambiarlo in seguito.",
       "modeGitTitle": "Sincronizzazione Git",
       "modeGitDesc": "Sincronizza questa libreria note con GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit o un server Git personalizzato. Puoi aggiungere più di una piattaforma.",
@@ -299,8 +303,8 @@ export const itMessages = {
       "corsProxy": "Proxy CORS",
       "gitToken": "Token Git",
       "gitTokenPlaceholder": "Token di accesso personale HTTPS",
-      "webSshUnsupported": "La versione web non supporta remote SSH. Usa un URL HTTPS e un Token per Gitea/GitHub.",
-      "systemGitHint": "I remote SSH come git@gitea.example.com:user/repo.git sono gestiti dal Git di sistema e dalle credenziali locali; qui non serve alcun Token.",
+      "webSshUnsupported": "Sono supportati solo remote HTTPS. Usa un URL HTTPS e un token. SSH non è supportato e non serve installare Git.",
+      "systemGitHint": "Sono supportati solo remote HTTPS. Se il remote usava SSH, passa a HTTPS e inserisci un token.",
       "pullLatest": "Scarica ultime modifiche",
       "pulling": "Scaricamento...",
       "pullComplete": "Pull completato",
@@ -398,7 +402,9 @@ export const itMessages = {
       "history": "Visualizza cronologia accessi",
       "aiChat": "Chat AI",
       "workspaceSearch": "Ricerca workspace corrente",
-      "globalSearch": "Ricerca globale note"
+      "globalSearch": "Ricerca globale note",
+      "hideSpaceSidebar": "Nascondi barra degli spazi",
+      "hideDirectoryPanel": "Nascondi pannello directory"
     },
     "about": {
       "panelTitle": "Informazioni su TinyNote",

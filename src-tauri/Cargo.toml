@@ -37,7 +37,8 @@ tauri-plugin-persisted-scope = "2"
 zip = "2"
 walkdir = "2"
 chrono = "0.4"
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "gzip"] }
+base64 = "0.22"
 
 [target.'cfg(windows)'.dependencies]
 libloading = "0.8"

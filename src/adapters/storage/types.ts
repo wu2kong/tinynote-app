@@ -7,6 +7,8 @@ export interface DirEntry {
 export interface FileStat {
   isFile: boolean;
   isDirectory: boolean;
+  size?: number;
+  mtimeMs?: number;
 }
 
 export interface StorageAdapter {
@@ -17,6 +19,8 @@ export interface StorageAdapter {
   readDir(path: string): Promise<DirEntry[]>;
   readTextFile(path: string): Promise<string>;
   writeTextFile(path: string, content: string): Promise<void>;
+  readBinaryFile(path: string): Promise<Uint8Array>;
+  writeBinaryFile(path: string, content: Uint8Array): Promise<void>;
   mkdir(path: string, recursive?: boolean): Promise<void>;
   remove(path: string, recursive?: boolean): Promise<void>;
   rename(oldPath: string, newPath: string): Promise<void>;

@@ -15,7 +15,7 @@ import {
 import { joinPath, normalizePath } from '@/utils/path';
 import * as fs from '@/utils/fileSystem';
 import { loadConfig, saveConfig } from '@/utils/config';
-import { getSyncBackend, isWeb } from '@/platform/detect';
+import { isWeb } from '@/platform/detect';
 import { promptAndOpenWorkspaceInCurrentWindow } from '@/utils/workspaceActions';
 import ConfirmModal from '@/components/ConfirmModal';
 import { showToast } from '@/components/Toast';
@@ -43,8 +43,7 @@ function remoteListLabel(remote: GitRemoteConfig, t: (key: string) => string): s
 }
 
 function isRemoteAuthorized(remote: GitRemoteConfig, authorizedNames: string[]): boolean {
-  if (authorizedNames.includes(remote.name)) return true;
-  return Boolean(remote.url) && /^(git@|ssh:\/\/)/i.test(remote.url);
+  return authorizedNames.includes(remote.name);
 }
 
 type CloudFolderMode = 'icloud' | 'onedrive' | 'dropbox' | 'nutstore' | 'baidu' | 'webdav' | 'local';
@@ -401,7 +400,6 @@ const SyncSettings: React.FC = () => {
 
   const commitPreview = status ? formatSyncCommitMessage(status.hostname) : '';
   const busy = pulling || pushing;
-  const usesSystemGit = getSyncBackend() === 'tauri-rust';
   const enabledCount = remotes.filter((remote) => remote.enabled !== false && remote.url).length;
   const selectedRemote = remotes.find((remote) => remote.id === selectedRemoteId) ?? null;
   const usedKnownProviders = new Set(
@@ -726,7 +724,7 @@ const SyncSettings: React.FC = () => {
               </div>
             )}
 
-            {!usesSystemGit && (
+            {isWeb() && (
               <div className="settings-sync-info">
                 <div className="settings-sync-info-row">
                   <span className="settings-sync-info-label">{t('settings.sync.corsProxy')}</span>
@@ -740,9 +738,7 @@ const SyncSettings: React.FC = () => {
                     spellCheck={false}
                   />
                 </div>
-                {isWeb() && (
-                  <p className="settings-sync-empty-hint">{t('settings.sync.webSshUnsupported')}</p>
-                )}
+                <p className="settings-sync-empty-hint">{t('settings.sync.webSshUnsupported')}</p>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={handleSaveCors} disabled={busy}>
                   {t('settings.sync.saveConfig')}
                 </button>
