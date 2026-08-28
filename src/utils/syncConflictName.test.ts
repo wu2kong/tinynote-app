@@ -26,6 +26,29 @@ test('splitRepoRelativePath keeps the directory and extension', () => {
   });
 });
 
+test('splitRepoRelativePath inserts the conflict marker before notebook suffixes', () => {
+  assert.deepEqual(
+    splitRepoRelativePath(
+      'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位.writer.md',
+    ),
+    {
+      dir: 'TinyNote产品管理.tinynotes/公众号管理/',
+      stem: '公众号注册和定位',
+      ext: '.writer.md',
+    },
+  );
+  assert.deepEqual(splitRepoRelativePath('group/guide.mk.md'), {
+    dir: 'group/',
+    stem: 'guide',
+    ext: '.mk.md',
+  });
+  assert.deepEqual(splitRepoRelativePath('group/shell.blk.md'), {
+    dir: 'group/',
+    stem: 'shell',
+    ext: '.blk.md',
+  });
+});
+
 test('allocateConflictCopyPath skips names that already exist', async () => {
   const existing = new Set([
     'space/note（冲突版本 2026-08-24）.md',
@@ -36,4 +59,16 @@ test('allocateConflictCopyPath skips names that already exist', async () => {
     (candidate) => existing.has(candidate),
   );
   assert.equal(path, 'space/note（冲突版本 2026-08-24 2）.md');
+});
+
+test('allocateConflictCopyPath keeps the folder and writer suffix', async () => {
+  const path = await allocateConflictCopyPath(
+    'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位.writer.md',
+    '（冲突版本 2026-08-28）',
+    () => false,
+  );
+  assert.equal(
+    path,
+    'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位（冲突版本 2026-08-28）.writer.md',
+  );
 });

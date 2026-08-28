@@ -4,8 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:git2dart/git2dart.dart';
 import 'package:path/path.dart' as p;
 
+import '../utils/git_oid.dart';
 import '../utils/sync_conflict_name.dart';
 import 'git_providers.dart';
+import 'git_ssl.dart';
 import 'git_sync_config.dart';
 
 const tinynoteGitignore = '''
@@ -66,6 +68,9 @@ class GitSyncService {
     );
     return Callbacks(
       credentials: UserPass(username: auth.username, password: auth.password),
+      certificateCheck: (_, host, {required valid}) {
+        return acceptGitTlsCertificate(libgit2Valid: valid, host: host);
+      },
     );
   }
 
@@ -127,6 +132,8 @@ class GitSyncService {
       throw GitSyncException('token required');
     }
 
+    await trustGitHostFromUrl(url);
+
     await Directory(libraryPath).create(recursive: true);
     final created = !await isRepository(libraryPath);
     final repo =
@@ -180,6 +187,7 @@ class GitSyncService {
     if (!await isRepository(libraryPath)) {
       throw GitSyncException('not a git repository');
     }
+    await trustGitHostFromUrl(config.url);
     final repo = Repository.open(libraryPath);
     try {
       final callbacks = _callbacks(config);
@@ -217,6 +225,7 @@ class GitSyncService {
     if (!await isRepository(libraryPath)) {
       throw GitSyncException('not a git repository');
     }
+    await trustGitHostFromUrl(config.url);
     final repo = Repository.open(libraryPath);
     try {
       await _ensureGitignore(repo);
@@ -318,7 +327,7 @@ class GitSyncService {
 
     final parents = _headCommit(repo);
     final treeOid = index.writeTree(repo);
-    if (parents.isNotEmpty && parents.first.tree.oid.sha == treeOid.sha) {
+    if (parents.isNotEmpty && parents.first.treeOid.sha == treeOid.sha) {
       return false;
     }
 
@@ -335,11 +344,26 @@ class GitSyncService {
   }
 
   List<Commit> _headCommit(Repository repo) {
+    final oid = _copiedHeadTarget(repo);
+    if (oid == null) return const [];
     try {
-      if (repo.isEmpty || repo.isBranchUnborn) return const [];
-      return [Commit.lookup(repo: repo, oid: repo.head.target)];
+      return [Commit.lookup(repo: repo, oid: oid)];
     } catch (_) {
       return const [];
+    }
+  }
+
+  Oid? _copiedHeadTarget(Repository repo) {
+    if (_isUnborn(repo)) return null;
+    try {
+      final head = repo.head;
+      try {
+        return copyGitOid(head.target);
+      } finally {
+        head.free();
+      }
+    } catch (_) {
+      return null;
     }
   }
 
@@ -384,8 +408,11 @@ class GitSyncService {
   }) async {
     final refName = 'refs/remotes/$remoteName/$remoteBranch';
     final theirRef = Reference.lookup(repo: repo, name: refName);
-    final theirOid = theirRef.target;
+    final theirOid = copyGitOid(theirRef.target);
     theirRef.free();
+    if (theirOid == null) {
+      throw GitSyncException('remote tracking branch has no commit');
+    }
 
     if (_isUnborn(repo)) {
       _checkoutUnborn(repo, theirOid, remoteBranch);
@@ -461,7 +488,11 @@ class GitSyncService {
     required Oid theirOid,
     required String conflictSuffix,
   }) async {
-    final ourCommit = Commit.lookup(repo: repo, oid: repo.head.target);
+    final ourOid = _copiedHeadTarget(repo);
+    if (ourOid == null) {
+      throw GitSyncException('local branch has no commit');
+    }
+    final ourCommit = Commit.lookup(repo: repo, oid: ourOid);
     final theirCommit = Commit.lookup(repo: repo, oid: theirOid);
     try {
       final ourFiles = <String, Oid>{};
@@ -508,7 +539,7 @@ class GitSyncService {
   Future<List<String>> _resolveConflicts(Repository repo, String suffix) async {
     final index = repo.index;
     if (!index.hasConflicts) {
-      Checkout.index(repo: repo);
+      _checkoutIndex(repo);
       return const [];
     }
 
@@ -519,23 +550,34 @@ class GitSyncService {
       final conflict = entry.value;
       final our = conflict.our;
       final their = conflict.their;
-      if (our != null) {
+      final ourPath = our?.path;
+      final theirPath = their?.path;
+      final keepPath =
+          (theirPath != null && theirPath.isNotEmpty) ? theirPath : path;
+      final ourOid = our == null ? null : copyGitOid(our.oid);
+      final theirOid = their == null ? null : copyGitOid(their.oid);
+      if (ourOid != null) {
         final copy = await _writeConflictCopy(
           repo,
-          relativePath: path,
-          oid: our.oid,
+          relativePath: keepPath,
+          oid: ourOid,
           suffix: suffix,
         );
         copies.add(copy);
+        if (ourPath != null && ourPath != keepPath) {
+          final stale = File(_repoFilePath(repo, ourPath));
+          if (await stale.exists()) await stale.delete();
+          if (index.find(ourPath)) index.remove(ourPath);
+        }
       }
       conflict.remove();
-      if (their != null) {
-        await _writeBlob(repo, their.oid, path);
-        index.add(path);
+      if (theirOid != null) {
+        await _writeBlob(repo, theirOid, keepPath);
+        index.add(keepPath);
       } else {
-        final file = File(p.join(repo.workdir, path));
+        final file = File(_repoFilePath(repo, keepPath));
         if (await file.exists()) await file.delete();
-        if (index.find(path)) index.remove(path);
+        if (index.find(keepPath)) index.remove(keepPath);
       }
     }
 
@@ -543,8 +585,19 @@ class GitSyncService {
       index.add(copy);
     }
     index.write();
-    Checkout.index(repo: repo);
+    _checkoutIndex(repo);
     return copies;
+  }
+
+  void _checkoutIndex(Repository repo) {
+    Checkout.index(
+      repo: repo,
+      strategy: {
+        GitCheckout.force,
+        GitCheckout.recreateMissing,
+        GitCheckout.allowConflicts,
+      },
+    );
   }
 
   void _commitMerge(Repository repo, Oid theirOid) {
@@ -571,6 +624,9 @@ class GitSyncService {
     final index = repo.index;
     index.write();
     final oid = treeOid ?? index.writeTree(repo);
+    if (isZeroGitOid(oid)) {
+      throw GitSyncException('cannot create commit from empty object');
+    }
     final tree = Tree.lookup(repo: repo, oid: oid);
     final signature = Signature.create(
       name: _hostname(),
@@ -618,23 +674,31 @@ class GitSyncService {
   ) {
     for (final entry in tree.entries) {
       final path = prefix.isEmpty ? entry.name : '$prefix/${entry.name}';
+      if (entry.filemode == GitFilemode.commit ||
+          entry.type == GitObject.commit) {
+        continue;
+      }
       if (entry.filemode == GitFilemode.tree || entry.type == GitObject.tree) {
-        final subtree = Tree.lookup(repo: repo, oid: entry.oid);
+        final subtreeOid = copyGitOid(entry.oid);
+        if (subtreeOid == null) continue;
+        final subtree = Tree.lookup(repo: repo, oid: subtreeOid);
         try {
           _collectTreeFiles(repo, subtree, path, out);
         } finally {
           subtree.free();
         }
       } else {
-        out[path] = entry.oid;
+        final blobOid = copyGitOid(entry.oid);
+        if (blobOid != null) out[path] = blobOid;
       }
     }
   }
 
   Future<void> _writeBlob(Repository repo, Oid oid, String relativePath) async {
+    if (isZeroGitOid(oid)) return;
     final blob = Blob.lookup(repo: repo, oid: oid);
     try {
-      final file = File(p.join(repo.workdir, relativePath));
+      final file = File(_repoFilePath(repo, relativePath));
       await file.parent.create(recursive: true);
       await file.writeAsBytes(blob.contentBytes, flush: true);
     } finally {
@@ -651,10 +715,23 @@ class GitSyncService {
     final copy = await allocateConflictCopyPath(
       relativePath: relativePath,
       suffix: suffix,
-      exists: (path) async => File(p.join(repo.workdir, path)).exists(),
+      exists: (path) async => File(_repoFilePath(repo, path)).exists(),
     );
     await _writeBlob(repo, oid, copy);
     return copy;
+  }
+
+  /// Join a repo-relative git path onto the workdir without treating a
+  /// leading slash as an absolute filesystem path.
+  String _repoFilePath(Repository repo, String relativePath) {
+    final parts =
+        relativePath
+            .replaceAll('\\', '/')
+            .split('/')
+            .where((part) => part.isNotEmpty && part != '.')
+            .toList();
+    if (parts.isEmpty) return repo.workdir;
+    return p.joinAll([repo.workdir, ...parts]);
   }
 
   String _commitMessage() => '${_hostname()} sync push';
@@ -674,6 +751,14 @@ class GitSyncService {
   String _friendlyError(Object error) {
     final text = error.toString();
     final lower = text.toLowerCase();
+    if (lower.contains('ssl') || lower.contains('certificate')) {
+      return 'ssl';
+    }
+    if (lower.contains('null oid') ||
+        lower.contains('git_error_odb') ||
+        lower.contains('cannot read object')) {
+      return 'odb';
+    }
     if (lower.contains('auth') ||
         lower.contains('401') ||
         lower.contains('403') ||

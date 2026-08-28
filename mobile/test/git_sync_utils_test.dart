@@ -70,5 +70,29 @@ void main() {
       );
       expect(path, 'space/note（冲突版本 2026-08-24 2）.md');
     });
+
+    test('keeps the folder and inserts the marker before .writer.md', () async {
+      expect(
+        splitRepoRelativePath(
+          'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位.writer.md',
+        ),
+        (
+          dir: 'TinyNote产品管理.tinynotes/公众号管理/',
+          stem: '公众号注册和定位',
+          ext: '.writer.md',
+        ),
+      );
+
+      final path = await allocateConflictCopyPath(
+        relativePath:
+            'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位.writer.md',
+        suffix: '（冲突版本 2026-08-28）',
+        exists: (candidate) async => false,
+      );
+      expect(
+        path,
+        'TinyNote产品管理.tinynotes/公众号管理/公众号注册和定位（冲突版本 2026-08-28）.writer.md',
+      );
+    });
   });
 }

@@ -305,6 +305,8 @@ final stringsFr = AppStrings(
   gitSyncNotReady: 'La bibliothèque de notes n’est pas encore prête',
   gitSyncOpenTokenPage: 'Ouvrir la page de création de jeton',
   gitSyncAuthFailed: 'Autorisation échouée. Vérifiez le jeton et réessayez.',
+  gitSyncSslFailed:
+      'Impossible de vérifier le certificat du serveur. Vérifiez l’URL du dépôt et si cet appareil fait confiance au certificat.',
   gitSyncRemoteBound: 'Dépôt HTTPS connecté',
   gitSyncNotConnected:
       'Saisissez une URL et un jeton pour synchroniser avec le dépôt du bureau',

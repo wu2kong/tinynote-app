@@ -305,6 +305,8 @@ final stringsIt = AppStrings(
   gitSyncNotReady: 'La libreria di note non è ancora pronta',
   gitSyncOpenTokenPage: 'Apri la pagina di creazione del token',
   gitSyncAuthFailed: 'Autorizzazione non riuscita. Controlla il token e riprova.',
+  gitSyncSslFailed:
+      'Impossibile verificare il certificato del server. Controlla l’URL del repository e se questo dispositivo si fida del certificato.',
   gitSyncRemoteBound: 'Repository HTTPS collegato',
   gitSyncNotConnected:
       'Inserisci URL e token per sincronizzare con il repository del desktop',

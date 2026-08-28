@@ -268,6 +268,7 @@ class AppStrings {
     required this.gitSyncNotReady,
     required this.gitSyncOpenTokenPage,
     required this.gitSyncAuthFailed,
+    required this.gitSyncSslFailed,
     required this.gitSyncRemoteBound,
     required this.gitSyncNotConnected,
   });
@@ -538,6 +539,7 @@ class AppStrings {
   final String gitSyncNotReady;
   final String gitSyncOpenTokenPage;
   final String gitSyncAuthFailed;
+  final String gitSyncSslFailed;
   final String gitSyncRemoteBound;
   final String gitSyncNotConnected;
 

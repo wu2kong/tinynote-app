@@ -280,6 +280,7 @@ final stringsKo = AppStrings(
   gitSyncNotReady: '노트 라이브러리가 아직 준비되지 않았습니다',
   gitSyncOpenTokenPage: '토큰 만들기 페이지 열기',
   gitSyncAuthFailed: '인증에 실패했습니다. 토큰을 확인한 뒤 다시 시도하세요.',
+  gitSyncSslFailed: '서버 인증서를 확인하지 못했습니다. 저장소 URL과 이 기기가 해당 인증서를 신뢰하는지 확인하세요.',
   gitSyncRemoteBound: 'HTTPS 저장소 연결됨',
   gitSyncNotConnected: 'URL과 토큰을 입력해 데스크톱 저장소와 동기화',
 );

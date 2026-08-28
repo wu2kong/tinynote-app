@@ -5,6 +5,7 @@ import 'package:git2dart/git2dart.dart';
 
 import 'l10n/l10n.dart';
 import 'screens/home_screen.dart';
+import 'services/git_ssl.dart';
 import 'services/library_service.dart';
 import 'theme/app_colors.dart';
 
@@ -12,6 +13,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await PlatformSpecific.initialize();
+    await configureLibgit2Certificates();
   } catch (error) {
     debugPrint('git2dart init failed: $error');
   }

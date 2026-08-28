@@ -306,6 +306,8 @@ final stringsDe = AppStrings(
   gitSyncNotReady: 'Die Notizbibliothek ist noch nicht bereit',
   gitSyncOpenTokenPage: 'Token-Seite öffnen',
   gitSyncAuthFailed: 'Autorisierung fehlgeschlagen. Token prüfen und erneut versuchen.',
+  gitSyncSslFailed:
+      'Das Serverzertifikat konnte nicht geprüft werden. Prüfe die Repository-URL und, ob dieses Gerät dem Zertifikat vertraut.',
   gitSyncRemoteBound: 'HTTPS-Repository verbunden',
   gitSyncNotConnected:
       'URL und Token eingeben, um mit dem Desktop-Repository zu synchronisieren',

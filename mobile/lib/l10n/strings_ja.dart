@@ -281,6 +281,7 @@ final stringsJa = AppStrings(
   gitSyncNotReady: 'ノートライブラリの準備ができていません',
   gitSyncOpenTokenPage: 'トークン作成ページを開く',
   gitSyncAuthFailed: '認証に失敗しました。トークンを確認して再試行してください。',
+  gitSyncSslFailed: 'サーバー証明書を検証できませんでした。リポジトリ URL と、この端末がその証明書を信頼しているかを確認してください。',
   gitSyncRemoteBound: 'HTTPS リポジトリを接続済み',
   gitSyncNotConnected: 'URL とトークンを入力してデスクトップのリポジトリと同期',
 );

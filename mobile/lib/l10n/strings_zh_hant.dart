@@ -274,6 +274,7 @@ final stringsZhHant = AppStrings(
   gitSyncNotReady: '筆記庫尚未就緒',
   gitSyncOpenTokenPage: '開啟建立權杖頁面',
   gitSyncAuthFailed: '授權失敗，請檢查權杖後重試。',
+  gitSyncSslFailed: '無法驗證伺服器的安全憑證。請確認倉庫位址可用，或檢查裝置是否信任該憑證。',
   gitSyncRemoteBound: '已連接 HTTPS 倉庫',
   gitSyncNotConnected: '填寫位址和權杖，與桌面端倉庫同步',
 );

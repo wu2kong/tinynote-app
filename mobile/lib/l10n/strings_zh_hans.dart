@@ -276,6 +276,7 @@ final stringsZhHans = AppStrings(
   gitSyncNotReady: '笔记库尚未就绪',
   gitSyncOpenTokenPage: '打开创建令牌页面',
   gitSyncAuthFailed: '授权失败，请检查令牌后重试。',
+  gitSyncSslFailed: '无法验证服务器的安全证书。请确认仓库地址可用，或检查设备是否信任该证书。',
   gitSyncRemoteBound: '已连接 HTTPS 仓库',
   gitSyncNotConnected: '填写地址和令牌，与桌面端仓库同步',
 );

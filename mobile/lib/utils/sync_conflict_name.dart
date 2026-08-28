@@ -1,3 +1,5 @@
+import '../core/notebook_format.dart';
+
 String formatLocalIsoDate([DateTime? date]) {
   final value = date ?? DateTime.now();
   final year = value.year.toString().padLeft(4, '0');
@@ -18,6 +20,14 @@ String withConflictCopyCount(String suffix, int n) {
   final slash = normalized.lastIndexOf('/');
   final dir = slash >= 0 ? normalized.substring(0, slash + 1) : '';
   final base = slash >= 0 ? normalized.substring(slash + 1) : normalized;
+  final suffix = matchedNotebookSuffix(base);
+  if (suffix != null) {
+    return (
+      dir: dir,
+      stem: base.substring(0, base.length - suffix.length),
+      ext: suffix,
+    );
+  }
   final dot = base.lastIndexOf('.');
   final hasExt = dot > 0 && dot < base.length - 1;
   return (

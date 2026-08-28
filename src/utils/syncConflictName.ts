@@ -1,3 +1,5 @@
+import { getMatchedNotebookSuffix } from './notebookFormat.ts';
+
 export function formatLocalIsoDate(date = new Date()): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -17,6 +19,14 @@ export function splitRepoRelativePath(relativePath: string): { dir: string; stem
   const slash = normalized.lastIndexOf('/');
   const dir = slash >= 0 ? normalized.slice(0, slash + 1) : '';
   const base = slash >= 0 ? normalized.slice(slash + 1) : normalized;
+  const suffix = getMatchedNotebookSuffix(base);
+  if (suffix) {
+    return {
+      dir,
+      stem: base.slice(0, base.length - suffix.length),
+      ext: suffix,
+    };
+  }
   const dot = base.lastIndexOf('.');
   const hasExt = dot > 0 && dot < base.length - 1;
   return {

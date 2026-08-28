@@ -1106,6 +1106,8 @@ class LibraryService extends ChangeNotifier {
     if (error is StateError) return error.message;
     final text = error is GitSyncException ? error.message : '$error';
     if (text == 'auth') return appStrings.gitSyncAuthFailed;
+    if (text == 'ssl') return appStrings.gitSyncSslFailed;
+    if (text == 'odb') return fallback;
     if (text == 'HTTPS URL required') return appStrings.gitSyncUrlRequired;
     if (text == 'token required') return appStrings.gitSyncTokenRequired;
     if (text == fallback) return fallback;
