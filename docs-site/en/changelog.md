@@ -7,6 +7,14 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.7
+
+2026-08-28
+
+### Fixes
+
+- Git conflict copies now keep the original folder and put the conflict marker before the notebook suffix, e.g. `公众号注册和定位（冲突版本 2026-08-28）.writer.md`
+
 ## v1.2.6
 
 2026-08-27
