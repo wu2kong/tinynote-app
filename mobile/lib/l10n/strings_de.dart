@@ -311,4 +311,48 @@ final stringsDe = AppStrings(
   gitSyncRemoteBound: 'HTTPS-Repository verbunden',
   gitSyncNotConnected:
       'URL und Token eingeben, um mit dem Desktop-Repository zu synchronisieren',
+  proSection: 'Pro',
+  proBadge: 'Pro',
+  proPlanFree: 'Kostenlos',
+  proStatusFree:
+      'Mit Pro erhältst du mehr Bereiche, Artikelnotizen und Git-Sync.',
+  proGateTitle: 'TinyNote Pro',
+  proGateHint: 'Wähle ein Abo oder einen Einmalkauf, um diese Funktion zu nutzen.',
+  proGateSpaceLimit:
+      'Der kostenlose Plan unterstützt bis zu 5 Bereiche. Mit Pro kannst du mehr anlegen.',
+  proGateNotebookLimit:
+      'Der kostenlose Plan unterstützt bis zu 100 Notizen pro Bereich. Mit Pro kannst du mehr anlegen.',
+  proGateArticleNotebook:
+      'Markdown- und Artikelnotizen anzulegen ist eine Pro-Funktion.',
+  proGateSync: 'Git-Notizsync ist eine Pro-Funktion.',
+  proTrialArticleHint:
+      'Du kannst in diesem Bereich auch 1 Beispiel dieses Typs zum Testen anlegen.',
+  proTrialArticleExists:
+      'In diesem Bereich gibt es bereits das Beispiel „{name}“. Für unbegrenzte Nutzung auf Pro upgraden.',
+  proTrialCreateSample: 'Beispiel erstellen',
+  proTrialOpenSample: 'Beispielnotiz öffnen',
+  proTrialSampleCreated: 'Beispiel „{name}“ erstellt',
+  proTrialSampleMarkdownName: 'Markdown-Beispiel',
+  proTrialSampleWriterName: 'Artikelbeispiel',
+  proStoreHint:
+      'Wähle ein Abo oder einen Einmalkauf. Käufe dieses Apple-Accounts kannst du jederzeit wiederherstellen.',
+  proStoreMonthly: 'Monatlich {price}',
+  proStoreYearly: 'Jährlich {price}',
+  proStoreLifetime: 'Early-Bird-Kauf {price}',
+  proStoreRestore: 'Käufe wiederherstellen',
+  proStorePurchaseComplete: 'TinyNote Pro ist jetzt freigeschaltet.',
+  proStoreRestoreComplete: 'Dein TinyNote-Pro-Kauf wurde wiederhergestellt.',
+  proStoreRestoreEmpty:
+      'Für diesen Apple-Account wurde kein gültiger TinyNote-Pro-Kauf gefunden.',
+  proStoreActive: 'TinyNote Pro ist aktiv',
+  proStoreLegal:
+      'Die Zahlung wird bei Kaufbestätigung deinem Apple-ID-Account belastet. Das Abo verlängert sich automatisch, wenn es nicht mindestens 24 Stunden vor Periodenende gekündigt wird. Die Verlängerung wird innerhalb von 24 Stunden vor Periodenende berechnet. Abos verwaltest und kündigst du nach dem Kauf in den App-Store-Accounteinstellungen.',
+  proStorePrivacy: 'Datenschutz',
+  proStoreTerms: 'Nutzungsbedingungen',
+  proPurchaseIncomplete: 'Der Kauf wurde nicht abgeschlossen. Bitte erneut versuchen.',
+  proPurchasePending:
+      'Dieser Kauf wartet auf Freigabe. Pro wird danach automatisch freigeschaltet.',
+  proPurchaseNotSynced:
+      'Der Kauf ist abgeschlossen, aber die Berechtigung ist noch nicht synchron. Tippe bald auf „Käufe wiederherstellen“.',
+  proPurchaseUnavailable: 'App-Store-Käufe sind nur unter iOS verfügbar.',
 );

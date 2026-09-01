@@ -310,4 +310,49 @@ final stringsFr = AppStrings(
   gitSyncRemoteBound: 'Dépôt HTTPS connecté',
   gitSyncNotConnected:
       'Saisissez une URL et un jeton pour synchroniser avec le dépôt du bureau',
+  proSection: 'Pro',
+  proBadge: 'Pro',
+  proPlanFree: 'Gratuit',
+  proStatusFree:
+      'Passez à Pro pour plus d’espaces, de notes article et la sync Git.',
+  proGateTitle: 'TinyNote Pro',
+  proGateHint: 'Choisissez un abonnement ou un achat unique pour débloquer cette fonction.',
+  proGateSpaceLimit:
+      'La version gratuite permet jusqu’à 5 espaces. Passez à Pro pour en créer davantage.',
+  proGateNotebookLimit:
+      'La version gratuite permet jusqu’à 100 notes par espace. Passez à Pro pour en créer davantage.',
+  proGateArticleNotebook:
+      'Créer des notes Markdown / article est une fonction Pro.',
+  proGateSync: 'La synchronisation Git est une fonction Pro.',
+  proTrialArticleHint:
+      'Vous pouvez aussi créer 1 exemple de ce type dans l’espace actuel pour essayer.',
+  proTrialArticleExists:
+      'Cet espace a déjà l’exemple « {name} ». Passez à Pro pour une utilisation illimitée.',
+  proTrialCreateSample: 'Créer un exemple',
+  proTrialOpenSample: 'Ouvrir l’exemple',
+  proTrialSampleCreated: 'Exemple « {name} » créé',
+  proTrialSampleMarkdownName: 'Exemple Markdown',
+  proTrialSampleWriterName: 'Exemple article',
+  proStoreHint:
+      'Choisissez un abonnement ou un achat unique. Vous pouvez restaurer les achats de ce compte Apple à tout moment.',
+  proStoreMonthly: 'Mensuel {price}',
+  proStoreYearly: 'Annuel {price}',
+  proStoreLifetime: 'Achat anticipé {price}',
+  proStoreRestore: 'Restaurer les achats',
+  proStorePurchaseComplete: 'TinyNote Pro est débloqué.',
+  proStoreRestoreComplete: 'Votre achat TinyNote Pro a été restauré.',
+  proStoreRestoreEmpty:
+      'Aucun achat TinyNote Pro valide n’a été trouvé pour ce compte Apple.',
+  proStoreActive: 'TinyNote Pro est actif',
+  proStoreLegal:
+      'Le paiement sera facturé sur votre compte Apple ID à la confirmation de l’achat. L’abonnement se renouvelle automatiquement sauf annulation au moins 24 heures avant la fin de la période. Le renouvellement est facturé dans les 24 heures précédant la fin de la période. Après l’achat, gérez ou annulez l’abonnement dans les réglages du compte App Store.',
+  proStorePrivacy: 'Politique de confidentialité',
+  proStoreTerms: 'Conditions d’utilisation',
+  proPurchaseIncomplete: 'L’achat n’est pas terminé. Réessayez.',
+  proPurchasePending:
+      'Cet achat est en attente d’approbation. Pro se débloquera ensuite.',
+  proPurchaseNotSynced:
+      'L’achat est terminé, mais l’accès n’est pas encore synchronisé. Touchez bientôt « Restaurer les achats ».',
+  proPurchaseUnavailable:
+      'Les achats App Store ne sont disponibles que sur iOS.',
 );

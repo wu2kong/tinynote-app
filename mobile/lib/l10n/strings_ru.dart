@@ -309,4 +309,49 @@ final stringsRu = AppStrings(
   gitSyncRemoteBound: 'HTTPS-репозиторий подключён',
   gitSyncNotConnected:
       'Введите адрес и токен, чтобы синхронизироваться с репозиторием на компьютере',
+  proSection: 'Pro',
+  proBadge: 'Pro',
+  proPlanFree: 'Бесплатно',
+  proStatusFree:
+      'Перейдите на Pro, чтобы получить больше пространств, статейных заметок и Git-синхронизацию.',
+  proGateTitle: 'TinyNote Pro',
+  proGateHint: 'Выберите подписку или разовую покупку, чтобы открыть эту функцию.',
+  proGateSpaceLimit:
+      'Бесплатный тариф поддерживает до 5 пространств. Перейдите на Pro, чтобы создавать больше.',
+  proGateNotebookLimit:
+      'Бесплатный тариф поддерживает до 100 заметок в пространстве. Перейдите на Pro, чтобы создавать больше.',
+  proGateArticleNotebook:
+      'Создание Markdown / статейных заметок — функция Pro.',
+  proGateSync: 'Синхронизация Git — функция Pro.',
+  proTrialArticleHint:
+      'Вы также можете создать 1 образец этого типа в текущем пространстве для проверки.',
+  proTrialArticleExists:
+      'В этом пространстве уже есть образец «{name}». Для безлимитного использования перейдите на Pro.',
+  proTrialCreateSample: 'Создать образец',
+  proTrialOpenSample: 'Открыть образец',
+  proTrialSampleCreated: 'Создан образец «{name}»',
+  proTrialSampleMarkdownName: 'Образец Markdown',
+  proTrialSampleWriterName: 'Образец статьи',
+  proStoreHint:
+      'Выберите подписку или разовую покупку. Покупки этого аккаунта Apple можно восстановить в любой момент.',
+  proStoreMonthly: 'Ежемесячно {price}',
+  proStoreYearly: 'Ежегодно {price}',
+  proStoreLifetime: 'Ранняя покупка {price}',
+  proStoreRestore: 'Восстановить покупки',
+  proStorePurchaseComplete: 'TinyNote Pro разблокирован.',
+  proStoreRestoreComplete: 'Покупка TinyNote Pro восстановлена.',
+  proStoreRestoreEmpty:
+      'Для этого аккаунта Apple не найдено действующей покупки TinyNote Pro.',
+  proStoreActive: 'TinyNote Pro активен',
+  proStoreLegal:
+      'Оплата будет списана с аккаунта Apple ID при подтверждении покупки. Подписка автоматически продлевается, если её не отменить не менее чем за 24 часа до конца периода. Плата за продление взимается в течение 24 часов до конца периода. После покупки управляйте подпиской или отменяйте её в настройках аккаунта App Store.',
+  proStorePrivacy: 'Политика конфиденциальности',
+  proStoreTerms: 'Условия использования',
+  proPurchaseIncomplete: 'Покупка не завершена. Попробуйте ещё раз.',
+  proPurchasePending:
+      'Эта покупка ожидает одобрения. После него Pro разблокируется.',
+  proPurchaseNotSynced:
+      'Покупка завершена, но права ещё не синхронизированы. Скоро нажмите «Восстановить покупки».',
+  proPurchaseUnavailable:
+      'Покупки App Store доступны только на iOS.',
 );

@@ -7,6 +7,7 @@ import 'l10n/l10n.dart';
 import 'screens/home_screen.dart';
 import 'services/git_ssl.dart';
 import 'services/library_service.dart';
+import 'services/license_store.dart';
 import 'theme/app_colors.dart';
 
 Future<void> main() async {
@@ -31,18 +32,22 @@ class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
   final LibraryService _library = LibraryService();
   final LocaleController _locale = LocaleController();
   final ThemeController _theme = ThemeController();
+  final LicenseStore _license = LicenseStore();
 
   @override
   void initState() {
     super.initState();
     appLocaleController = _locale;
+    appLicenseStore = _license;
     WidgetsBinding.instance.addObserver(this);
     _library.bootstrap();
     _library.addListener(_onChanged);
     _locale.addListener(_onChanged);
     _theme.addListener(_onChanged);
+    _license.addListener(_onChanged);
     _locale.load();
     _theme.load();
+    _license.hydrate();
   }
 
   @override
@@ -51,10 +56,15 @@ class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
     _library.removeListener(_onChanged);
     _locale.removeListener(_onChanged);
     _theme.removeListener(_onChanged);
+    _license.removeListener(_onChanged);
     _library.dispose();
     _locale.dispose();
+    _license.dispose();
     if (appLocaleController == _locale) {
       appLocaleController = null;
+    }
+    if (appLicenseStore == _license) {
+      appLicenseStore = null;
     }
     _theme.dispose();
     super.dispose();
@@ -62,8 +72,11 @@ class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _library.iCloudEnabled) {
-      _library.refresh();
+    if (state == AppLifecycleState.resumed) {
+      if (_library.iCloudEnabled) {
+        _library.refresh();
+      }
+      _license.refresh();
     }
   }
 
@@ -77,28 +90,31 @@ class _TinyNoteAppState extends State<TinyNoteApp> with WidgetsBindingObserver {
       controller: _locale,
       child: ThemeScope(
         controller: _theme,
-        child: MaterialApp(
-          title: _locale.strings.appTitle,
-          locale: _locale.flutterLocale,
-          supportedLocales: AppLocale.values.map((e) => e.locale).toList(),
-          localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          debugShowCheckedModeBanner: false,
-          theme: _theme.themeData,
-          builder: (context, child) {
-            final overlay =
-                _theme.isDark
-                    ? SystemUiOverlayStyle.light.copyWith(
-                      statusBarColor: Colors.transparent,
-                    )
-                    : SystemUiOverlayStyle.dark.copyWith(
-                      statusBarColor: Colors.transparent,
-                    );
-            return AnnotatedRegion<SystemUiOverlayStyle>(
-              value: overlay,
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-          home: HomeScreen(library: _library),
+        child: LicenseScope(
+          store: _license,
+          child: MaterialApp(
+            title: _locale.strings.appTitle,
+            locale: _locale.flutterLocale,
+            supportedLocales: AppLocale.values.map((e) => e.locale).toList(),
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
+            debugShowCheckedModeBanner: false,
+            theme: _theme.themeData,
+            builder: (context, child) {
+              final overlay =
+                  _theme.isDark
+                      ? SystemUiOverlayStyle.light.copyWith(
+                        statusBarColor: Colors.transparent,
+                      )
+                      : SystemUiOverlayStyle.dark.copyWith(
+                        statusBarColor: Colors.transparent,
+                      );
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: overlay,
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            home: HomeScreen(library: _library),
+          ),
         ),
       ),
     );

@@ -39,6 +39,9 @@ src-tauri/sparkle_eddsa_private.key
 *.provisionprofile
 src-tauri/tauri.appstore.local.conf.json
 dist-packages/*-mac-app-store.pkg
+dist-docs/
+dist-appstore-media/
+work/
 
 # WinSparkle (downloaded by scripts/download-winsparkle.sh)
 src-tauri/winsparkle/

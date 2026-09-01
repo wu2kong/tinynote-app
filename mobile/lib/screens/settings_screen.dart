@@ -5,13 +5,17 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../utils/open_url.dart';
 
 import '../constants/app.dart';
+import '../constants/pro.dart';
 import '../l10n/l10n.dart';
 import '../services/library_service.dart';
+import '../services/license_store.dart';
 import '../theme/app_colors.dart';
 import '../utils/diagnostic_info.dart';
+import '../widgets/app_store_purchase_controls.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/git_sync_sheet.dart';
 import '../widgets/import_notes_sheet.dart';
+import '../widgets/pro_upgrade_sheet.dart';
 import '../widgets/sample_library_sheet.dart';
 import '../widgets/sheet_drag_area.dart';
 
@@ -394,6 +398,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openGitSync() async {
+    final license = context.license;
+    if (!license.isPro) {
+      await showProUpgradeSheet(
+        context: context,
+        library: library,
+        feature: ProFeature.sync,
+      );
+      return;
+    }
     await showGitSyncSheet(context: context, library: library);
   }
 
@@ -588,6 +601,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       _SectionCard(
+                        title: s.proSection,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.crown,
+                                size: 18,
+                                color:
+                                    context.license.isPro
+                                        ? colors.accent
+                                        : colors.muted,
+                              ),
+                              title:
+                                  context.license.isPro
+                                      ? s.proBadge
+                                      : s.proPlanFree,
+                              subtitle:
+                                  context.license.isPro
+                                      ? s.proStoreActive
+                                      : s.proStatusFree,
+                            ),
+                            const SizedBox(height: 4),
+                            const AppStorePurchaseControls(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _SectionCard(
                         title: s.sync,
                         child: Column(
                           children: [
@@ -647,7 +689,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               title: s.gitSync,
                               subtitle:
-                                  library.gitConnected
+                                  !context.license.isPro
+                                      ? s.proGateSync
+                                      : library.gitConnected
                                       ? (library.gitStatus.remoteUrl ??
                                           s.gitSyncRemoteBound)
                                       : s.gitSyncNotConnected,

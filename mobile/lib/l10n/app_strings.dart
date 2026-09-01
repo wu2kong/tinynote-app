@@ -271,6 +271,39 @@ class AppStrings {
     required this.gitSyncSslFailed,
     required this.gitSyncRemoteBound,
     required this.gitSyncNotConnected,
+    required this.proSection,
+    required this.proBadge,
+    required this.proPlanFree,
+    required this.proStatusFree,
+    required this.proGateTitle,
+    required this.proGateHint,
+    required this.proGateSpaceLimit,
+    required this.proGateNotebookLimit,
+    required this.proGateArticleNotebook,
+    required this.proGateSync,
+    required this.proTrialArticleHint,
+    required this.proTrialArticleExists,
+    required this.proTrialCreateSample,
+    required this.proTrialOpenSample,
+    required this.proTrialSampleCreated,
+    required this.proTrialSampleMarkdownName,
+    required this.proTrialSampleWriterName,
+    required this.proStoreHint,
+    required this.proStoreMonthly,
+    required this.proStoreYearly,
+    required this.proStoreLifetime,
+    required this.proStoreRestore,
+    required this.proStorePurchaseComplete,
+    required this.proStoreRestoreComplete,
+    required this.proStoreRestoreEmpty,
+    required this.proStoreActive,
+    required this.proStoreLegal,
+    required this.proStorePrivacy,
+    required this.proStoreTerms,
+    required this.proPurchaseIncomplete,
+    required this.proPurchasePending,
+    required this.proPurchaseNotSynced,
+    required this.proPurchaseUnavailable,
   });
 
   final String appTitle;
@@ -542,6 +575,39 @@ class AppStrings {
   final String gitSyncSslFailed;
   final String gitSyncRemoteBound;
   final String gitSyncNotConnected;
+  final String proSection;
+  final String proBadge;
+  final String proPlanFree;
+  final String proStatusFree;
+  final String proGateTitle;
+  final String proGateHint;
+  final String proGateSpaceLimit;
+  final String proGateNotebookLimit;
+  final String proGateArticleNotebook;
+  final String proGateSync;
+  final String proTrialArticleHint;
+  final String proTrialArticleExists;
+  final String proTrialCreateSample;
+  final String proTrialOpenSample;
+  final String proTrialSampleCreated;
+  final String proTrialSampleMarkdownName;
+  final String proTrialSampleWriterName;
+  final String proStoreHint;
+  final String proStoreMonthly;
+  final String proStoreYearly;
+  final String proStoreLifetime;
+  final String proStoreRestore;
+  final String proStorePurchaseComplete;
+  final String proStoreRestoreComplete;
+  final String proStoreRestoreEmpty;
+  final String proStoreActive;
+  final String proStoreLegal;
+  final String proStorePrivacy;
+  final String proStoreTerms;
+  final String proPurchaseIncomplete;
+  final String proPurchasePending;
+  final String proPurchaseNotSynced;
+  final String proPurchaseUnavailable;
 
   String formatLabel(NotebookFormat format) {
     return switch (format) {

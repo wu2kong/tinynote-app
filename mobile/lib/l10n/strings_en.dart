@@ -306,4 +306,48 @@ final stringsEn = AppStrings(
       'Could not verify the server certificate. Check the repository URL, or whether this device trusts the certificate.',
   gitSyncRemoteBound: 'HTTPS repository connected',
   gitSyncNotConnected: 'Enter a URL and token to sync with the desktop repository',
+  proSection: 'Pro',
+  proBadge: 'Pro',
+  proPlanFree: 'Free',
+  proStatusFree:
+      'Upgrade to Pro for more spaces, article notes, and Git sync.',
+  proGateTitle: 'TinyNote Pro',
+  proGateHint: 'Choose a subscription or a one-time purchase to unlock this feature.',
+  proGateSpaceLimit:
+      'The free plan supports up to 5 spaces. Upgrade to Pro for more spaces.',
+  proGateNotebookLimit:
+      'The free plan supports up to 100 notes per space. Upgrade to Pro for more notes.',
+  proGateArticleNotebook:
+      'Creating Markdown / article notes is a Pro feature.',
+  proGateSync: 'Git note sync is a Pro feature.',
+  proTrialArticleHint:
+      'You can also create 1 sample of this type in the current space for trial and testing.',
+  proTrialArticleExists:
+      'This space already has a sample of this type "{name}". Upgrade to Pro for unlimited use.',
+  proTrialCreateSample: 'Create sample',
+  proTrialOpenSample: 'Open sample note',
+  proTrialSampleCreated: 'Created sample "{name}"',
+  proTrialSampleMarkdownName: 'Markdown sample',
+  proTrialSampleWriterName: 'Article sample',
+  proStoreHint:
+      'Choose a subscription or a one-time purchase. You can restore purchases made with this Apple Account at any time.',
+  proStoreMonthly: 'Monthly {price}',
+  proStoreYearly: 'Yearly {price}',
+  proStoreLifetime: 'Early-bird lifetime {price}',
+  proStoreRestore: 'Restore Purchases',
+  proStorePurchaseComplete: 'TinyNote Pro is now unlocked.',
+  proStoreRestoreComplete: 'Your TinyNote Pro purchase has been restored.',
+  proStoreRestoreEmpty:
+      'No active TinyNote Pro purchase was found for this Apple Account.',
+  proStoreActive: 'TinyNote Pro is active',
+  proStoreLegal:
+      'Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel subscriptions in your App Store account settings after purchase.',
+  proStorePrivacy: 'Privacy Policy',
+  proStoreTerms: 'Terms of Use',
+  proPurchaseIncomplete: 'Purchase did not finish. Please try again.',
+  proPurchasePending:
+      'This purchase is waiting for approval. Pro will unlock after it is approved.',
+  proPurchaseNotSynced:
+      'Purchase completed, but Pro is not synced yet. Tap Restore Purchases shortly.',
+  proPurchaseUnavailable: 'App Store purchases are available on iOS only.',
 );

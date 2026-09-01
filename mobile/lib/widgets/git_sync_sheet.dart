@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../constants/pro.dart';
 import '../l10n/l10n.dart';
 import '../services/git_providers.dart';
 import '../services/library_service.dart';
+import '../services/license_store.dart';
 import '../theme/app_colors.dart';
 import '../utils/open_url.dart';
 import 'app_toast.dart';
+import 'pro_upgrade_sheet.dart';
 
 Future<void> showGitSyncSheet({
   required BuildContext context,
   required LibraryService library,
 }) {
+  final license = LicenseScope.maybeOf(context);
+  if (license != null && !license.isPro) {
+    return showProUpgradeSheet(
+      context: context,
+      library: library,
+      feature: ProFeature.sync,
+    );
+  }
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,

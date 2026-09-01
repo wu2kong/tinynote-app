@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../constants/pro.dart';
 import '../core/file_system.dart';
 import '../core/global_search.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';
 import '../screens/settings_screen.dart';
 import '../services/library_service.dart';
+import '../services/license_store.dart';
 import '../theme/app_colors.dart';
 import 'app_context_menu.dart';
 import 'global_search_sheet.dart';
 import 'import_notes_sheet.dart';
 import 'name_prompt_dialog.dart';
+import 'pro_upgrade_sheet.dart';
 
 class LibraryDrawer extends StatelessWidget {
   const LibraryDrawer({
@@ -47,7 +50,51 @@ class LibraryDrawer extends StatelessWidget {
 
   static const _createSpaceValue = '__create_space__';
 
+  Future<bool> _ensureCanCreateSpace(BuildContext context) async {
+    final license = context.license;
+    if (license.isPro) return true;
+    if (library.spaces.length >= freeMaxSpaces) {
+      await showProUpgradeSheet(
+        context: context,
+        library: library,
+        feature: ProFeature.spaceLimit,
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _ensureCanCreateNotebook(
+    BuildContext context,
+    String parentPath,
+    NotebookFormat format,
+  ) async {
+    final license = context.license;
+    if (!license.isPro && isArticleNotebookFormat(format)) {
+      await showProUpgradeSheet(
+        context: context,
+        library: library,
+        feature: ProFeature.articleNotebook,
+        gateContext: GateContext(parentPath: parentPath, format: format),
+      );
+      return false;
+    }
+    final space = library.currentSpace;
+    if (!license.isPro &&
+        space != null &&
+        countSpaceNotebooks(space) >= freeMaxNotebooksPerSpace) {
+      await showProUpgradeSheet(
+        context: context,
+        library: library,
+        feature: ProFeature.notebookLimit,
+      );
+      return false;
+    }
+    return true;
+  }
+
   Future<void> _createSpace(BuildContext context) async {
+    if (!await _ensureCanCreateSpace(context) || !context.mounted) return;
     final s = context.s;
     final name = await showNamePromptDialog(
       context,
@@ -342,6 +389,10 @@ class LibraryDrawer extends StatelessWidget {
     String parentPath, {
     NotebookFormat format = NotebookFormat.blocks,
   }) async {
+    if (!await _ensureCanCreateNotebook(context, parentPath, format) ||
+        !context.mounted) {
+      return;
+    }
     final s = context.s;
     final title = switch (format) {
       NotebookFormat.blocks => s.createNotebook,

@@ -13,5 +13,6 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     ICloudPlugin.register(messenger: engineBridge.applicationRegistrar.messenger())
+    IapPlugin.register(messenger: engineBridge.applicationRegistrar.messenger())
   }
 }
