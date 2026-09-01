@@ -13,6 +13,14 @@
 
 完整分发路线见 [DISTRIBUTION_WORKFLOWS.md](./DISTRIBUTION_WORKFLOWS.md)。Mac 商店包仍看 [MAC_APP_STORE.md](./MAC_APP_STORE.md)。
 
+iOS / iPad 与 Mac App Store 共用 Bundle ID 和同一组 IAP 产品：
+
+- 月度订阅：`com.wu2kong.tinynote.app.pro.monthly`
+- 年度订阅：`com.wu2kong.tinynote.app.pro.yearly`
+- 终身买断：`com.wu2kong.tinynote.app.pro.lifetime`
+
+本机用 Xcode 跑 Debug 时，`Runner` scheme 已指向 [`mobile/ios/TinyNote.storekit`](../mobile/ios/TinyNote.storekit)，可离线弹出购买表。提交审核或测真实扣款走 Sandbox / TestFlight，并在 App Store Connect 把上述三个 IAP 关联到本次 iOS 版本。设置中心的「高级版」提供月订、年订、买断和恢复购买。
+
 ## 0. 每次开打之前
 
 - 本机已装 **Xcode**，并在 Xcode → Settings → Accounts 登录付费开发者账号。
