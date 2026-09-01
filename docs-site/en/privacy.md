@@ -5,7 +5,7 @@ description: How TinyNote handles local notes, website preferences, and purchase
 
 # Privacy Policy
 
-Last updated: August 23, 2026
+Last updated: September 1, 2026
 
 ## 1. Local first
 
@@ -19,11 +19,15 @@ The website uses browser local storage for language and theme preferences, so yo
 
 ## 3. Purchases and licenses
 
-When you buy Pro, checkout and transaction information are processed by Dodo Payments. We use the information needed to complete an order, deliver a license, handle a refund, or provide order support, such as your purchase email, order identifier, and license status. Please also review the payment provider’s applicable privacy policy.
+TinyNote offers two purchase paths, depending on which edition you use:
+
+**Website download edition**: When you buy Pro on the website, checkout and transaction information are processed by Dodo Payments. We use the information needed to complete an order, deliver a license, handle a refund, or provide order support, such as your purchase email, order identifier, and license status. Please also review the payment provider’s applicable privacy policy.
+
+**Apple App Store edition (Mac App Store / App Store)**: When you buy Pro in the app (subscription or one-time purchase), payment, billing, and refunds are handled by Apple. We do not receive your payment card number or other Apple ID payment details. The app only uses Apple StoreKit to verify your purchase entitlement so it can unlock Pro and support Restore Purchases. Related transaction information is governed by [Apple’s Privacy Policy](https://www.apple.com/legal/privacy/).
 
 ## 4. Your control
 
-You can delete local notes, clear browser site data, or deactivate a device license at any time. To request access, correction, or deletion of personal data related to order support, contact [tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com).
+You can delete local notes, clear browser site data, or deactivate a device license in the website edition at any time. For the App Store edition, manage subscriptions and purchases in your Apple ID settings. To request access, correction, or deletion of personal data related to order support, contact [tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com).
 
 ## 5. Policy updates
 
