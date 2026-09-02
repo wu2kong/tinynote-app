@@ -9,6 +9,77 @@ const pkg = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'ut
 
 const tauriStub = (file: string) => path.resolve(__dirname, `src/platform/stubs/${file}`);
 
+function removeObjectProperty(source: string, marker: string): string {
+  const start = source.indexOf(marker);
+  if (start < 0) return source;
+
+  const braceStart = source.indexOf('{', start + marker.length - 1);
+  let depth = 0;
+  let quote = '';
+  let escaped = false;
+  let end = -1;
+  for (let index = braceStart; index < source.length; index += 1) {
+    const character = source[index];
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === quote) quote = '';
+      continue;
+    }
+    if (character === '"' || character === "'" || character === '`') {
+      quote = character;
+      continue;
+    }
+    if (character === '{') depth += 1;
+    if (character === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        end = index + 1;
+        break;
+      }
+    }
+  }
+  if (end < 0) throw new Error(`Could not remove ${marker}`);
+  if (source[end] === ',') end += 1;
+  if (source[end] === '\n') end += 1;
+  return source.slice(0, start) + source.slice(end);
+}
+
+function stripAppStoreAiContent() {
+  return {
+    name: 'strip-app-store-ai-content',
+    enforce: 'pre' as const,
+    transform(source: string, id: string) {
+      const normalizedId = id.replace(/\?.*$/, '').replace(/\\/g, '/');
+      if (/\/src\/i18n\/[\w-]+\.ts$/.test(normalizedId)) {
+        let transformed = removeObjectProperty(source, '\n    "ai": {');
+        transformed = removeObjectProperty(transformed, '\n  "aiChat": {');
+        transformed = removeObjectProperty(transformed, '\n    "aiChatSessions": {');
+        transformed = transformed
+          .replace(/^      "ai":.*\n/m, '')
+          .replace(/^      "aiChat":.*\n/m, '');
+        return { code: transformed, map: null };
+      }
+      if (normalizedId.endsWith('/src/utils/configTypes.ts')) {
+        return {
+          code: source.replace(
+            /export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig\[\] = \[[\s\S]*?\n\];/,
+            'export const DEFAULT_LLM_PROVIDERS: LLMProviderConfig[] = [];',
+          ),
+          map: null,
+        };
+      }
+      if (normalizedId.endsWith('/src/utils/officialSampleLibraryLocales.ts')) {
+        return { code: source.replaceAll('AI', ''), map: null };
+      }
+      if (normalizedId.endsWith('/src/utils/officialSampleLibraryContent.ts')) {
+        return { code: source.replace('• Cmd/Ctrl + I — open AI chat\n', ''), map: null };
+      }
+      return null;
+    },
+  };
+}
+
 const webStubs: Record<string, string> = {
   '@tauri-apps/api/core': tauriStub('tauri-core.ts'),
   '@tauri-apps/api/app': tauriStub('tauri-app.ts'),
@@ -25,12 +96,18 @@ export default defineConfig(({ mode: viteMode }) => {
   const macAppStoreBuild = process.env.VITE_DISTRIBUTION === 'mac-app-store';
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      ...(macAppStoreBuild ? [stripAppStoreAiContent()] : []),
+      react(),
+      tailwindcss(),
+    ],
     resolve: {
       alias: {
         ...(macAppStoreBuild
           ? {
               '@/store/useLicenseStore': path.resolve(__dirname, 'src/store/useLicenseStore.appstore.ts'),
+              '@/components/AIChatModal': path.resolve(__dirname, 'src/components/AIChatModal.appstore.tsx'),
+              '@/components/AISettings': path.resolve(__dirname, 'src/components/AISettings.appstore.tsx'),
             }
           : {}),
         '@': path.resolve(__dirname, 'src'),

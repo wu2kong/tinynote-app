@@ -1,13 +1,13 @@
 ---
 title: TinyNote Settings Guide
-description: Configure TinyNote language, themes, data paths, shortcuts, AI models, backup, sync, and Pro features.
+description: Configure TinyNote language, themes, data paths, shortcuts, backup, sync, and Pro features.
 ---
 
 # Settings
 
 Open the gear at the bottom of the space bar, or File → Settings….
 
-Sections: General, Data, Sync, Backup, AI Models, Shortcuts, Pro, Samples, Feedback, About. Sync and backup have their own pages.
+Sections: General, Data, Sync, Backup, Shortcuts, Pro, Samples, Feedback, About. Sync and backup have their own pages.
 
 ## General
 
@@ -50,7 +50,6 @@ Modifier is <kbd>Cmd</kbd> on macOS and <kbd>Ctrl</kbd> on Windows / Linux.
 | Shortcut | Action |
 | --- | --- |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>P</kbd> | Recent notes |
-| <kbd>Cmd/Ctrl</kbd> + <kbd>I</kbd> | AI chat |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>F</kbd> | Search in workspace |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd> | Global search |
 
@@ -58,7 +57,7 @@ Modifier is <kbd>Cmd</kbd> on macOS and <kbd>Ctrl</kbd> on Windows / Linux.
 
 Copy platform and version diagnostics, then email a report. Include that text when you file a bug.
 
-Email: `lihao317@foxmail.com`
+Email: [tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com)
 
 Or open a [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues).
 

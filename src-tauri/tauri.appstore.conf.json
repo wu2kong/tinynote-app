@@ -7,7 +7,7 @@
   "app": {
     "security": {
       "capabilities": [
-        "default",
+        "appstore-default",
         {
           "identifier": "appstore",
           "description": "Enables StoreKit purchases in the Mac App Store build",

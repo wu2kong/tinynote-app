@@ -1,11 +1,9 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "enables the default permissions",
+  "identifier": "appstore-default",
+  "description": "enables the default permissions without third-party AI access",
   "local": true,
-  "windows": [
-    "*"
-  ],
+  "windows": ["*"],
   "permissions": [
     "core:default",
     "fs:default",
@@ -73,7 +71,6 @@
     "allow-backup",
     "allow-sync",
     "allow-updater",
-    "allow-llm",
     "core:menu:default",
     "core:webview:allow-create-webview-window",
     "core:window:allow-create"

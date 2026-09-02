@@ -67,7 +67,10 @@ export const enMessages = {
       "purchaseComplete": "TinyNote Pro is now unlocked.",
       "restoreComplete": "Your TinyNote Pro purchase has been restored.",
       "restoreEmpty": "No active TinyNote Pro purchase was found for this Apple Account.",
-      "active": "TinyNote Pro is active"
+      "active": "TinyNote Pro is active",
+      "legalNotice": "Subscriptions automatically renew until cancelled in your Apple Account settings. By purchasing, you agree to the:",
+      "termsOfUse": "Terms of Use (EULA)",
+      "privacyPolicy": "Privacy Policy"
     },
     "errors": {
       "emptyKey": "Please enter a license key",

@@ -28,6 +28,7 @@ import { serializeNoteBlocks } from '@/utils/noteParser';
 import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { useI18n } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 class EditorAreaErrorBoundary extends Component<
   { children: ReactNode; fallback: ReactNode },
@@ -221,7 +222,7 @@ const App: React.FC = () => {
       } else if (e.key === '0') {
         e.preventDefault();
         useStore.getState().resetZoom();
-      } else if (e.key.toLowerCase() === 'i' && !e.shiftKey) {
+      } else if (!IS_MAC_APP_STORE && e.key.toLowerCase() === 'i' && !e.shiftKey) {
         e.preventDefault();
         setShowAIChat((value) => !value);
       }
@@ -241,7 +242,9 @@ const App: React.FC = () => {
   const settingsModal = (
     <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
   );
-  const aiChatModal = <AIChatModal open={showAIChat} onClose={() => setShowAIChat(false)} />;
+  const aiChatModal = !IS_MAC_APP_STORE
+    ? <AIChatModal open={showAIChat} onClose={() => setShowAIChat(false)} />
+    : null;
   const sharedOverlays = (
     <>
       <Toast />

@@ -18,7 +18,7 @@ Sync is a [TinyNote Pro](/en/pro) feature. In Settings → Sync, choose one meth
 - Back up the library to GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or similar
 - You want commit history and diffs, not just folder copies
 
-Sync covers files in the library (mostly `.md` and workspace config). AI API keys and access tokens stay on the device and are never pushed.
+Sync covers files in the library (mostly `.md` and workspace config). Access tokens stay on the device and are never pushed.
 
 ## Git sync
 

@@ -45,4 +45,4 @@ In-app delete is usually permanent. If Git sync is enabled, revert from the Sync
 
 ## How do I send feedback?
 
-Settings → Feedback copies version info. Email `lihao317@foxmail.com` or open a [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues).
+Settings → Feedback copies version info. Email [tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com) or open a [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues).

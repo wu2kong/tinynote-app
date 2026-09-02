@@ -40,7 +40,6 @@ Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
 - Cloud-drive sync: put the library in a folder already synced by iCloud, Nutstore, OneDrive, or similar; the desktop client handles upload and download
 - On Git pull conflicts, the cloud version stays in the original file and your local content is saved as a "conflict version" copy so nothing is lost
-- AI settings can add multiple custom providers, so several OpenAI-compatible services can be used at once
 
 ### Improvements
 
@@ -64,7 +63,6 @@ Installers: [download page](https://tinynote.wu2kong.com/download.html).
 - Clearer loading feedback while checking for updates and downloading installers
 - About page now lists the official download page, GitHub Releases, and the mirror
 - Sample library is a dedicated Settings page instead of living under Data
-- AI model providers can be added or removed as needed, with a more compact layout
 
 ### Fixes
 
@@ -113,8 +111,6 @@ Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
 2026-07-21
 
-- AI chat sessions
-- Configurable model providers
 - Stronger note editing
 - Recents / history shortcuts
 - Workspace and settings improvements

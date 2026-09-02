@@ -1,10 +1,12 @@
 import React from 'react';
 import { Crown, Loader2, RotateCcw, ShoppingBag } from 'lucide-react';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import {
   APP_STORE_LIFETIME_PRODUCT_ID,
   APP_STORE_SUBSCRIPTION_PRODUCT_IDS,
   type AppStoreProductId,
 } from '@/constants/appStoreIap';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@/constants/app';
 import { useLicenseStore } from '@/store/useLicenseStore';
 import { useI18n } from '@/i18n/useI18n';
 import { showToast } from './Toast';
@@ -43,6 +45,10 @@ export const AppStorePurchaseControls: React.FC<{ onSuccess?: () => void }> = ({
     if (ok) onSuccess?.();
   };
 
+  const openLegalPage = (url: string) => {
+    void openUrl(url).catch(() => showToast(t('pro.errors.openPurchaseFailed')));
+  };
+
   if (isPro) {
     return (
       <div className="pro-settings-active">
@@ -79,6 +85,17 @@ export const AppStorePurchaseControls: React.FC<{ onSuccess?: () => void }> = ({
           {t('pro.store.restore')}
         </button>
       </div>
+      <p className="pro-store-legal">
+        {t('pro.store.legalNotice')}
+        {' '}
+        <button type="button" className="pro-store-legal-link" onClick={() => openLegalPage(TERMS_OF_USE_URL)}>
+          {t('pro.store.termsOfUse')}
+        </button>
+        {' · '}
+        <button type="button" className="pro-store-legal-link" onClick={() => openLegalPage(PRIVACY_POLICY_URL)}>
+          {t('pro.store.privacyPolicy')}
+        </button>
+      </p>
       {error && <p className="pro-activate-error">{error}</p>}
     </div>
   );

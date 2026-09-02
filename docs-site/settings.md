@@ -1,13 +1,13 @@
 ---
 title: TinyNote 设置手册：语言、主题、快捷键与数据路径
-description: TinyNote 设置中心的完整说明，涵盖语言、主题、数据路径、快捷键、AI 和高级版设置。
+description: TinyNote 设置中心的完整说明，涵盖语言、主题、数据路径、快捷键和高级版设置。
 ---
 
 # 设置手册
 
 打开方式：空间栏底部齿轮，或菜单「文件 → 设置…」。
 
-设置分为：通用、数据、同步、备份、AI 模型、快捷键、高级版、样例库、反馈、关于。同步与备份见独立页面。
+设置分为：通用、数据、同步、备份、快捷键、高级版、样例库、反馈、关于。同步与备份见独立页面。
 
 ## 通用
 
@@ -50,7 +50,6 @@ description: TinyNote 设置中心的完整说明，涵盖语言、主题、数�
 | 快捷键 | 功能 |
 | --- | --- |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>P</kbd> | 最近打开的笔记 |
-| <kbd>Cmd/Ctrl</kbd> + <kbd>I</kbd> | AI 聊天 |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>F</kbd> | 当前工作区搜索 |
 | <kbd>Cmd/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F</kbd> | 全局搜索 |
 
@@ -58,7 +57,7 @@ description: TinyNote 设置中心的完整说明，涵盖语言、主题、数�
 
 反馈页可一键复制平台、版本等诊断信息，并打开邮件客户端。反馈 Bug 时请把这段信息一并附上。
 
-邮箱：`lihao317@foxmail.com`
+邮箱：[tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com)
 
 也可以直接提交 [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues)。
 

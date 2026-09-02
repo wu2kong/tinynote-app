@@ -67,7 +67,10 @@ export const zhHansMessages = {
       "purchaseComplete": "TinyNote 高级版已解锁。",
       "restoreComplete": "已恢复你的 TinyNote 高级版购买。",
       "restoreEmpty": "当前 Apple 账户没有找到有效的 TinyNote 高级版购买。",
-      "active": "TinyNote 高级版已激活"
+      "active": "TinyNote 高级版已激活",
+      "legalNotice": "订阅会自动续订，直至你在 Apple 账户设置中取消。购买即表示你同意：",
+      "termsOfUse": "使用条款（EULA）",
+      "privacyPolicy": "隐私政策"
     },
     "errors": {
       "emptyKey": "请输入许可证密钥",

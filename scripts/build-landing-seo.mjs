@@ -260,7 +260,9 @@ async function updateSitemap() {
   const markerPattern = /  <!-- localized-landing-pages:start -->[\s\S]*?  <!-- localized-landing-pages:end -->/;
   if (!markerPattern.test(sitemap)) throw new Error('Sitemap localized landing marker block is missing');
   let next = sitemap.replace(markerPattern, block);
-  const officialDocsPattern = contentPages.map((page) => escapeRegExp(page.id)).join('|');
+  const officialDocsPattern = [...contentPages.map((page) => page.id), 'ai']
+    .map(escapeRegExp)
+    .join('|');
   next = next.replace(new RegExp(`\\s*<url><loc>${escapeRegExp(siteUrl)}/docs/(?:en/)?(?:${officialDocsPattern})</loc><lastmod>[^<]+</lastmod></url>`, 'g'), '');
   await writeFile(sitemapPath, next);
 }

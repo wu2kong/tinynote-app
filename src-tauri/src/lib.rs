@@ -6,12 +6,18 @@ mod updater;
 mod winsparkle;
 
 use std::collections::HashMap;
+#[cfg(not(feature = "app-store"))]
 use std::io::Read;
+#[cfg(not(feature = "app-store"))]
 use std::sync::{Arc, Mutex, OnceLock};
+#[cfg(not(feature = "app-store"))]
 use std::sync::atomic::{AtomicBool, Ordering};
+#[cfg(not(feature = "app-store"))]
 use std::time::Duration;
 
+#[cfg(not(feature = "app-store"))]
 use serde::{Deserialize, Serialize};
+#[cfg(not(feature = "app-store"))]
 use tauri::ipc::Channel;
 
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
@@ -25,8 +31,10 @@ use sync::{
     GitHttpResponse, GitInitResult, GitPullResult, GitPushResult, GitRemoteInfo, GitSyncStatus,
 };
 
+#[cfg(not(feature = "app-store"))]
 static LLM_STREAM_CANCELLATIONS: OnceLock<Mutex<HashMap<String, Arc<AtomicBool>>>> = OnceLock::new();
 
+#[cfg(not(feature = "app-store"))]
 fn llm_stream_cancellations() -> &'static Mutex<HashMap<String, Arc<AtomicBool>>> {
     LLM_STREAM_CANCELLATIONS.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -219,6 +227,7 @@ fn winsparkle_set_appcast_url(url: String) -> Result<(), String> {
 
 /// Fetch a provider model list outside the webview so OpenAI-compatible APIs
 /// without browser CORS headers can still be used by the desktop application.
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn fetch_llm_models(base_url: String, api_key: Option<String>) -> Result<String, String> {
     let endpoint = format!("{}/models", base_url.trim_end_matches('/'));
@@ -250,18 +259,21 @@ fn fetch_llm_models(base_url: String, api_key: Option<String>) -> Result<String,
     response.text().map_err(|e| format!("读取模型列表失败: {e}"))
 }
 
+#[cfg(not(feature = "app-store"))]
 #[derive(Deserialize, Serialize)]
 struct LlmChatMessage {
     role: String,
     content: String,
 }
 
+#[cfg(not(feature = "app-store"))]
 #[derive(Serialize)]
 struct LlmStreamEvent {
     kind: String,
     content: String,
 }
 
+#[cfg(not(feature = "app-store"))]
 fn stream_delta(payload: &serde_json::Value) -> Option<String> {
     payload
         .get("choices")
@@ -273,6 +285,7 @@ fn stream_delta(payload: &serde_json::Value) -> Option<String> {
         .or_else(|| payload.get("delta").and_then(|delta| delta.as_str()).map(String::from))
 }
 
+#[cfg(not(feature = "app-store"))]
 fn completion_text(payload: &serde_json::Value) -> Option<String> {
     payload
         .get("output_text")
@@ -293,6 +306,7 @@ fn completion_text(payload: &serde_json::Value) -> Option<String> {
             .map(String::from))
 }
 
+#[cfg(not(feature = "app-store"))]
 fn run_chat_with_llm_stream(
     request_id: String,
     base_url: String,
@@ -411,6 +425,7 @@ fn run_chat_with_llm_stream(
     Ok(())
 }
 
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 async fn chat_with_llm_stream(
     request_id: String,
@@ -436,6 +451,7 @@ async fn chat_with_llm_stream(
     .map_err(|error| format!("AI 后台任务失败: {error}"))?
 }
 
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn stop_llm_generation(request_id: String) -> Result<(), String> {
     let active = llm_stream_cancellations()
@@ -447,6 +463,7 @@ fn stop_llm_generation(request_id: String) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(not(feature = "app-store"))]
 #[tauri::command]
 fn chat_with_llm(
     base_url: String,
@@ -513,6 +530,60 @@ pub fn run() {
     #[cfg(all(target_os = "macos", feature = "sparkle-updater", not(feature = "app-store")))]
     let builder = builder.plugin(tauri_plugin_sparkle_updater::init());
 
+    #[cfg(feature = "app-store")]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        get_app_dir,
+        get_backup_stats,
+        create_backup,
+        get_git_status,
+        git_init,
+        git_list_remotes,
+        git_add_remote,
+        git_remove_remote,
+        git_pull,
+        git_sync_push,
+        git_http_request,
+        git_http_binary,
+        get_hostname,
+        get_file_diff,
+        revert_file_change,
+        download_release_asset,
+        fetch_latest_release,
+        resolve_appcast_url,
+        winsparkle_available,
+        winsparkle_check_for_updates,
+        winsparkle_set_appcast_url,
+    ]);
+
+    #[cfg(not(feature = "app-store"))]
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        get_app_dir,
+        get_backup_stats,
+        create_backup,
+        get_git_status,
+        git_init,
+        git_list_remotes,
+        git_add_remote,
+        git_remove_remote,
+        git_pull,
+        git_sync_push,
+        git_http_request,
+        git_http_binary,
+        get_hostname,
+        get_file_diff,
+        revert_file_change,
+        download_release_asset,
+        fetch_latest_release,
+        resolve_appcast_url,
+        winsparkle_available,
+        winsparkle_check_for_updates,
+        winsparkle_set_appcast_url,
+        fetch_llm_models,
+        chat_with_llm,
+        chat_with_llm_stream,
+        stop_llm_generation,
+    ]);
+
     let app = builder
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -524,33 +595,6 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            get_app_dir,
-            get_backup_stats,
-            create_backup,
-            get_git_status,
-            git_init,
-            git_list_remotes,
-            git_add_remote,
-            git_remove_remote,
-            git_pull,
-            git_sync_push,
-            git_http_request,
-            git_http_binary,
-            get_hostname,
-            get_file_diff,
-            revert_file_change,
-            download_release_asset,
-            fetch_latest_release,
-            resolve_appcast_url,
-            winsparkle_available,
-            winsparkle_check_for_updates,
-            winsparkle_set_appcast_url,
-            fetch_llm_models,
-            chat_with_llm,
-            chat_with_llm_stream,
-            stop_llm_generation,
-        ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
 

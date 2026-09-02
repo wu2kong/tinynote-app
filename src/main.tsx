@@ -4,9 +4,13 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { initializePlatform } from '@/platform/init';
 import { isTauri } from '@/platform/detect';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 import './styles/themes/index.css';
 import './styles/global.css';
-import './styles/ai-chat.css';
+
+if (!IS_MAC_APP_STORE) {
+  void import('./styles/ai-chat.css');
+}
 
 async function bootstrap() {
   await initializePlatform();

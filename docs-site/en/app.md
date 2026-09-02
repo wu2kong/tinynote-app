@@ -27,7 +27,6 @@ It is not for long collaborative documents, complex knowledge graphs, or heavy r
 - **Three views**: list, card, compact
 - **Local Markdown**: folders map to the real filesystem and work with Git or any editor
 - **Git sync and local backup**
-- **AI chat** with OpenAI-compatible models
 - **Languages**: Simplified Chinese, Traditional Chinese, English, Japanese, Korean, German, French, Italian, Russian
 
 ## Layout

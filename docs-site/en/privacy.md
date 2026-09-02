@@ -11,7 +11,7 @@ Last updated: September 1, 2026
 
 By default, TinyNote stores notes, attachments, and configuration in the location you choose. We do not proactively collect, read, or upload your note contents, file names, or local backups.
 
-Content is sent to a third party only when you actively configure Git sync, an AI service, or another third-party service. Those services are governed by their own privacy policies.
+Content is sent to a third party only when you actively configure Git sync or another third-party service. Those services are governed by their own privacy policies.
 
 ## 2. Website information
 

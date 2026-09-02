@@ -2,6 +2,10 @@ export const GITHUB_REPO = 'wu2kong/tinynote-app';
 export const HOMEPAGE_URL = 'https://tinynote.wu2kong.com/';
 export const DOCS_URL = `${HOMEPAGE_URL}docs`;
 export const DOWNLOAD_PAGE_URL = `${HOMEPAGE_URL}download.html`;
+/** Public legal and support pages used by the Mac App Store edition. */
+export const PRIVACY_POLICY_URL = `${HOMEPAGE_URL}privacy.html`;
+export const TERMS_OF_USE_URL = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
+export const SUPPORT_URL = `${HOMEPAGE_URL}faq.html`;
 export const GITHUB_RELEASES_URL = `https://github.com/${GITHUB_REPO}/releases`;
 export const APP_DESCRIPTION = 'TinyNote - scattered note management';
 export const AUTHOR_NAME = '悟二空';

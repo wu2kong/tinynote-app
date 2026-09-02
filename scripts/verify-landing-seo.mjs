@@ -64,7 +64,7 @@ async function main() {
     for (const page of ['home', 'download', ...contentPages]) await verifyPage(locale, page, sitemap);
   }
 
-  for (const page of ['app', 'quickstart', 'organize', 'settings', 'sync', 'backup', 'ai', 'pro']) {
+  for (const page of ['app', 'quickstart', 'organize', 'settings', 'sync', 'backup', 'pro']) {
     for (const locale of ['', 'en']) {
       const pathPart = locale ? `en/${page}` : page;
       const html = await readFile(path.join(landingDir, 'docs', locale, `${page}.html`), 'utf8');

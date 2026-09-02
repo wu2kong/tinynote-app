@@ -47,4 +47,4 @@ TinyNote 面向「短片段 + 一键复制」。Notion 更适合长文和协作�
 
 ## 如何反馈问题？
 
-「设置 → 反馈」复制版本信息并发邮件到 `lihao317@foxmail.com`，或开 [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues)。
+「设置 → 反馈」复制版本信息并发送至 [tinynote-app@wu2kong.com](mailto:tinynote-app@wu2kong.com)，或开 [GitHub Issue](https://github.com/wu2kong/tinynote-app/issues)。
