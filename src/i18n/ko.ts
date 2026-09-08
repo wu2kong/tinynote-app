@@ -47,7 +47,7 @@ export const koMessages = {
       "spaceLimit": "무료 플랜은 스페이스를 최대 5개까지 지원합니다. Pro로 업그레이드하면 스페이스 수 제한이 없습니다.",
       "notebookLimit": "무료 플랜은 스페이스당 노트를 최대 100개까지 지원합니다. Pro로 업그레이드하면 노트 수 제한이 없습니다.",
       "articleNotebook": "Markdown/글 노트 만들기는 Pro 기능입니다.",
-      "sync": "노트 동기화 모듈은 Pro 기능입니다."
+      "sync": "Git 노트 동기화는 Pro 기능입니다."
     },
     "trial": {
       "articleHint": "현재 스페이스에서 해당 유형의 샘플 노트를 1개 만들어 체험하고 테스트할 수도 있습니다.",
@@ -437,6 +437,10 @@ export const koMessages = {
       "openMirrorFailed": "Lanzou Cloud 다운로드 페이지를 열 수 없습니다",
       "openHomepageFailed": "프로젝트 홈페이지를 열 수 없습니다",
       "openAuthorFailed": "작성자 홈페이지를 열 수 없습니다",
+      "termsOfUse": "이용 약관 (EULA)",
+      "privacyPolicy": "개인정보 처리방침",
+      "openTermsFailed": "이용 약관을 열 수 없습니다",
+      "openPrivacyFailed": "개인정보 처리방침을 열 수 없습니다",
       "downloadFailed": "업데이트를 다운로드하지 못했습니다. 네트워크 연결이 정상인지 확인하세요",
       "checkFailed": "업데이트를 확인하지 못했습니다"
     },

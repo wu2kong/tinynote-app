@@ -310,10 +310,9 @@ final stringsJa = AppStrings(
   proStoreRestoreComplete: 'TinyNote Pro の購入を復元しました。',
   proStoreRestoreEmpty: 'この Apple アカウントに有効な TinyNote Pro 購入はありません。',
   proStoreActive: 'TinyNote Pro は有効です',
-  proStoreLegal:
-      '支払いはこの購入確認時に Apple ID アカウントに請求されます。購読は、現在の期間終了の 24 時間前までにキャンセルしない限り自動更新されます。更新料金は期間終了の 24 時間以内に請求されます。購入後は App Store のアカウント設定で管理・キャンセルできます。',
+  proStoreLegal: 'サブスクリプションは、Apple アカウントの設定でキャンセルするまで自動更新されます。購入すると、次に同意したことになります：',
   proStorePrivacy: 'プライバシーポリシー',
-  proStoreTerms: '利用規約',
+  proStoreTerms: '利用規約（EULA）',
   proPurchaseIncomplete: '購入が完了しませんでした。もう一度お試しください。',
   proPurchasePending: 'この購入は承認待ちです。承認後に Pro が解除されます。',
   proPurchaseNotSynced: '購入は完了しましたが特典が同期されていません。「購入を復元」をタップしてください。',

@@ -1,4 +1,5 @@
 mod backup;
+mod scoped_access;
 mod sync;
 #[cfg(not(feature = "app-store"))]
 mod updater;
@@ -21,6 +22,7 @@ use serde::{Deserialize, Serialize};
 use tauri::ipc::Channel;
 
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
+use scoped_access::{ensure_scoped_access, persist_scoped_access};
 use sync::{
     get_file_diff as run_get_file_diff, get_git_status as run_get_git_status,
     git_add_remote as run_git_add_remote, git_http_binary as run_git_http_binary,
@@ -524,7 +526,8 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init());
 
-    #[cfg(all(target_os = "macos", feature = "app-store"))]
+    // StoreKit's Transaction.updates listener hangs `tauri dev` (naked binary, no .app bundle).
+    #[cfg(all(target_os = "macos", feature = "app-store", not(debug_assertions)))]
     let builder = builder.plugin(tauri_plugin_iap::init());
 
     #[cfg(all(target_os = "macos", feature = "sparkle-updater", not(feature = "app-store")))]
@@ -533,6 +536,8 @@ pub fn run() {
     #[cfg(feature = "app-store")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         get_app_dir,
+        persist_scoped_access,
+        ensure_scoped_access,
         get_backup_stats,
         create_backup,
         get_git_status,
@@ -558,6 +563,8 @@ pub fn run() {
     #[cfg(not(feature = "app-store"))]
     let builder = builder.invoke_handler(tauri::generate_handler![
         get_app_dir,
+        persist_scoped_access,
+        ensure_scoped_access,
         get_backup_stats,
         create_backup,
         get_git_status,
@@ -593,6 +600,8 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            scoped_access::restore_all(app.handle());
+            scoped_access::listen_for_allowed_paths(app.handle());
             Ok(())
         })
         .build(tauri::generate_context!())

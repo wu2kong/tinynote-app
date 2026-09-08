@@ -47,7 +47,7 @@ export const frMessages = {
       "spaceLimit": "L’offre gratuite prend en charge jusqu’à 5 espaces. Passez à Pro pour un nombre illimité d’espaces.",
       "notebookLimit": "L’offre gratuite prend en charge jusqu’à 100 notes par espace. Passez à Pro pour un nombre illimité de notes.",
       "articleNotebook": "La création de notes Markdown/Article est une fonctionnalité Pro.",
-      "sync": "Le module de synchronisation des notes est une fonctionnalité Pro."
+      "sync": "La synchronisation Git est une fonctionnalité Pro."
     },
     "trial": {
       "articleHint": "Vous pouvez aussi créer 1 note d’exemple de ce type dans l’espace actuel pour essayer et tester.",
@@ -437,6 +437,10 @@ export const frMessages = {
       "openMirrorFailed": "Impossible d'ouvrir la page de téléchargement Lanzou Cloud",
       "openHomepageFailed": "Impossible d'ouvrir la page d'accueil du projet",
       "openAuthorFailed": "Impossible d'ouvrir la page d'accueil de l'auteur",
+      "termsOfUse": "Conditions d’utilisation (EULA)",
+      "privacyPolicy": "Politique de confidentialité",
+      "openTermsFailed": "Impossible d'ouvrir les conditions d'utilisation",
+      "openPrivacyFailed": "Impossible d'ouvrir la politique de confidentialité",
       "downloadFailed": "Impossible de télécharger la mise à jour. Vérifiez que la connexion réseau fonctionne",
       "checkFailed": "Échec de la recherche de mises à jour"
     },

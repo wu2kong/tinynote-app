@@ -47,7 +47,7 @@ export const zhHantMessages = {
       "spaceLimit": "基礎版最多 5 個空間。升級高級版可建立更多空間。",
       "notebookLimit": "基礎版每個空間最多 100 個筆記。升級高級版可建立更多筆記。",
       "articleNotebook": "新建Markdown/文章筆記屬於高級版功能。",
-      "sync": "筆記同步模組屬於高級版功能。"
+      "sync": "Git 筆記同步屬於高級版功能。"
     },
     "trial": {
       "articleHint": "也可先在目前空間為該類型建立 1 篇樣例筆記，用於體驗和測試。",
@@ -437,6 +437,10 @@ export const zhHantMessages = {
       "openMirrorFailed": "無法開啟藍奏雲下載頁面",
       "openHomepageFailed": "無法開啟專案首頁",
       "openAuthorFailed": "無法開啟作者首頁",
+      "termsOfUse": "使用條款（EULA）",
+      "privacyPolicy": "隱私政策",
+      "openTermsFailed": "無法開啟使用條款",
+      "openPrivacyFailed": "無法開啟隱私政策",
       "downloadFailed": "下載更新失敗，請檢查網路連線是否正常",
       "checkFailed": "檢查更新失敗"
     },
@@ -739,6 +743,10 @@ export const zhHantMessages = {
     "title": "歡迎使用 TinyNote",
     "description": "輕量級筆記管理與快速複製工具。用空間、目錄和筆記整理命令、程式碼片段和筆記。",
     "selectStorage": "選擇儲存資料夾"
+  },
+  "workspace": {
+    "reauthorizeNeeded": "Mac App Store 版本需要重新授權才能讀取這個筆記庫。請再次選擇同一個資料夾。",
+    "reauthorizeFailed": "仍然無法讀取該資料夾。請再選擇一次筆記庫目錄。"
   },
   "sampleLibrary": {
     "title": "用入門範例庫探索 TinyNote",

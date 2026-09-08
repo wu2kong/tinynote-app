@@ -101,6 +101,18 @@ export const useLicenseStore = create<AppStoreLicenseState>((set, get) => ({
   gateContext: null,
   appStoreProducts: [],
   hydrate: async () => {
+    // StoreKit in `tauri dev` (unsigned / no App Store receipt) can block the
+    // main thread and freeze startup. Real entitlement checks belong in packaged builds.
+    if (import.meta.env.DEV) {
+      set({
+        hydrated: true,
+        busy: false,
+        isPro: false,
+        license: null,
+        error: null,
+      });
+      return;
+    }
     set({ busy: true, error: null });
     try {
       await refreshStoreEntitlements(set);

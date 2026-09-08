@@ -47,7 +47,7 @@ export const jaMessages = {
       "spaceLimit": "無料プランではスペースは 5 つまでです。Pro にアップグレードするとスペース数の制限がなくなります。",
       "notebookLimit": "無料プランでは各スペースのノートは 100 件までです。Pro にアップグレードするとノート数の制限がなくなります。",
       "articleNotebook": "Markdown／記事ノートの新規作成は Pro 機能です。",
-      "sync": "ノート同期モジュールは Pro 機能です。"
+      "sync": "Git 同期は Pro 機能です。"
     },
     "trial": {
       "articleHint": "まずは現在のスペースで、この種類のサンプルノートを 1 つ作成して体験・テストできます。",
@@ -437,6 +437,10 @@ export const jaMessages = {
       "openMirrorFailed": "Lanzou Cloud ダウンロードページを開けません",
       "openHomepageFailed": "プロジェクトホームページを開けません",
       "openAuthorFailed": "作者ホームページを開けません",
+      "termsOfUse": "利用規約（EULA）",
+      "privacyPolicy": "プライバシーポリシー",
+      "openTermsFailed": "利用規約を開けません",
+      "openPrivacyFailed": "プライバシーポリシーを開けません",
       "downloadFailed": "アップデートのダウンロードに失敗しました。ネットワーク接続を確認してください",
       "checkFailed": "アップデートの確認に失敗しました"
     },

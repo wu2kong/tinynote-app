@@ -47,7 +47,7 @@ export const deMessages = {
       "spaceLimit": "Der kostenlose Plan unterstützt bis zu 5 Bereiche. Mit Pro gibt es unbegrenzt viele Bereiche.",
       "notebookLimit": "Der kostenlose Plan unterstützt bis zu 100 Notizen pro Bereich. Mit Pro gibt es unbegrenzt viele Notizen.",
       "articleNotebook": "Das Erstellen von Markdown-/Artikelnotizen ist eine Pro-Funktion.",
-      "sync": "Das Notiz-Synchronisationsmodul ist eine Pro-Funktion."
+      "sync": "Git-Notizsync ist eine Pro-Funktion."
     },
     "trial": {
       "articleHint": "Sie können in diesem Bereich auch 1 Beispielnotiz dieses Typs zum Ausprobieren erstellen.",
@@ -437,6 +437,10 @@ export const deMessages = {
       "openMirrorFailed": "Lanzou-Cloud-Downloadseite kann nicht geöffnet werden",
       "openHomepageFailed": "Projekt-Homepage kann nicht geöffnet werden",
       "openAuthorFailed": "Autoren-Homepage kann nicht geöffnet werden",
+      "termsOfUse": "Nutzungsbedingungen (EULA)",
+      "privacyPolicy": "Datenschutz",
+      "openTermsFailed": "Nutzungsbedingungen können nicht geöffnet werden",
+      "openPrivacyFailed": "Datenschutzerklärung kann nicht geöffnet werden",
       "downloadFailed": "Update konnte nicht heruntergeladen werden. Prüfe, ob die Netzwerkverbindung funktioniert",
       "checkFailed": "Updateprüfung fehlgeschlagen"
     },

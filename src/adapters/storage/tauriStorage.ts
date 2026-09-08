@@ -3,6 +3,7 @@ import {
 } from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { normalizePath } from '@/utils/path';
+import { persistScopedAccess } from '@/utils/scopedAccess';
 import type { DirEntry, StorageAdapter } from './types';
 
 export function createTauriStorageAdapter(): StorageAdapter {
@@ -16,7 +17,10 @@ export function createTauriStorageAdapter(): StorageAdapter {
         multiple: false,
         recursive: true,
       });
-      return selected ? normalizePath(selected as string) : null;
+      if (!selected) return null;
+      const path = normalizePath(selected as string);
+      await persistScopedAccess(path);
+      return path;
     },
 
     async readDir(path) {

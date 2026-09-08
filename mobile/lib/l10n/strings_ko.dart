@@ -309,10 +309,9 @@ final stringsKo = AppStrings(
   proStoreRestoreComplete: 'TinyNote Pro 구매가 복원되었습니다.',
   proStoreRestoreEmpty: '이 Apple 계정에서 유효한 TinyNote Pro 구매를 찾지 못했습니다.',
   proStoreActive: 'TinyNote Pro가 활성화됨',
-  proStoreLegal:
-      '결제는 구매 확인 시 Apple ID 계정으로 청구됩니다. 구독은 현재 기간이 끝나기 최소 24시간 전에 취소하지 않으면 자동 갱신됩니다. 갱신 요금은 현재 기간이 끝나기 24시간 이내에 청구됩니다. 구매 후 App Store 계정 설정에서 구독을 관리하거나 취소할 수 있습니다.',
+  proStoreLegal: '구독은 Apple 계정 설정에서 취소하기 전까지 자동 갱신됩니다. 구매하면 다음에 동의하게 됩니다:',
   proStorePrivacy: '개인정보 처리방침',
-  proStoreTerms: '이용 약관',
+  proStoreTerms: '이용 약관 (EULA)',
   proPurchaseIncomplete: '구매가 완료되지 않았습니다. 다시 시도하세요.',
   proPurchasePending: '이 구매는 승인 대기 중입니다. 승인되면 Pro가 잠금 해제됩니다.',
   proPurchaseNotSynced: '구매는 완료되었지만 권한이 아직 동기화되지 않았습니다. 잠시 후 "구매 복원"을 누르세요.',

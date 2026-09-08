@@ -12,7 +12,7 @@ import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
 import RecentNotebooksModal from '@/components/RecentNotebooksModal';
 import AIChatModal from '@/components/AIChatModal';
-import Toast from '@/components/Toast';
+import Toast, { showToast } from '@/components/Toast';
 import ProUpgradeModal from '@/components/ProUpgradeModal';
 import OfficialSampleLibraryModal from '@/components/OfficialSampleLibraryModal';
 import ImportNotesModal from '@/components/ImportNotesModal';
@@ -22,6 +22,7 @@ import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { saveConfig } from '@/utils/config';
 import type { SyncMode } from '@/utils/configTypes';
+import { ensureScopedAccess } from '@/utils/scopedAccess';
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks } from '@/utils/noteParser';
@@ -161,16 +162,41 @@ const App: React.FC = () => {
   }, [initApp, setStoragePath]);
 
   useEffect(() => {
-    initApp()
-      .finally(async () => {
-        setLoading(false);
-        if (isTauri()) {
-          const { refreshDesktopMenu } = await import('@/platform/desktopMenu');
-          await refreshDesktopMenu();
+    let cancelled = false;
+    const start = async () => {
+      try {
+        await initApp();
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+          if (IS_MAC_APP_STORE) {
+            const path = useStore.getState().storagePath;
+            if (path) {
+              void ensureScopedAccess(path).then(async (access) => {
+                if (cancelled) return;
+                if (!access.accessible) {
+                  showToast(t('workspace.reauthorizeNeeded'));
+                  await setStoragePath(null);
+                } else if (useStore.getState().spaces.length === 0) {
+                  await useStore.getState().reloadSpaces();
+                }
+              });
+            }
+          }
+          if (isTauri()) {
+            void import('@/platform/desktopMenu')
+              .then(({ refreshDesktopMenu }) => refreshDesktopMenu())
+              .catch((error) => console.warn('[tinynote] Desktop menu refresh failed:', error));
+          }
         }
-      });
+      }
+    };
+    void start();
     void useLicenseStore.getState().hydrate();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [initApp, setStoragePath, t]);
 
   useEffect(() => {
     const onOpenSettings = () => setShowSettings(true);

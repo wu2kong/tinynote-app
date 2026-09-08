@@ -7,6 +7,7 @@
   "permissions": [
     "core:default",
     "fs:default",
+    "fs:allow-app-write-recursive",
     "fs:allow-write-text-file",
     "fs:allow-read-text-file",
     "fs:allow-write-file",
@@ -19,6 +20,10 @@
     {
       "identifier": "fs:allow-exists",
       "allow": [
+        { "path": "$APPDATA" },
+        { "path": "$APPDATA/**" },
+        { "path": "$APPCONFIG" },
+        { "path": "$APPCONFIG/**" },
         { "path": "$HOME/.tinynotes" },
         { "path": "$HOME/.tinynotes/**" },
         { "path": "$HOME/**/.tinynotes" },
@@ -35,6 +40,10 @@
     {
       "identifier": "fs:scope",
       "allow": [
+        { "path": "$APPDATA" },
+        { "path": "$APPDATA/**" },
+        { "path": "$APPCONFIG" },
+        { "path": "$APPCONFIG/**" },
         { "path": "$HOME/.tinynotes" },
         { "path": "$HOME/.tinynotes/**" },
         { "path": "$HOME/**/.tinynotes" },
@@ -68,6 +77,7 @@
     "opener:allow-open-url",
     "opener:allow-default-urls",
     "allow-get-app-dir",
+    "allow-scoped-access",
     "allow-backup",
     "allow-sync",
     "allow-updater",

@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-scoped-access"
+description = "Persist and restore macOS security-scoped folder access."
+commands.allow = ["persist_scoped_access", "ensure_scoped_access"]

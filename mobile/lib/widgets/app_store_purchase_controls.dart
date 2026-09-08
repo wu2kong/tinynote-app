@@ -150,24 +150,33 @@ class AppStorePurchaseControls extends StatelessWidget {
         ],
         if (showLegal) ...[
           const SizedBox(height: 10),
-          Text(
-            s.proStoreLegal,
-            style: TextStyle(fontSize: 11, height: 1.4, color: colors.muted),
-          ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: [
-              _TextLink(
-                label: s.proStorePrivacy,
-                onTap: () => _openLink(context, privacyUrl),
-              ),
-              _TextLink(
-                label: s.proStoreTerms,
-                onTap: () => _openLink(context, termsUrl),
-              ),
-            ],
+          Text.rich(
+            TextSpan(
+              style: TextStyle(fontSize: 11, height: 1.45, color: colors.muted),
+              children: [
+                TextSpan(text: '${s.proStoreLegal} '),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.baseline,
+                  baseline: TextBaseline.alphabetic,
+                  child: _TextLink(
+                    label: s.proStoreTerms,
+                    onTap: () => _openLink(context, termsUrl),
+                  ),
+                ),
+                TextSpan(
+                  text: ' · ',
+                  style: TextStyle(color: colors.muted),
+                ),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.baseline,
+                  baseline: TextBaseline.alphabetic,
+                  child: _TextLink(
+                    label: s.proStorePrivacy,
+                    onTap: () => _openLink(context, privacyUrl),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ],

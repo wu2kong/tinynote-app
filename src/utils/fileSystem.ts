@@ -30,7 +30,8 @@ export async function loadSpaces(storagePath: string): Promise<Space[]> {
   let entries;
   try {
     entries = await storage().readDir(rootPath);
-  } catch {
+  } catch (error) {
+    console.warn('[tinynote] Failed to read note library:', rootPath, error);
     return spaces;
   }
 

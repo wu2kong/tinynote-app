@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { writerListContinuationPlugin } from '@/utils/writerListContinuationPlugin';
 import { writerEmptyClickPlugin } from '@/utils/writerEmptyClickPlugin';
+import { writerLinkOpenPlugin } from '@/utils/writerLinkOpenPlugin';
 import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
 import '@milkdown/crepe/theme/common/style.css';
 
@@ -78,6 +79,7 @@ const WriterEditor: React.FC<WriterEditorProps> = ({
 
     crepe.editor.use(writerListContinuationPlugin);
     crepe.editor.use(writerEmptyClickPlugin);
+    crepe.editor.use(writerLinkOpenPlugin);
 
     crepe.on((listener) => {
       listener.markdownUpdated((_ctx, markdown, prevMarkdown) => {

@@ -305,10 +305,9 @@ final stringsZhHans = AppStrings(
   proStoreRestoreComplete: '已恢复你的 TinyNote 高级版购买。',
   proStoreRestoreEmpty: '当前 Apple 账户没有找到有效的 TinyNote 高级版购买。',
   proStoreActive: 'TinyNote 高级版已激活',
-  proStoreLegal:
-      '付款将在确认购买时计入你的 Apple ID 账户。订阅会自动续期，除非在当前周期结束前至少 24 小时取消。续期费用将在当前周期结束前 24 小时内扣除。购买后可在 App Store 账户设置中管理或取消订阅。',
+  proStoreLegal: '订阅会自动续订，直至你在 Apple 账户设置中取消。购买即表示你同意：',
   proStorePrivacy: '隐私政策',
-  proStoreTerms: '使用条款',
+  proStoreTerms: '使用条款（EULA）',
   proPurchaseIncomplete: '购买尚未完成，请稍后重试。',
   proPurchasePending: '购买正在等待批准，完成后高级版会自动解锁。',
   proPurchaseNotSynced: '购买已完成，但权益尚未同步，请稍后点按“恢复购买”。',

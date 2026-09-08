@@ -947,6 +947,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Divider(height: 1, color: colors.border),
                             _CompactTile(
                               leading: Icon(
+                                LucideIcons.fileText,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.proStoreTerms,
+                              trailing: Icon(
+                                LucideIcons.externalLink,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    termsUrl,
+                                    failureMessage: s.openProjectFailed,
+                                  ),
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
+                                LucideIcons.shield,
+                                size: 18,
+                                color: colors.accent,
+                              ),
+                              title: s.proStorePrivacy,
+                              trailing: Icon(
+                                LucideIcons.externalLink,
+                                size: 16,
+                                color: colors.muted,
+                              ),
+                              onTap:
+                                  () => _openExternalUrl(
+                                    privacyUrl,
+                                    failureMessage: s.openProjectFailed,
+                                  ),
+                            ),
+                            Divider(height: 1, color: colors.border),
+                            _CompactTile(
+                              leading: Icon(
                                 LucideIcons.bookOpen,
                                 size: 18,
                                 color: colors.accent,

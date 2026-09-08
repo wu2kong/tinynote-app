@@ -47,7 +47,7 @@ export const zhHansMessages = {
       "spaceLimit": "基础版最多 5 个空间。升级高级版可创建更多空间。",
       "notebookLimit": "基础版每个空间最多 100 个笔记。升级高级版可创建更多笔记。",
       "articleNotebook": "新建Markdown/文章笔记属于高级版功能。",
-      "sync": "笔记同步模块属于高级版功能。"
+      "sync": "Git 笔记同步属于高级版功能。"
     },
     "trial": {
       "articleHint": "也可先在当前空间为该类型创建 1 篇样例笔记，用于体验和测试。",
@@ -467,6 +467,10 @@ export const zhHansMessages = {
       "openMirrorFailed": "无法打开蓝奏云下载页面",
       "openHomepageFailed": "无法打开项目主页",
       "openAuthorFailed": "无法打开作者主页",
+      "termsOfUse": "使用条款（EULA）",
+      "privacyPolicy": "隐私政策",
+      "openTermsFailed": "无法打开使用条款",
+      "openPrivacyFailed": "无法打开隐私政策",
       "downloadFailed": "下载更新失败，请检查网络连接是否正常",
       "checkFailed": "检查更新失败"
     },
@@ -769,6 +773,10 @@ export const zhHansMessages = {
     "title": "欢迎使用 TinyNote",
     "description": "轻量级笔记管理与快捷复制工具。用空间、目录和笔记整理命令、代码片段和笔记。",
     "selectStorage": "选择存储文件夹"
+  },
+  "workspace": {
+    "reauthorizeNeeded": "商店版需要重新授权才能读取这个笔记库。请再次选择同一个文件夹。",
+    "reauthorizeFailed": "仍然无法读取该文件夹。请再选择一次笔记库目录。"
   },
   "sampleLibrary": {
     "title": "用入门样例库探索 TinyNote",

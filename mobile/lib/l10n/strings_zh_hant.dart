@@ -303,10 +303,9 @@ final stringsZhHant = AppStrings(
   proStoreRestoreComplete: '已恢復你的 TinyNote 進階版購買。',
   proStoreRestoreEmpty: '目前 Apple 帳戶沒有找到有效的 TinyNote 進階版購買。',
   proStoreActive: 'TinyNote 進階版已啟用',
-  proStoreLegal:
-      '付款將在確認購買時計入你的 Apple ID 帳戶。訂閱會自動續期，除非在目前週期結束前至少 24 小時取消。續期費用將在目前週期結束前 24 小時內扣除。購買後可在 App Store 帳戶設定中管理或取消訂閱。',
+  proStoreLegal: '訂閱會自動續訂，直至你在 Apple 帳戶設定中取消。購買即表示你同意：',
   proStorePrivacy: '隱私權政策',
-  proStoreTerms: '使用條款',
+  proStoreTerms: '使用條款（EULA）',
   proPurchaseIncomplete: '購買尚未完成，請稍後再試。',
   proPurchasePending: '購買正在等待核准，完成後進階版會自動解鎖。',
   proPurchaseNotSynced: '購買已完成，但權益尚未同步，請稍後點按「恢復購買」。',

@@ -1,14 +1,14 @@
 ---
 title: TinyNote sync guide
-description: In TinyNote Pro, choose Git sync or cloud-drive sync, then authorize, pull, and push inside the app.
+description: Choose cloud-drive sync or Git sync in TinyNote, then authorize, pull, and push inside the app.
 ---
 
 # Note sync
 
-Sync is a [TinyNote Pro](/en/pro) feature. In Settings → Sync, choose one method:
+In Settings → Sync, choose one method:
 
-- **Git sync**: connect the note library to TinyNote official, GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
-- **Cloud drive sync**: put the library in a local folder already synced by iCloud, Nutstore, OneDrive, or a similar desktop client
+- **Cloud drive sync** (Free): put the library in a local folder already synced by iCloud, Nutstore, OneDrive, or a similar desktop client
+- **Git sync** ([Pro](/en/pro)): connect the note library to TinyNote official, GitHub, Gitee, GitLab, Alibaba Cloud Codeup, AtomGit, or a custom Git host. You can add more than one platform.
 
 ![Sync settings](/screenshots/sync.png)
 

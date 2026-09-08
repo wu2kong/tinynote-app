@@ -345,9 +345,9 @@ final stringsFr = AppStrings(
       'Aucun achat TinyNote Pro valide n’a été trouvé pour ce compte Apple.',
   proStoreActive: 'TinyNote Pro est actif',
   proStoreLegal:
-      'Le paiement sera facturé sur votre compte Apple ID à la confirmation de l’achat. L’abonnement se renouvelle automatiquement sauf annulation au moins 24 heures avant la fin de la période. Le renouvellement est facturé dans les 24 heures précédant la fin de la période. Après l’achat, gérez ou annulez l’abonnement dans les réglages du compte App Store.',
+      'Les abonnements se renouvellent automatiquement jusqu’à annulation dans les réglages du compte Apple. En achetant, vous acceptez :',
   proStorePrivacy: 'Politique de confidentialité',
-  proStoreTerms: 'Conditions d’utilisation',
+  proStoreTerms: 'Conditions d’utilisation (EULA)',
   proPurchaseIncomplete: 'L’achat n’est pas terminé. Réessayez.',
   proPurchasePending:
       'Cet achat est en attente d’approbation. Pro se débloquera ensuite.',

@@ -1,0 +1,11 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "identifier": "com.wu2kong.tinynote.app",
+  "app": {
+    "security": {
+      "capabilities": [
+        "appstore-default"
+      ]
+    }
+  }
+}

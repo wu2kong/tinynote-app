@@ -341,9 +341,9 @@ final stringsEn = AppStrings(
       'No active TinyNote Pro purchase was found for this Apple Account.',
   proStoreActive: 'TinyNote Pro is active',
   proStoreLegal:
-      'Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel subscriptions in your App Store account settings after purchase.',
+      'Subscriptions automatically renew until cancelled in your Apple Account settings. By purchasing, you agree to the:',
   proStorePrivacy: 'Privacy Policy',
-  proStoreTerms: 'Terms of Use',
+  proStoreTerms: 'Terms of Use (EULA)',
   proPurchaseIncomplete: 'Purchase did not finish. Please try again.',
   proPurchasePending:
       'This purchase is waiting for approval. Pro will unlock after it is approved.',

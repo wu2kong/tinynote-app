@@ -7,6 +7,7 @@ import { appDataDir, join } from '@tauri-apps/api/path';
 
 const HOME_CONFIG_DIR = '.tinynotes';
 const WORKSPACES_FILE = '.tinynotes/work-spaces.json';
+const MAS_DEFAULT_LIBRARY_DIR = 'TinyNote';
 const HOME = BaseDirectory.Home;
 const NATIVE_CONFIG_BASE = IS_MAC_APP_STORE ? BaseDirectory.AppData : HOME;
 const WEB_REGISTRY_KEY = 'tinynote.work-spaces.v1';
@@ -65,6 +66,26 @@ export function setSessionWorkspaceOverride(path: string | null): void {
   }
 }
 
+async function readRegistry(baseDir: BaseDirectory): Promise<WorkspacesRegistry | null> {
+  try {
+    const content = await readTextFile(WORKSPACES_FILE, { baseDir });
+    const parsed = JSON.parse(content) as WorkspacesRegistry;
+    return { ...DEFAULT_REGISTRY, ...parsed, version: 1 };
+  } catch {
+    return null;
+  }
+}
+
+function registryHasWorkspace(registry: WorkspacesRegistry): boolean {
+  return Boolean(normalizeCandidate(registry.lastActivePath) || registry.workspaces[0]?.path);
+}
+
+function normalizeCandidate(raw: string | null | undefined): string | null {
+  if (raw == null) return null;
+  const trimmed = String(raw).trim();
+  return trimmed ? normalizePath(trimmed) : null;
+}
+
 export async function loadWorkspacesRegistry(): Promise<WorkspacesRegistry> {
   if (isWeb()) {
     try {
@@ -79,12 +100,41 @@ export async function loadWorkspacesRegistry(): Promise<WorkspacesRegistry> {
 
   try {
     await ensureHomeConfigDir();
-    const content = await readTextFile(WORKSPACES_FILE, { baseDir: NATIVE_CONFIG_BASE });
-    const parsed = JSON.parse(content) as WorkspacesRegistry;
-    return { ...DEFAULT_REGISTRY, ...parsed, version: 1 };
-  } catch {
-    return { ...DEFAULT_REGISTRY };
+  } catch (error) {
+    console.warn('[tinynote] Failed to ensure workspace registry directory:', error);
   }
+
+  const primary = await readRegistry(NATIVE_CONFIG_BASE);
+  if (primary && registryHasWorkspace(primary)) {
+    return primary;
+  }
+
+  if (IS_MAC_APP_STORE && NATIVE_CONFIG_BASE !== HOME) {
+    const legacy = await readRegistry(HOME);
+    if (legacy && registryHasWorkspace(legacy)) {
+      try {
+        await saveWorkspacesRegistry(legacy);
+        console.info('[tinynote] Migrated workspace registry from Home to App Data');
+      } catch (error) {
+        console.warn('[tinynote] Failed to migrate workspace registry to App Data:', error);
+      }
+      return legacy;
+    }
+  }
+
+  return primary ?? { ...DEFAULT_REGISTRY };
+}
+
+/** Sandbox-local note library used when MAS has no saved workspace. */
+export async function ensureDefaultMasLibrary(): Promise<string> {
+  try {
+    if (!(await exists(MAS_DEFAULT_LIBRARY_DIR, { baseDir: BaseDirectory.AppData }))) {
+      await mkdir(MAS_DEFAULT_LIBRARY_DIR, { recursive: true, baseDir: BaseDirectory.AppData });
+    }
+  } catch {
+    await mkdir(MAS_DEFAULT_LIBRARY_DIR, { recursive: true, baseDir: BaseDirectory.AppData });
+  }
+  return normalizePath(await join(await appDataDir(), MAS_DEFAULT_LIBRARY_DIR));
 }
 
 export async function saveWorkspacesRegistry(registry: WorkspacesRegistry): Promise<void> {
@@ -119,7 +169,11 @@ export async function registerWorkspace(path: string, label?: string): Promise<W
 
   registry.lastActivePath = normalizedPath;
   registry.workspaces.sort((a, b) => b.lastOpenedAt.localeCompare(a.lastOpenedAt));
-  await saveWorkspacesRegistry(registry);
+  try {
+    await saveWorkspacesRegistry(registry);
+  } catch (error) {
+    console.warn('[tinynote] Failed to save workspace registry:', error);
+  }
   return registry;
 }
 

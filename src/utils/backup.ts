@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import * as config from './config';
 import { normalizePath } from './path';
+import { persistScopedAccess } from './scopedAccess';
 
 export interface BackupFile {
   filename: string;
@@ -34,7 +35,10 @@ export async function selectBackupDir(): Promise<string | null> {
     multiple: false,
     recursive: true,
   });
-  return selected ? normalizePath(selected as string) : null;
+  if (!selected) return null;
+  const path = normalizePath(selected as string);
+  await persistScopedAccess(path);
+  return path;
 }
 
 export async function loadBackupDir(): Promise<string | null> {

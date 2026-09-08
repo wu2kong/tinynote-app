@@ -6,7 +6,10 @@ import {
   loadWorkspaceConfigFile,
   saveWorkspaceConfigFile,
 } from '@/utils/workspaceConfig';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { isTauri } from '@/platform/detect';
 import {
+  ensureDefaultMasLibrary,
   getSessionWorkspaceOverride,
   getWorkspacePathFromLaunchUrl,
   loadWorkspacesRegistry,
@@ -79,7 +82,6 @@ export async function resolveInitialWorkspacePath(): Promise<string | null> {
     if (localPath) return localPath;
   }
 
-  console.warn('[tinynote] No workspace path found in legacy config or registry');
   return null;
 }
 
@@ -90,14 +92,26 @@ export async function prepareWorkspace(storagePath: string): Promise<AppConfig> 
   // Keep subsequent app initialization on the newly selected workspace instead
   // of reverting to the path resolved during the first bootstrap.
   bootstrappedWorkspacePath = normalizedPath;
-  await ensureWorkspaceConfigMigrated(normalizedPath);
+  try {
+    await ensureWorkspaceConfigMigrated(normalizedPath);
+  } catch (error) {
+    console.warn('[tinynote] Workspace config migration failed:', error);
+  }
   await registerWorkspace(normalizedPath);
   setSessionWorkspaceOverride(normalizedPath);
   return loadConfig();
 }
 
 async function runBootstrap(): Promise<string | null> {
-  const workspacePath = await resolveInitialWorkspacePath();
+  let workspacePath = await resolveInitialWorkspacePath();
+  if (!workspacePath && IS_MAC_APP_STORE && isTauri()) {
+    try {
+      workspacePath = await ensureDefaultMasLibrary();
+      console.info('[tinynote] Using Mac App Store default library:', workspacePath);
+    } catch (error) {
+      console.warn('[tinynote] Failed to create Mac App Store default library:', error);
+    }
+  }
   if (!workspacePath) {
     bindWorkspace(null);
     return null;

@@ -1,11 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
-  ArrowDownToLine, Check, Cloud, Copy, FolderOpen, GitBranch, KeyRound, Loader2,
+  ArrowDownToLine, Check, Cloud, Copy, ExternalLink, FolderOpen, GitBranch, KeyRound, Loader2,
   Minus, Plus, RefreshCw, Star, Upload,
 } from 'lucide-react';
-import { revealItemInDir } from '@tauri-apps/plugin-opener';
+import { openUrl, revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { AppStorePurchaseControls } from '@/components/AppStorePurchaseControls';
+import { PURCHASE_URL } from '@/constants/app';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { useLicenseStore } from '@/store/useLicenseStore';
 import { useStore } from '@/store/useStore';
 import {
   formatSyncCommitMessage, formatSyncError, getChangeBadge, getChangeTooltip,
@@ -48,6 +52,46 @@ function isRemoteAuthorized(remote: GitRemoteConfig, authorizedNames: string[]):
 
 type CloudFolderMode = 'icloud' | 'onedrive' | 'dropbox' | 'nutstore' | 'baidu' | 'webdav' | 'local';
 
+const GitSyncLockedPanel: React.FC = () => {
+  const { t } = useI18n();
+  const openGate = useLicenseStore((s) => s.openGate);
+
+  return (
+    <div className="pro-locked-panel">
+      <p className="pro-locked-title">{t('pro.gate.sync')}</p>
+      {IS_MAC_APP_STORE ? (
+        <div className="pro-locked-store">
+          <AppStorePurchaseControls />
+        </div>
+      ) : (
+        <>
+          <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
+          <div className="pro-locked-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => openGate('sync')}>
+              <KeyRound size={14} />
+              {t('pro.gate.activate')}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={async () => {
+                try {
+                  await openUrl(PURCHASE_URL);
+                } catch {
+                  showToast(t('pro.errors.openPurchaseFailed'));
+                }
+              }}
+            >
+              <ExternalLink size={14} />
+              {t('pro.gate.purchase')}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 function detectCloudFolderMode(storagePath: string | null): CloudFolderMode {
   if (!storagePath) return 'local';
   const path = normalizePath(storagePath).toLowerCase();
@@ -63,6 +107,8 @@ function detectCloudFolderMode(storagePath: string | null): CloudFolderMode {
 const SyncSettings: React.FC = () => {
   const { t } = useI18n();
   const storagePath = useStore((s) => s.storagePath);
+  const isPro = useLicenseStore((s) => s.isPro);
+  const openGate = useLicenseStore((s) => s.openGate);
   const [syncMode, setSyncMode] = useState<SyncMode>('none');
   const [remotes, setRemotes] = useState<GitRemoteConfig[]>([]);
   const [primaryRemote, setPrimaryRemote] = useState<string | null>(null);
@@ -122,7 +168,7 @@ const SyncSettings: React.FC = () => {
         ?? null;
       const result = await getGitStatus(storagePath, statusRemote);
       setStatus(result);
-      if (result.isRepo && result.hasRemote && cfg.syncMode === 'none') {
+      if (isPro && result.isRepo && result.hasRemote && cfg.syncMode === 'none') {
         await saveConfig({ syncMode: 'git' });
         setSyncMode('git');
       }
@@ -140,7 +186,7 @@ const SyncSettings: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [loadLocalConfig, storagePath, t]);
+  }, [isPro, loadLocalConfig, storagePath, t]);
 
   useEffect(() => {
     loadLocalConfig();
@@ -171,9 +217,13 @@ const SyncSettings: React.FC = () => {
   }, [addMenuOpen]);
 
   const handleChooseMode = useCallback(async (mode: SyncMode) => {
+    if (mode === 'git' && !isPro) {
+      openGate('sync');
+      return;
+    }
     await saveConfig({ syncMode: mode });
     setSyncMode(mode);
-  }, []);
+  }, [isPro, openGate]);
 
   const handleChooseCloudFolder = useCallback(async () => {
     if (choosingCloudFolder) return;
@@ -445,11 +495,11 @@ const SyncSettings: React.FC = () => {
         <div className="settings-panel-head-row">
           <div>
             <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
-            {syncMode !== 'git' && (
+            {(syncMode !== 'git' || !isPro) && (
               <p className="settings-panel-desc">{t('settings.sync.panelDesc')}</p>
             )}
           </div>
-          {syncMode === 'git' && (
+          {syncMode === 'git' && isPro && (
             <div className="settings-panel-head-actions">
               <button
                 type="button"
@@ -528,6 +578,11 @@ const SyncSettings: React.FC = () => {
             <p className="settings-sync-cloud-hint">{t('settings.sync.cloudFolderHint')}</p>
             <p className="settings-sync-cloud-notice">{t('settings.sync.cloudSyncNotice')}</p>
           </div>
+        </>
+      ) : syncMode === 'git' && !isPro ? (
+        <>
+          {modeCards}
+          <GitSyncLockedPanel />
         </>
       ) : (
         <div className="settings-sync-shell">

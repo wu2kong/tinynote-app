@@ -47,7 +47,7 @@ export const itMessages = {
       "spaceLimit": "Il piano gratuito supporta fino a 5 spazi. Passa a Pro per spazi illimitati.",
       "notebookLimit": "Il piano gratuito supporta fino a 100 note per spazio. Passa a Pro per note illimitate.",
       "articleNotebook": "Creare note Markdown/Articolo è una funzione Pro.",
-      "sync": "Il modulo di sincronizzazione note è una funzione Pro."
+      "sync": "La sincronizzazione Git è una funzione Pro."
     },
     "trial": {
       "articleHint": "Puoi anche creare 1 nota di esempio di questo tipo nello spazio corrente per provarla e testarla.",
@@ -437,6 +437,10 @@ export const itMessages = {
       "openMirrorFailed": "Impossibile aprire la pagina di download Lanzou Cloud",
       "openHomepageFailed": "Impossibile aprire la homepage del progetto",
       "openAuthorFailed": "Impossibile aprire la homepage dell'autore",
+      "termsOfUse": "Termini di utilizzo (EULA)",
+      "privacyPolicy": "Informativa sulla privacy",
+      "openTermsFailed": "Impossibile aprire i termini di utilizzo",
+      "openPrivacyFailed": "Impossibile aprire l'informativa sulla privacy",
       "downloadFailed": "Impossibile scaricare l'aggiornamento. Verifica che la connessione di rete funzioni",
       "checkFailed": "Controllo aggiornamenti non riuscito"
     },

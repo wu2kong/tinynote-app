@@ -6,7 +6,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { ColorThemeId, NoteBlockDoubleClickAction, SpaceGroupDisplayMode, ViewMode } from '@/types';
 import { COLOR_THEMES } from '@/themes';
-import { HOMEPAGE_URL, DOCS_URL, DOWNLOAD_PAGE_URL, GITHUB_RELEASES_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PURCHASE_URL, FEEDBACK_EMAIL } from '@/constants/app';
+import { HOMEPAGE_URL, DOCS_URL, DOWNLOAD_PAGE_URL, GITHUB_RELEASES_URL, AUTHOR_NAME, AUTHOR_URL, MIRROR_DOWNLOAD_URL, PRIVACY_POLICY_URL, PURCHASE_URL, FEEDBACK_EMAIL, TERMS_OF_USE_URL } from '@/constants/app';
 import { checkForUpdate, checkWithNativeUpdater, downloadAndInstall, formatUpdateError, getAppVersion, UpdateInfo } from '@/utils/updater';
 import { getConfigFilePath, getAppDirectory, getWorkspacesFilePath } from '@/utils/appPaths';
 import { createBackup, formatBackupSize, getBackupStats, loadBackupDir, saveBackupDir, selectBackupDir, BackupStats } from '@/utils/backup';
@@ -514,51 +514,6 @@ const BackupSettings: React.FC = () => {
   );
 };
 
-const SyncSettingsGate: React.FC<{ onGoToPro: () => void }> = ({ onGoToPro }) => {
-  const { t } = useI18n();
-  const isPro = useLicenseStore((s) => s.isPro);
-
-  if (isPro) return <SyncSettings />;
-
-  return (
-    <div className="settings-panel">
-      <h4 className="settings-panel-title">{t('settings.sync.panelTitle')}</h4>
-      <div className="pro-locked-panel">
-        <p className="pro-locked-title">{t('pro.gate.sync')}</p>
-        {IS_MAC_APP_STORE ? (
-          <div className="pro-locked-store">
-            <AppStorePurchaseControls />
-          </div>
-        ) : (
-          <>
-            <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
-            <div className="pro-locked-actions">
-              <button type="button" className="btn btn-secondary" onClick={onGoToPro}>
-                <KeyRound size={14} />
-                {t('pro.gate.activate')}
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={async () => {
-                  try {
-                    await openUrl(PURCHASE_URL);
-                  } catch {
-                    showToast(t('pro.errors.openPurchaseFailed'));
-                  }
-                }}
-              >
-                <ExternalLink size={14} />
-                {t('pro.gate.purchase')}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
 function mapLicenseError(code: string, t: (key: string, params?: Record<string, string | number>) => string): string {
   if (code === 'EMPTY_KEY') return t('pro.errors.emptyKey');
   if (code === 'NETWORK') return t('pro.errors.network');
@@ -1008,6 +963,37 @@ const AboutSettings: React.FC = () => {
         </div>
       </div>
 
+      {IS_MAC_APP_STORE && (
+        <>
+          <div className="settings-row settings-row-vertical">
+            <div className="settings-row-info">
+              <span className="settings-row-label">{t('settings.about.termsOfUse')}</span>
+              <button
+                type="button"
+                className="settings-link"
+                onClick={() => void handleOpenExternal(TERMS_OF_USE_URL, 'settings.about.openTermsFailed')}
+              >
+                {t('settings.about.termsOfUse')}
+                <ExternalLink size={14} />
+              </button>
+            </div>
+          </div>
+          <div className="settings-row settings-row-vertical">
+            <div className="settings-row-info">
+              <span className="settings-row-label">{t('settings.about.privacyPolicy')}</span>
+              <button
+                type="button"
+                className="settings-link"
+                onClick={() => void handleOpenExternal(PRIVACY_POLICY_URL, 'settings.about.openPrivacyFailed')}
+              >
+                {t('settings.about.privacyPolicy')}
+                <ExternalLink size={14} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {!IS_MAC_APP_STORE && <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.about.downloadPages')}</span>
@@ -1090,7 +1076,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) => {
             {!IS_MAC_APP_STORE && activeModule === 'ai' && <AISettings />}
             {activeModule === 'data' && <DataSettings />}
             {activeModule === 'sampleLibrary' && <SampleLibrarySettings />}
-            {activeModule === 'sync' && <SyncSettingsGate onGoToPro={() => setActiveModule('pro')} />}
+            {activeModule === 'sync' && <SyncSettings />}
             {activeModule === 'backup' && <BackupSettings />}
             {activeModule === 'shortcuts' && <ShortcutsSettings />}
             {activeModule === 'pro' && <ProSettings />}

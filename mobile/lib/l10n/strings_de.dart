@@ -346,9 +346,9 @@ final stringsDe = AppStrings(
       'Für diesen Apple-Account wurde kein gültiger TinyNote-Pro-Kauf gefunden.',
   proStoreActive: 'TinyNote Pro ist aktiv',
   proStoreLegal:
-      'Die Zahlung wird bei Kaufbestätigung deinem Apple-ID-Account belastet. Das Abo verlängert sich automatisch, wenn es nicht mindestens 24 Stunden vor Periodenende gekündigt wird. Die Verlängerung wird innerhalb von 24 Stunden vor Periodenende berechnet. Abos verwaltest und kündigst du nach dem Kauf in den App-Store-Accounteinstellungen.',
+      'Abos verlängern sich automatisch, bis du sie in den Apple-Account-Einstellungen kündigst. Mit dem Kauf stimmst du zu:',
   proStorePrivacy: 'Datenschutz',
-  proStoreTerms: 'Nutzungsbedingungen',
+  proStoreTerms: 'Nutzungsbedingungen (EULA)',
   proPurchaseIncomplete: 'Der Kauf wurde nicht abgeschlossen. Bitte erneut versuchen.',
   proPurchasePending:
       'Dieser Kauf wartet auf Freigabe. Pro wird danach automatisch freigeschaltet.',

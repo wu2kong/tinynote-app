@@ -1,14 +1,14 @@
 ---
 title: TinyNote 同步教程
-description: 在 TinyNote 高级版中选择 Git 同步或云盘同步，并在应用内完成授权、拉取和推送。
+description: 在 TinyNote 中选择云盘同步或 Git 同步，并在应用内完成授权、拉取和推送。
 ---
 
 # 笔记同步
 
-同步属于 [TinyNote 高级版](/pro)。开通后，在「设置 → 同步」里二选一：
+在「设置 → 同步」里二选一：
 
-- **Git 同步**：把笔记库连接到 TinyNote 官方、GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义仓库，支持同时连接多个平台
-- **云盘同步**：把笔记库放到 iCloud、坚果云、OneDrive 等客户端正在同步的本地文件夹
+- **云盘同步**（基础版可用）：把笔记库放到 iCloud、坚果云、OneDrive 等客户端正在同步的本地文件夹
+- **Git 同步**（[高级版](/pro)）：把笔记库连接到 TinyNote 官方、GitHub、Gitee、GitLab、阿里云 Codeup、AtomGit 或自定义仓库，支持同时连接多个平台
 
 ![同步设置](/screenshots/sync.png)
 

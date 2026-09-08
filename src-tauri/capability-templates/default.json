@@ -7,6 +7,7 @@
   "permissions": [
     "core:default",
     "fs:default",
+    "fs:allow-app-write-recursive",
     "fs:allow-write-text-file",
     "fs:allow-read-text-file",
     "fs:allow-write-file",
@@ -44,6 +45,7 @@
     "opener:allow-open-url",
     "opener:allow-default-urls",
     "allow-get-app-dir",
+    "allow-scoped-access",
     "allow-backup",
     "allow-sync",
     "allow-updater",

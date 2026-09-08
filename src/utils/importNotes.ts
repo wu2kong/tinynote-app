@@ -101,10 +101,18 @@ async function walkMarkdownFiles(
   return results;
 }
 
+/** OS file/folder paths only — ignore in-editor link/table drags that look like URLs. */
+export function isImportableDroppedPath(path: string): boolean {
+  const value = path.trim();
+  if (!value) return false;
+  return !/^(https?:|mailto:|data:|blob:|javascript:)/i.test(value);
+}
+
 export async function collectSourcesFromDroppedPaths(paths: string[]): Promise<ImportNoteSource[]> {
   const filePaths: string[] = [];
   const dirPaths: string[] = [];
   for (const path of paths) {
+    if (!isImportableDroppedPath(path)) continue;
     try {
       const info = await storage().stat(path);
       if (info.isDirectory) dirPaths.push(path);

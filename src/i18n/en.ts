@@ -47,7 +47,7 @@ export const enMessages = {
       "spaceLimit": "Free plan supports up to 5 spaces. Upgrade to Pro for unlimited spaces.",
       "notebookLimit": "Free plan supports up to 100 notes per space. Upgrade to Pro for unlimited notes.",
       "articleNotebook": "Creating Markdown/Article notes is a Pro feature.",
-      "sync": "Note sync is a Pro feature."
+      "sync": "Git note sync is a Pro feature."
     },
     "trial": {
       "articleHint": "You can also create 1 sample of this type in the current space for trial and testing.",
@@ -467,6 +467,10 @@ export const enMessages = {
       "openMirrorFailed": "Unable to open the Lanzou Cloud download page",
       "openHomepageFailed": "Unable to open the project homepage",
       "openAuthorFailed": "Unable to open the author homepage",
+      "termsOfUse": "Terms of Use (EULA)",
+      "privacyPolicy": "Privacy Policy",
+      "openTermsFailed": "Unable to open the terms of use",
+      "openPrivacyFailed": "Unable to open the privacy policy",
       "downloadFailed": "Failed to download update. Check whether the network connection is working",
       "checkFailed": "Failed to check for updates"
     },
@@ -769,6 +773,10 @@ export const enMessages = {
     "title": "Welcome to TinyNote",
     "description": "A lightweight note manager and quick copy tool. Organize your commands, code snippets, and notes in spaces, directories, and notes.",
     "selectStorage": "Select Storage Folder"
+  },
+  "workspace": {
+    "reauthorizeNeeded": "The Mac App Store version needs permission to read this note library again. Please select the same folder.",
+    "reauthorizeFailed": "TinyNote still cannot read this folder. Select the note library folder once more."
   },
   "sampleLibrary": {
     "title": "Explore TinyNote with a Starter Kit",

@@ -90,7 +90,7 @@ npm run build:packages -- macos --upload vX.Y.Z
 npm run dev:appstore
 ```
 
-这会启用商店版前端、App Sandbox 和 StoreKit 插件，适合检查：商店版不显示官网许可证入口、购买页文案、免费版限制和恢复购买入口。
+这会启用商店版前端和商店权限配置，适合检查：商店版不显示官网许可证入口、购买页文案、免费版限制和恢复购买入口。`tauri dev` 是裸进程，不会套 App Sandbox，也不会初始化 StoreKit（套上会卡住启动）。
 
 **不要在这个进程里点购买来判断 IAP 是否正常。** 它是开发用裸进程，不是 `.app` bundle；StoreKit 会拒绝购买请求。
 

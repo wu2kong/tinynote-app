@@ -42,6 +42,7 @@ dist-packages/*-mac-app-store.pkg
 dist-docs/
 dist-appstore-media/
 work/
+codesign*
 
 # WinSparkle (downloaded by scripts/download-winsparkle.sh)
 src-tauri/winsparkle/
