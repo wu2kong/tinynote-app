@@ -3,8 +3,9 @@ import {
 } from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { normalizePath } from '@/utils/path';
-import { persistScopedAccess } from '@/utils/scopedAccess';
+import { persistScopedAccess, pickWorkspaceFolder } from '@/utils/scopedAccess';
 import type { DirEntry, StorageAdapter } from './types';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 export function createTauriStorageAdapter(): StorageAdapter {
   return {
@@ -12,6 +13,14 @@ export function createTauriStorageAdapter(): StorageAdapter {
     defaultStoragePath: '',
 
     async selectStoragePath() {
+      if (IS_MAC_APP_STORE) {
+        try {
+          const picked = await pickWorkspaceFolder();
+          return picked ? normalizePath(picked) : null;
+        } catch (error) {
+          console.warn('[tinynote] Native folder picker failed, falling back:', error);
+        }
+      }
       const selected = await open({
         directory: true,
         multiple: false,

@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 use tauri::ipc::Channel;
 
 use backup::{create_backup as run_create_backup, get_backup_stats as run_get_backup_stats, BackupStats};
-use scoped_access::{ensure_scoped_access, persist_scoped_access};
+use scoped_access::{ensure_scoped_access, persist_scoped_access, pick_and_persist_workspace_folder};
 use sync::{
     get_file_diff as run_get_file_diff, get_git_status as run_get_git_status,
     git_add_remote as run_git_add_remote, git_http_binary as run_git_http_binary,
@@ -538,6 +538,7 @@ pub fn run() {
         get_app_dir,
         persist_scoped_access,
         ensure_scoped_access,
+        pick_and_persist_workspace_folder,
         get_backup_stats,
         create_backup,
         get_git_status,
@@ -565,6 +566,7 @@ pub fn run() {
         get_app_dir,
         persist_scoped_access,
         ensure_scoped_access,
+        pick_and_persist_workspace_folder,
         get_backup_stats,
         create_backup,
         get_git_status,

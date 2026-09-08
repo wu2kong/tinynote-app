@@ -2,7 +2,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import * as config from './config';
 import { normalizePath } from './path';
-import { persistScopedAccess } from './scopedAccess';
+import { persistScopedAccess, pickWorkspaceFolder } from './scopedAccess';
+import { IS_MAC_APP_STORE } from '@/constants/distribution';
 
 export interface BackupFile {
   filename: string;
@@ -30,6 +31,14 @@ export async function createBackup(
 }
 
 export async function selectBackupDir(): Promise<string | null> {
+  if (IS_MAC_APP_STORE) {
+    try {
+      const picked = await pickWorkspaceFolder();
+      return picked ? normalizePath(picked) : null;
+    } catch (error) {
+      console.warn('[tinynote] Native folder picker failed, falling back:', error);
+    }
+  }
   const selected = await open({
     directory: true,
     multiple: false,

@@ -47,6 +47,16 @@ libloading = "0.8"
 tauri-plugin-sparkle-updater = { version = "0.2", optional = true }
 tauri-plugin-iap = { version = "0.9", optional = true }
 objc2 = "0.6"
+dispatch2 = "0.3"
+objc2-app-kit = { version = "0.3", default-features = false, features = [
+  "std",
+  "NSApplication",
+  "NSOpenPanel",
+  "NSPanel",
+  "NSResponder",
+  "NSSavePanel",
+  "NSWindow",
+] }
 objc2-foundation = { version = "0.3", default-features = false, features = [
   "std",
   "NSArray",

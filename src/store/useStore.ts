@@ -21,7 +21,7 @@ import { isTauri } from '@/platform/detect';
 import { FREE_MAX_ARTICLE_NOTEBOOKS_PER_FORMAT, FREE_MAX_NOTEBOOKS_PER_SPACE, FREE_MAX_SPACES, isArticleNotebookFormat } from '@/constants/pro';
 import { useLicenseStore } from '@/store/useLicenseStore';
 import { IS_MAC_APP_STORE } from '@/constants/distribution';
-import { ensureScopedAccess } from '@/utils/scopedAccess';
+import { resolveAccessibleWorkspacePath } from '@/utils/scopedAccess';
 
 interface AppActions {
   setSpace: (space: Space | null) => void;
@@ -424,14 +424,15 @@ export const useStore = create<AppStore>((set, get) => ({
     }
 
     if (workspacePath) {
-      const normalizedPath = normalizePath(workspacePath);
+      let normalizedPath = normalizePath(workspacePath);
       if (IS_MAC_APP_STORE) {
         try {
-          await ensureScopedAccess(normalizedPath);
+          normalizedPath = await resolveAccessibleWorkspacePath(normalizedPath);
         } catch (error) {
           console.warn('[tinynote] Scoped access check failed:', error);
         }
       }
+      workspacePath = normalizedPath;
       await config.prepareWorkspace(normalizedPath);
     }
 

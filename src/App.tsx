@@ -22,7 +22,6 @@ import { isTauri } from '@/platform/detect';
 import { WORKSPACE_SWITCH_EVENT, OPEN_SETTINGS_EVENT, OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { saveConfig } from '@/utils/config';
 import type { SyncMode } from '@/utils/configTypes';
-import { ensureScopedAccess } from '@/utils/scopedAccess';
 import { Code, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { serializeNoteBlocks } from '@/utils/noteParser';
@@ -169,20 +168,6 @@ const App: React.FC = () => {
       } finally {
         if (!cancelled) {
           setLoading(false);
-          if (IS_MAC_APP_STORE) {
-            const path = useStore.getState().storagePath;
-            if (path) {
-              void ensureScopedAccess(path).then(async (access) => {
-                if (cancelled) return;
-                if (!access.accessible) {
-                  showToast(t('workspace.reauthorizeNeeded'));
-                  await setStoragePath(null);
-                } else if (useStore.getState().spaces.length === 0) {
-                  await useStore.getState().reloadSpaces();
-                }
-              });
-            }
-          }
           if (isTauri()) {
             void import('@/platform/desktopMenu')
               .then(({ refreshDesktopMenu }) => refreshDesktopMenu())
@@ -196,7 +181,7 @@ const App: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [initApp, setStoragePath, t]);
+  }, [initApp]);
 
   useEffect(() => {
     const onOpenSettings = () => setShowSettings(true);
@@ -258,10 +243,19 @@ const App: React.FC = () => {
   }, []);
 
   const handleSelectStorage = async () => {
-    const path = await selectStoragePath();
-    if (path) {
+    setLoading(true);
+    try {
+      const path = await selectStoragePath();
+      if (!path) {
+        setLoading(false);
+        return;
+      }
       await switchWorkspace(path);
       setShowSampleLibrary(true);
+    } catch (error) {
+      console.warn('[tinynote] Failed to open storage folder:', error);
+      showToast(t('workspace.reauthorizeFailed'));
+      setLoading(false);
     }
   };
 

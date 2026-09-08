@@ -84,11 +84,19 @@ fn allow_directory<R: Runtime>(app: &AppHandle<R>, path: &str) {
     });
 }
 
+fn is_app_data_path<R: Runtime>(app: &AppHandle<R>, path: &str) -> bool {
+    let Ok(app_data) = app.path().app_data_dir() else {
+        return false;
+    };
+    Path::new(path).starts_with(&app_data)
+}
+
 #[cfg(target_os = "macos")]
 mod macos {
     use super::*;
     use objc2::rc::Retained;
     use objc2::runtime::Bool;
+    use objc2_app_kit::{NSApplication, NSModalResponseOK, NSOpenPanel};
     use objc2_foundation::{
         NSData, NSError, NSString, NSURL, NSURLBookmarkCreationOptions, NSURLBookmarkResolutionOptions,
     };
@@ -110,6 +118,22 @@ mod macos {
         }
     }
 
+    fn claimed_paths() -> &'static Mutex<HashMap<String, bool>> {
+        static CLAIMED: OnceLock<Mutex<HashMap<String, bool>>> = OnceLock::new();
+        CLAIMED.get_or_init(|| Mutex::new(HashMap::new()))
+    }
+
+    fn mark_persisted(path: &str, from_panel: bool) -> bool {
+        let Ok(mut guard) = claimed_paths().lock() else {
+            return true;
+        };
+        if !from_panel && guard.contains_key(path) {
+            return false;
+        }
+        guard.insert(path.to_string(), from_panel);
+        true
+    }
+
     fn path_is_directory(path: &str) -> bool {
         fs::metadata(path).map(|info| info.is_dir()).unwrap_or(true)
     }
@@ -118,8 +142,7 @@ mod macos {
         NSURL::fileURLWithPath_isDirectory(&NSString::from_str(path), path_is_directory(path))
     }
 
-    fn create_bookmark(path: &str) -> Result<Vec<u8>, String> {
-        let url = file_url(path);
+    fn create_bookmark_from_url(url: &NSURL) -> Result<Vec<u8>, String> {
         url.bookmarkDataWithOptions_includingResourceValuesForKeys_relativeToURL_error(
             NSURLBookmarkCreationOptions::WithSecurityScope,
             None,
@@ -152,28 +175,72 @@ mod macos {
         url.path().map(|path| path.to_string())
     }
 
-    pub fn persist_path<R: Runtime>(app: &AppHandle<R>, raw_path: &str) -> Result<(), String> {
-        if !use_security_bookmarks() {
-            return Ok(());
+    fn persist_selected_url<R: Runtime>(
+        app: &AppHandle<R>,
+        url: Retained<NSURL>,
+        from_panel: bool,
+    ) -> Result<String, String> {
+        let path = normalize_fs_path(&resolved_path(&url).ok_or_else(|| "empty path".to_string())?);
+        if path.is_empty() {
+            return Err("empty path".to_string());
         }
+        if !mark_persisted(&path, from_panel) {
+            allow_directory(app, &path);
+            return Ok(path);
+        }
+
+        let started = start_accessing(&url);
+        hold(path.clone(), Retained::clone(&url));
+        allow_directory(app, &path);
+
+        if !use_security_bookmarks() {
+            return Ok(path);
+        }
+
+        match create_bookmark_from_url(&url) {
+            Ok(bookmark) => {
+                if let Ok(store_file) = store_path(app) {
+                    let mut store = load_store(&store_file);
+                    store.version = 1;
+                    store.bookmarks.insert(path.clone(), STANDARD.encode(bookmark));
+                    if let Err(error) = save_store(&store_file, &store) {
+                        log::warn!("[tinynote] failed to save scoped bookmark for {path}: {error}");
+                    }
+                }
+            }
+            Err(error) => {
+                log::warn!("[tinynote] failed to create scoped bookmark for {path}: {error}");
+                if !started && !can_read_dir(&path) {
+                    return Err(format!("unable to start accessing {path}: {error}"));
+                }
+            }
+        }
+
+        Ok(path)
+    }
+
+    pub fn persist_path<R: Runtime>(app: &AppHandle<R>, raw_path: &str) -> Result<(), String> {
         let path = normalize_fs_path(raw_path);
         if path.is_empty() {
             return Err("empty path".to_string());
         }
-
-        let bookmark = create_bookmark(&path)?;
-        let url = file_url(&path);
-        if !start_accessing(&url) && !can_read_dir(&path) {
-            return Err(format!("unable to start accessing {path}"));
+        if !use_security_bookmarks() {
+            allow_directory(app, &path);
+            return Ok(());
         }
-        hold(path.clone(), url);
-        allow_directory(app, &path);
-
-        let store_file = store_path(app)?;
-        let mut store = load_store(&store_file);
-        store.version = 1;
-        store.bookmarks.insert(path, STANDARD.encode(bookmark));
-        save_store(&store_file, &store)
+        match persist_selected_url(app, file_url(&path), false) {
+            Ok(_) => Ok(()),
+            Err(error) => {
+                // Session access from NSOpenPanel / Powerbox may still work even if
+                // reconstituting a security-scoped bookmark from a path fails.
+                if can_read_dir(&path) {
+                    log::warn!("[tinynote] keep session access for {path} without bookmark: {error}");
+                    Ok(())
+                } else {
+                    Err(error)
+                }
+            }
+        }
     }
 
     pub fn restore_all<R: Runtime>(app: &AppHandle<R>) {
@@ -205,7 +272,7 @@ mod macos {
                     hold(resolved.clone(), url);
 
                     if stale {
-                        if let Ok(fresh) = create_bookmark(&resolved) {
+                        if let Ok(fresh) = create_bookmark_from_url(&file_url(&resolved)) {
                             next.remove(path);
                             next.insert(resolved, STANDARD.encode(fresh));
                             dirty = true;
@@ -231,6 +298,15 @@ mod macos {
         if path.is_empty() {
             return ScopedAccessState { accessible: false };
         }
+        if is_app_data_path(app, &path) {
+            if !can_read_dir(&path) {
+                let _ = fs::create_dir_all(&path);
+            }
+            allow_directory(app, &path);
+            return ScopedAccessState {
+                accessible: can_read_dir(&path),
+            };
+        }
         if can_read_dir(&path) {
             allow_directory(app, &path);
             return ScopedAccessState { accessible: true };
@@ -243,6 +319,29 @@ mod macos {
         ScopedAccessState {
             accessible: can_read_dir(&path),
         }
+    }
+
+    pub fn pick_and_persist_workspace_folder<R: Runtime>(
+        app: AppHandle<R>,
+    ) -> Result<Option<String>, String> {
+        dispatch2::run_on_main(move |mtm| {
+            let panel = NSOpenPanel::openPanel(mtm);
+            panel.setCanChooseFiles(false);
+            panel.setCanChooseDirectories(true);
+            panel.setAllowsMultipleSelection(false);
+            panel.setCanCreateDirectories(true);
+            // Use a standalone modal, not a window sheet. Mixing beginSheet + runModal
+            // (as rfd does when a parent window is set) can fail to return after OK.
+            #[allow(deprecated)]
+            NSApplication::sharedApplication(mtm).activateIgnoringOtherApps(true);
+            if panel.runModal() != NSModalResponseOK {
+                return Ok(None);
+            }
+            let Some(url) = panel.URL() else {
+                return Err("folder picker did not return a URL".to_string());
+            };
+            persist_selected_url(&app, url, true).map(Some)
+        })
     }
 }
 
@@ -258,6 +357,12 @@ mod macos {
 
     pub fn ensure_path<R: Runtime>(_app: &AppHandle<R>, _path: &str) -> ScopedAccessState {
         ScopedAccessState { accessible: true }
+    }
+
+    pub fn pick_and_persist_workspace_folder<R: Runtime>(
+        _app: AppHandle<R>,
+    ) -> Result<Option<String>, String> {
+        Err("folder picker is only available on macOS".to_string())
     }
 }
 
@@ -281,14 +386,16 @@ pub fn listen_for_allowed_paths<R: Runtime>(app: &AppHandle<R>) {
     let handle = app.clone();
     scope.listen(move |event| {
         if let tauri::fs::Event::PathAllowed(path) = event {
-            let raw = path.to_string_lossy();
-            let normalized = normalize_fs_path(&raw);
+            let normalized = normalize_fs_path(&path.to_string_lossy());
             if normalized.is_empty() {
                 return;
             }
-            if let Err(error) = persist_path(&handle, &normalized) {
-                log::info!("[tinynote] skip scoped bookmark for {normalized}: {error}");
-            }
+            let handle = handle.clone();
+            std::thread::spawn(move || {
+                if let Err(error) = persist_path(&handle, &normalized) {
+                    log::info!("[tinynote] skip scoped bookmark for {normalized}: {error}");
+                }
+            });
         }
     });
 }
@@ -301,4 +408,11 @@ pub fn persist_scoped_access<R: Runtime>(app: AppHandle<R>, path: String) -> Res
 #[tauri::command]
 pub fn ensure_scoped_access<R: Runtime>(app: AppHandle<R>, path: String) -> ScopedAccessState {
     ensure_path(&app, &path)
+}
+
+#[tauri::command]
+pub fn pick_and_persist_workspace_folder<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<Option<String>, String> {
+    macos::pick_and_persist_workspace_folder(app)
 }

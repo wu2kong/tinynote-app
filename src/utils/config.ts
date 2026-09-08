@@ -38,6 +38,9 @@ export function bindWorkspace(storagePath: string | null): void {
     currentWorkspacePath = normalized;
     configCache = null;
   }
+  if (normalized == null) {
+    bootstrappedWorkspacePath = null;
+  }
 }
 
 function normalizeCandidate(raw: string | null | undefined): string | null {
