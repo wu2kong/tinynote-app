@@ -7,6 +7,23 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.2.8
+
+2026-09-08
+
+### New features
+
+- Cloud-drive sync is now free; Git note sync remains a Pro feature
+- Mobile supports App Store subscriptions
+- About settings now include Terms of Use and Privacy Policy links
+
+### Fixes
+
+- Links in article notes open in the system browser
+- Dragging article table rows/columns or links no longer triggers the import-notes overlay
+- Mac App Store builds can start with a default library and keep folder access
+- `tauri dev` no longer rebuilds in a loop after regenerating permission files
+
 ## v1.2.7
 
 2026-08-28
