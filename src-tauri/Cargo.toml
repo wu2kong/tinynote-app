@@ -18,6 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 default = ["sparkle-updater"]
 sparkle-updater = ["dep:tauri-plugin-sparkle-updater"]
 app-store = ["dep:tauri-plugin-iap"]
+microsoft-store = []
 
 [build-dependencies]
 tauri-build = { version = "2.6.2", features = [] }

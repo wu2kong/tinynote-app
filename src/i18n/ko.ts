@@ -25,6 +25,7 @@ export const koMessages = {
     "none": "없음"
   },
   "pro": {
+    "externalCheckout": "구매 시 브라우저에서 공식 웹사이트가 열립니다. 결제는 Dodo Payments에서 처리합니다. 결제 전에 가격과 구매 조건을 확인하세요. 구매 후 여기로 돌아와 라이선스 키를 활성화하세요. 웹사이트에서 구매한 기존 라이선스도 사용할 수 있습니다.",
     "badge": "Pro",
     "planFree": "무료",
     "license": "라이선스",

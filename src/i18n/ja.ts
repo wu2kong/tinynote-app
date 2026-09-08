@@ -25,6 +25,7 @@ export const jaMessages = {
     "none": "なし"
   },
   "pro": {
+    "externalCheckout": "購入するとブラウザーで公式サイトが開きます。決済は Dodo Payments が処理します。お支払い前に価格と購入条件をご確認ください。購入後はここに戻ってライセンスキーを有効化してください。公式サイトで購入済みのライセンスも使用できます。",
     "badge": "Pro",
     "planFree": "無料",
     "license": "ライセンス",

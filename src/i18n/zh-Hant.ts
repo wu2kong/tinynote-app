@@ -25,6 +25,7 @@ export const zhHantMessages = {
     "none": "無"
   },
   "pro": {
+    "externalCheckout": "購買將在瀏覽器中開啟官網，由 Dodo Payments 處理付款。請在付款前確認價格和購買條款，購買後返回此處啟用授權金鑰；官網已購授權也可使用。",
     "badge": "高級版",
     "planFree": "基礎版",
     "license": "授權",

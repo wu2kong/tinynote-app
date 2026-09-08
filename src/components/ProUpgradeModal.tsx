@@ -214,6 +214,7 @@ const ProUpgradeModal: React.FC = () => {
 
         <p className="modal-message">{t(featureMessageKey(gateFeature))}</p>
         <p className="pro-upgrade-hint">{t('pro.gate.hint')}</p>
+        <p className="pro-upgrade-hint">{t('pro.externalCheckout')}</p>
 
         {trialHint}
 

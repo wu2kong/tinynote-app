@@ -17,6 +17,7 @@
     "build:appstore": "node scripts/build-appstore.mjs",
     "build:appstore:prepare": "node scripts/build-appstore.mjs --prepare-only",
     "build:appstore:local": "node scripts/build-appstore.mjs --local-iap",
+    "build:microsoftstore": "pwsh -NoProfile -File scripts/build-microsoft-store.ps1",
     "docs:dev": "npm run dev --prefix docs-site",
     "docs:build": "npm run build --prefix docs-site",
     "docs:preview": "npm run preview --prefix docs-site",

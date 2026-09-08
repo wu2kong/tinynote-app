@@ -79,3 +79,6 @@ appcast.xml
 .cursor
 .codegraph
 .flutter-sdk
+
+# Downloaded MSIX WebView2 runtime
+src-tauri/WebView2/

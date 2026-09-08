@@ -1,9 +1,9 @@
 mod backup;
 mod scoped_access;
 mod sync;
-#[cfg(not(feature = "app-store"))]
+#[cfg(not(any(feature = "app-store", feature = "microsoft-store")))]
 mod updater;
-#[cfg(windows)]
+#[cfg(all(windows, not(feature = "microsoft-store")))]
 mod winsparkle;
 
 use std::collections::HashMap;
@@ -154,49 +154,49 @@ fn revert_file_change(storage_path: String, file_path: String) -> Result<(), Str
     run_revert_file_change(&storage_path, &file_path)
 }
 
-#[cfg(not(feature = "app-store"))]
+#[cfg(not(any(feature = "app-store", feature = "microsoft-store")))]
 #[tauri::command]
 fn fetch_latest_release() -> Result<updater::LatestRelease, String> {
     updater::fetch_latest_release()
 }
 
-#[cfg(feature = "app-store")]
+#[cfg(any(feature = "app-store", feature = "microsoft-store"))]
 #[tauri::command]
 fn fetch_latest_release() -> Result<serde_json::Value, String> {
-    Err("Mac App Store 版本由 App Store 提供更新".to_string())
+    Err("This edition is updated through its app store".to_string())
 }
 
-#[cfg(not(feature = "app-store"))]
+#[cfg(not(any(feature = "app-store", feature = "microsoft-store")))]
 #[tauri::command]
 fn resolve_appcast_url() -> String {
     updater::resolve_appcast_url().to_string()
 }
 
-#[cfg(feature = "app-store")]
+#[cfg(any(feature = "app-store", feature = "microsoft-store"))]
 #[tauri::command]
 fn resolve_appcast_url() -> String {
     String::new()
 }
 
-#[cfg(not(feature = "app-store"))]
+#[cfg(not(any(feature = "app-store", feature = "microsoft-store")))]
 #[tauri::command]
 fn download_release_asset(url: String, filename: String) -> Result<String, String> {
     updater::download_release_asset(&url, &filename)
 }
 
-#[cfg(feature = "app-store")]
+#[cfg(any(feature = "app-store", feature = "microsoft-store"))]
 #[tauri::command]
 fn download_release_asset(_url: String, _filename: String) -> Result<String, String> {
-    Err("Mac App Store 版本由 App Store 提供更新".to_string())
+    Err("This edition is updated through its app store".to_string())
 }
 
 #[tauri::command]
 fn winsparkle_available() -> bool {
-    #[cfg(windows)]
+    #[cfg(all(windows, not(feature = "microsoft-store")))]
     {
         winsparkle::is_available()
     }
-    #[cfg(not(windows))]
+    #[cfg(any(not(windows), feature = "microsoft-store"))]
     {
         false
     }
@@ -204,11 +204,11 @@ fn winsparkle_available() -> bool {
 
 #[tauri::command]
 fn winsparkle_check_for_updates() -> Result<(), String> {
-    #[cfg(windows)]
+    #[cfg(all(windows, not(feature = "microsoft-store")))]
     {
         winsparkle::check_for_updates()
     }
-    #[cfg(not(windows))]
+    #[cfg(any(not(windows), feature = "microsoft-store"))]
     {
         Err("WinSparkle 仅在 Windows 上可用".to_string())
     }
@@ -216,11 +216,11 @@ fn winsparkle_check_for_updates() -> Result<(), String> {
 
 #[tauri::command]
 fn winsparkle_set_appcast_url(url: String) -> Result<(), String> {
-    #[cfg(windows)]
+    #[cfg(all(windows, not(feature = "microsoft-store")))]
     {
         winsparkle::set_appcast_url(&url)
     }
-    #[cfg(not(windows))]
+    #[cfg(any(not(windows), feature = "microsoft-store"))]
     {
         let _ = url;
         Err("WinSparkle 仅在 Windows 上可用".to_string())
@@ -610,11 +610,11 @@ pub fn run() {
         .expect("error while building tauri application");
 
     app.run(|app_handle, event| {
-        #[cfg(not(windows))]
+        #[cfg(any(not(windows), feature = "microsoft-store"))]
         let _ = &app_handle;
         match event {
             tauri::RunEvent::Ready => {
-                #[cfg(windows)]
+                #[cfg(all(windows, not(feature = "microsoft-store")))]
                 {
                     if let Err(error) = winsparkle::init(app_handle) {
                         log::warn!("WinSparkle init failed: {error}");
@@ -622,7 +622,7 @@ pub fn run() {
                 }
             }
             tauri::RunEvent::Exit => {
-                #[cfg(windows)]
+                #[cfg(all(windows, not(feature = "microsoft-store")))]
                 winsparkle::cleanup();
             }
             _ => {}

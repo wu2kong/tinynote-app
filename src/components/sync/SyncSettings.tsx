@@ -66,6 +66,7 @@ const GitSyncLockedPanel: React.FC = () => {
       ) : (
         <>
           <p className="pro-locked-desc">{t('pro.gate.hint')}</p>
+          <p className="pro-locked-desc">{t('pro.externalCheckout')}</p>
           <div className="pro-locked-actions">
             <button type="button" className="btn btn-secondary" onClick={() => openGate('sync')}>
               <KeyRound size={14} />
