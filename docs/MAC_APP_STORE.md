@@ -111,12 +111,15 @@ dist-packages/TinyNote-<version>-mac-app-store.pkg
 推荐使用 Transporter 上传该 `.pkg`。也可以创建 App Store Connect API Key 后运行：
 
 ```bash
-APPLE_API_KEY_ID="KEY_ID" \
-APPLE_API_ISSUER="ISSUER_ID" \
 npm run build:appstore -- --profile /绝对路径/TinyNote.provisionprofile --upload
 ```
 
-`.p8` 私钥应放在 Apple 工具支持的私有目录中，不要放进项目或提交到 Git。
+`--upload` 会按下面顺序找密钥，不必每次再导出环境变量：
+
+- Key ID：`APPLE_API_KEY_ID`，否则取 `~/.appstoreconnect/private_keys/AuthKey_*.p8` 文件名
+- Issuer ID：`APPLE_API_ISSUER`，否则取 `~/.appstoreconnect/issuer_id`
+
+`.p8` 私钥和 Issuer ID 只放在本机该目录，不要写进仓库或提交到 Git。
 
 ## 7. 本机测试 IAP（不使用 TestFlight）
 

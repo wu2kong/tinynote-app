@@ -47,7 +47,36 @@ function run(command, args, options = {}) {
   return result.stdout?.trim() ?? '';
 }
 
+function appStoreConnectHome() {
+  return join(process.env.HOME || '', '.appstoreconnect');
+}
+
+function readStoredText(...paths) {
+  for (const path of paths) {
+    if (!path || !existsSync(path)) continue;
+    const value = readFileSync(path, 'utf8').trim();
+    if (value) return value;
+  }
+  return '';
+}
+
+function discoverApiKeyId() {
+  const keyDir = join(appStoreConnectHome(), 'private_keys');
+  if (!existsSync(keyDir)) return '';
+  const match = readdirSync(keyDir).find((name) => /^AuthKey_.+\.p8$/i.test(name));
+  return match ? match.replace(/^AuthKey_/i, '').replace(/\.p8$/i, '') : '';
+}
+
+function storedUploadCredentials() {
+  const home = appStoreConnectHome();
+  return {
+    apiKey: discoverApiKeyId(),
+    apiIssuer: readStoredText(join(home, 'issuer_id'), join(home, 'issuer')),
+  };
+}
+
 function parseArgs(argv) {
+  const stored = storedUploadCredentials();
   const options = {
     prepareOnly: false,
     localIap: false,
@@ -56,8 +85,8 @@ function parseArgs(argv) {
     appIdentity: process.env.APPLE_SIGNING_IDENTITY || '',
     installerIdentity: process.env.APPLE_INSTALLER_IDENTITY || '',
     buildNumber: process.env.APPLE_BUILD_NUMBER || '',
-    apiKey: process.env.APPLE_API_KEY_ID || process.env.APPLE_API_KEY || '',
-    apiIssuer: process.env.APPLE_API_ISSUER || '',
+    apiKey: process.env.APPLE_API_KEY_ID || process.env.APPLE_API_KEY || stored.apiKey,
+    apiIssuer: process.env.APPLE_API_ISSUER || stored.apiIssuer,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
