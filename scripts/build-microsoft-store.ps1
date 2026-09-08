@@ -36,7 +36,7 @@ try {
     Copy-Item $runtimeExe.Directory.FullName 'src-tauri/WebView2' -Recurse
 
     $env:VITE_DISTRIBUTION = 'microsoft-store'
-    Invoke-Checked 'npm.cmd' @('run', 'tauri', '--', 'build', '--no-bundle', '--no-default-features', '--features', 'microsoft-store', '--target', 'x86_64-pc-windows-msvc', '--config', 'src-tauri/tauri.microsoftstore.conf.json')
+    Invoke-Checked 'npm.cmd' @('run', 'tauri', '--', 'build', '--no-bundle', '--features', 'microsoft-store', '--target', 'x86_64-pc-windows-msvc', '--config', 'src-tauri/tauri.microsoftstore.conf.json', '--', '--no-default-features')
     $stage = Join-Path $work 'package'
     New-Item -ItemType Directory "$stage/Assets" -Force | Out-Null
     Copy-Item 'src-tauri/target/x86_64-pc-windows-msvc/release/app.exe' "$stage/TinyNote.exe"
