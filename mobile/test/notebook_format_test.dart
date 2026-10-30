@@ -103,7 +103,8 @@ void main() {
     expect(NotebookFormat.unsupported.isDocument, isFalse);
     expect(NotebookFormat.unsupported.isUnsupported, isTrue);
     expect(NotebookFormat.csv.isUnsupported, isFalse);
-    expect(NotebookFormat.csv.isUnsupportedOnMobile, isTrue);
+    expect(NotebookFormat.csv.isUnsupportedOnMobile, isFalse);
+    expect(NotebookFormat.csv.isCsvPreview, isTrue);
   });
 
   test('plain .md becomes writer, marked files stay', () {

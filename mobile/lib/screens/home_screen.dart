@@ -10,6 +10,7 @@ import '../core/types.dart';
 import '../l10n/l10n.dart';
 import '../services/library_service.dart';
 import '../theme/app_colors.dart';
+import '../widgets/csv_notebook_view.dart';
 import '../widgets/document_notebook_view.dart';
 import '../widgets/library_drawer.dart';
 import '../widgets/note_block_card.dart';
@@ -228,6 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
         notebook != null &&
         notebook.format.isUnsupportedOnMobile &&
         !notebook.compatOpenAsMarkdown;
+    final showCsvPreview =
+        notebook != null && notebook.format.isCsvPreview;
     final showDocumentView =
         notebook != null &&
         (notebook.format.isDocument || notebook.compatOpenAsMarkdown);
@@ -248,6 +251,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (showUnsupportedGate) {
       return UnsupportedNotebookView(library: library, notebook: notebook);
+    }
+    if (showCsvPreview) {
+      return CsvNotebookView(
+        library: library,
+        notebook: notebook,
+        spaceName: spaceName,
+        breadcrumb: _breadcrumb(space, notebook),
+        showDirectoryButton: showDirectoryButton,
+      );
     }
     if (showDocumentView) {
       return DocumentNotebookView(

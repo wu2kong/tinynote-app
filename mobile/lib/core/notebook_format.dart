@@ -52,9 +52,10 @@ extension NotebookFormatX on NotebookFormat {
 
   bool get isUnsupported => this == NotebookFormat.unsupported;
 
-  /// Registered note formats that this mobile app cannot edit yet.
-  bool get isUnsupportedOnMobile =>
-      this == NotebookFormat.unsupported || this == NotebookFormat.csv;
+  /// Formats with no mobile UI (unknown future suffixes only).
+  bool get isUnsupportedOnMobile => this == NotebookFormat.unsupported;
+
+  bool get isCsvPreview => this == NotebookFormat.csv;
 
   String get extension =>
       (_formatById[this] ?? _formatById[NotebookFormat.blocks]!).extension;

@@ -74,7 +74,9 @@ Future<String> _allocateUniqueFilePath(
   final format = detectNotebookFormat(fileName);
   final displayName = notebookDisplayName(fileName);
   final preserveExtension =
-      format.isUnsupportedOnMobile ? matchedNotebookSuffix(fileName) : null;
+      (format.isUnsupportedOnMobile || format.isCsvPreview)
+          ? matchedNotebookSuffix(fileName)
+          : null;
   var n = 2;
   while (true) {
     final nextName = resolveNotebookFileName(

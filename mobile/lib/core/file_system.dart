@@ -122,7 +122,7 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
-      if (format.isUnsupportedOnMobile) {
+      if (format.isUnsupportedOnMobile || format.isCsvPreview) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,
@@ -168,7 +168,8 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
-    if (notebook.format.isUnsupportedOnMobile && !notebook.compatOpenAsMarkdown) {
+    if ((notebook.format.isUnsupportedOnMobile || notebook.format.isCsvPreview) &&
+        !notebook.compatOpenAsMarkdown) {
       return;
     }
     if (shouldSaveAsDocument(

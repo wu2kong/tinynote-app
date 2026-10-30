@@ -171,6 +171,10 @@ class AppStrings {
     required this.formatMarkdown,
     required this.formatWriter,
     required this.formatCsv,
+    required this.csvPreviewCopyCsv,
+    required this.csvPreviewCopyMarkdown,
+    required this.csvPreviewCopiedCsv,
+    required this.csvPreviewCopiedMarkdown,
     required this.formatUnsupported,
     required this.convertToMarkdown,
     required this.convertToWriter,
@@ -476,6 +480,10 @@ class AppStrings {
   final String formatMarkdown;
   final String formatWriter;
   final String formatCsv;
+  final String csvPreviewCopyCsv;
+  final String csvPreviewCopyMarkdown;
+  final String csvPreviewCopiedCsv;
+  final String csvPreviewCopiedMarkdown;
   final String formatUnsupported;
   final String convertToMarkdown;
   final String convertToWriter;
