@@ -690,6 +690,9 @@ export const enMessages = {
     "importMarkdownFailed": "Failed to parse Markdown table"
   },
   "note": {
+    "openInWindow": "Open in Separate Window",
+    "openWindowFailed": "Could not open the note window",
+    "windowNoteMissing": "This note is no longer available.",
     "addNote": "Add Note",
     "pasteNote": "Paste Note",
     "selectNotebook": "Select a note to view its content",

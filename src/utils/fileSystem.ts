@@ -1,3 +1,4 @@
+import { notifyNotebookSaved } from './notebookEvents';
 import { getStorageAdapter } from '@/adapters/storage';
 import { Space, Group, Notebook, NotebookFormatId } from '@/types';
 import { isArticleNotebookFormat } from '@/constants/pro';
@@ -230,6 +231,7 @@ export async function saveNotebook(notebook: Notebook): Promise<void> {
     ? notebook.content
     : serializeNoteBlocks(notebook.noteBlocks);
   await storage().writeTextFile(notebook.path, content);
+  await notifyNotebookSaved(notebook);
 }
 
 export async function createSpace(storagePath: string, name: string): Promise<Space> {

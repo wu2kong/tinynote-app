@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NoteBlock as NoteBlockType, ViewMode } from '@/types';
-import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus, ClipboardPaste, Globe } from 'lucide-react';
+import { Copy, Check, GripVertical, Plus, Trash2, CopyPlus, ClipboardPaste, Globe, ExternalLink } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { writeText, readText } from '@tauri-apps/plugin-clipboard-manager';
@@ -10,6 +10,8 @@ import { serializeNoteBlocks, parseNoteBlocks } from '@/utils/noteParser';
 import { extractHttpLinks } from '@/utils/extractLinks';
 import ContextMenuPortal from './ContextMenuPortal';
 import LinksModal from './LinksModal';
+import { isTauri } from '@/platform/detect';
+import { openNoteWindow } from '@/utils/noteWindow';
 import { showToast } from './Toast';
 import { useI18n } from '@/i18n/useI18n';
 
@@ -204,6 +206,15 @@ const NoteBlockItem: React.FC<NoteBlockProps> = ({ block, viewMode, isSelected, 
     if (!contextMenu) return null;
     return (
       <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+        {isTauri() && (
+          <button className="context-menu-item" onClick={() => {
+            closeContextMenu();
+            void openNoteWindow(block);
+          }}>
+            <ExternalLink size={14} />
+            {t('note.openInWindow')}
+          </button>
+        )}
         <button className="context-menu-item" onClick={handleAddBelow}>
             <Plus size={14} />
             {t('note.addBlock')}

@@ -660,6 +660,9 @@ export const koMessages = {
     "importMarkdownFailed": "Markdown 표 파싱에 실패했습니다"
   },
   "note": {
+    "openInWindow": "별도 창에서 열기",
+    "openWindowFailed": "노트 창을 열 수 없습니다",
+    "windowNoteMissing": "이 노트는 더 이상 사용할 수 없습니다.",
     "addNote": "노트 추가",
     "pasteNote": "노트 붙여넣기",
     "selectNotebook": "내용을 보려면 노트를 선택하세요",

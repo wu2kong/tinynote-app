@@ -660,6 +660,9 @@ export const zhHantMessages = {
     "importMarkdownFailed": "Markdown 表格解析失敗"
   },
   "note": {
+    "openInWindow": "在獨立視窗開啟",
+    "openWindowFailed": "無法開啟筆記視窗",
+    "windowNoteMissing": "此筆記已不存在。",
     "addNote": "新增筆記",
     "pasteNote": "貼上筆記",
     "selectNotebook": "選擇一個筆記以檢視內容",

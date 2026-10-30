@@ -660,6 +660,9 @@ export const deMessages = {
     "importMarkdownFailed": "Markdown-Tabelle konnte nicht geparst werden"
   },
   "note": {
+    "openInWindow": "In separatem Fenster öffnen",
+    "openWindowFailed": "Das Notizfenster konnte nicht geöffnet werden",
+    "windowNoteMissing": "Diese Notiz ist nicht mehr verfügbar.",
     "addNote": "Notiz hinzufügen",
     "pasteNote": "Notiz einfügen",
     "selectNotebook": "Wähle eine Notiz, um den Inhalt anzuzeigen",

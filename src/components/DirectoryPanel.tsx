@@ -1,3 +1,5 @@
+import { openNotebookWindow } from '@/utils/noteWindow';
+import { isTauri } from '@/platform/detect';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
@@ -720,6 +722,15 @@ const DirectoryPanel: React.FC = () => {
 
       {contextMenu && (
         <ContextMenuPortal x={contextMenu.x} y={contextMenu.y} onClose={closeContextMenu}>
+          {isNotebook(contextMenu.item) && isTauri() && (
+            <button className="context-menu-item" onClick={() => {
+              const notebook = contextMenu.item as Notebook;
+              closeContextMenu();
+              void openNotebookWindow(notebook);
+            }}>
+              <ExternalLink size={14} /> {t('note.openInWindow')}
+            </button>
+          )}
             <button className="context-menu-item" onClick={() => {
               if (isGroup(contextMenu!.item)) handleRenameGroup(contextMenu!.item as Group);
               else handleRenameNotebook(contextMenu!.item as Notebook);

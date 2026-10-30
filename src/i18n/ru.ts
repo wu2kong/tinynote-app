@@ -660,6 +660,9 @@ export const ruMessages = {
     "importMarkdownFailed": "Не удалось разобрать таблицу Markdown"
   },
   "note": {
+    "openInWindow": "Открыть в отдельном окне",
+    "openWindowFailed": "Не удалось открыть окно заметки",
+    "windowNoteMissing": "Эта заметка больше недоступна.",
     "addNote": "Добавить заметку",
     "pasteNote": "Вставить заметку",
     "selectNotebook": "Выберите заметку, чтобы просмотреть содержимое",

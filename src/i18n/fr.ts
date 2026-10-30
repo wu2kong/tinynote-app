@@ -660,6 +660,9 @@ export const frMessages = {
     "importMarkdownFailed": "Échec de l’analyse du tableau Markdown"
   },
   "note": {
+    "openInWindow": "Ouvrir dans une fenêtre séparée",
+    "openWindowFailed": "Impossible d’ouvrir la fenêtre de la note",
+    "windowNoteMissing": "Cette note n’est plus disponible.",
     "addNote": "Ajouter une note",
     "pasteNote": "Coller une note",
     "selectNotebook": "Sélectionnez une note pour afficher son contenu",

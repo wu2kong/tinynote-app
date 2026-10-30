@@ -660,6 +660,9 @@ export const jaMessages = {
     "importMarkdownFailed": "Markdown 表の解析に失敗しました"
   },
   "note": {
+    "openInWindow": "独立したウィンドウで開く",
+    "openWindowFailed": "ノートのウィンドウを開けませんでした",
+    "windowNoteMissing": "このノートは利用できなくなりました。",
     "addNote": "ノートを追加",
     "pasteNote": "ノートを貼り付け",
     "selectNotebook": "内容を表示するノートを選択してください",

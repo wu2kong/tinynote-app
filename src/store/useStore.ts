@@ -1,3 +1,5 @@
+import { mergeNoteBlockUpdate } from '@/utils/noteBlockUpdates';
+import { listenForNotebookSaves } from '@/utils/notebookEvents';
 import { create } from 'zustand';
 import {
   AppState, Space, Group, Notebook, NoteBlock, ViewMode, ColorThemeId,
@@ -1376,19 +1378,27 @@ export const useStore = create<AppStore>((set, get) => ({
   },
 
   updateNoteBlock: async (id, updates) => {
-    const { currentNotebook } = get();
-    if (!currentNotebook) return;
-    const updatedBlocks = currentNotebook.noteBlocks.map((b) =>
-      b.id === id ? { ...b, ...updates, updatedAt: new Date().toISOString() } : b
-    );
-    const updated = { ...currentNotebook, noteBlocks: updatedBlocks };
-    await fs.saveNotebook(updated);
-    const currentBlock = get().currentNoteBlock;
-    set((state) => withSyncedNotebook(state, updated, {
-      currentNoteBlock: currentBlock?.id === id
-        ? { ...currentBlock, ...updates, updatedAt: new Date().toISOString() }
-        : currentBlock,
-    }));
+    const original = get().currentNotebook;
+    if (!original) return;
+    const save = async () => {
+      const saved = await fs.loadNotebook(original.path);
+      if (!saved || saved.format !== 'blocks') return;
+      const known = get().currentNotebook?.path === original.path ? get().currentNotebook! : original;
+      const blocks = mergeNoteBlockUpdate(saved.noteBlocks, known.noteBlocks, id, updates);
+      if (!blocks) return;
+      const updated = { ...saved, noteBlocks: blocks };
+      await fs.saveNotebook(updated);
+      if (get().currentNotebook?.path !== original.path) return;
+      set((state) => withSyncedNotebook(state, updated, {
+        currentNoteBlock: blocks.find((block) => block.id === state.currentNoteBlock?.id) ?? null,
+      }));
+    };
+    // Web Locks serialize edits from windows sharing the application's origin.
+    if (navigator.locks) {
+      await navigator.locks.request(`notebook:${original.path}`, save);
+    } else {
+      await save();
+    }
   },
 
   updateNotebookContent: async (content, notebookPath) => {
@@ -1717,3 +1727,17 @@ export const useStore = create<AppStore>((set, get) => ({
     await get().selectNotebook(notebook);
   },
 }));
+
+// Keep open editors in sync without writing received snapshots back to disk.
+void listenForNotebookSaves((notebook) => {
+  useStore.setState((state) => {
+    if (state.currentNotebook?.path !== notebook.path) return state;
+    const selected = state.currentNoteBlock;
+    const currentNoteBlock = selected
+      ? notebook.noteBlocks.find((block) => block.id === selected.id)
+        ?? notebook.noteBlocks.find((block) => block.createdAt === selected.createdAt)
+        ?? null
+      : null;
+    return withSyncedNotebook(state, notebook, { currentNoteBlock });
+  });
+}).catch((error) => console.warn('Notebook window synchronization failed:', error));

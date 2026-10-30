@@ -690,6 +690,9 @@ export const zhHansMessages = {
     "importMarkdownFailed": "Markdown 表格解析失败"
   },
   "note": {
+    "openInWindow": "在独立窗口打开",
+    "openWindowFailed": "无法打开笔记窗口",
+    "windowNoteMissing": "此笔记已不存在。",
     "addNote": "添加笔记",
     "pasteNote": "粘贴笔记",
     "selectNotebook": "选择一个笔记以查看内容",

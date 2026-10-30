@@ -660,6 +660,9 @@ export const itMessages = {
     "importMarkdownFailed": "Impossibile analizzare la tabella Markdown"
   },
   "note": {
+    "openInWindow": "Apri in una finestra separata",
+    "openWindowFailed": "Impossibile aprire la finestra della nota",
+    "windowNoteMissing": "Questa nota non è più disponibile.",
     "addNote": "Aggiungi nota",
     "pasteNote": "Incolla nota",
     "selectNotebook": "Seleziona una nota per visualizzarne il contenuto",

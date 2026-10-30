@@ -58,7 +58,7 @@ class EditorAreaErrorBoundary extends Component<
   }
 }
 
-const SourceEditorPanel: React.FC = () => {
+export const SourceEditorPanel: React.FC = () => {
   const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const toggleSourceMode = useStore((s) => s.toggleSourceMode);

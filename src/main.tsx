@@ -2,6 +2,7 @@ import '@/polyfills/nodeBuffer';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import NoteWindow from './components/NoteWindow';
 import { initializePlatform } from '@/platform/init';
 import { isTauri } from '@/platform/detect';
 import { IS_MAC_APP_STORE } from '@/constants/distribution';
@@ -23,7 +24,7 @@ async function bootstrap() {
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-      <App />
+      {new URLSearchParams(window.location.search).has('noteNotebook') ? <NoteWindow /> : <App />}
     </React.StrictMode>,
   );
 
