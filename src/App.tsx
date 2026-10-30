@@ -7,6 +7,7 @@ import PropertyPanel from '@/components/PropertyPanel';
 import MarkdownNotebookPanel from '@/components/MarkdownNotebookPanel';
 import WriterNotebookPanel from '@/components/WriterNotebookPanel';
 import UnsupportedNotebookPanel from '@/components/UnsupportedNotebookPanel';
+import CsvNotebookPanel from '@/components/CsvNotebookPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -312,6 +313,7 @@ const App: React.FC = () => {
   const isMarkdownNotebook = currentNotebook?.format === 'markdown'
     || !!currentNotebook?.compatOpenAsMarkdown;
   const isWriterNotebook = currentNotebook?.format === 'writer';
+  const isCsvNotebook = currentNotebook?.format === 'csv';
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
@@ -326,6 +328,8 @@ const App: React.FC = () => {
       >
         {isUnsupportedNotebook ? (
           <UnsupportedNotebookPanel />
+        ) : isCsvNotebook ? (
+          <CsvNotebookPanel />
         ) : isWriterNotebook ? (
           <WriterNotebookPanel />
         ) : isMarkdownNotebook ? (

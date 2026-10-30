@@ -170,6 +170,7 @@ final stringsZhHant = AppStrings(
   formatBlocks: '塊筆記本',
   formatMarkdown: 'Markdown',
   formatWriter: '文章',
+  formatCsv: '表格 (CSV)',
   formatUnsupported: '未知格式',
   convertToMarkdown: '轉換為 Markdown 筆記',
   convertToWriter: '轉換為文章筆記',
@@ -190,7 +191,7 @@ final stringsZhHant = AppStrings(
   importNotesDesc: '將 Markdown 檔案匯入到目前筆記空間的根目錄。匯入前請閱讀以下規則：',
   importNotesRuleMarkdownOnly: '僅匯入以 .md 結尾的檔案，其他檔案會被忽略。',
   importNotesRuleFormats:
-      '已帶 blk、mk、writer 標記（.blk.md / .mk.md / .writer.md）的檔案會保持原格式。',
+      '已帶 blk、mk、writer、csv 標記（.blk.md / .mk.md / .writer.md / .csv.md）的檔案會保持原格式。',
   importNotesRuleUnmarked:
       '未帶上述標記的普通 .md 檔案會自動轉換為文章筆記（.writer.md）。',
   importNotesRuleTarget:

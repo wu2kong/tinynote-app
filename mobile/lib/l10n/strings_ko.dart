@@ -173,6 +173,7 @@ final stringsKo = AppStrings(
   formatBlocks: '블록 노트',
   formatMarkdown: 'Markdown',
   formatWriter: '글',
+  formatCsv: '표 (CSV)',
   formatUnsupported: '알 수 없는 형식',
   convertToMarkdown: 'Markdown 노트로 변환',
   convertToWriter: '기사 노트로 변환',
@@ -193,7 +194,7 @@ final stringsKo = AppStrings(
   importNotesDesc: 'Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:',
   importNotesRuleMarkdownOnly: '.md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.',
   importNotesRuleFormats:
-      '이미 blk, mk, writer 표시(.blk.md / .mk.md / .writer.md)가 있는 파일은 원래 형식을 유지합니다.',
+      '이미 blk, mk, writer, csv 표시(.blk.md / .mk.md / .writer.md / .csv.md)가 있는 파일은 원래 형식을 유지합니다.',
   importNotesRuleUnmarked:
       '위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.',
   importNotesRuleTarget:

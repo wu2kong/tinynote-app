@@ -226,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final showUnsupportedGate =
         notebook != null &&
-        notebook.format.isUnsupported &&
+        notebook.format.isUnsupportedOnMobile &&
         !notebook.compatOpenAsMarkdown;
     final showDocumentView =
         notebook != null &&

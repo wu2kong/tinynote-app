@@ -11,6 +11,7 @@ import {
   replaceNotebookFormatSuffix,
   resolveNotebookFileName,
 } from './notebookFormat';
+import { createInitialCsvContent } from './csvTable';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 import { isNoteSpaceDirectoryName } from './workspaceConfig';
@@ -254,7 +255,28 @@ export async function createGroup(parentPath: string, name: string): Promise<Gro
   };
 }
 
+function withNumericSuffix(base: string, n: number): string {
+  return n <= 1 ? base : `${base} ${n}`;
+}
+
+export function getDefaultNewNotebookDisplayName(format: NotebookFormatId): string {
+  switch (format) {
+    case 'markdown':
+      return t('directory.defaultNotebookNames.markdown');
+    case 'writer':
+      return t('directory.defaultNotebookNames.writer');
+    case 'csv':
+      return t('directory.defaultNotebookNames.csv');
+    case 'blocks':
+    default:
+      return t('directory.defaultNotebookNames.blocks');
+  }
+}
+
 function initialNotebookContent(format: NotebookFormatId, displayName: string): string {
+  if (format === 'csv') {
+    return createInitialCsvContent();
+  }
   if (format === 'markdown' || format === 'writer') {
     return `# ${displayName}\n\n`;
   }
@@ -268,11 +290,23 @@ export async function createNotebook(
   preferredFormat: NotebookFormatId = 'blocks',
 ): Promise<Notebook> {
   const createFormat = preferredFormat === 'unsupported' ? 'blocks' : preferredFormat;
-  let { fileName, format, displayName } = resolveNotebookFileName(name, createFormat);
-  if (format === 'unsupported') {
-    ({ fileName, format, displayName } = resolveNotebookFileName(displayName, createFormat));
+  const baseDisplayName = name.trim() || getDefaultNewNotebookDisplayName(createFormat);
+  let fileName = '';
+  let format: NotebookFormatId = createFormat;
+  let displayName = baseDisplayName;
+  let filePath = '';
+  for (let attempt = 1; attempt < 1000; attempt++) {
+    const candidateName = withNumericSuffix(baseDisplayName, attempt);
+    let resolved = resolveNotebookFileName(candidateName, createFormat);
+    if (resolved.format === 'unsupported') {
+      resolved = resolveNotebookFileName(resolved.displayName, createFormat);
+    }
+    fileName = resolved.fileName;
+    format = resolved.format;
+    displayName = resolved.displayName;
+    filePath = joinPath(parentPath, fileName);
+    if (!(await storage().exists(filePath))) break;
   }
-  const filePath = joinPath(parentPath, fileName);
   await storage().writeTextFile(filePath, initialNotebookContent(format, displayName));
   const notebook = await loadNotebook(filePath);
   if (!notebook) {

@@ -182,6 +182,7 @@ final stringsEn = AppStrings(
   formatBlocks: 'Block notebook',
   formatMarkdown: 'Markdown',
   formatWriter: 'Article',
+  formatCsv: 'Table (CSV)',
   formatUnsupported: 'Unknown format',
   convertToMarkdown: 'Convert to Markdown note',
   convertToWriter: 'Convert to article note',
@@ -204,7 +205,7 @@ final stringsEn = AppStrings(
   importNotesRuleMarkdownOnly:
       'Only files ending with .md are imported; other files are ignored.',
   importNotesRuleFormats:
-      'Files that already have blk, mk, or writer markers (.blk.md / .mk.md / .writer.md) keep their original format.',
+      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md) keep their original format.',
   importNotesRuleUnmarked:
       'Plain .md files without those markers are converted to article notes (.writer.md).',
   importNotesRuleTarget:

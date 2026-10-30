@@ -186,6 +186,7 @@ final stringsDe = AppStrings(
   formatBlocks: 'Block-Notizbuch',
   formatMarkdown: 'Markdown',
   formatWriter: 'Artikel',
+  formatCsv: 'Tabelle (CSV)',
   formatUnsupported: 'Unbekanntes Format',
   convertToMarkdown: 'In Markdown-Notiz umwandeln',
   convertToWriter: 'In Artikelnotiz umwandeln',
@@ -208,7 +209,7 @@ final stringsDe = AppStrings(
   importNotesRuleMarkdownOnly:
       'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
   importNotesRuleFormats:
-      'Dateien, die bereits blk-, mk- oder writer-Kennzeichen (.blk.md / .mk.md / .writer.md) haben, behalten ihr ursprüngliches Format.',
+      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md) haben, behalten ihr ursprüngliches Format.',
   importNotesRuleUnmarked:
       'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
   importNotesRuleTarget:

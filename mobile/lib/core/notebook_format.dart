@@ -1,4 +1,4 @@
-enum NotebookFormat { blocks, markdown, writer, unsupported }
+enum NotebookFormat { blocks, markdown, writer, csv, unsupported }
 
 class NotebookFormatDef {
   const NotebookFormatDef({
@@ -22,6 +22,7 @@ const notebookFormats = <NotebookFormatDef>[
   ),
   NotebookFormatDef(id: NotebookFormat.markdown, extension: '.mk.md'),
   NotebookFormatDef(id: NotebookFormat.writer, extension: '.writer.md'),
+  NotebookFormatDef(id: NotebookFormat.csv, extension: '.csv.md'),
 ];
 
 class _SuffixMatcher {
@@ -50,6 +51,10 @@ extension NotebookFormatX on NotebookFormat {
       this == NotebookFormat.markdown || this == NotebookFormat.writer;
 
   bool get isUnsupported => this == NotebookFormat.unsupported;
+
+  /// Registered note formats that this mobile app cannot edit yet.
+  bool get isUnsupportedOnMobile =>
+      this == NotebookFormat.unsupported || this == NotebookFormat.csv;
 
   String get extension =>
       (_formatById[this] ?? _formatById[NotebookFormat.blocks]!).extension;
@@ -207,6 +212,10 @@ String buildNotebookFileName(String displayName, NotebookFormat format) {
 }
 
 String initialNotebookContent(NotebookFormat format, String displayName) {
+  if (format == NotebookFormat.csv) {
+    return 'Column 1,Column 2,Column 3\n'
+        ',,\n';
+  }
   if (format.isDocument) {
     return '# $displayName\n\n';
   }

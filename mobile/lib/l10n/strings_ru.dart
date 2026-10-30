@@ -184,6 +184,7 @@ final stringsRu = AppStrings(
   formatBlocks: 'Блочный блокнот',
   formatMarkdown: 'Markdown',
   formatWriter: 'Статья',
+  formatCsv: 'Таблица (CSV)',
   formatUnsupported: 'Неизвестный формат',
   convertToMarkdown: 'Преобразовать в заметку Markdown',
   convertToWriter: 'Преобразовать в заметку-статью',
@@ -206,7 +207,7 @@ final stringsRu = AppStrings(
   importNotesRuleMarkdownOnly:
       'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
   importNotesRuleFormats:
-      'Файлы, у которых уже есть маркеры blk, mk или writer (.blk.md / .mk.md / .writer.md), сохраняют исходный формат.',
+      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md), сохраняют исходный формат.',
   importNotesRuleUnmarked:
       'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
   importNotesRuleTarget:

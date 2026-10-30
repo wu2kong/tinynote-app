@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../constants/app.dart';
+import '../core/notebook_format.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';
@@ -23,7 +24,9 @@ class UnsupportedNotebookView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final s = context.s;
-    final suffix = unknownNotebookFormatSuffix(basename(notebook.path)) ?? '';
+    final suffix = notebook.format == NotebookFormat.csv
+        ? getFormatExtension(NotebookFormat.csv)
+        : (unknownNotebookFormatSuffix(basename(notebook.path)) ?? '');
 
     Future<void> openUpgradePage() async {
       final opened = await openExternalUrl(downloadPageUrl);

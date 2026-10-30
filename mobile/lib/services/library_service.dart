@@ -552,7 +552,7 @@ class LibraryService extends ChangeNotifier {
 
   void openUnsupportedAsMarkdown() {
     final notebook = currentNotebook;
-    if (notebook == null || !notebook.format.isUnsupported) return;
+    if (notebook == null || !notebook.format.isUnsupportedOnMobile) return;
     currentNotebook = notebook.copyWith(compatOpenAsMarkdown: true);
     notifyListeners();
   }

@@ -173,6 +173,7 @@ final stringsJa = AppStrings(
   formatBlocks: 'ブロックノート',
   formatMarkdown: 'Markdown',
   formatWriter: '記事',
+  formatCsv: '表 (CSV)',
   formatUnsupported: '未知の形式',
   convertToMarkdown: 'Markdownノートに変換',
   convertToWriter: '記事ノートに変換',
@@ -193,7 +194,7 @@ final stringsJa = AppStrings(
   importNotesDesc: 'Markdown ファイルを現在のノートスペースのルートに読み込みます。先に以下のルールをご確認ください：',
   importNotesRuleMarkdownOnly: '.md で終わるファイルのみ読み込みます。その他のファイルは無視されます。',
   importNotesRuleFormats:
-      'すでに blk、mk、writer マーカー（.blk.md / .mk.md / .writer.md）があるファイルは元の形式のままです。',
+      'すでに blk、mk、writer、csv マーカー（.blk.md / .mk.md / .writer.md / .csv.md）があるファイルは元の形式のままです。',
   importNotesRuleUnmarked:
       'これらのマーカーがない通常の .md ファイルは記事ノート（.writer.md）に自動変換されます。',
   importNotesRuleTarget:

@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook, NotebookFormatId } from '@/types';
 import {
-  Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, ChevronRight, ChevronDown,
+  Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, Table2, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
@@ -34,7 +34,7 @@ import { FOCUS_DIRECTORY_SEARCH_EVENT } from '@/utils/searchActions';
 import { OPEN_IMPORT_NOTES_EVENT } from '@/utils/workspaceActions';
 import { useI18n } from '@/i18n/useI18n';
 import { FREE_MAX_NOTEBOOKS_PER_SPACE, isArticleNotebookFormat } from '@/constants/pro';
-import { countSpaceNotebooks, NOTEBOOK_TARGET_EXISTS } from '@/utils/fileSystem';
+import { countSpaceNotebooks, getDefaultNewNotebookDisplayName, NOTEBOOK_TARGET_EXISTS } from '@/utils/fileSystem';
 import { getSwappableArticleFormat } from '@/utils/notebookFormat';
 import { useLicenseStore } from '@/store/useLicenseStore';
 
@@ -85,6 +85,7 @@ function findParentAndIndices(
 function NotebookTreeIcon({ format }: { format: NotebookFormatId }) {
   if (format === 'markdown') return <FileCode size={14} className="tree-file-icon" />;
   if (format === 'writer') return <PenLine size={14} className="tree-file-icon" />;
+  if (format === 'csv') return <Table2 size={14} className="tree-file-icon" />;
   if (format === 'unsupported') return <FileQuestion size={14} className="tree-file-icon" />;
   return <FileText size={14} className="tree-file-icon" />;
 }
@@ -220,6 +221,7 @@ const DirectoryPanel: React.FC = () => {
   const toggleExpandedGroupPath = useStore((s) => s.toggleExpandedGroupPath);
   const addGroup = useStore((s) => s.addGroup);
   const addNotebook = useStore((s) => s.addNotebook);
+  const revealNotebook = useStore((s) => s.revealNotebook);
   const duplicateNotebook = useStore((s) => s.duplicateNotebook);
   const storeDeleteGroup = useStore((s) => s.deleteGroup);
   const storeDeleteNotebook = useStore((s) => s.deleteNotebook);
@@ -458,7 +460,7 @@ const DirectoryPanel: React.FC = () => {
     setBlankContextMenu({ x: e.clientX, y: e.clientY });
   }, [closeContextMenu]);
 
-  const handleAddNotebookModal = useCallback((parentPath: string, format: NotebookFormatId = 'blocks') => {
+  const handleCreateNotebook = useCallback((parentPath: string, format: NotebookFormatId = 'blocks') => {
     if (!isPro && isArticleNotebookFormat(format)) {
       openGate('articleNotebook', { parentPath, format });
       return;
@@ -467,20 +469,11 @@ const DirectoryPanel: React.FC = () => {
       openGate('notebookLimit');
       return;
     }
-    const title = format === 'markdown'
-      ? t('directory.newMarkdownNotebook')
-      : format === 'writer'
-        ? t('directory.newWriterNotebook')
-        : t('directory.newNotebook');
-    setModalState({
-      open: true,
-      title,
-      placeholder: t('directory.notebookName'),
-      defaultValue: '',
-      confirmLabel: t('common.create'),
-      onSubmit: (name) => { void addNotebook(parentPath, name, format); setModalState((p) => ({ ...p, open: false })); },
+    const defaultName = getDefaultNewNotebookDisplayName(format);
+    void addNotebook(parentPath, defaultName, format).then((notebook) => {
+      if (notebook) void revealNotebook(notebook);
     });
-  }, [addNotebook, isPro, notebookLimitReached, openGate, t]);
+  }, [addNotebook, isPro, notebookLimitReached, openGate, revealNotebook]);
 
   const handleAddGroup = (parentPath: string) => {
     setModalState({
@@ -597,7 +590,7 @@ const DirectoryPanel: React.FC = () => {
               <span className="tree-name" title={group.name}>{group.name}</span>
               <button
                 className="tree-item-action"
-                onClick={(e) => { e.stopPropagation(); handleAddNotebookModal(group.path); }}
+                onClick={(e) => { e.stopPropagation(); handleCreateNotebook(group.path); }}
                 title={t('directory.newNotebook')}
               >
                 <Plus size={12} />
@@ -709,7 +702,7 @@ const DirectoryPanel: React.FC = () => {
                     onPointerDown={handlePointerDown}
                     onClick={handleClick}
                     onContextMenu={handleContextMenu}
-                    onAddNotebook={handleAddNotebookModal}
+                    onAddNotebook={handleCreateNotebook}
                     isDragOverMove={dropTarget === item.path}
                     isDraggingMove={dragItem?.path === item.path}
                     currentGroupPath={currentGroup?.path ?? null}
@@ -770,14 +763,17 @@ const DirectoryPanel: React.FC = () => {
             )}
             {isGroup(contextMenu.item) && (
               <>
-                <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path); closeContextMenu(); }}>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FilePlus size={14} />{t('directory.newNotebook')}
                 </button>
-                <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'markdown'); closeContextMenu(); }}>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'markdown'); closeContextMenu(); }}>
                   <FileCode size={14} />{t('directory.newMarkdownNotebook')}
                 </button>
-                <button className="context-menu-item" onClick={() => { handleAddNotebookModal((contextMenu.item as Group).path, 'writer'); closeContextMenu(); }}>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'writer'); closeContextMenu(); }}>
                   <PenLine size={14} />{t('directory.newWriterNotebook')}
+                </button>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'csv'); closeContextMenu(); }}>
+                  <Table2 size={14} />{t('directory.newCsvNotebook')}
                 </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
@@ -832,14 +828,17 @@ const DirectoryPanel: React.FC = () => {
 
       {blankContextMenu && currentSpace && (
         <ContextMenuPortal x={blankContextMenu.x} y={blankContextMenu.y} onClose={closeContextMenu}>
-          <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path); closeContextMenu(); }}>
+          <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path); closeContextMenu(); }}>
               <FilePlus size={14} />{t('directory.newNotebook')}
             </button>
-            <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'markdown'); closeContextMenu(); }}>
+            <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'markdown'); closeContextMenu(); }}>
               <FileCode size={14} />{t('directory.newMarkdownNotebook')}
             </button>
-            <button className="context-menu-item" onClick={() => { handleAddNotebookModal(currentSpace.path, 'writer'); closeContextMenu(); }}>
+            <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'writer'); closeContextMenu(); }}>
               <PenLine size={14} />{t('directory.newWriterNotebook')}
+            </button>
+            <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'csv'); closeContextMenu(); }}>
+              <Table2 size={14} />{t('directory.newCsvNotebook')}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}

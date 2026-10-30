@@ -7,6 +7,7 @@ void main() {
       expect(detectNotebookFormat('a.writer.md'), NotebookFormat.writer);
       expect(detectNotebookFormat('a.mk.md'), NotebookFormat.markdown);
       expect(detectNotebookFormat('a.blk.md'), NotebookFormat.blocks);
+      expect(detectNotebookFormat('a.csv.md'), NotebookFormat.csv);
       expect(detectNotebookFormat('a.md'), NotebookFormat.blocks);
       expect(detectNotebookFormat('A.WRITER.MD'), NotebookFormat.writer);
       expect(detectNotebookFormat('map.treemind.md'), NotebookFormat.unsupported);
@@ -18,6 +19,7 @@ void main() {
     test('returns compound suffix only for unregistered formats', () {
       expect(unknownNotebookFormatSuffix('map.treemind.md'), '.treemind.md');
       expect(unknownNotebookFormatSuffix('Guide.mk.md'), isNull);
+      expect(unknownNotebookFormatSuffix('Sheet.csv.md'), isNull);
       expect(unknownNotebookFormatSuffix('Legacy.md'), isNull);
     });
   });
@@ -100,6 +102,8 @@ void main() {
     expect(NotebookFormat.blocks.isDocument, isFalse);
     expect(NotebookFormat.unsupported.isDocument, isFalse);
     expect(NotebookFormat.unsupported.isUnsupported, isTrue);
+    expect(NotebookFormat.csv.isUnsupported, isFalse);
+    expect(NotebookFormat.csv.isUnsupportedOnMobile, isTrue);
   });
 
   test('plain .md becomes writer, marked files stay', () {
@@ -126,6 +130,11 @@ void main() {
       'map.treemind.md',
     );
     expect(resolveImportedNotebookFileName('map.treemind.md').converted, isFalse);
+    expect(
+      resolveImportedNotebookFileName('budget.csv.md').fileName,
+      'budget.csv.md',
+    );
+    expect(resolveImportedNotebookFileName('budget.csv.md').converted, isFalse);
   });
 
   test('rename keeps an unknown future format suffix', () {

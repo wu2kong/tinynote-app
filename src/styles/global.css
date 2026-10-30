@@ -2492,6 +2492,506 @@ body.directory-panel-resizing {
   transition: background var(--transition);
 }
 
+.csv-notebook-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+  transition: background var(--transition);
+}
+
+.csv-notebook-empty {
+  text-align: center;
+  color: var(--text-tertiary);
+  padding: 40px 20px;
+  font-size: 13px;
+}
+
+.csv-notebook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.csv-notebook-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.csv-notebook-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.csv-notebook-title-wrap h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.csv-notebook-format-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.csv-notebook-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.csv-notebook-toolbar .btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.csv-layout-menu-wrap {
+  position: relative;
+}
+
+.csv-layout-menu-trigger .csv-layout-menu-chevron {
+  opacity: 0.7;
+  transition: transform var(--transition);
+}
+
+.csv-layout-menu-trigger.open .csv-layout-menu-chevron {
+  transform: rotate(180deg);
+}
+
+.csv-layout-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  min-width: 180px;
+  padding: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.12));
+}
+
+.csv-layout-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.csv-layout-menu-item:hover {
+  background: var(--bg-secondary);
+}
+
+.csv-layout-menu-item input {
+  margin: 0;
+  accent-color: var(--accent-color, #3b82f6);
+}
+
+.csv-layout-menu-divider {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--border-color);
+}
+
+.csv-layout-menu-action {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.csv-layout-menu-action:hover {
+  background: var(--bg-secondary);
+}
+
+.modal-textarea {
+  width: 100%;
+  min-height: 220px;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+
+.csv-markdown-import-modal {
+  width: min(640px, calc(100vw - 32px));
+}
+
+.csv-notebook-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px 14px;
+}
+
+.csv-table-scroll {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+}
+
+.csv-table {
+  border-collapse: collapse;
+}
+
+.csv-table-equal-cols {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.csv-table-adaptive-cols {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+.csv-table-custom-col-widths {
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.csv-notebook-col-resizing .csv-table-scroll {
+  user-select: none;
+  cursor: col-resize;
+}
+
+.csv-table-col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 3;
+}
+
+.csv-table-col-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 16%;
+  bottom: 16%;
+  left: 3px;
+  width: 1px;
+  background: var(--border-color);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.csv-table-col-header:hover .csv-table-col-resize-handle::after,
+.csv-notebook-col-resizing .csv-table-col-resize-handle::after {
+  opacity: 1;
+}
+
+.csv-table td .csv-table-col-resize-handle {
+  z-index: 4;
+}
+
+.csv-table col.csv-table-corner-col {
+  width: 44px;
+}
+
+.csv-table th,
+.csv-table td {
+  border: 1px solid var(--border-color);
+  padding: 0;
+  vertical-align: middle;
+}
+
+.csv-table td {
+  position: relative;
+}
+
+.csv-table-corner {
+  width: 44px;
+  min-width: 44px;
+  background: var(--bg-tertiary);
+  position: sticky;
+  left: 0;
+  z-index: 3;
+}
+
+.csv-table-col-header,
+.csv-table-row-header {
+  background: var(--bg-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.csv-table-adaptive-cols .csv-table-col-header {
+  min-width: 120px;
+}
+
+.csv-table-col-header:active,
+.csv-table-row-header:active {
+  cursor: grabbing;
+}
+
+.csv-notebook-axis-dragging .csv-table-scroll {
+  user-select: none;
+}
+
+.csv-table-header-long-press {
+  box-shadow: inset 0 0 0 2px var(--accent-color, #3b82f6);
+  color: var(--text-primary);
+}
+
+.csv-table-axis-source {
+  opacity: 0.55;
+}
+
+.csv-table-col-header.csv-table-axis-drop-target::before,
+.csv-table td.csv-table-col-drop-target::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--accent-color, #3b82f6);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.csv-table td.csv-table-col-drop-target,
+.csv-table td.csv-table-col-source {
+  position: relative;
+}
+
+.csv-table td.csv-table-col-drop-target {
+  background: color-mix(in srgb, var(--accent-color, #3b82f6) 12%, var(--bg-secondary));
+}
+
+.csv-table-row-source {
+  opacity: 0.55;
+}
+
+.csv-table tr.csv-table-row-drop-target > th,
+.csv-table tr.csv-table-row-drop-target > td {
+  box-shadow: inset 0 3px 0 0 var(--accent-color, #3b82f6);
+}
+
+.csv-table tr.csv-table-row-drop-target > td,
+.csv-table tr.csv-table-row-drop-target > .csv-table-row-header {
+  background: color-mix(in srgb, var(--accent-color, #3b82f6) 12%, var(--bg-secondary));
+}
+
+.csv-table-row-header {
+  width: 44px;
+  min-width: 44px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.csv-table-col-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.csv-table-col-header:first-of-type {
+  z-index: 4;
+}
+
+/* First data row / column treated as title row & column when freeze is enabled */
+.csv-table-freeze-header-row .csv-table-title-row-cell {
+  position: sticky;
+  z-index: 2;
+  background: var(--bg-tertiary);
+}
+
+.csv-table-freeze-header-row:not(.csv-table-has-col-headers) .csv-table-title-row-cell {
+  top: 0;
+}
+
+.csv-table-freeze-header-row.csv-table-has-col-headers .csv-table-title-row-cell {
+  top: var(--csv-col-header-height, 29px);
+}
+
+.csv-table-freeze-header-row .csv-table-title-row-cell.csv-table-row-header {
+  z-index: 5;
+}
+
+.csv-table-freeze-header-col .csv-table-title-col-cell {
+  position: sticky;
+  z-index: 2;
+  background: var(--bg-tertiary);
+}
+
+.csv-table-freeze-header-col:not(.csv-table-has-row-numbers) .csv-table-title-col-cell {
+  left: 0;
+}
+
+.csv-table-freeze-header-col.csv-table-has-row-numbers .csv-table-title-col-cell:not(.csv-table-row-header) {
+  left: 44px;
+}
+
+.csv-table-freeze-header-col.csv-table-has-row-numbers .csv-table-title-col-cell.csv-table-row-header {
+  left: 0;
+}
+
+.csv-table-freeze-header-row.csv-table-freeze-header-col .csv-table-title-row-cell.csv-table-title-col-cell {
+  z-index: 6;
+}
+
+.csv-table-freeze-header-row td.csv-table-title-row-cell .csv-table-cell-input,
+.csv-table-freeze-header-col td.csv-table-title-col-cell .csv-table-cell-input,
+.csv-table-freeze-header-row td.csv-table-title-row-cell .csv-table-cell-link-preview,
+.csv-table-freeze-header-col td.csv-table-title-col-cell .csv-table-cell-link-preview {
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.csv-table-freeze-header-row td.csv-table-title-row-cell .csv-table-cell-input:focus,
+.csv-table-freeze-header-col td.csv-table-title-col-cell .csv-table-cell-input:focus {
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+.csv-table-freeze-header-row td.csv-table-title-row-cell .csv-table-cell-link,
+.csv-table-freeze-header-col td.csv-table-title-col-cell .csv-table-cell-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.csv-table-col-label,
+.csv-table-row-label {
+  display: block;
+  padding: 6px 4px;
+  user-select: none;
+}
+
+.csv-table-cell-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 8px 10px;
+  outline: none;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.csv-table-equal-rows:not(.csv-table-adaptive-rows) tbody tr {
+  height: var(--csv-table-row-height, 40px);
+}
+
+.csv-table-equal-rows:not(.csv-table-adaptive-rows) .csv-table-cell-input {
+  height: var(--csv-table-row-height, 40px);
+  min-height: var(--csv-table-row-height, 40px);
+  max-height: var(--csv-table-row-height, 40px);
+  overflow: auto;
+  field-sizing: fixed;
+}
+
+.csv-table-equal-cols .csv-table-cell-input {
+  min-width: 0;
+}
+
+.csv-table-adaptive-cols .csv-table-cell-input {
+  min-width: 120px;
+  width: auto;
+}
+
+.csv-table-adaptive-rows .csv-table-cell-input {
+  height: auto;
+  min-height: 36px;
+  max-height: none;
+  overflow: hidden;
+  field-sizing: content;
+}
+
+.csv-table-cell-input:focus {
+  background: var(--bg-primary);
+  box-shadow: inset 0 0 0 2px var(--accent-color, #3b82f6);
+}
+
+.csv-table-cell-link-preview {
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-primary);
+  cursor: text;
+}
+
+.csv-table-equal-rows:not(.csv-table-adaptive-rows) .csv-table-cell-link-preview {
+  height: var(--csv-table-row-height, 40px);
+  min-height: var(--csv-table-row-height, 40px);
+  max-height: var(--csv-table-row-height, 40px);
+  overflow: auto;
+}
+
+.csv-table-adaptive-rows .csv-table-cell-link-preview {
+  min-height: 36px;
+}
+
+.csv-table-cell-link {
+  color: var(--accent-color, #3b82f6);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.csv-table-cell-link:hover {
+  opacity: 0.85;
+}
+
 .writer-notebook-panel {
   flex: 1;
   min-width: 0;
@@ -2820,35 +3320,47 @@ body.directory-panel-resizing {
   padding: 2px 6px;
 }
 
-.markdown-notebook-mode-select-wrap {
-  position: relative;
+.markdown-notebook-mode-toggle {
+  display: inline-flex;
   flex-shrink: 0;
-}
-
-.markdown-notebook-mode-measure {
-  position: absolute;
-  visibility: hidden;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.markdown-notebook-mode-select {
-  height: 28px;
-  padding: 0 22px 0 8px;
-  font-size: 12px;
-  color: var(--text-primary);
-  background: var(--bg-primary);
+  max-width: 100%;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  cursor: pointer;
+  overflow: hidden;
 }
 
-.markdown-notebook-mode-select:focus {
-  border-color: var(--accent);
+.markdown-notebook-mode-toggle button {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  border: none;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.markdown-notebook-mode-toggle button:last-child {
+  border-right: none;
+}
+
+.markdown-notebook-mode-toggle button:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.markdown-notebook-mode-toggle button.active {
+  background: var(--accent);
+  color: var(--accent-text, #fff);
+}
+
+.markdown-notebook-mode-toggle button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 1;
 }
 
 .markdown-notebook-body {

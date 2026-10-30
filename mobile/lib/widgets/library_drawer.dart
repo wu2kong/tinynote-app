@@ -398,6 +398,7 @@ class LibraryDrawer extends StatelessWidget {
       NotebookFormat.blocks => s.createNotebook,
       NotebookFormat.markdown => s.createMarkdownNotebook,
       NotebookFormat.writer => s.createWriterNotebook,
+      NotebookFormat.csv => s.createNotebook,
       NotebookFormat.unsupported => s.createNotebook,
     };
     final name = await showNamePromptDialog(
@@ -1128,6 +1129,7 @@ IconData _notebookIcon(NotebookFormat format) {
     NotebookFormat.blocks => LucideIcons.boxes,
     NotebookFormat.markdown => LucideIcons.fileCode,
     NotebookFormat.writer => LucideIcons.penLine,
+    NotebookFormat.csv => LucideIcons.table2,
     NotebookFormat.unsupported => LucideIcons.circleAlert,
   };
 }

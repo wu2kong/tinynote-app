@@ -1,4 +1,4 @@
-export type RegisteredNotebookFormatId = 'blocks' | 'markdown' | 'writer';
+export type RegisteredNotebookFormatId = 'blocks' | 'markdown' | 'writer' | 'csv';
 export type NotebookFormatId = RegisteredNotebookFormatId | 'unsupported';
 
 export interface NotebookFormatDef {
@@ -19,6 +19,7 @@ export const NOTEBOOK_FORMATS: readonly NotebookFormatDef[] = [
   { id: 'blocks', extension: '.blk.md', aliases: ['.md'], labelKey: 'directory.formats.blocks' },
   { id: 'markdown', extension: '.mk.md', labelKey: 'directory.formats.markdown' },
   { id: 'writer', extension: '.writer.md', labelKey: 'directory.formats.writer' },
+  { id: 'csv', extension: '.csv.md', labelKey: 'directory.formats.csv' },
 ] as const;
 
 const FORMAT_BY_ID = Object.fromEntries(
@@ -95,7 +96,7 @@ export function getNotebookDisplayName(fileName: string): string {
 }
 
 export function isDocumentNotebookFormat(format: NotebookFormatId): boolean {
-  return format === 'markdown' || format === 'writer';
+  return format === 'markdown' || format === 'writer' || format === 'csv';
 }
 
 export function isUnsupportedNotebookFormat(format: NotebookFormatId): boolean {

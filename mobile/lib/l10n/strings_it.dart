@@ -185,6 +185,7 @@ final stringsIt = AppStrings(
   formatBlocks: 'Taccuino a blocchi',
   formatMarkdown: 'Markdown',
   formatWriter: 'Articolo',
+  formatCsv: 'Tabella (CSV)',
   formatUnsupported: 'Formato sconosciuto',
   convertToMarkdown: 'Converti in nota Markdown',
   convertToWriter: 'Converti in nota articolo',
@@ -207,7 +208,7 @@ final stringsIt = AppStrings(
   importNotesRuleMarkdownOnly:
       'Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.',
   importNotesRuleFormats:
-      'I file che hanno già i marcatori blk, mk o writer (.blk.md / .mk.md / .writer.md) mantengono il formato originale.',
+      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md) mantengono il formato originale.',
   importNotesRuleUnmarked:
       'I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).',
   importNotesRuleTarget:

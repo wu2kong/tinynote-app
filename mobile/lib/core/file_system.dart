@@ -122,7 +122,7 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
-      if (format.isUnsupported) {
+      if (format.isUnsupportedOnMobile) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,
@@ -168,7 +168,7 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
-    if (notebook.format.isUnsupported && !notebook.compatOpenAsMarkdown) {
+    if (notebook.format.isUnsupportedOnMobile && !notebook.compatOpenAsMarkdown) {
       return;
     }
     if (shouldSaveAsDocument(
@@ -224,7 +224,7 @@ class FileSystemService {
           ? NotebookFormat.blocks
           : format,
     );
-    if (resolved.format.isUnsupported) {
+    if (resolved.format == NotebookFormat.unsupported) {
       resolved = resolveNotebookFileName(
         resolved.displayName,
         preferredFormat: format == NotebookFormat.unsupported

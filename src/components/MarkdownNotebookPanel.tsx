@@ -28,14 +28,11 @@ const MarkdownNotebookPanel: React.FC = () => {
   const updateNotebookContent = useStore((s) => s.updateNotebookContent);
 
   const [localContent, setLocalContent] = useState('');
-  const [viewMode, setViewMode] = useState<MarkdownViewMode>('split');
-  const [modeSelectWidth, setModeSelectWidth] = useState<number | undefined>(undefined);
+  const [viewMode, setViewMode] = useState<MarkdownViewMode>('edit');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notebookPathRef = useRef<string | null>(null);
   const localContentRef = useRef(localContent);
   localContentRef.current = localContent;
-  const modeSelectRef = useRef<HTMLSelectElement>(null);
-  const modeMeasureRef = useRef<HTMLSpanElement>(null);
   const updateNotebookContentRef = useRef(updateNotebookContent);
   updateNotebookContentRef.current = updateNotebookContent;
 
@@ -56,6 +53,7 @@ const MarkdownNotebookPanel: React.FC = () => {
     if (notebookPathRef.current !== currentNotebook.path) {
       notebookPathRef.current = currentNotebook.path;
       setLocalContent(currentNotebook.content ?? '');
+      setViewMode('edit');
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -72,22 +70,6 @@ const MarkdownNotebookPanel: React.FC = () => {
   useEffect(() => () => {
     void flushPendingSaveRef.current();
   }, [currentNotebook?.path]);
-
-  useEffect(() => {
-    const measure = modeMeasureRef.current;
-    const select = modeSelectRef.current;
-    if (!measure || !select) return;
-    const label = t(VIEW_MODE_OPTIONS.find((option) => option.value === viewMode)?.labelKey ?? 'editor.viewModes.split');
-    measure.textContent = label;
-    const styles = window.getComputedStyle(select);
-    measure.style.font = styles.font;
-    measure.style.letterSpacing = styles.letterSpacing;
-    const paddingLeft = Number.parseFloat(styles.paddingLeft) || 0;
-    const paddingRight = Number.parseFloat(styles.paddingRight) || 0;
-    const borderLeft = Number.parseFloat(styles.borderLeftWidth) || 0;
-    const borderRight = Number.parseFloat(styles.borderRightWidth) || 0;
-    setModeSelectWidth(Math.ceil(measure.offsetWidth + paddingLeft + paddingRight + borderLeft + borderRight + 2));
-  }, [viewMode, t]);
 
   const extensions = useMemo(() => getMarkdownNotebookExtensions(), []);
 
@@ -132,23 +114,24 @@ const MarkdownNotebookPanel: React.FC = () => {
             </span>
           </div>
         </div>
-        <label className="markdown-notebook-mode-select-wrap">
-          <span className="sr-only">{t('editor.viewMode')}</span>
-          <span ref={modeMeasureRef} className="markdown-notebook-mode-measure" aria-hidden="true" />
-          <select
-            ref={modeSelectRef}
-            className="markdown-notebook-mode-select"
-            value={viewMode}
-            onChange={(e) => setViewMode(e.target.value as MarkdownViewMode)}
-            aria-label={t('editor.viewMode')}
-            title={t('editor.viewMode')}
-            style={modeSelectWidth ? { width: modeSelectWidth } : undefined}
-          >
-            {VIEW_MODE_OPTIONS.map(({ value, labelKey }) => (
-              <option key={value} value={value}>{t(labelKey)}</option>
-            ))}
-          </select>
-        </label>
+        <div
+          className="markdown-notebook-mode-toggle"
+          role="group"
+          aria-label={t('editor.viewMode')}
+        >
+          {VIEW_MODE_OPTIONS.map(({ value, labelKey }) => (
+            <button
+              key={value}
+              type="button"
+              className={viewMode === value ? 'active' : undefined}
+              onClick={() => setViewMode(value)}
+              aria-pressed={viewMode === value}
+              title={t(labelKey)}
+            >
+              {t(labelKey)}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className={`markdown-notebook-body mode-${viewMode}`}>

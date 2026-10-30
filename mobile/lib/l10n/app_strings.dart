@@ -170,6 +170,7 @@ class AppStrings {
     required this.formatBlocks,
     required this.formatMarkdown,
     required this.formatWriter,
+    required this.formatCsv,
     required this.formatUnsupported,
     required this.convertToMarkdown,
     required this.convertToWriter,
@@ -474,6 +475,7 @@ class AppStrings {
   final String formatBlocks;
   final String formatMarkdown;
   final String formatWriter;
+  final String formatCsv;
   final String formatUnsupported;
   final String convertToMarkdown;
   final String convertToWriter;
@@ -614,6 +616,7 @@ class AppStrings {
       NotebookFormat.blocks => formatBlocks,
       NotebookFormat.markdown => formatMarkdown,
       NotebookFormat.writer => formatWriter,
+      NotebookFormat.csv => formatCsv,
       NotebookFormat.unsupported => formatUnsupported,
     };
   }
