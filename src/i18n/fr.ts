@@ -25,6 +25,7 @@ export const frMessages = {
     "none": "Aucun"
   },
   "pro": {
+    "externalCheckout": "L’achat ouvre notre site dans votre navigateur. Dodo Payments traite le paiement. Vérifiez le prix et les conditions avant de payer, puis revenez ici pour activer votre clé de licence. Les licences déjà achetées sur notre site sont également acceptées.",
     "badge": "Pro",
     "planFree": "Gratuit",
     "license": "Licence",

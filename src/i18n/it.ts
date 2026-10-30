@@ -25,6 +25,7 @@ export const itMessages = {
     "none": "Nessuno"
   },
   "pro": {
+    "externalCheckout": "L’acquisto apre il nostro sito nel browser. Il pagamento è gestito da Dodo Payments. Verifica il prezzo e le condizioni prima di pagare, poi torna qui per attivare la chiave di licenza. Sono supportate anche le licenze già acquistate sul sito.",
     "badge": "Pro",
     "planFree": "Gratuito",
     "license": "Licenza",

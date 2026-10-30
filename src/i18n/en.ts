@@ -25,6 +25,7 @@ export const enMessages = {
     "none": "None"
   },
   "pro": {
+    "externalCheckout": "Purchase opens our website in your browser. Dodo Payments handles checkout; review the price and purchase terms before paying. Return here to activate your license key. Existing website licenses are supported.",
     "badge": "Pro",
     "planFree": "Free",
     "license": "License",

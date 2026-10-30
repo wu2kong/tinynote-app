@@ -17,7 +17,7 @@ import SyncSettings from './sync/SyncSettings';
 import { showToast } from './Toast';
 import { useI18n, type AppLocale } from '@/i18n/useI18n';
 import { useLicenseStore } from '@/store/useLicenseStore';
-import { IS_MAC_APP_STORE } from '@/constants/distribution';
+import { IS_MAC_APP_STORE, USES_STORE_UPDATES } from '@/constants/distribution';
 import { AppStorePurchaseControls } from './AppStorePurchaseControls';
 
 type SettingsModule = 'general' | 'ai' | 'data' | 'sampleLibrary' | 'shortcuts' | 'backup' | 'sync' | 'pro' | 'feedback' | 'about';
@@ -598,6 +598,7 @@ const LicenseSettings: React.FC = () => {
         </div>
       ) : (
         <div className="pro-settings-activate">
+          <p className="settings-row-desc">{t('pro.externalCheckout')}</p>
           <input
             className="pro-activate-input"
             value={licenseKey}
@@ -871,7 +872,7 @@ const AboutSettings: React.FC = () => {
           <div className="settings-about-name">TinyNote</div>
           <div className="settings-about-version-row">
             <div className="settings-about-version">{t('settings.about.version', { version: version || '...' })}</div>
-            {!IS_MAC_APP_STORE && <button
+            {!USES_STORE_UPDATES && <button
               type="button"
               className={`settings-about-check${checking ? ' is-loading' : ''}`}
               onClick={(event) => {
@@ -889,7 +890,7 @@ const AboutSettings: React.FC = () => {
         </div>
       </div>
 
-      {!IS_MAC_APP_STORE && <div className="settings-about-update">
+      {!USES_STORE_UPDATES && <div className="settings-about-update">
         {updateInfo && (
           <div className="settings-update-actions">
             <button
@@ -994,7 +995,7 @@ const AboutSettings: React.FC = () => {
         </>
       )}
 
-      {!IS_MAC_APP_STORE && <div className="settings-row settings-row-vertical">
+      {!USES_STORE_UPDATES && <div className="settings-row settings-row-vertical">
         <div className="settings-row-info">
           <span className="settings-row-label">{t('settings.about.downloadPages')}</span>
           <span className="settings-row-desc">{t('settings.about.downloadPagesDesc')}</span>

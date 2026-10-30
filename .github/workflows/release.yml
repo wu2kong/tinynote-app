@@ -57,17 +57,58 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      # Opt in only after Azure Public Trust identity validation is complete.
+      - name: Prepare Azure Artifact Signing
+        id: azure-signing
+        if: runner.os == 'Windows' && vars.AZURE_ARTIFACT_SIGNING_ENABLED == 'true'
+        shell: pwsh
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          SIGNING_ENDPOINT: ${{ vars.AZURE_ARTIFACT_SIGNING_ENDPOINT }}
+          SIGNING_ACCOUNT: ${{ vars.AZURE_ARTIFACT_SIGNING_ACCOUNT }}
+          SIGNING_PROFILE: ${{ vars.AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($name in @('AZURE_CLIENT_ID', 'AZURE_CLIENT_SECRET', 'AZURE_TENANT_ID', 'SIGNING_ENDPOINT', 'SIGNING_ACCOUNT', 'SIGNING_PROFILE')) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+              throw "Azure signing is enabled but $name is missing. See docs/WINDOWS_SIGNING.md."
+            }
+          }
+          if ($env:SIGNING_ENDPOINT -notmatch '^https://[a-z0-9-]+\.codesigning\.azure\.net/?$') {
+            throw 'Use the HTTPS endpoint shown in your Azure Artifact Signing account.'
+          }
+          cargo install artifact-signing-cli --version 0.11.0 --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Could not install artifact-signing-cli.' }
+          $config = @{
+            bundle = @{
+              windows = @{
+                signCommand = @{
+                  cmd = 'artifact-signing-cli'
+                  args = @('-e', $env:SIGNING_ENDPOINT, '-a', $env:SIGNING_ACCOUNT, '-c', $env:SIGNING_PROFILE, '-d', 'TinyNote', '%1')
+                }
+              }
+            }
+          }
+          $configPath = Join-Path $env:RUNNER_TEMP 'tauri.azure-signing.json'
+          $config | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 $configPath
+          "args=--config `"$configPath`"" >> $env:GITHUB_OUTPUT
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AZURE_CLIENT_ID: ${{ runner.os == 'Windows' && vars.AZURE_ARTIFACT_SIGNING_ENABLED == 'true' && secrets.AZURE_CLIENT_ID || '' }}
+          AZURE_CLIENT_SECRET: ${{ runner.os == 'Windows' && vars.AZURE_ARTIFACT_SIGNING_ENABLED == 'true' && secrets.AZURE_CLIENT_SECRET || '' }}
+          AZURE_TENANT_ID: ${{ runner.os == 'Windows' && vars.AZURE_ARTIFACT_SIGNING_ENABLED == 'true' && secrets.AZURE_TENANT_ID || '' }}
         with:
           tagName: ${{ github.event.release.tag_name }}
           releaseName: ${{ github.event.release.name }}
           releaseBody: ${{ github.event.release.body }}
           releaseDraft: false
           prerelease: ${{ github.event.release.prerelease }}
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }} ${{ steps.azure-signing.outputs.args }}
 
   appcast:
     needs: build

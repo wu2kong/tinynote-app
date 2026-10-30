@@ -25,6 +25,7 @@ export const zhHansMessages = {
     "none": "无"
   },
   "pro": {
+    "externalCheckout": "购买将在浏览器中打开官网，由 Dodo Payments 处理付款。请在付款前确认价格和购买条款，购买后返回此处激活许可证；官网已购许可证也可使用。",
     "badge": "高级版",
     "planFree": "基础版",
     "license": "许可证",

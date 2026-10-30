@@ -68,6 +68,9 @@ fn save_store(path: &Path, store: &BookmarkStore) -> Result<(), String> {
 }
 
 thread_local! {
+    // Same-thread reentrancy only. PathAllowed handlers run on another thread
+    // (we spawn to avoid deadlocking Tauri's listener mutex), so this flag
+    // cannot stop a PathAllowed → allow_directory → PathAllowed loop.
     static ALLOWING_DIRECTORY: Cell<bool> = const { Cell::new(false) };
 }
 
@@ -179,19 +182,24 @@ mod macos {
         app: &AppHandle<R>,
         url: Retained<NSURL>,
         from_panel: bool,
+        allow_scope: bool,
     ) -> Result<String, String> {
         let path = normalize_fs_path(&resolved_path(&url).ok_or_else(|| "empty path".to_string())?);
         if path.is_empty() {
             return Err("empty path".to_string());
         }
         if !mark_persisted(&path, from_panel) {
-            allow_directory(app, &path);
+            // Already persisted. Never call allow_directory again: Tauri emits
+            // PathAllowed on every allow_directory, which would retrigger this
+            // path and spin CPU + fseventsd in sandboxed TestFlight/MAS builds.
             return Ok(path);
         }
 
         let started = start_accessing(&url);
         hold(path.clone(), Retained::clone(&url));
-        allow_directory(app, &path);
+        if allow_scope {
+            allow_directory(app, &path);
+        }
 
         if !use_security_bookmarks() {
             return Ok(path);
@@ -220,15 +228,34 @@ mod macos {
     }
 
     pub fn persist_path<R: Runtime>(app: &AppHandle<R>, raw_path: &str) -> Result<(), String> {
+        persist_path_with_scope(app, raw_path, true)
+    }
+
+    /// Persist a bookmark for a path that is already in the FS scope.
+    /// Must not call `allow_directory`: that re-emits `PathAllowed`.
+    pub fn persist_bookmark_for_allowed_path<R: Runtime>(
+        app: &AppHandle<R>,
+        raw_path: &str,
+    ) -> Result<(), String> {
+        persist_path_with_scope(app, raw_path, false)
+    }
+
+    fn persist_path_with_scope<R: Runtime>(
+        app: &AppHandle<R>,
+        raw_path: &str,
+        allow_scope: bool,
+    ) -> Result<(), String> {
         let path = normalize_fs_path(raw_path);
         if path.is_empty() {
             return Err("empty path".to_string());
         }
         if !use_security_bookmarks() {
-            allow_directory(app, &path);
+            if allow_scope {
+                allow_directory(app, &path);
+            }
             return Ok(());
         }
-        match persist_selected_url(app, file_url(&path), false) {
+        match persist_selected_url(app, file_url(&path), false, allow_scope) {
             Ok(_) => Ok(()),
             Err(error) => {
                 // Session access from NSOpenPanel / Powerbox may still work even if
@@ -265,11 +292,15 @@ mod macos {
                         continue;
                     }
                     let resolved = resolved_path(&url).unwrap_or_else(|| path.clone());
+                    hold(resolved.clone(), url);
+                    let _ = mark_persisted(&resolved, false);
+                    if resolved != *path {
+                        let _ = mark_persisted(path, false);
+                    }
                     allow_directory(app, &resolved);
                     if resolved != *path {
                         allow_directory(app, path);
                     }
-                    hold(resolved.clone(), url);
 
                     if stale {
                         if let Ok(fresh) = create_bookmark_from_url(&file_url(&resolved)) {
@@ -340,7 +371,7 @@ mod macos {
             let Some(url) = panel.URL() else {
                 return Err("folder picker did not return a URL".to_string());
             };
-            persist_selected_url(&app, url, true).map(Some)
+            persist_selected_url(&app, url, true, true).map(Some)
         })
     }
 }
@@ -350,6 +381,13 @@ mod macos {
     use super::*;
 
     pub fn persist_path<R: Runtime>(_app: &AppHandle<R>, _path: &str) -> Result<(), String> {
+        Ok(())
+    }
+
+    pub fn persist_bookmark_for_allowed_path<R: Runtime>(
+        _app: &AppHandle<R>,
+        _path: &str,
+    ) -> Result<(), String> {
         Ok(())
     }
 
@@ -368,6 +406,13 @@ mod macos {
 
 pub fn persist_path<R: Runtime>(app: &AppHandle<R>, path: &str) -> Result<(), String> {
     macos::persist_path(app, path)
+}
+
+pub fn persist_bookmark_for_allowed_path<R: Runtime>(
+    app: &AppHandle<R>,
+    path: &str,
+) -> Result<(), String> {
+    macos::persist_bookmark_for_allowed_path(app, path)
 }
 
 pub fn restore_all<R: Runtime>(app: &AppHandle<R>) {
@@ -390,9 +435,16 @@ pub fn listen_for_allowed_paths<R: Runtime>(app: &AppHandle<R>) {
             if normalized.is_empty() {
                 return;
             }
+            if is_app_data_path(&handle, &normalized) {
+                return;
+            }
             let handle = handle.clone();
+            // Spawn: Tauri holds the scope listener mutex while emitting, and
+            // persist does file I/O. Never call allow_directory here — that
+            // re-emits PathAllowed and (with persisted-scope writing on every
+            // event) becomes a TestFlight/MAS CPU + fseventsd spin loop.
             std::thread::spawn(move || {
-                if let Err(error) = persist_path(&handle, &normalized) {
+                if let Err(error) = persist_bookmark_for_allowed_path(&handle, &normalized) {
                     log::info!("[tinynote] skip scoped bookmark for {normalized}: {error}");
                 }
             });

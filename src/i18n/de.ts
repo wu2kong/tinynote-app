@@ -25,6 +25,7 @@ export const deMessages = {
     "none": "Keine"
   },
   "pro": {
+    "externalCheckout": "Zum Kauf öffnet sich unsere Website im Browser. Dodo Payments wickelt die Zahlung ab. Prüfe vor der Zahlung den Preis und die Kaufbedingungen. Kehre anschließend hierher zurück, um deinen Lizenzschlüssel zu aktivieren. Bereits auf der Website gekaufte Lizenzen werden ebenfalls unterstützt.",
     "badge": "Pro",
     "planFree": "Kostenlos",
     "license": "Lizenz",

@@ -38,7 +38,9 @@ fn main() {
     println!("cargo:rerun-if-changed=permission-templates/allow-llm.toml");
     println!("cargo:rerun-if-changed=capability-templates/default.json");
 
-    if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "windows" {
+    if std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default() == "windows"
+        && std::env::var_os("CARGO_FEATURE_MICROSOFT_STORE").is_none()
+    {
         let dll = std::path::Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap())
             .join("winsparkle")
             .join("WinSparkle.dll");
