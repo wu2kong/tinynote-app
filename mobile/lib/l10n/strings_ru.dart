@@ -1,6 +1,56 @@
 import 'app_strings.dart';
 
 final stringsRu = AppStrings(
+  channel: {
+    "tabsLabel": "Разделы канала",
+    "tabs.chat": "Чат",
+    "tabs.todos": "Задачи",
+    "tabs.links": "Ссылки",
+    "tabs.resources": "Ресурсы",
+    "tabs.members": "Участники",
+    "tabs.settings": "Настройки",
+    "selfMemberName": "Я",
+    "selfBadge": "я",
+    "sendAs": "Отправить от имени",
+    "addMember": "Добавить участника",
+    "memberPlaceholder": "Имя участника…",
+    "memberName": "Имя участника",
+    "memberExists": "Участник с таким именем уже существует",
+    "deleteMember": "Удалить участника",
+    "unknownMember": "Неизвестный участник",
+    "reorderMessage": "Перетащите для изменения порядка сообщений",
+    "showTime": "Показывать время сообщений",
+    "showMemberAvatars": "Показывать аватары других участников",
+    "searchMessages": "Поиск сообщений…",
+    "noMatchingMessages": "Совпадений не найдено.",
+    "emptyChat": "Сообщений пока нет. Отправьте первое ниже.",
+    "emptyTodos": "Задач пока нет.",
+    "emptyLinks": "Сохранённых ссылок нет.",
+    "emptyResources": "Ресурсов пока нет.",
+    "composerPlaceholder": "Написать сообщение…",
+    "send": "Отправить",
+    "sendHint": "Enter — отправить · Shift+Enter — новая строка",
+    "messageType": "Тип",
+    "defaultMessageType": "сообщение",
+    "deleteMessage": "Удалить сообщение",
+    "addTodo": "Добавить",
+    "todoPlaceholder": "Новая задача…",
+    "addLink": "Добавить ссылку",
+    "linkUrl": "URL",
+    "linkTitle": "Заголовок (необязательно)",
+    "linkNote": "Заметка (необязательно)",
+    "addResource": "Добавить ресурс",
+    "resourceName": "Название",
+    "resourceKind": "Тип (необязательно)",
+    "resourceUri": "Путь или URL (необязательно)",
+    "resourceNote": "Заметка (необязательно)",
+    "settings.title": "Название канала",
+    "settings.subtitle": "Подзаголовок",
+    "settings.subtitlePlaceholder": "Краткое описание канала…",
+    "settings.hint":
+        "Название и подзаголовок отображаются вверху страницы. Имя файла не меняется.",
+    "format": "Канал",
+  },
   appTitle: 'TinyNote',
   appDescription: 'TinyNote - управление быстрыми заметками и фрагментами',
   appTagline: 'Упорядочивайте разрозненные заметки',
@@ -75,8 +125,7 @@ final stringsRu = AppStrings(
   deleteFolderMessage:
       'Удалить папку "{name}" со всеми подпапками и блокнотами? Это действие нельзя отменить.',
   deleteNotebook: 'Удалить',
-  deleteNotebookMessage:
-      'Удалить "{name}"? Это действие нельзя отменить.',
+  deleteNotebookMessage: 'Удалить "{name}"? Это действие нельзя отменить.',
   createSubfolder: 'Новая подпапка',
   spaceSection: 'Пространства',
   chooseSpace: 'Выберите пространство',
@@ -211,7 +260,7 @@ final stringsRu = AppStrings(
   importNotesRuleMarkdownOnly:
       'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
   importNotesRuleFormats:
-      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md), сохраняют исходный формат.',
+      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md), сохраняют исходный формат.',
   importNotesRuleUnmarked:
       'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
   importNotesRuleTarget:
@@ -236,12 +285,14 @@ final stringsRu = AppStrings(
   sampleLibraryDescription:
       'Импортируйте готовое пространство, которое знакомит с TinyNote на практических примерах проектов, справочных материалов, кода и больших текстов.',
   sampleLibraryBlocksTitle: 'Блочные заметки',
-  sampleLibraryBlocksDesc: 'Обзор функций, доска проекта и повторно используемые фрагменты',
+  sampleLibraryBlocksDesc:
+      'Обзор функций, доска проекта и повторно используемые фрагменты',
   sampleLibraryMarkdownTitle: 'Заметка Markdown',
   sampleLibraryMarkdownDesc:
       'Руководство с задачами, таблицами, диаграммой, кодом и исходником схемы',
   sampleLibraryWriterTitle: 'Заметка-статья',
-  sampleLibraryWriterDesc: 'Пример еженедельного обзора для сосредоточенного письма',
+  sampleLibraryWriterDesc:
+      'Пример еженедельного обзора для сосредоточенного письма',
   sampleLibraryContentLanguage: 'Язык содержимого примеров',
   sampleLibrarySafeImportNote:
       'Выбранный язык применяется к названиям пространств, заголовкам и тексту. Существующие заметки не перезаписываются.',
@@ -320,7 +371,8 @@ final stringsRu = AppStrings(
   proStatusFree:
       'Перейдите на Pro, чтобы получить больше пространств, статейных заметок и Git-синхронизацию.',
   proGateTitle: 'TinyNote Pro',
-  proGateHint: 'Выберите подписку или разовую покупку, чтобы открыть эту функцию.',
+  proGateHint:
+      'Выберите подписку или разовую покупку, чтобы открыть эту функцию.',
   proGateSpaceLimit:
       'Бесплатный тариф поддерживает до 5 пространств. Перейдите на Pro, чтобы создавать больше.',
   proGateNotebookLimit:
@@ -357,6 +409,5 @@ final stringsRu = AppStrings(
       'Эта покупка ожидает одобрения. После него Pro разблокируется.',
   proPurchaseNotSynced:
       'Покупка завершена, но права ещё не синхронизированы. Скоро нажмите «Восстановить покупки».',
-  proPurchaseUnavailable:
-      'Покупки App Store доступны только на iOS.',
+  proPurchaseUnavailable: 'Покупки App Store доступны только на iOS.',
 );

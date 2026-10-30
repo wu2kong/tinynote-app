@@ -16,6 +16,7 @@ test('detectNotebookFormat matches known suffixes first', () => {
   assert.equal(detectNotebookFormat('a.mk.md'), 'markdown');
   assert.equal(detectNotebookFormat('a.blk.md'), 'blocks');
   assert.equal(detectNotebookFormat('a.csv.md'), 'csv');
+  assert.equal(detectNotebookFormat('a.channel.md'), 'channel');
   assert.equal(detectNotebookFormat('a.md'), 'blocks');
   assert.equal(detectNotebookFormat('A.WRITER.MD'), 'writer');
 });

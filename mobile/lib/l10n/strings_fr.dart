@@ -1,6 +1,56 @@
 import 'app_strings.dart';
 
 final stringsFr = AppStrings(
+  channel: {
+    "tabsLabel": "Sections du canal",
+    "tabs.chat": "Discussion",
+    "tabs.todos": "Tâches",
+    "tabs.links": "Liens",
+    "tabs.resources": "Ressources",
+    "tabs.members": "Membres",
+    "tabs.settings": "Paramètres",
+    "selfMemberName": "Moi",
+    "selfBadge": "moi",
+    "sendAs": "Envoyer en tant que",
+    "addMember": "Ajouter un membre",
+    "memberPlaceholder": "Nom du membre…",
+    "memberName": "Nom du membre",
+    "memberExists": "Un membre porte déjà ce nom",
+    "deleteMember": "Retirer le membre",
+    "unknownMember": "Membre inconnu",
+    "reorderMessage": "Faire glisser pour réorganiser le message",
+    "showTime": "Afficher l’heure des messages",
+    "showMemberAvatars": "Afficher les avatars des autres membres",
+    "searchMessages": "Rechercher des messages…",
+    "noMatchingMessages": "Aucun message correspondant.",
+    "emptyChat": "Aucun message. Envoyez le premier ci-dessous.",
+    "emptyTodos": "Aucune tâche.",
+    "emptyLinks": "Aucun lien enregistré.",
+    "emptyResources": "Aucune ressource.",
+    "composerPlaceholder": "Écrire un message…",
+    "send": "Envoyer",
+    "sendHint": "Entrée pour envoyer · Maj+Entrée pour un saut de ligne",
+    "messageType": "Type",
+    "defaultMessageType": "message",
+    "deleteMessage": "Supprimer le message",
+    "addTodo": "Ajouter",
+    "todoPlaceholder": "Nouvelle tâche…",
+    "addLink": "Ajouter un lien",
+    "linkUrl": "URL",
+    "linkTitle": "Titre (facultatif)",
+    "linkNote": "Note (facultative)",
+    "addResource": "Ajouter une ressource",
+    "resourceName": "Nom",
+    "resourceKind": "Type (facultatif)",
+    "resourceUri": "Chemin ou URL (facultatif)",
+    "resourceNote": "Note (facultative)",
+    "settings.title": "Titre du canal",
+    "settings.subtitle": "Sous-titre",
+    "settings.subtitlePlaceholder": "Une brève description de ce canal…",
+    "settings.hint":
+        "Le titre et le sous-titre apparaissent en haut de la page. Le nom du fichier reste inchangé.",
+    "format": "Canal",
+  },
   appTitle: 'TinyNote',
   appDescription: 'TinyNote - gestion de notes rapides et d’extraits',
   appTagline: 'Organisez vos notes éparses',
@@ -75,8 +125,7 @@ final stringsFr = AppStrings(
   deleteFolderMessage:
       'Supprimer le dossier "{name}" ainsi que tous ses sous-dossiers et carnets ? Cette action est irréversible.',
   deleteNotebook: 'Supprimer',
-  deleteNotebookMessage:
-      'Supprimer "{name}" ? Cette action est irréversible.',
+  deleteNotebookMessage: 'Supprimer "{name}" ? Cette action est irréversible.',
   createSubfolder: 'Nouveau sous-dossier',
   spaceSection: 'Espaces',
   chooseSpace: 'Choisir un espace',
@@ -199,7 +248,8 @@ final stringsFr = AppStrings(
   documentContentHint: 'Écrire le document. Markdown pris en charge…',
   documentSaved: 'Enregistré',
   openLinkFailed: 'Impossible d’ouvrir le lien',
-  documentBlocksUnsupported: 'Les notes document ne prennent pas en charge les blocs',
+  documentBlocksUnsupported:
+      'Les notes document ne prennent pas en charge les blocs',
   unsupportedFormatTitle: 'Ce format de note n’est pas pris en charge',
   unsupportedFormatMessage:
       'Cette note utilise le format « {suffix} », qui n’est pas inclus dans la version actuelle. Mettez TinyNote à jour, ou ouvrez-la avec un éditeur compatible Markdown. L’ouvrir dans un ancien éditeur peut endommager la structure de la note.',
@@ -212,7 +262,7 @@ final stringsFr = AppStrings(
   importNotesRuleMarkdownOnly:
       'Seuls les fichiers se terminant par .md sont importés ; les autres fichiers sont ignorés.',
   importNotesRuleFormats:
-      'Les fichiers qui portent déjà les marqueurs blk, mk, writer ou csv (.blk.md / .mk.md / .writer.md / .csv.md) conservent leur format d\'origine.',
+      'Les fichiers qui portent déjà les marqueurs blk, mk, writer ou csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) conservent leur format d\'origine.',
   importNotesRuleUnmarked:
       'Les fichiers .md sans ces marqueurs sont automatiquement convertis en notes article (.writer.md).',
   importNotesRuleTarget:
@@ -237,12 +287,14 @@ final stringsFr = AppStrings(
   sampleLibraryDescription:
       'Importez un espace prêt à l’emploi qui présente TinyNote avec des exemples concrets de projets, références, code et rédaction longue.',
   sampleLibraryBlocksTitle: 'Notes par blocs',
-  sampleLibraryBlocksDesc: 'Visite des fonctions, tableau de projet et extraits réutilisables',
+  sampleLibraryBlocksDesc:
+      'Visite des fonctions, tableau de projet et extraits réutilisables',
   sampleLibraryMarkdownTitle: 'Note Markdown',
   sampleLibraryMarkdownDesc:
       'Guide avec tâches, tableaux, graphique, code et source de diagramme',
   sampleLibraryWriterTitle: 'Note article',
-  sampleLibraryWriterDesc: 'Un exemple de bilan hebdomadaire pour écrire sans distraction',
+  sampleLibraryWriterDesc:
+      'Un exemple de bilan hebdomadaire pour écrire sans distraction',
   sampleLibraryContentLanguage: 'Langue du contenu d’exemple',
   sampleLibrarySafeImportNote:
       'La langue choisie s’applique aux noms des espaces, aux titres et au contenu. Aucune note existante n’est remplacée.',
@@ -321,7 +373,8 @@ final stringsFr = AppStrings(
   proStatusFree:
       'Passez à Pro pour plus d’espaces, de notes article et la sync Git.',
   proGateTitle: 'TinyNote Pro',
-  proGateHint: 'Choisissez un abonnement ou un achat unique pour débloquer cette fonction.',
+  proGateHint:
+      'Choisissez un abonnement ou un achat unique pour débloquer cette fonction.',
   proGateSpaceLimit:
       'La version gratuite permet jusqu’à 5 espaces. Passez à Pro pour en créer davantage.',
   proGateNotebookLimit:

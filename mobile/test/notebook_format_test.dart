@@ -1,7 +1,27 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tinynote_mobile/core/notebook_format.dart';
 
 void main() {
+  test('channel files preserve JSON and use document saving', () {
+    expect(detectNotebookFormat('Team.CHANNEL.MD'), NotebookFormat.channel);
+    expect(notebookDisplayName('Team.channel.md'), 'Team');
+    expect(shouldSaveAsDocument(NotebookFormat.channel), isTrue);
+    expect(shouldUseMarkdownEditor(NotebookFormat.channel), isFalse);
+    final imported = resolveImportedNotebookFileName('Team.channel.md');
+    expect(imported.converted, isFalse);
+    final raw = initialNotebookContent(
+      NotebookFormat.channel,
+      'Team',
+      selfMemberName: '我',
+    );
+    final doc = jsonDecode(raw) as Map<String, dynamic>;
+    expect(doc['version'], 1);
+    expect(doc['members'][0]['name'], '我');
+    expect(doc['messages'], isEmpty);
+    expect(doc['showTime'], isTrue);
+    expect(doc['showMemberAvatars'], isTrue);
+  });
   group('detectNotebookFormat', () {
     test('matches longest suffix first', () {
       expect(detectNotebookFormat('a.writer.md'), NotebookFormat.writer);
@@ -10,8 +30,14 @@ void main() {
       expect(detectNotebookFormat('a.csv.md'), NotebookFormat.csv);
       expect(detectNotebookFormat('a.md'), NotebookFormat.blocks);
       expect(detectNotebookFormat('A.WRITER.MD'), NotebookFormat.writer);
-      expect(detectNotebookFormat('map.treemind.md'), NotebookFormat.unsupported);
-      expect(detectNotebookFormat('todo.checklist.md'), NotebookFormat.unsupported);
+      expect(
+        detectNotebookFormat('map.treemind.md'),
+        NotebookFormat.unsupported,
+      );
+      expect(
+        detectNotebookFormat('todo.checklist.md'),
+        NotebookFormat.unsupported,
+      );
     });
   });
 
@@ -44,11 +70,17 @@ void main() {
 
     test('new markdown and writer notebooks use compound suffixes', () {
       expect(
-        resolveNotebookFileName('Guide', preferredFormat: NotebookFormat.markdown).fileName,
+        resolveNotebookFileName(
+          'Guide',
+          preferredFormat: NotebookFormat.markdown,
+        ).fileName,
         'Guide.mk.md',
       );
       expect(
-        resolveNotebookFileName('Essay', preferredFormat: NotebookFormat.writer).fileName,
+        resolveNotebookFileName(
+          'Essay',
+          preferredFormat: NotebookFormat.writer,
+        ).fileName,
         'Essay.writer.md',
       );
     });
@@ -95,8 +127,14 @@ void main() {
   });
 
   test('only markdown and writer are swappable', () {
-    expect(NotebookFormat.markdown.swappableArticleFormat, NotebookFormat.writer);
-    expect(NotebookFormat.writer.swappableArticleFormat, NotebookFormat.markdown);
+    expect(
+      NotebookFormat.markdown.swappableArticleFormat,
+      NotebookFormat.writer,
+    );
+    expect(
+      NotebookFormat.writer.swappableArticleFormat,
+      NotebookFormat.markdown,
+    );
     expect(NotebookFormat.blocks.swappableArticleFormat, isNull);
     expect(NotebookFormat.markdown.isDocument, isTrue);
     expect(NotebookFormat.blocks.isDocument, isFalse);
@@ -130,7 +168,10 @@ void main() {
       resolveImportedNotebookFileName('map.treemind.md').fileName,
       'map.treemind.md',
     );
-    expect(resolveImportedNotebookFileName('map.treemind.md').converted, isFalse);
+    expect(
+      resolveImportedNotebookFileName('map.treemind.md').converted,
+      isFalse,
+    );
     expect(
       resolveImportedNotebookFileName('budget.csv.md').fileName,
       'budget.csv.md',

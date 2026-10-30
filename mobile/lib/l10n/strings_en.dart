@@ -1,6 +1,56 @@
 import 'app_strings.dart';
 
 final stringsEn = AppStrings(
+  channel: {
+    "tabsLabel": "Channel sections",
+    "tabs.chat": "Chat",
+    "tabs.todos": "Todos",
+    "tabs.links": "Links",
+    "tabs.resources": "Resources",
+    "tabs.members": "Members",
+    "tabs.settings": "Settings",
+    "selfMemberName": "Me",
+    "selfBadge": "me",
+    "sendAs": "Send as",
+    "addMember": "Add member",
+    "memberPlaceholder": "Member name…",
+    "memberName": "Member name",
+    "memberExists": "A member with this name already exists",
+    "deleteMember": "Remove member",
+    "unknownMember": "Unknown member",
+    "reorderMessage": "Drag to reorder message",
+    "showTime": "Show message time",
+    "showMemberAvatars": "Show other members’ avatars",
+    "searchMessages": "Search messages…",
+    "noMatchingMessages": "No matching messages.",
+    "emptyChat": "No messages yet. Send the first one below.",
+    "emptyTodos": "No todos yet.",
+    "emptyLinks": "No links saved yet.",
+    "emptyResources": "No resources yet.",
+    "composerPlaceholder": "Write a message…",
+    "send": "Send",
+    "sendHint": "Enter to send · Shift+Enter for newline",
+    "messageType": "Type",
+    "defaultMessageType": "message",
+    "deleteMessage": "Delete message",
+    "addTodo": "Add",
+    "todoPlaceholder": "New todo…",
+    "addLink": "Add link",
+    "linkUrl": "URL",
+    "linkTitle": "Title (optional)",
+    "linkNote": "Note (optional)",
+    "addResource": "Add resource",
+    "resourceName": "Name",
+    "resourceKind": "Kind (optional)",
+    "resourceUri": "Path or URL (optional)",
+    "resourceNote": "Note (optional)",
+    "settings.title": "Channel title",
+    "settings.subtitle": "Subtitle",
+    "settings.subtitlePlaceholder": "A short description of this channel…",
+    "settings.hint":
+        "Title and subtitle appear at the top of the page. The file name is unchanged.",
+    "format": "Channel",
+  },
   appTitle: 'TinyNote',
   appDescription: 'TinyNote - snippets and quick notes',
   appTagline: 'Organize scattered notes',
@@ -191,7 +241,8 @@ final stringsEn = AppStrings(
   convertToMarkdown: 'Convert to Markdown note',
   convertToWriter: 'Convert to article note',
   convertFormatFailed: 'Failed to convert note type',
-  convertFormatExists: 'A note of the target type with the same name already exists',
+  convertFormatExists:
+      'A note of the target type with the same name already exists',
   previewDocument: 'Preview',
   documentContentHint: 'Write the document. Markdown is supported…',
   documentSaved: 'Saved',
@@ -209,7 +260,7 @@ final stringsEn = AppStrings(
   importNotesRuleMarkdownOnly:
       'Only files ending with .md are imported; other files are ignored.',
   importNotesRuleFormats:
-      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md) keep their original format.',
+      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) keep their original format.',
   importNotesRuleUnmarked:
       'Plain .md files without those markers are converted to article notes (.writer.md).',
   importNotesRuleTarget:
@@ -270,7 +321,8 @@ final stringsEn = AppStrings(
   helpDocs: 'Help Documentation',
   openHelpDocsFailed: 'Unable to open the help documentation',
   gitSync: 'Git sync',
-  gitSyncDesc: 'Share the library with desktop over HTTPS. No Git install needed',
+  gitSyncDesc:
+      'Share the library with desktop over HTTPS. No Git install needed',
   gitSyncHttpsOnly:
       'Only HTTPS remotes are supported. Use an HTTPS URL and access token. SSH is not supported, and you do not need to install Git.',
   gitSyncConnect: 'Connect repository',
@@ -310,20 +362,20 @@ final stringsEn = AppStrings(
   gitSyncSslFailed:
       'Could not verify the server certificate. Check the repository URL, or whether this device trusts the certificate.',
   gitSyncRemoteBound: 'HTTPS repository connected',
-  gitSyncNotConnected: 'Enter a URL and token to sync with the desktop repository',
+  gitSyncNotConnected:
+      'Enter a URL and token to sync with the desktop repository',
   proSection: 'Pro',
   proBadge: 'Pro',
   proPlanFree: 'Free',
-  proStatusFree:
-      'Upgrade to Pro for more spaces, article notes, and Git sync.',
+  proStatusFree: 'Upgrade to Pro for more spaces, article notes, and Git sync.',
   proGateTitle: 'TinyNote Pro',
-  proGateHint: 'Choose a subscription or a one-time purchase to unlock this feature.',
+  proGateHint:
+      'Choose a subscription or a one-time purchase to unlock this feature.',
   proGateSpaceLimit:
       'The free plan supports up to 5 spaces. Upgrade to Pro for more spaces.',
   proGateNotebookLimit:
       'The free plan supports up to 100 notes per space. Upgrade to Pro for more notes.',
-  proGateArticleNotebook:
-      'Creating Markdown / article notes is a Pro feature.',
+  proGateArticleNotebook: 'Creating Markdown / article notes is a Pro feature.',
   proGateSync: 'Git note sync is a Pro feature.',
   proTrialArticleHint:
       'You can also create 1 sample of this type in the current space for trial and testing.',

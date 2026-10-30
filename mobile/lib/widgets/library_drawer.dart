@@ -399,6 +399,7 @@ class LibraryDrawer extends StatelessWidget {
       NotebookFormat.markdown => s.createMarkdownNotebook,
       NotebookFormat.writer => s.createWriterNotebook,
       NotebookFormat.csv => s.createNotebook,
+      NotebookFormat.channel => s.ch('format'),
       NotebookFormat.unsupported => s.createNotebook,
     };
     final name = await showNamePromptDialog(
@@ -558,6 +559,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.fileCode,
         ),
         AppContextMenuItem(
+          value: 'channel',
+          label: s.ch('format'),
+          icon: LucideIcons.messagesSquare,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -580,6 +586,12 @@ class LibraryDrawer extends StatelessWidget {
           context,
           parentPath,
           format: NotebookFormat.markdown,
+        );
+      case 'channel':
+        await _createNotebook(
+          context,
+          parentPath,
+          format: NotebookFormat.channel,
         );
       case 'writer':
         await _createNotebook(
@@ -618,6 +630,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.fileCode,
         ),
         AppContextMenuItem(
+          value: 'channel',
+          label: s.ch('format'),
+          icon: LucideIcons.messagesSquare,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -646,6 +663,12 @@ class LibraryDrawer extends StatelessWidget {
           context,
           group.path,
           format: NotebookFormat.markdown,
+        );
+      case 'channel':
+        await _createNotebook(
+          context,
+          group.path,
+          format: NotebookFormat.channel,
         );
       case 'writer':
         await _createNotebook(
@@ -723,252 +746,242 @@ class LibraryDrawer extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s.appTitle,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: colors.title,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            s.appTagline,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: colors.accent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _HeaderIconButton(
-                        tooltip: s.commonRefresh,
-                        onPressed: library.loading ? null : library.refresh,
-                        icon:
-                            library.loading
-                                ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : Icon(
-                                  LucideIcons.refreshCw,
-                                  size: 18,
-                                  color: colors.body,
-                                ),
-                      ),
-                      _HeaderIconButton(
-                        tooltip: s.globalSearch,
-                        onPressed: () => _openGlobalSearch(context),
-                        icon: Icon(
-                          LucideIcons.search,
-                          size: 18,
-                          color: colors.body,
-                        ),
-                      ),
-                      _HeaderIconButton(
-                        tooltip: s.settingsCenter,
-                        onPressed:
-                            () => showSettingsSheet(
-                              context: context,
-                              library: library,
-                            ),
-                        icon: Icon(
-                          LucideIcons.settings,
-                          size: 18,
-                          color: colors.body,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Divider(height: 1, color: colors.border),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(bottom: 24),
-                children: [
-                  _SectionLabel(s.spaceSection),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    child: Material(
-                      color: colors.background,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap:
-                            library.loading
-                                ? null
-                                : () => _showSpacePicker(context),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colors.border),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  currentSpace?.name ?? s.chooseSpace,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        currentSpace == null
-                                            ? colors.muted
-                                            : colors.title,
-                                  ),
-                                ),
-                              ),
-                              if (currentSpace != null) ...[
-                                Text(
-                                  s.fill(s.notebookCount, {
-                                    'count':
-                                        '${countNotebooks(currentSpace.groups)}',
-                                  }),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colors.muted,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                              ],
-                              Icon(
-                                LucideIcons.chevronDown,
-                                size: 18,
-                                color:
-                                    library.loading
-                                        ? colors.muted
-                                        : colors.body,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Divider(height: 1, color: colors.border),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 8, 0),
-                    child: Row(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 4, 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            s.foldersSection,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.4,
-                              color: colors.muted,
-                            ),
+                        Text(
+                          s.appTitle,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: colors.title,
                           ),
                         ),
-                        if (currentSpace != null)
-                          IconButton(
-                            tooltip: s.createNew,
-                            visualDensity: VisualDensity.compact,
-                            onPressed:
-                                () =>
-                                    _showCreateMenu(context, currentSpace.path),
-                            icon: Icon(
-                              LucideIcons.plus,
-                              size: 18,
-                              color: colors.accent,
-                            ),
+                        const SizedBox(height: 2),
+                        Text(
+                          s.appTagline,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: colors.accent,
                           ),
+                        ),
                       ],
                     ),
                   ),
-                  if (currentSpace == null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _HeaderIconButton(
+                      tooltip: s.commonRefresh,
+                      onPressed: library.loading ? null : library.refresh,
+                      icon:
+                          library.loading
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : Icon(
+                                LucideIcons.refreshCw,
+                                size: 18,
+                                color: colors.body,
+                              ),
+                    ),
+                    _HeaderIconButton(
+                      tooltip: s.globalSearch,
+                      onPressed: () => _openGlobalSearch(context),
+                      icon: Icon(
+                        LucideIcons.search,
+                        size: 18,
+                        color: colors.body,
                       ),
-                      child: Text(
-                        s.chooseSpaceToBrowse,
-                        style: TextStyle(color: colors.muted, fontSize: 13),
-                      ),
-                    )
-                  else if (currentSpace.groups.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s.emptySpace,
-                            style: TextStyle(color: colors.muted, fontSize: 13),
+                    ),
+                    _HeaderIconButton(
+                      tooltip: s.settingsCenter,
+                      onPressed:
+                          () => showSettingsSheet(
+                            context: context,
+                            library: library,
                           ),
-                          const SizedBox(height: 8),
-                          TextButton.icon(
-                            onPressed:
-                                () =>
-                                    _showCreateMenu(context, currentSpace.path),
-                            icon: const Icon(LucideIcons.plus, size: 16),
-                            label: Text(s.createFolderOrNotebook),
-                          ),
-                        ],
+                      icon: Icon(
+                        LucideIcons.settings,
+                        size: 18,
+                        color: colors.body,
                       ),
-                    )
-                  else
-                    ..._buildTree(context, currentSpace.groups, 0),
-                ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: colors.border),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                _SectionLabel(s.spaceSection),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Material(
+                    color: colors.background,
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap:
+                          library.loading
+                              ? null
+                              : () => _showSpacePicker(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: colors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                currentSpace?.name ?? s.chooseSpace,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      currentSpace == null
+                                          ? colors.muted
+                                          : colors.title,
+                                ),
+                              ),
+                            ),
+                            if (currentSpace != null) ...[
+                              Text(
+                                s.fill(s.notebookCount, {
+                                  'count':
+                                      '${countNotebooks(currentSpace.groups)}',
+                                }),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: colors.muted,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Icon(
+                              LucideIcons.chevronDown,
+                              size: 18,
+                              color:
+                                  library.loading ? colors.muted : colors.body,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Divider(height: 1, color: colors.border),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 8, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          s.foldersSection,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.4,
+                            color: colors.muted,
+                          ),
+                        ),
+                      ),
+                      if (currentSpace != null)
+                        IconButton(
+                          tooltip: s.createNew,
+                          visualDensity: VisualDensity.compact,
+                          onPressed:
+                              () => _showCreateMenu(context, currentSpace.path),
+                          icon: Icon(
+                            LucideIcons.plus,
+                            size: 18,
+                            color: colors.accent,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (currentSpace == null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      s.chooseSpaceToBrowse,
+                      style: TextStyle(color: colors.muted, fontSize: 13),
+                    ),
+                  )
+                else if (currentSpace.groups.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.emptySpace,
+                          style: TextStyle(color: colors.muted, fontSize: 13),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed:
+                              () => _showCreateMenu(context, currentSpace.path),
+                          icon: const Icon(LucideIcons.plus, size: 16),
+                          label: Text(s.createFolderOrNotebook),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ..._buildTree(context, currentSpace.groups, 0),
+              ],
+            ),
+          ),
+          if (library.storagePath != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                s.fill(s.libraryPath, {'path': library.storagePath!}),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 10, color: colors.muted),
               ),
             ),
-            if (library.storagePath != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Text(
-                  s.fill(s.libraryPath, {'path': library.storagePath!}),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 10, color: colors.muted),
-                ),
-              ),
-          ],
-        ),
+        ],
+      ),
     );
 
     if (asSidebar) {
       return SizedBox(
         width: width,
-        child: Material(
-          color: colors.surface,
-          child: panel,
-        ),
+        child: Material(color: colors.surface, child: panel),
       );
     }
 
-    return Drawer(
-      backgroundColor: colors.surface,
-      child: panel,
-    );
+    return Drawer(backgroundColor: colors.surface, child: panel);
   }
 
   List<Widget> _buildTree(
@@ -1130,6 +1143,7 @@ IconData _notebookIcon(NotebookFormat format) {
     NotebookFormat.markdown => LucideIcons.fileCode,
     NotebookFormat.writer => LucideIcons.penLine,
     NotebookFormat.csv => LucideIcons.table2,
+    NotebookFormat.channel => LucideIcons.messagesSquare,
     NotebookFormat.unsupported => LucideIcons.circleAlert,
   };
 }

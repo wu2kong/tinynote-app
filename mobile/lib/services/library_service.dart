@@ -902,7 +902,7 @@ class LibraryService extends ChangeNotifier {
   Future<void> updateNotebookContent(String content) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
-    if (!notebook.format.isDocument && !notebook.compatOpenAsMarkdown) {
+    if (!notebook.format.isDocument && notebook.format != NotebookFormat.channel && !notebook.compatOpenAsMarkdown) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }
     final now = DateTime.now().toUtc().toIso8601String();

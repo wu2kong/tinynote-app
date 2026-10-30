@@ -1,3 +1,4 @@
+import '../widgets/channel_notebook_view.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -98,7 +99,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _openNoteBlock(NoteBlock block, {required bool splitDetail}) async {
+  Future<void> _openNoteBlock(
+    NoteBlock block, {
+    required bool splitDetail,
+  }) async {
     final notebook = library.currentNotebook;
     final space = library.currentSpace;
     if (notebook == null) return;
@@ -214,10 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return [...folders, notebook.name].join(' / ');
   }
 
-  Widget _buildMainContent({
-    required bool wide,
-    required bool splitDetail,
-  }) {
+  Widget _buildMainContent({required bool wide, required bool splitDetail}) {
     final colors = context.colors;
     final s = context.s;
     final notebook = library.currentNotebook;
@@ -229,8 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
         notebook != null &&
         notebook.format.isUnsupportedOnMobile &&
         !notebook.compatOpenAsMarkdown;
-    final showCsvPreview =
-        notebook != null && notebook.format.isCsvPreview;
+    final showCsvPreview = notebook != null && notebook.format.isCsvPreview;
     final showDocumentView =
         notebook != null &&
         (notebook.format.isDocument || notebook.compatOpenAsMarkdown);
@@ -251,6 +251,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (showUnsupportedGate) {
       return UnsupportedNotebookView(library: library, notebook: notebook);
+    }
+    if (notebook.format == NotebookFormat.channel) {
+      return ChannelNotebookView(
+        key: ValueKey(notebook.path),
+        library: library,
+        notebook: notebook,
+        showDirectoryButton: showDirectoryButton,
+      );
     }
     if (showCsvPreview) {
       return CsvNotebookView(
@@ -396,7 +404,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final libraryPanel = LibraryDrawer(
       library: library,
-      onOpenNoteBlock: (block) => _openNoteBlock(block, splitDetail: splitDetail),
+      onOpenNoteBlock:
+          (block) => _openNoteBlock(block, splitDetail: splitDetail),
       asSidebar: wide,
       width: kSidebarWidth,
     );

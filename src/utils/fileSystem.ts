@@ -12,6 +12,7 @@ import {
   resolveNotebookFileName,
 } from './notebookFormat';
 import { createInitialCsvContent } from './csvTable';
+import { createInitialChannelContent } from './channelDocument';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 import { isNoteSpaceDirectoryName } from './workspaceConfig';
@@ -267,6 +268,8 @@ export function getDefaultNewNotebookDisplayName(format: NotebookFormatId): stri
       return t('directory.defaultNotebookNames.writer');
     case 'csv':
       return t('directory.defaultNotebookNames.csv');
+    case 'channel':
+      return t('directory.defaultNotebookNames.channel');
     case 'blocks':
     default:
       return t('directory.defaultNotebookNames.blocks');
@@ -276,6 +279,9 @@ export function getDefaultNewNotebookDisplayName(format: NotebookFormatId): stri
 function initialNotebookContent(format: NotebookFormatId, displayName: string): string {
   if (format === 'csv') {
     return createInitialCsvContent();
+  }
+  if (format === 'channel') {
+    return createInitialChannelContent(t('channel.selfMemberName'), displayName);
   }
   if (format === 'markdown' || format === 'writer') {
     return `# ${displayName}\n\n`;

@@ -1,6 +1,56 @@
 import 'app_strings.dart';
 
 final stringsIt = AppStrings(
+  channel: {
+    "tabsLabel": "Sezioni del canale",
+    "tabs.chat": "Chat",
+    "tabs.todos": "Attività",
+    "tabs.links": "Link",
+    "tabs.resources": "Risorse",
+    "tabs.members": "Membri",
+    "tabs.settings": "Impostazioni",
+    "selfMemberName": "Io",
+    "selfBadge": "io",
+    "sendAs": "Invia come",
+    "addMember": "Aggiungi membro",
+    "memberPlaceholder": "Nome del membro…",
+    "memberName": "Nome del membro",
+    "memberExists": "Esiste già un membro con questo nome",
+    "deleteMember": "Rimuovi membro",
+    "unknownMember": "Membro sconosciuto",
+    "reorderMessage": "Trascina per riordinare il messaggio",
+    "showTime": "Mostra l’ora dei messaggi",
+    "showMemberAvatars": "Mostra gli avatar degli altri membri",
+    "searchMessages": "Cerca messaggi…",
+    "noMatchingMessages": "Nessun messaggio corrispondente.",
+    "emptyChat": "Nessun messaggio. Invia il primo qui sotto.",
+    "emptyTodos": "Nessuna attività.",
+    "emptyLinks": "Nessun link salvato.",
+    "emptyResources": "Nessuna risorsa.",
+    "composerPlaceholder": "Scrivi un messaggio…",
+    "send": "Invia",
+    "sendHint": "Invio per inviare · Maiusc+Invio per andare a capo",
+    "messageType": "Tipo",
+    "defaultMessageType": "messaggio",
+    "deleteMessage": "Elimina messaggio",
+    "addTodo": "Aggiungi",
+    "todoPlaceholder": "Nuova attività…",
+    "addLink": "Aggiungi link",
+    "linkUrl": "URL",
+    "linkTitle": "Titolo (facoltativo)",
+    "linkNote": "Nota (facoltativa)",
+    "addResource": "Aggiungi risorsa",
+    "resourceName": "Nome",
+    "resourceKind": "Tipo (facoltativo)",
+    "resourceUri": "Percorso o URL (facoltativo)",
+    "resourceNote": "Nota (facoltativa)",
+    "settings.title": "Titolo del canale",
+    "settings.subtitle": "Sottotitolo",
+    "settings.subtitlePlaceholder": "Una breve descrizione del canale…",
+    "settings.hint":
+        "Titolo e sottotitolo appaiono in cima alla pagina. Il nome del file non cambia.",
+    "format": "Canale",
+  },
   appTitle: 'TinyNote',
   appDescription: 'TinyNote - gestione di note rapide e frammenti',
   appTagline: 'Organizza le note sparse',
@@ -194,7 +244,8 @@ final stringsIt = AppStrings(
   convertToMarkdown: 'Converti in nota Markdown',
   convertToWriter: 'Converti in nota articolo',
   convertFormatFailed: 'Conversione non riuscita',
-  convertFormatExists: 'Esiste già una nota del tipo di destinazione con lo stesso nome',
+  convertFormatExists:
+      'Esiste già una nota del tipo di destinazione con lo stesso nome',
   previewDocument: 'Anteprima',
   documentContentHint: 'Scrivi il documento. Markdown supportato…',
   documentSaved: 'Salvato',
@@ -212,7 +263,7 @@ final stringsIt = AppStrings(
   importNotesRuleMarkdownOnly:
       'Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.',
   importNotesRuleFormats:
-      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md) mantengono il formato originale.',
+      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) mantengono il formato originale.',
   importNotesRuleUnmarked:
       'I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).',
   importNotesRuleTarget:
@@ -237,12 +288,14 @@ final stringsIt = AppStrings(
   sampleLibraryDescription:
       'Importa uno spazio pronto all’uso che presenta TinyNote con esempi pratici per progetti, riferimenti, codice e scrittura estesa.',
   sampleLibraryBlocksTitle: 'Note a blocchi',
-  sampleLibraryBlocksDesc: 'Tour delle funzioni, bacheca di progetto e frammenti riutilizzabili',
+  sampleLibraryBlocksDesc:
+      'Tour delle funzioni, bacheca di progetto e frammenti riutilizzabili',
   sampleLibraryMarkdownTitle: 'Nota Markdown',
   sampleLibraryMarkdownDesc:
       'Guida con attività, tabelle, grafico, codice e sorgente del diagramma',
   sampleLibraryWriterTitle: 'Nota articolo',
-  sampleLibraryWriterDesc: 'Un esempio di revisione settimanale per scrivere senza distrazioni',
+  sampleLibraryWriterDesc:
+      'Un esempio di revisione settimanale per scrivere senza distrazioni',
   sampleLibraryContentLanguage: 'Lingua dei contenuti di esempio',
   sampleLibrarySafeImportNote:
       'La lingua scelta si applica ai nomi degli spazi, ai titoli e ai contenuti. Le note esistenti non vengono sovrascritte.',
@@ -309,7 +362,8 @@ final stringsIt = AppStrings(
       'Le note locali e remote potrebbero essere in conflitto. Riprova il pull più tardi. Se continua a fallire, fai prima un backup locale.',
   gitSyncNotReady: 'La libreria di note non è ancora pronta',
   gitSyncOpenTokenPage: 'Apri la pagina di creazione del token',
-  gitSyncAuthFailed: 'Autorizzazione non riuscita. Controlla il token e riprova.',
+  gitSyncAuthFailed:
+      'Autorizzazione non riuscita. Controlla il token e riprova.',
   gitSyncSslFailed:
       'Impossibile verificare il certificato del server. Controlla l’URL del repository e se questo dispositivo si fida del certificato.',
   gitSyncRemoteBound: 'Repository HTTPS collegato',
@@ -321,13 +375,13 @@ final stringsIt = AppStrings(
   proStatusFree:
       'Passa a Pro per più spazi, note articolo e sincronizzazione Git.',
   proGateTitle: 'TinyNote Pro',
-  proGateHint: 'Scegli un abbonamento o un acquisto una tantum per sbloccare questa funzione.',
+  proGateHint:
+      'Scegli un abbonamento o un acquisto una tantum per sbloccare questa funzione.',
   proGateSpaceLimit:
       'Il piano gratuito supporta fino a 5 spazi. Passa a Pro per crearne altri.',
   proGateNotebookLimit:
       'Il piano gratuito supporta fino a 100 note per spazio. Passa a Pro per crearne altre.',
-  proGateArticleNotebook:
-      'Creare note Markdown / articolo è una funzione Pro.',
+  proGateArticleNotebook: 'Creare note Markdown / articolo è una funzione Pro.',
   proGateSync: 'La sincronizzazione Git è una funzione Pro.',
   proTrialArticleHint:
       'Puoi anche creare 1 esempio di questo tipo nello spazio attuale per provarlo.',

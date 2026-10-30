@@ -1,6 +1,56 @@
 import 'app_strings.dart';
 
 final stringsDe = AppStrings(
+  channel: {
+    "tabsLabel": "Kanalbereiche",
+    "tabs.chat": "Chat",
+    "tabs.todos": "Aufgaben",
+    "tabs.links": "Links",
+    "tabs.resources": "Ressourcen",
+    "tabs.members": "Mitglieder",
+    "tabs.settings": "Einstellungen",
+    "selfMemberName": "Ich",
+    "selfBadge": "ich",
+    "sendAs": "Senden als",
+    "addMember": "Mitglied hinzufügen",
+    "memberPlaceholder": "Mitgliedsname…",
+    "memberName": "Mitgliedsname",
+    "memberExists": "Ein Mitglied mit diesem Namen existiert bereits",
+    "deleteMember": "Mitglied entfernen",
+    "unknownMember": "Unbekanntes Mitglied",
+    "reorderMessage": "Nachricht zum Sortieren ziehen",
+    "showTime": "Nachrichtenzeit anzeigen",
+    "showMemberAvatars": "Avatare anderer Mitglieder anzeigen",
+    "searchMessages": "Nachrichten suchen…",
+    "noMatchingMessages": "Keine passenden Nachrichten.",
+    "emptyChat": "Noch keine Nachrichten. Sende unten die erste.",
+    "emptyTodos": "Noch keine Aufgaben.",
+    "emptyLinks": "Noch keine Links gespeichert.",
+    "emptyResources": "Noch keine Ressourcen.",
+    "composerPlaceholder": "Nachricht schreiben…",
+    "send": "Senden",
+    "sendHint": "Enter zum Senden · Umschalt+Enter für Zeilenumbruch",
+    "messageType": "Typ",
+    "defaultMessageType": "Nachricht",
+    "deleteMessage": "Nachricht löschen",
+    "addTodo": "Hinzufügen",
+    "todoPlaceholder": "Neue Aufgabe…",
+    "addLink": "Link hinzufügen",
+    "linkUrl": "URL",
+    "linkTitle": "Titel (optional)",
+    "linkNote": "Notiz (optional)",
+    "addResource": "Ressource hinzufügen",
+    "resourceName": "Name",
+    "resourceKind": "Art (optional)",
+    "resourceUri": "Pfad oder URL (optional)",
+    "resourceNote": "Notiz (optional)",
+    "settings.title": "Kanaltitel",
+    "settings.subtitle": "Untertitel",
+    "settings.subtitlePlaceholder": "Eine kurze Beschreibung dieses Kanals…",
+    "settings.hint":
+        "Titel und Untertitel erscheinen oben auf der Seite. Der Dateiname bleibt unverändert.",
+    "format": "Kanal",
+  },
   appTitle: 'TinyNote',
   appDescription: 'TinyNote - Schnipsel und kurze Notizen verwalten',
   appTagline: 'Verstreute Notizen organisieren',
@@ -195,13 +245,15 @@ final stringsDe = AppStrings(
   convertToMarkdown: 'In Markdown-Notiz umwandeln',
   convertToWriter: 'In Artikelnotiz umwandeln',
   convertFormatFailed: 'Notiztyp konnte nicht umgewandelt werden',
-  convertFormatExists: 'Eine Notiz des Zieltyps mit diesem Namen existiert bereits',
+  convertFormatExists:
+      'Eine Notiz des Zieltyps mit diesem Namen existiert bereits',
   previewDocument: 'Vorschau',
   documentContentHint: 'Dokument schreiben. Markdown wird unterstützt…',
   documentSaved: 'Gespeichert',
   openLinkFailed: 'Link konnte nicht geöffnet werden',
   documentBlocksUnsupported: 'Dokumentnotizen unterstützen keine Notizblöcke',
-  unsupportedFormatTitle: 'Dieses Notizformat wird in dieser Version nicht unterstützt',
+  unsupportedFormatTitle:
+      'Dieses Notizformat wird in dieser Version nicht unterstützt',
   unsupportedFormatMessage:
       'Diese Notiz verwendet das Format "{suffix}", das in der aktuellen Version nicht enthalten ist. Aktualisiere TinyNote oder öffne sie mit einem Markdown-kompatiblen Editor. Das Öffnen in einem älteren Editor kann die Notizstruktur beschädigen.',
   unsupportedFormatUpgrade: 'Neueste Version holen',
@@ -213,7 +265,7 @@ final stringsDe = AppStrings(
   importNotesRuleMarkdownOnly:
       'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
   importNotesRuleFormats:
-      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md) haben, behalten ihr ursprüngliches Format.',
+      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) haben, behalten ihr ursprüngliches Format.',
   importNotesRuleUnmarked:
       'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
   importNotesRuleTarget:
@@ -238,12 +290,14 @@ final stringsDe = AppStrings(
   sampleLibraryDescription:
       'Importiere einen fertigen Bereich, der TinyNote erklärt und praktische Beispiele für Projekte, Referenzen, Code und längere Texte zeigt.',
   sampleLibraryBlocksTitle: 'Blocknotizen',
-  sampleLibraryBlocksDesc: 'Funktionstour, Projektboard und wiederverwendbare Snippets',
+  sampleLibraryBlocksDesc:
+      'Funktionstour, Projektboard und wiederverwendbare Snippets',
   sampleLibraryMarkdownTitle: 'Markdown-Notiz',
   sampleLibraryMarkdownDesc:
       'Syntaxleitfaden mit Aufgaben, Tabellen, Diagramm, Code und Diagrammquelle',
   sampleLibraryWriterTitle: 'Artikelnotiz',
-  sampleLibraryWriterDesc: 'Ein Beispiel für einen fokussierten Wochenrückblick',
+  sampleLibraryWriterDesc:
+      'Ein Beispiel für einen fokussierten Wochenrückblick',
   sampleLibraryContentLanguage: 'Sprache der Beispielinhalte',
   sampleLibrarySafeImportNote:
       'Die gewählte Sprache gilt für Bereichsnamen, Notiztitel und Inhalte. Vorhandene Notizen werden nie überschrieben.',
@@ -310,7 +364,8 @@ final stringsDe = AppStrings(
       'Lokale und entfernte Notizen können in Konflikt stehen. Versuche später erneut abzurufen. Wenn es weiter scheitert, erstelle zuerst ein lokales Backup.',
   gitSyncNotReady: 'Die Notizbibliothek ist noch nicht bereit',
   gitSyncOpenTokenPage: 'Token-Seite öffnen',
-  gitSyncAuthFailed: 'Autorisierung fehlgeschlagen. Token prüfen und erneut versuchen.',
+  gitSyncAuthFailed:
+      'Autorisierung fehlgeschlagen. Token prüfen und erneut versuchen.',
   gitSyncSslFailed:
       'Das Serverzertifikat konnte nicht geprüft werden. Prüfe die Repository-URL und, ob dieses Gerät dem Zertifikat vertraut.',
   gitSyncRemoteBound: 'HTTPS-Repository verbunden',
@@ -322,7 +377,8 @@ final stringsDe = AppStrings(
   proStatusFree:
       'Mit Pro erhältst du mehr Bereiche, Artikelnotizen und Git-Sync.',
   proGateTitle: 'TinyNote Pro',
-  proGateHint: 'Wähle ein Abo oder einen Einmalkauf, um diese Funktion zu nutzen.',
+  proGateHint:
+      'Wähle ein Abo oder einen Einmalkauf, um diese Funktion zu nutzen.',
   proGateSpaceLimit:
       'Der kostenlose Plan unterstützt bis zu 5 Bereiche. Mit Pro kannst du mehr anlegen.',
   proGateNotebookLimit:
@@ -354,7 +410,8 @@ final stringsDe = AppStrings(
       'Abos verlängern sich automatisch, bis du sie in den Apple-Account-Einstellungen kündigst. Mit dem Kauf stimmst du zu:',
   proStorePrivacy: 'Datenschutz',
   proStoreTerms: 'Nutzungsbedingungen (EULA)',
-  proPurchaseIncomplete: 'Der Kauf wurde nicht abgeschlossen. Bitte erneut versuchen.',
+  proPurchaseIncomplete:
+      'Der Kauf wurde nicht abgeschlossen. Bitte erneut versuchen.',
   proPurchasePending:
       'Dieser Kauf wartet auf Freigabe. Pro wird danach automatisch freigeschaltet.',
   proPurchaseNotSynced:

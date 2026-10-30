@@ -122,7 +122,7 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
-      if (format.isUnsupportedOnMobile || format.isCsvPreview) {
+      if (format.isUnsupportedOnMobile || format.isCsvPreview || format == NotebookFormat.channel) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,
@@ -239,7 +239,7 @@ class FileSystemService {
     }
     await storage.writeTextFile(
       filePath,
-      initialNotebookContent(resolved.format, resolved.displayName),
+      initialNotebookContent(resolved.format, resolved.displayName, selfMemberName: appStrings.ch('selfMemberName')),
     );
     final notebook = await loadNotebook(filePath);
     if (notebook == null) {

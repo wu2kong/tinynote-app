@@ -1,4 +1,6 @@
-enum NotebookFormat { blocks, markdown, writer, csv, unsupported }
+import 'dart:convert';
+
+enum NotebookFormat { blocks, markdown, writer, csv, channel, unsupported }
 
 class NotebookFormatDef {
   const NotebookFormatDef({
@@ -23,6 +25,7 @@ const notebookFormats = <NotebookFormatDef>[
   NotebookFormatDef(id: NotebookFormat.markdown, extension: '.mk.md'),
   NotebookFormatDef(id: NotebookFormat.writer, extension: '.writer.md'),
   NotebookFormatDef(id: NotebookFormat.csv, extension: '.csv.md'),
+  NotebookFormatDef(id: NotebookFormat.channel, extension: '.channel.md'),
 ];
 
 class _SuffixMatcher {
@@ -67,19 +70,28 @@ extension NotebookFormatX on NotebookFormat {
   }
 }
 
-bool shouldUseMarkdownEditor(NotebookFormat format, {bool compatOpenAsMarkdown = false}) {
+bool shouldUseMarkdownEditor(
+  NotebookFormat format, {
+  bool compatOpenAsMarkdown = false,
+}) {
   return format == NotebookFormat.markdown || compatOpenAsMarkdown;
 }
 
-bool shouldSaveAsDocument(NotebookFormat format, {bool compatOpenAsMarkdown = false}) {
-  return format.isDocument || compatOpenAsMarkdown;
+bool shouldSaveAsDocument(
+  NotebookFormat format, {
+  bool compatOpenAsMarkdown = false,
+}) {
+  return format.isDocument ||
+      format == NotebookFormat.channel ||
+      compatOpenAsMarkdown;
 }
 
 NotebookFormatDef getFormatDef(NotebookFormat format) {
   return _formatById[format] ?? _formatById[NotebookFormat.blocks]!;
 }
 
-String getFormatExtension(NotebookFormat format) => getFormatDef(format).extension;
+String getFormatExtension(NotebookFormat format) =>
+    getFormatDef(format).extension;
 
 /// Compound `.token.md` suffix that is not registered in this app version.
 String? unknownNotebookFormatSuffix(String fileName) {
@@ -128,7 +140,10 @@ String notebookDisplayName(String fileName) {
   return fileName.replaceAll(RegExp(r'\.md$', caseSensitive: false), '');
 }
 
-String replaceNotebookFormatSuffix(String fileName, NotebookFormat targetFormat) {
+String replaceNotebookFormatSuffix(
+  String fileName,
+  NotebookFormat targetFormat,
+) {
   return buildNotebookFileName(notebookDisplayName(fileName), targetFormat);
 }
 
@@ -151,9 +166,10 @@ ResolvedNotebookFileName resolveNotebookFileName(
   String? preserveExtension,
 }) {
   final trimmed = inputName.trim();
-  final preserved = preserveExtension == null
-      ? null
-      : _normalizePreserveExtension(preserveExtension, preferredFormat);
+  final preserved =
+      preserveExtension == null
+          ? null
+          : _normalizePreserveExtension(preserveExtension, preferredFormat);
 
   if (trimmed.isEmpty) {
     final extension = preserved ?? getFormatExtension(preferredFormat);
@@ -174,7 +190,10 @@ ResolvedNotebookFileName resolveNotebookFileName(
   }
 
   for (final matcher in _suffixMatchers) {
-    final stem = matcher.suffix.replaceAll(RegExp(r'\.md$', caseSensitive: false), '');
+    final stem = matcher.suffix.replaceAll(
+      RegExp(r'\.md$', caseSensitive: false),
+      '',
+    );
     if (stem.isEmpty || stem == '.') continue;
     if (trimmed.toLowerCase().endsWith(stem)) {
       final displayName = trimmed.substring(0, trimmed.length - stem.length);
@@ -194,7 +213,10 @@ ResolvedNotebookFileName resolveNotebookFileName(
   );
 }
 
-String _normalizePreserveExtension(String extension, NotebookFormat preferredFormat) {
+String _normalizePreserveExtension(
+  String extension,
+  NotebookFormat preferredFormat,
+) {
   final normalized = extension.startsWith('.') ? extension : '.$extension';
   final lower = normalized.toLowerCase();
   if (unknownNotebookFormatSuffix('stem$lower') != null) {
@@ -212,7 +234,27 @@ String buildNotebookFileName(String displayName, NotebookFormat format) {
   return resolveNotebookFileName(displayName, preferredFormat: format).fileName;
 }
 
-String initialNotebookContent(NotebookFormat format, String displayName) {
+String initialNotebookContent(
+  NotebookFormat format,
+  String displayName, {
+  String selfMemberName = 'Me',
+}) {
+  if (format == NotebookFormat.channel) {
+    return jsonEncode({
+      'version': 1,
+      'title': displayName,
+      'subtitle': '',
+      'showTime': true,
+      'showMemberAvatars': true,
+      'members': [
+        {'id': 'self', 'name': selfMemberName, 'isSelf': true},
+      ],
+      'messages': [],
+      'todos': [],
+      'links': [],
+      'resources': [],
+    });
+  }
   if (format == NotebookFormat.csv) {
     return 'Column 1,Column 2,Column 3\n'
         ',,\n';
@@ -245,7 +287,9 @@ bool hasExplicitNotebookFormatMarker(String fileName) {
 
 /// Keep files that already have a built-in format marker.
 /// Plain `.md` (no blk / mk / writer marker) is rewritten to `.writer.md`.
-({String fileName, bool converted}) resolveImportedNotebookFileName(String fileName) {
+({String fileName, bool converted}) resolveImportedNotebookFileName(
+  String fileName,
+) {
   if (hasExplicitNotebookFormatMarker(fileName)) {
     return (fileName: fileName, converted: false);
   }

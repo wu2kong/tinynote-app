@@ -2,6 +2,7 @@ import '../core/notebook_format.dart';
 
 class AppStrings {
   AppStrings({
+    required this.channel,
     required this.appTitle,
     required this.appDescription,
     required this.appTagline,
@@ -619,12 +620,16 @@ class AppStrings {
   final String proPurchaseNotSynced;
   final String proPurchaseUnavailable;
 
+  final Map<String, String> channel;
+  String ch(String key) => channel[key] ?? key;
+
   String formatLabel(NotebookFormat format) {
     return switch (format) {
       NotebookFormat.blocks => formatBlocks,
       NotebookFormat.markdown => formatMarkdown,
       NotebookFormat.writer => formatWriter,
       NotebookFormat.csv => formatCsv,
+      NotebookFormat.channel => ch('format'),
       NotebookFormat.unsupported => formatUnsupported,
     };
   }

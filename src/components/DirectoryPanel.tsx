@@ -3,7 +3,7 @@ import { useStore } from '@/store/useStore';
 import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook, NotebookFormatId } from '@/types';
 import {
-  Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, Table2, ChevronRight, ChevronDown,
+  Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, Table2, MessagesSquare, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
@@ -86,6 +86,7 @@ function NotebookTreeIcon({ format }: { format: NotebookFormatId }) {
   if (format === 'markdown') return <FileCode size={14} className="tree-file-icon" />;
   if (format === 'writer') return <PenLine size={14} className="tree-file-icon" />;
   if (format === 'csv') return <Table2 size={14} className="tree-file-icon" />;
+  if (format === 'channel') return <MessagesSquare size={14} className="tree-file-icon" />;
   if (format === 'unsupported') return <FileQuestion size={14} className="tree-file-icon" />;
   return <FileText size={14} className="tree-file-icon" />;
 }
@@ -775,6 +776,9 @@ const DirectoryPanel: React.FC = () => {
                 <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'csv'); closeContextMenu(); }}>
                   <Table2 size={14} />{t('directory.newCsvNotebook')}
                 </button>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'channel'); closeContextMenu(); }}>
+                  <MessagesSquare size={14} />{t('directory.newChannelNotebook')}
+                </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
                 </button>
@@ -839,6 +843,9 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'csv'); closeContextMenu(); }}>
               <Table2 size={14} />{t('directory.newCsvNotebook')}
+            </button>
+            <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'channel'); closeContextMenu(); }}>
+              <MessagesSquare size={14} />{t('directory.newChannelNotebook')}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}
