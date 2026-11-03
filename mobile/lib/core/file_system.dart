@@ -122,7 +122,10 @@ class FileSystemService {
       final fileName = basename(normalizedPath);
       final format = detectNotebookFormat(fileName);
       final name = notebookDisplayName(fileName);
-      if (format.isUnsupportedOnMobile || format.isCsvPreview || format == NotebookFormat.channel) {
+      if (format.isUnsupportedOnMobile ||
+          format.isCsvPreview ||
+          format == NotebookFormat.channel ||
+          format == NotebookFormat.todo) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,
@@ -168,7 +171,8 @@ class FileSystemService {
   }
 
   Future<void> saveNotebook(Notebook notebook) async {
-    if ((notebook.format.isUnsupportedOnMobile || notebook.format.isCsvPreview) &&
+    if ((notebook.format.isUnsupportedOnMobile ||
+            notebook.format.isCsvPreview) &&
         !notebook.compatOpenAsMarkdown) {
       return;
     }
@@ -221,16 +225,16 @@ class FileSystemService {
   }) async {
     var resolved = resolveNotebookFileName(
       name,
-      preferredFormat: format == NotebookFormat.unsupported
-          ? NotebookFormat.blocks
-          : format,
+      preferredFormat:
+          format == NotebookFormat.unsupported ? NotebookFormat.blocks : format,
     );
     if (resolved.format == NotebookFormat.unsupported) {
       resolved = resolveNotebookFileName(
         resolved.displayName,
-        preferredFormat: format == NotebookFormat.unsupported
-            ? NotebookFormat.blocks
-            : format,
+        preferredFormat:
+            format == NotebookFormat.unsupported
+                ? NotebookFormat.blocks
+                : format,
       );
     }
     final filePath = joinPath(parentPath, resolved.fileName);
@@ -239,7 +243,11 @@ class FileSystemService {
     }
     await storage.writeTextFile(
       filePath,
-      initialNotebookContent(resolved.format, resolved.displayName, selfMemberName: appStrings.ch('selfMemberName')),
+      initialNotebookContent(
+        resolved.format,
+        resolved.displayName,
+        selfMemberName: appStrings.ch('selfMemberName'),
+      ),
     );
     final notebook = await loadNotebook(filePath);
     if (notebook == null) {

@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsDe = AppStrings(
   channel: {
     "tabsLabel": "Kanalbereiche",
+    "todo.format": "Aufgabennotiz",
     "tabs.chat": "Chat",
     "tabs.todos": "Aufgaben",
     "tabs.links": "Links",
@@ -35,6 +36,8 @@ final stringsDe = AppStrings(
     "deleteMessage": "Nachricht löschen",
     "addTodo": "Hinzufügen",
     "todo.groupMenu": "Gruppenoptionen",
+    "todo.listView": "Liste",
+    "todo.boardView": "Board",
     "todo.addGroupAbove": "Gruppe darüber hinzufügen",
     "todo.addGroupBelow": "Gruppe darunter hinzufügen",
     "todo.moveTo": "In Gruppe verschieben",
@@ -86,6 +89,9 @@ final stringsDe = AppStrings(
     "resourceUri": "Pfad oder URL (optional)",
     "resourceNote": "Notiz (optional)",
     "settings.title": "Kanaltitel",
+    "settings.features": "Bereiche aktivieren",
+    "settings.requiredFeaturesHint":
+        "Chat, Mitglieder und Einstellungen sind immer verfügbar.",
     "settings.subtitle": "Untertitel",
     "settings.subtitlePlaceholder": "Eine kurze Beschreibung dieses Kanals…",
     "settings.hint":
@@ -306,7 +312,7 @@ final stringsDe = AppStrings(
   importNotesRuleMarkdownOnly:
       'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
   importNotesRuleFormats:
-      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) haben, behalten ihr ursprüngliches Format.',
+      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) haben, behalten ihr ursprüngliches Format.',
   importNotesRuleUnmarked:
       'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
   importNotesRuleTarget:

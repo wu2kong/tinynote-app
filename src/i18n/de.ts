@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const deMessages = {
+  "todo": {
+    "view": "Ansicht",
+    "listView": "Liste",
+    "boardView": "Board",
+  },
   "common": {
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
@@ -557,12 +562,14 @@ export const deMessages = {
     "newWriterNotebook": "Neue Artikelnotiz",
     "newCsvNotebook": "Neue Tabellennotiz",
     "newChannelNotebook": "Neue Kanalnotiz",
+    "newTodoNotebook": "Neue Aufgabennotiz",
     "defaultNotebookNames": {
       "blocks": "Unbenanntes Block-Notizbuch",
       "markdown": "Unbenannte Markdown-Notiz",
       "writer": "Unbenannte Artikelnotiz",
       "csv": "Unbenannte Tabellennotiz",
-      "channel": "Unbenannter Kanal"
+      "channel": "Unbenannter Kanal",
+      "todo": "Unbenannte Aufgabennotiz",
     },
     "newGroup": "Neues Verzeichnis",
     "renameGroup": "Verzeichnis umbenennen",
@@ -576,6 +583,7 @@ export const deMessages = {
       "writer": "Artikel",
       "csv": "Tabelle (CSV)",
       "channel": "Kanal",
+      "todo": "Aufgaben",
       "unsupported": "Unbekanntes Format"
     },
     "groupName": "Verzeichnisname",
@@ -615,7 +623,7 @@ export const deMessages = {
     "title": "Notizen importieren",
     "description": "Importiere Markdown-Dateien in das Stammverzeichnis des aktuellen Notizbereichs. Bitte lies zuerst die folgenden Regeln:",
     "ruleMarkdownOnly": "Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.",
-    "ruleFormats": "Dateien, die bereits blk-, mk-, writer-, csv- oder channel-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) haben, behalten ihr ursprüngliches Format.",
+    "ruleFormats": "Dateien, die bereits blk-, mk-, writer-, csv- oder channel-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) haben, behalten ihr ursprüngliches Format.",
     "ruleUnmarked": "Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.",
     "ruleTarget": "Notizen und Verzeichnisse werden in das Stammverzeichnis des aktuellen Notizbereichs importiert; Verzeichnisse behalten ihre interne Struktur.",
     "ruleMultiple": "Sowohl „Notizen importieren“ als auch „Verzeichnis importieren“ unterstützen Mehrfachauswahl.",
@@ -915,6 +923,8 @@ export const deMessages = {
     "resourceUri": "Pfad oder URL (optional)",
     "resourceNote": "Notiz (optional)",
     "settings": {
+      "features": "Bereiche aktivieren",
+      "requiredFeaturesHint": "Chat, Mitglieder und Einstellungen sind immer verfügbar.",
       "title": "Kanaltitel",
       "subtitle": "Untertitel",
       "subtitlePlaceholder": "Eine kurze Beschreibung dieses Kanals…",

@@ -2,6 +2,9 @@ import type { MessageTree } from './types';
 
 export const zhHansMessages = {
   "todo": {
+    "view": "视图",
+    "listView": "列表",
+    "boardView": "看板",
     "groupMenu": "分组菜单",
     "addGroupAbove": "在上方添加分组",
     "addGroupBelow": "在下方添加分组",
@@ -611,12 +614,14 @@ export const zhHansMessages = {
     "newWriterNotebook": "新建文章笔记",
     "newCsvNotebook": "新建表格笔记",
     "newChannelNotebook": "新建频道笔记",
+    "newTodoNotebook": "新建待办笔记",
     "defaultNotebookNames": {
       "blocks": "未命名块笔记本",
       "markdown": "未命名Markdown笔记",
       "writer": "未命名文章笔记",
       "csv": "未命名表格笔记",
-      "channel": "未命名频道"
+      "channel": "未命名频道",
+      "todo": "未命名待办笔记",
     },
     "newGroup": "新建目录",
     "renameGroup": "重命名目录",
@@ -631,6 +636,7 @@ export const zhHansMessages = {
       "writer": "文章",
       "csv": "表格 (CSV)",
       "channel": "频道",
+      "todo": "待办",
       "unsupported": "未知格式"
     },
     "groupName": "目录名称",
@@ -670,7 +676,7 @@ export const zhHansMessages = {
     "title": "导入笔记",
     "description": "将 Markdown 文件导入到当前笔记空间的根目录。导入前请阅读以下规则：",
     "ruleMarkdownOnly": "仅导入以 .md 结尾的文件，其他文件会被忽略。",
-    "ruleFormats": "已带 blk、mk、writer、csv、channel 标记（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md）的文件会保持原格式。",
+    "ruleFormats": "已带 blk、mk、writer、csv、channel、todo 标记（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）的文件会保持原格式。",
     "ruleUnmarked": "未带上述标记的普通 .md 文件会自动转换为文章笔记（.writer.md）。",
     "ruleTarget": "笔记和目录都会导入到当前笔记空间的根目录；目录会保留其内部结构。",
     "ruleMultiple": "导入笔记和导入目录都支持一次多选。",
@@ -974,6 +980,8 @@ export const zhHansMessages = {
     "resourceUri": "路径或 URL（可选）",
     "resourceNote": "备注（可选）",
     "settings": {
+      "features": "功能开关",
+      "requiredFeaturesHint": "聊天、成员和设置始终保留。",
       "title": "频道标题",
       "subtitle": "副标题",
       "subtitlePlaceholder": "一句话介绍这个频道…",

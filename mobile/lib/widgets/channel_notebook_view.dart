@@ -14,10 +14,12 @@ class ChannelNotebookView extends StatefulWidget {
     required this.library,
     required this.notebook,
     this.showDirectoryButton = true,
+    this.todoOnly = false,
   });
   final LibraryService library;
   final Notebook notebook;
   final bool showDirectoryButton;
+  final bool todoOnly;
   @override
   State<ChannelNotebookView> createState() => _ChannelNotebookViewState();
 }
@@ -33,6 +35,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
   String _author = 'self';
   bool _saving = false;
   bool _ungroupedCollapsed = false;
+  bool get _todoBoardView => _doc?['todoView'] == 'board';
   static const _tabs = [
     'chat',
     'todos',
@@ -41,6 +44,11 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
     'members',
     'settings',
   ];
+  static const _requiredTabs = ['chat', 'members', 'settings'];
+  bool tabEnabled(String tab) =>
+      _requiredTabs.contains(tab) ||
+      (_doc?['enabledTabs'] is! List ||
+          (_doc!['enabledTabs'] as List).contains(tab));
   String tr(String key) => context.s.ch(key);
   String todoTr(String key) => tr('todo.$key');
   List<Map<String, dynamic>> items(String key) =>
@@ -82,6 +90,13 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
       final raw = jsonDecode(_synced);
       if (raw is! Map<String, dynamic>) return;
       _doc = raw;
+      if (widget.todoOnly) {
+        for (final key in ['todos', 'todoGroups']) {
+          if (raw[key] is! List) raw[key] = <dynamic>[];
+        }
+        return;
+      }
+      if (!tabEnabled(_tab)) _tab = 'chat';
       for (final key in [
         'members',
         'messages',
@@ -789,6 +804,241 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
     return groups.any((group) => group['id'] == id) ? id : '';
   }
 
+  Future<void> moveBoardTask(
+    String taskId,
+    String groupId, {
+    String? beforeId,
+  }) async {
+    if (_saving || taskId == beforeId) return;
+    await save(() {
+      final all = items('todos');
+      final index = all.indexWhere((task) => task['id'] == taskId);
+      if (index < 0) return;
+      final task = {...all.removeAt(index)};
+      if (groupId.isEmpty) {
+        task.remove('groupId');
+      } else {
+        task['groupId'] = groupId;
+      }
+      final target =
+          beforeId == null
+              ? -1
+              : all.indexWhere((item) => item['id'] == beforeId);
+      all.insert(target < 0 ? all.length : target, task);
+      _doc!['todos'] = all;
+    });
+  }
+
+  Future<void> moveBoardGroup(String id, String beforeId) async {
+    if (_saving || id == beforeId) return;
+    await save(() {
+      final groups = items('todoGroups');
+      final from = groups.indexWhere((group) => group['id'] == id);
+      if (from < 0) return;
+      final moving = groups.removeAt(from);
+      final to = groups.indexWhere((group) => group['id'] == beforeId);
+      groups.insert(to < 0 ? groups.length : to, moving);
+      _doc!['todoGroups'] = groups;
+    });
+  }
+
+  Widget boardTask(Map<String, dynamic> task, String groupId) {
+    final id = task['id'].toString();
+    return DragTarget<String>(
+      onWillAcceptWithDetails:
+          (details) =>
+              details.data.startsWith('task:') && details.data != 'task:$id',
+      onAcceptWithDetails:
+          (details) =>
+              moveBoardTask(details.data.substring(5), groupId, beforeId: id),
+      builder:
+          (context, candidates, _) => LongPressDraggable<String>(
+            data: 'task:$id',
+            feedback: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 260,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text((task['text'] ?? '').toString()),
+                  ),
+                ),
+              ),
+            ),
+            childWhenDragging: const SizedBox(height: 62),
+            child: Card(
+              color:
+                  candidates.isNotEmpty
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : null,
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: task['done'] == true,
+                    onChanged:
+                        _saving
+                            ? null
+                            : (value) => save(
+                              () =>
+                                  _doc!['todos'] = [
+                                    for (final item in items('todos'))
+                                      item['id'] == id
+                                          ? {
+                                            ...item,
+                                            'done': value,
+                                            'completedAt':
+                                                value == true
+                                                    ? DateTime.now()
+                                                        .toUtc()
+                                                        .toIso8601String()
+                                                    : null,
+                                          }
+                                          : item,
+                                  ],
+                            ),
+                  ),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => todoAction(task, 'edit'),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: Text(
+                          (task['text'] ?? '').toString(),
+                          style: TextStyle(
+                            decoration:
+                                task['done'] == true
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: todoTr('groupMenu'),
+                    onSelected: (action) => todoAction(task, action),
+                    itemBuilder:
+                        (_) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(todoTr('edit')),
+                          ),
+                          if (!widget.todoOnly &&
+                              task['sourceMessageId'] != null)
+                            PopupMenuItem(
+                              value: 'source',
+                              child: Text(todoTr('source')),
+                            ),
+                          for (final group in items('todoGroups'))
+                            PopupMenuItem(
+                              value: 'move:${group['id']}',
+                              child: Text(
+                                '${todoTr('moveTo')}: ${group['name']}',
+                              ),
+                            ),
+                          PopupMenuItem(
+                            value: 'move:',
+                            child: Text(
+                              '${todoTr('moveTo')}: ${todoTr('ungrouped')}',
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(todoTr('delete')),
+                          ),
+                        ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget boardColumn(
+    String groupId,
+    String name,
+    List<Map<String, dynamic>> groups,
+  ) {
+    final tasks =
+        items(
+          'todos',
+        ).where((task) => todoGroupId(task, groups) == groupId).toList();
+    return DragTarget<String>(
+      onWillAcceptWithDetails:
+          (details) =>
+              details.data.startsWith('task:') ||
+              (groupId.isNotEmpty &&
+                  details.data.startsWith('group:') &&
+                  details.data != 'group:$groupId'),
+      onAcceptWithDetails: (details) {
+        if (details.data.startsWith('task:')) {
+          moveBoardTask(details.data.substring(5), groupId);
+        } else {
+          moveBoardGroup(details.data.substring(6), groupId);
+        }
+      },
+      builder:
+          (context, candidates, _) => Container(
+            key: ValueKey('board:$groupId'),
+            width: 280,
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color:
+                  candidates.isNotEmpty
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : Theme.of(context).colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    if (groupId.isNotEmpty)
+                      LongPressDraggable<String>(
+                        data: 'group:$groupId',
+                        feedback: Material(
+                          elevation: 6,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Text(name),
+                          ),
+                        ),
+                        child: const Icon(Icons.drag_handle),
+                      ),
+                    Expanded(
+                      child: Text(
+                        '$name (${tasks.length})',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: tr('addTodo'),
+                      icon: const Icon(Icons.add),
+                      onPressed: () => addTodoToGroup(groupId),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      for (final task in tasks) boardTask(task, groupId),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
   Future<void> addTodo([String groupId = '']) async {
     final text = _todoDraft.text.trim();
     if (text.isEmpty) return;
@@ -984,7 +1234,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
       itemBuilder:
           (_) => [
             PopupMenuItem(value: 'edit', child: Text(todoTr('edit'))),
-            if (task['sourceMessageId'] != null)
+            if (!widget.todoOnly && task['sourceMessageId'] != null)
               PopupMenuItem(value: 'source', child: Text(todoTr('source'))),
             if (groups.isNotEmpty) ...[
               PopupMenuItem(enabled: false, child: Text(todoTr('moveTo'))),
@@ -1167,44 +1417,86 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
             ],
           ),
         ),
-        Expanded(
-          child: ListView(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
             children: [
-              todoSection(
-                '',
-                todoTr('ungrouped'),
-                _ungroupedCollapsed,
-                groups,
-                plain: !showGroups,
+              TextButton.icon(
+                onPressed:
+                    _saving
+                        ? null
+                        : () => save(() => _doc!['todoView'] = 'list'),
+                icon: const Icon(Icons.list),
+                label: Text(todoTr('listView')),
               ),
-              if (groups.isNotEmpty)
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
-                  itemCount: groups.length,
-                  onReorderItem: (oldIndex, newIndex) {
-                    if (_saving) return;
-                    save(() {
-                      final next = items('todoGroups');
-                      next.insert(newIndex, next.removeAt(oldIndex));
-                      _doc!['todoGroups'] = next;
-                    });
-                  },
-                  itemBuilder:
-                      (_, index) => KeyedSubtree(
-                        key: ValueKey('sort-group:${groups[index]['id']}'),
-                        child: todoSection(
-                          groups[index]['id'].toString(),
-                          groups[index]['name'].toString(),
-                          groups[index]['collapsed'] == true,
-                          groups,
-                          groupIndex: index,
-                        ),
-                      ),
-                ),
+              TextButton.icon(
+                onPressed:
+                    _saving
+                        ? null
+                        : () => save(() => _doc!['todoView'] = 'board'),
+                icon: const Icon(Icons.view_kanban_outlined),
+                label: Text(todoTr('boardView')),
+              ),
             ],
           ),
+        ),
+        Expanded(
+          child:
+              _todoBoardView
+                  ? SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        boardColumn('', todoTr('ungrouped'), groups),
+                        for (final group in groups)
+                          boardColumn(
+                            group['id'].toString(),
+                            group['name'].toString(),
+                            groups,
+                          ),
+                      ],
+                    ),
+                  )
+                  : ListView(
+                    children: [
+                      todoSection(
+                        '',
+                        todoTr('ungrouped'),
+                        _ungroupedCollapsed,
+                        groups,
+                        plain: !showGroups,
+                      ),
+                      if (groups.isNotEmpty)
+                        ReorderableListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          buildDefaultDragHandles: false,
+                          itemCount: groups.length,
+                          onReorderItem: (oldIndex, newIndex) {
+                            if (_saving) return;
+                            save(() {
+                              final next = items('todoGroups');
+                              next.insert(newIndex, next.removeAt(oldIndex));
+                              _doc!['todoGroups'] = next;
+                            });
+                          },
+                          itemBuilder:
+                              (_, index) => KeyedSubtree(
+                                key: ValueKey(
+                                  'sort-group:${groups[index]['id']}',
+                                ),
+                                child: todoSection(
+                                  groups[index]['id'].toString(),
+                                  groups[index]['name'].toString(),
+                                  groups[index]['collapsed'] == true,
+                                  groups,
+                                  groupIndex: index,
+                                ),
+                              ),
+                        ),
+                    ],
+                  ),
         ),
       ],
     );
@@ -1360,6 +1652,38 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
               onChanged:
                   _saving ? null : (value) => save(() => _doc![key] = value),
             ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              tr('settings.features'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          for (final tab in _tabs)
+            SwitchListTile(
+              title: Text(tr('tabs.$tab')),
+              value: tabEnabled(tab),
+              onChanged:
+                  _requiredTabs.contains(tab) || _saving
+                      ? null
+                      : (value) => save(() {
+                        final enabled = [
+                          for (final id in _tabs)
+                            if (tabEnabled(id)) id,
+                        ];
+                        _doc!['enabledTabs'] = [
+                          for (final id in _tabs)
+                            if (_requiredTabs.contains(id) ||
+                                (id == tab ? value : enabled.contains(id)))
+                              id,
+                        ];
+                      }),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(tr('settings.requiredFeaturesHint')),
+          ),
         ],
       );
     }
@@ -1529,12 +1853,15 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
         ),
         if (_doc == null)
           Expanded(child: SelectableText(widget.notebook.documentContent))
+        else if (widget.todoOnly)
+          Expanded(child: todosPanel())
         else ...[
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children:
                   _tabs
+                      .where(tabEnabled)
                       .map(
                         (tab) => TextButton(
                           onPressed: () {

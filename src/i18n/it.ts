@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const itMessages = {
+  "todo": {
+    "view": "Vista",
+    "listView": "Elenco",
+    "boardView": "Bacheca",
+  },
   "common": {
     "cancel": "Annulla",
     "confirm": "Conferma",
@@ -557,12 +562,14 @@ export const itMessages = {
     "newWriterNotebook": "Nuova nota articolo",
     "newCsvNotebook": "Nuova nota tabella",
     "newChannelNotebook": "Nuova nota canale",
+    "newTodoNotebook": "Nuova nota attività",
     "defaultNotebookNames": {
       "blocks": "Taccuino a blocchi senza titolo",
       "markdown": "Nota Markdown senza titolo",
       "writer": "Articolo senza titolo",
       "csv": "Tabella senza titolo",
-      "channel": "Canale senza titolo"
+      "channel": "Canale senza titolo",
+      "todo": "Nota attività senza titolo",
     },
     "newGroup": "Nuova directory",
     "renameGroup": "Rinomina directory",
@@ -576,6 +583,7 @@ export const itMessages = {
       "writer": "Articolo",
       "csv": "Tabella (CSV)",
       "channel": "Canale",
+      "todo": "Attività",
       "unsupported": "Formato sconosciuto"
     },
     "groupName": "Nome directory",
@@ -615,7 +623,7 @@ export const itMessages = {
     "title": "Importa note",
     "description": "Importa file Markdown nella radice dello spazio note corrente. Leggi prima le regole seguenti:",
     "ruleMarkdownOnly": "Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.",
-    "ruleFormats": "I file che hanno già i marcatori blk, mk, writer, csv o channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) mantengono il formato originale.",
+    "ruleFormats": "I file che hanno già i marcatori blk, mk, writer, csv o channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) mantengono il formato originale.",
     "ruleUnmarked": "I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).",
     "ruleTarget": "Sia le note sia le directory vengono importate nella radice dello spazio note corrente; le directory mantengono la struttura interna.",
     "ruleMultiple": "Sia Importa note sia Importa directory supportano la selezione multipla.",
@@ -915,6 +923,8 @@ export const itMessages = {
     "resourceUri": "Percorso o URL (facoltativo)",
     "resourceNote": "Nota (facoltativa)",
     "settings": {
+      "features": "Sezioni attive",
+      "requiredFeaturesHint": "Chat, Membri e Impostazioni sono sempre disponibili.",
       "title": "Titolo del canale",
       "subtitle": "Sottotitolo",
       "subtitlePlaceholder": "Una breve descrizione del canale…",

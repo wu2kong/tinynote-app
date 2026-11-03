@@ -55,6 +55,21 @@ test('display options default for old documents and persist when disabled', () =
   assert.equal(parsed.showMemberAvatars, false);
 });
 
+test('todo view defaults to list and survives reopening', () => {
+  const old = parseChannelDocument('{"todos":[]}');
+  assert.equal(old.todoView, 'list');
+  old.todoView = 'board';
+  assert.equal(parseChannelDocument(serializeChannelDocument(old)).todoView, 'board');
+  assert.equal(parseChannelDocument('{"todoView":"unknown"}').todoView, 'list');
+});
+
+test('channel section switches default on and always retain required sections', () => {
+  assert.deepEqual(parseChannelDocument('{"messages":[]}').enabledTabs, ['chat', 'todos', 'links', 'resources', 'members', 'settings']);
+  const parsed = parseChannelDocument('{"enabledTabs":["links","invalid"]}');
+  assert.deepEqual(parsed.enabledTabs, ['chat', 'links', 'members', 'settings']);
+  assert.deepEqual(parseChannelDocument(serializeChannelDocument(parsed)).enabledTabs, parsed.enabledTabs);
+});
+
 test('message order survives serialization', () => {
   const doc = createEmptyChannelDocument('Me');
   const first = createChannelMessage('first', DEFAULT_SELF_MEMBER_ID);

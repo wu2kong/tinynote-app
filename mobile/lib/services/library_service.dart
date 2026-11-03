@@ -155,9 +155,13 @@ class LibraryService extends ChangeNotifier {
         url: httpsUrl,
         token: token.trim(),
         username: username.trim(),
-        remoteName: gitConfig.remoteName.isEmpty ? 'origin' : gitConfig.remoteName,
+        remoteName:
+            gitConfig.remoteName.isEmpty ? 'origin' : gitConfig.remoteName,
       );
-      final remoteName = await _gitSync.connect(libraryPath: root, config: next);
+      final remoteName = await _gitSync.connect(
+        libraryPath: root,
+        config: next,
+      );
       final saved = next.copyWith(remoteName: remoteName);
       await _gitConfigStore.save(saved);
       gitConfig = saved;
@@ -165,7 +169,10 @@ class LibraryService extends ChangeNotifier {
       await _loadGitState(root);
       syncMessage = appStrings.gitSyncConnected;
     } catch (error) {
-      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncConnectFailed);
+      syncMessage = _gitErrorMessage(
+        error,
+        fallback: appStrings.gitSyncConnectFailed,
+      );
       rethrow;
     } finally {
       syncBusy = false;
@@ -226,7 +233,10 @@ class LibraryService extends ChangeNotifier {
               });
       return result.conflictCopies;
     } catch (error) {
-      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncPullFailed);
+      syncMessage = _gitErrorMessage(
+        error,
+        fallback: appStrings.gitSyncPullFailed,
+      );
       rethrow;
     } finally {
       syncBusy = false;
@@ -252,7 +262,10 @@ class LibraryService extends ChangeNotifier {
               ? appStrings.gitSyncPushed
               : appStrings.gitSyncNoChanges;
     } catch (error) {
-      syncMessage = _gitErrorMessage(error, fallback: appStrings.gitSyncPushFailed);
+      syncMessage = _gitErrorMessage(
+        error,
+        fallback: appStrings.gitSyncPushFailed,
+      );
       rethrow;
     } finally {
       syncBusy = false;
@@ -868,11 +881,12 @@ class LibraryService extends ChangeNotifier {
       name: notebook.name,
       path: notebook.path,
       format: notebook.format,
-      content: notebook.format.isDocument
-          ? (updatedBlocks.isNotEmpty
-              ? updatedBlocks.first.content
-              : notebook.content)
-          : notebook.content,
+      content:
+          notebook.format.isDocument
+              ? (updatedBlocks.isNotEmpty
+                  ? updatedBlocks.first.content
+                  : notebook.content)
+              : notebook.content,
       noteBlocks: updatedBlocks,
     );
     await _fileSystem!.saveNotebook(updated);
@@ -902,7 +916,10 @@ class LibraryService extends ChangeNotifier {
   Future<void> updateNotebookContent(String content) async {
     final notebook = currentNotebook;
     if (notebook == null) throw StateError(appStrings.noNotebookSelected);
-    if (!notebook.format.isDocument && notebook.format != NotebookFormat.channel && !notebook.compatOpenAsMarkdown) {
+    if (!notebook.format.isDocument &&
+        notebook.format != NotebookFormat.channel &&
+        notebook.format != NotebookFormat.todo &&
+        !notebook.compatOpenAsMarkdown) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }
     final now = DateTime.now().toUtc().toIso8601String();

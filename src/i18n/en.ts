@@ -2,6 +2,9 @@ import type { MessageTree } from './types';
 
 export const enMessages = {
   "todo": {
+    "view": "View",
+    "listView": "List",
+    "boardView": "Board",
     "groupMenu": "Group options",
     "addGroupAbove": "Add group above",
     "addGroupBelow": "Add group below",
@@ -611,12 +614,14 @@ export const enMessages = {
     "newWriterNotebook": "New Article Note",
     "newCsvNotebook": "New Table Note",
     "newChannelNotebook": "New Channel Note",
+    "newTodoNotebook": "New Todo Note",
     "defaultNotebookNames": {
       "blocks": "Untitled Block Notebook",
       "markdown": "Untitled Markdown Note",
       "writer": "Untitled Article Note",
       "csv": "Untitled Table Note",
-      "channel": "Untitled Channel"
+      "channel": "Untitled Channel",
+      "todo": "Untitled Todo Note",
     },
     "newGroup": "New Directory",
     "renameGroup": "Rename Directory",
@@ -631,6 +636,7 @@ export const enMessages = {
       "writer": "Article",
       "csv": "Table (CSV)",
       "channel": "Channel",
+      "todo": "Todo",
       "unsupported": "Unknown format"
     },
     "groupName": "Directory Name",
@@ -670,7 +676,7 @@ export const enMessages = {
     "title": "Import Notes",
     "description": "Import Markdown files into the root of the current note space. Please read the rules below first:",
     "ruleMarkdownOnly": "Only files ending with .md are imported; other files are ignored.",
-    "ruleFormats": "Files that already have blk, mk, writer, csv, or channel markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) keep their original format.",
+    "ruleFormats": "Files that already have blk, mk, writer, csv, channel, or todo markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) keep their original format.",
     "ruleUnmarked": "Plain .md files without those markers are converted to article notes (.writer.md).",
     "ruleTarget": "Both notes and directories are imported into the root of the current note space; directories keep their internal structure.",
     "ruleMultiple": "Both Import Notes and Import Directory support multiple selection.",
@@ -974,6 +980,8 @@ export const enMessages = {
     "resourceUri": "Path or URL (optional)",
     "resourceNote": "Note (optional)",
     "settings": {
+      "features": "Enabled sections",
+      "requiredFeaturesHint": "Chat, Members, and Settings are always available.",
       "title": "Channel title",
       "subtitle": "Subtitle",
       "subtitlePlaceholder": "A short description of this channel…",

@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsZhHans = AppStrings(
   channel: {
     "tabsLabel": "频道分区",
+    "todo.format": "待办笔记",
     "tabs.chat": "聊天",
     "tabs.todos": "待办",
     "tabs.links": "链接",
@@ -35,6 +36,8 @@ final stringsZhHans = AppStrings(
     "deleteMessage": "删除消息",
     "addTodo": "添加",
     "todo.groupMenu": "分组菜单",
+    "todo.listView": "列表",
+    "todo.boardView": "看板",
     "todo.addGroupAbove": "在上方添加分组",
     "todo.addGroupBelow": "在下方添加分组",
     "todo.moveTo": "移动到分组",
@@ -86,6 +89,8 @@ final stringsZhHans = AppStrings(
     "resourceUri": "路径或 URL（可选）",
     "resourceNote": "备注（可选）",
     "settings.title": "频道标题",
+    "settings.features": "功能开关",
+    "settings.requiredFeaturesHint": "聊天、成员和设置始终保留。",
     "settings.subtitle": "副标题",
     "settings.subtitlePlaceholder": "一句话介绍这个频道…",
     "settings.hint": "标题和副标题显示在页面顶部，不会改文件名。",

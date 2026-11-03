@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const ruMessages = {
+  "todo": {
+    "view": "Вид",
+    "listView": "Список",
+    "boardView": "Доска",
+  },
   "common": {
     "cancel": "Отмена",
     "confirm": "Подтвердить",
@@ -557,12 +562,14 @@ export const ruMessages = {
     "newWriterNotebook": "Новая заметка-статья",
     "newCsvNotebook": "Новая табличная заметка",
     "newChannelNotebook": "Новая заметка-канал",
+    "newTodoNotebook": "Новая заметка с задачами",
     "defaultNotebookNames": {
       "blocks": "Блокнот без названия",
       "markdown": "Markdown-заметка без названия",
       "writer": "Статья без названия",
       "csv": "Таблица без названия",
-      "channel": "Канал без названия"
+      "channel": "Канал без названия",
+      "todo": "Заметка с задачами без названия",
     },
     "newGroup": "Новый каталог",
     "renameGroup": "Переименовать каталог",
@@ -576,6 +583,7 @@ export const ruMessages = {
       "writer": "Статья",
       "csv": "Таблица (CSV)",
       "channel": "Канал",
+      "todo": "Задачи",
       "unsupported": "Неизвестный формат"
     },
     "groupName": "Название каталога",
@@ -615,7 +623,7 @@ export const ruMessages = {
     "title": "Импортировать заметки",
     "description": "Импортируйте файлы Markdown в корень текущего пространства заметок. Сначала ознакомьтесь с правилами:",
     "ruleMarkdownOnly": "Импортируются только файлы с расширением .md; остальные файлы игнорируются.",
-    "ruleFormats": "Файлы, у которых уже есть маркеры blk, mk, writer, csv или channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md), сохраняют исходный формат.",
+    "ruleFormats": "Файлы, у которых уже есть маркеры blk, mk, writer, csv или channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md), сохраняют исходный формат.",
     "ruleUnmarked": "Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).",
     "ruleTarget": "И заметки, и каталоги импортируются в корень текущего пространства; каталоги сохраняют внутреннюю структуру.",
     "ruleMultiple": "И «Импортировать заметки», и «Импортировать каталог» поддерживают множественный выбор.",
@@ -915,6 +923,8 @@ export const ruMessages = {
     "resourceUri": "Путь или URL (необязательно)",
     "resourceNote": "Заметка (необязательно)",
     "settings": {
+      "features": "Разделы",
+      "requiredFeaturesHint": "Чат, участники и настройки всегда доступны.",
       "title": "Название канала",
       "subtitle": "Подзаголовок",
       "subtitlePlaceholder": "Краткое описание канала…",

@@ -15,6 +15,303 @@ class MemoryLibrary extends LibraryService {
 }
 
 void main() {
+  testWidgets('todo view mode is saved and restored on reopen', (tester) async {
+    final library = MemoryLibrary();
+    Notebook note(String content) => Notebook(
+      id: 'view',
+      name: 'Tasks',
+      path: '/Tasks.todo.md',
+      format: NotebookFormat.todo,
+      noteBlocks: const [],
+      content: content,
+    );
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    Widget screen(String content, Key key) => LocaleScope(
+      controller: controller,
+      child: MaterialApp(
+        home: Scaffold(
+          body: ChannelNotebookView(
+            key: key,
+            library: library,
+            notebook: note(content),
+            todoOnly: true,
+            showDirectoryButton: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      screen(
+        jsonEncode({'version': 1, 'todos': [], 'todoGroups': []}),
+        const ValueKey('first'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('board:')), findsNothing);
+    await tester.tap(find.widgetWithText(TextButton, 'Board'));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(library.saved!)['todoView'], 'board');
+    await tester.pumpWidget(screen(library.saved!, const ValueKey('reopened')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('board:')), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
+  testWidgets('board view reorders tasks within a group', (tester) async {
+    final library = MemoryLibrary();
+    final notebook = Notebook(
+      id: 'order',
+      name: 'Order',
+      path: '/Order.todo.md',
+      format: NotebookFormat.todo,
+      noteBlocks: const [],
+      content: jsonEncode({
+        'version': 1,
+        'todos': [
+          {
+            'id': 'one',
+            'text': 'First',
+            'done': false,
+            'createdAt': '2026-11-03T00:00:00Z',
+            'groupId': 'work',
+          },
+          {
+            'id': 'two',
+            'text': 'Second',
+            'done': false,
+            'createdAt': '2026-11-03T00:00:00Z',
+            'groupId': 'work',
+          },
+        ],
+        'todoGroups': [
+          {'id': 'work', 'name': 'Work', 'collapsed': false},
+        ],
+      }),
+    );
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    await tester.pumpWidget(
+      LocaleScope(
+        controller: controller,
+        child: MaterialApp(
+          home: Scaffold(
+            body: ChannelNotebookView(
+              library: library,
+              notebook: notebook,
+              todoOnly: true,
+              showDirectoryButton: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Board'));
+    await tester.pumpAndSettle();
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Second')),
+    );
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(tester.getCenter(find.text('First')));
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(
+      (jsonDecode(library.saved!)['todos'] as List)
+          .map((task) => task['id'])
+          .toList(),
+      ['two', 'one'],
+    );
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
+  testWidgets('board view moves a task to another group by long press drag', (
+    tester,
+  ) async {
+    final library = MemoryLibrary();
+    final notebook = Notebook(
+      id: 'board',
+      name: 'Board',
+      path: '/Board.todo.md',
+      format: NotebookFormat.todo,
+      noteBlocks: const [],
+      content: jsonEncode({
+        'version': 1,
+        'todos': [
+          {
+            'id': 'task-1',
+            'text': 'First',
+            'done': false,
+            'createdAt': '2026-11-03T00:00:00Z',
+          },
+        ],
+        'todoGroups': [
+          {'id': 'work', 'name': 'Work', 'collapsed': false},
+          {'id': 'home', 'name': 'Home', 'collapsed': false},
+        ],
+      }),
+    );
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    await tester.pumpWidget(
+      LocaleScope(
+        controller: controller,
+        child: MaterialApp(
+          home: Scaffold(
+            body: ChannelNotebookView(
+              library: library,
+              notebook: notebook,
+              todoOnly: true,
+              showDirectoryButton: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Board'));
+    await tester.pumpAndSettle();
+    expect(find.text('Work (0)'), findsOneWidget);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('First')),
+    );
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('board:work'))),
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(jsonDecode(library.saved!)['todos'][0]['groupId'], 'work');
+    final handle = find.descendant(
+      of: find.byKey(const ValueKey('board:home')),
+      matching: find.byIcon(Icons.drag_handle),
+    );
+    final groupGesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump(const Duration(milliseconds: 700));
+    await groupGesture.moveTo(
+      tester.getCenter(find.byKey(const ValueKey('board:work'))),
+    );
+    await tester.pump();
+    await groupGesture.up();
+    await tester.pumpAndSettle();
+    expect(
+      (jsonDecode(library.saved!)['todoGroups'] as List).first['id'],
+      'home',
+    );
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
+  testWidgets('standalone todo notebook edits tasks without channel fields', (
+    tester,
+  ) async {
+    final library = MemoryLibrary();
+    final notebook = Notebook(
+      id: 'standalone',
+      name: 'Tasks',
+      path: '/Tasks.todo.md',
+      format: NotebookFormat.todo,
+      noteBlocks: const [],
+      content: jsonEncode({'version': 1, 'todos': [], 'todoGroups': []}),
+    );
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    await tester.pumpWidget(
+      LocaleScope(
+        controller: controller,
+        child: MaterialApp(
+          home: Scaffold(
+            body: ChannelNotebookView(
+              library: library,
+              notebook: notebook,
+              todoOnly: true,
+              showDirectoryButton: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Chat'), findsNothing);
+    await tester.enterText(find.byType(TextField).first, 'Finish report');
+    await tester.tap(find.byTooltip('Add'));
+    await tester.pumpAndSettle();
+    final saved = jsonDecode(library.saved!) as Map<String, dynamic>;
+    expect(saved['todos'][0]['text'], 'Finish report');
+    expect(saved.containsKey('messages'), isFalse);
+    expect(saved.containsKey('members'), isFalse);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
+  testWidgets(
+    'channel settings can hide optional sections but retain required ones',
+    (tester) async {
+      final library = MemoryLibrary();
+      final notebook = Notebook(
+        id: 'settings',
+        name: 'Settings test',
+        path: '/Settings.channel.md',
+        format: NotebookFormat.channel,
+        noteBlocks: const [],
+        content: jsonEncode({
+          'version': 1,
+          'members': [
+            {'id': 'self', 'name': 'Me', 'isSelf': true},
+          ],
+          'messages': [],
+          'todos': [],
+          'links': [],
+          'resources': [],
+        }),
+      );
+      final controller = LocaleController(initialLocale: AppLocale.en);
+      await tester.pumpWidget(
+        LocaleScope(
+          controller: controller,
+          child: MaterialApp(
+            home: Scaffold(
+              body: ChannelNotebookView(
+                library: library,
+                notebook: notebook,
+                showDirectoryButton: false,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.widgetWithText(TextButton, 'Settings'));
+      await tester.tap(find.widgetWithText(TextButton, 'Settings'));
+      await tester.pumpAndSettle();
+      final linksSwitch = find.widgetWithText(SwitchListTile, 'Links');
+      expect(linksSwitch, findsOneWidget);
+      await tester.tap(linksSwitch);
+      await tester.pumpAndSettle();
+      expect(
+        jsonDecode(library.saved!)['enabledTabs'],
+        isNot(contains('links')),
+      );
+      expect(find.widgetWithText(TextButton, 'Links'), findsNothing);
+      expect(find.widgetWithText(TextButton, 'Chat'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Members'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Settings'), findsOneWidget);
+      expect(
+        tester
+            .widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Chat'))
+            .onChanged,
+        isNull,
+      );
+      await tester.pumpWidget(const SizedBox());
+      controller.dispose();
+      library.dispose();
+    },
+  );
+
   testWidgets('channel todos support groups, moving tasks and undo', (
     tester,
   ) async {

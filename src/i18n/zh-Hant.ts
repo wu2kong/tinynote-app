@@ -2,6 +2,9 @@ import type { MessageTree } from './types';
 
 export const zhHantMessages = {
   "todo": {
+    "view": "檢視",
+    "listView": "列表",
+    "boardView": "看板",
     "groupMenu": "群組選單",
     "addGroupAbove": "在上方新增群組",
     "addGroupBelow": "在下方新增群組",
@@ -581,12 +584,14 @@ export const zhHantMessages = {
     "newWriterNotebook": "新增文章筆記",
     "newCsvNotebook": "新增表格筆記",
     "newChannelNotebook": "新增頻道筆記",
+    "newTodoNotebook": "新增待辦筆記",
     "defaultNotebookNames": {
       "blocks": "未命名塊筆記本",
       "markdown": "未命名Markdown筆記",
       "writer": "未命名文章筆記",
       "csv": "未命名表格筆記",
-      "channel": "未命名頻道"
+      "channel": "未命名頻道",
+      "todo": "未命名待辦筆記",
     },
     "newGroup": "新增目錄",
     "renameGroup": "重新命名目錄",
@@ -601,6 +606,7 @@ export const zhHantMessages = {
       "writer": "文章",
       "csv": "表格 (CSV)",
       "channel": "頻道",
+      "todo": "待辦",
       "unsupported": "未知格式"
     },
     "groupName": "目錄名稱",
@@ -640,7 +646,7 @@ export const zhHantMessages = {
     "title": "匯入筆記",
     "description": "將 Markdown 檔案匯入到目前筆記空間的根目錄。匯入前請閱讀以下規則：",
     "ruleMarkdownOnly": "僅匯入以 .md 結尾的檔案，其他檔案會被忽略。",
-    "ruleFormats": "已帶 blk、mk、writer、csv、channel 標記（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md）的檔案會保持原格式。",
+    "ruleFormats": "已帶 blk、mk、writer、csv、channel、todo 標記（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）的檔案會保持原格式。",
     "ruleUnmarked": "未帶上述標記的普通 .md 檔案會自動轉換為文章筆記（.writer.md）。",
     "ruleTarget": "筆記和目錄都會匯入到目前筆記空間的根目錄；目錄會保留其內部結構。",
     "ruleMultiple": "匯入筆記和匯入目錄都支援一次多選。",
@@ -944,6 +950,8 @@ export const zhHantMessages = {
     "resourceUri": "路徑或 URL（可選）",
     "resourceNote": "備註（可選）",
     "settings": {
+      "features": "功能開關",
+      "requiredFeaturesHint": "聊天、成員和設定會始終保留。",
       "title": "頻道標題",
       "subtitle": "副標題",
       "subtitlePlaceholder": "一句話介紹這個頻道…",

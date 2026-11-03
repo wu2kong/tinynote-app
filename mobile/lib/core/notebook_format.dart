@@ -1,6 +1,14 @@
 import 'dart:convert';
 
-enum NotebookFormat { blocks, markdown, writer, csv, channel, unsupported }
+enum NotebookFormat {
+  blocks,
+  markdown,
+  writer,
+  csv,
+  channel,
+  todo,
+  unsupported,
+}
 
 class NotebookFormatDef {
   const NotebookFormatDef({
@@ -26,6 +34,7 @@ const notebookFormats = <NotebookFormatDef>[
   NotebookFormatDef(id: NotebookFormat.writer, extension: '.writer.md'),
   NotebookFormatDef(id: NotebookFormat.csv, extension: '.csv.md'),
   NotebookFormatDef(id: NotebookFormat.channel, extension: '.channel.md'),
+  NotebookFormatDef(id: NotebookFormat.todo, extension: '.todo.md'),
 ];
 
 class _SuffixMatcher {
@@ -83,6 +92,7 @@ bool shouldSaveAsDocument(
 }) {
   return format.isDocument ||
       format == NotebookFormat.channel ||
+      format == NotebookFormat.todo ||
       compatOpenAsMarkdown;
 }
 
@@ -254,6 +264,9 @@ String initialNotebookContent(
       'links': [],
       'resources': [],
     });
+  }
+  if (format == NotebookFormat.todo) {
+    return jsonEncode({'version': 1, 'todos': [], 'todoGroups': []});
   }
   if (format == NotebookFormat.csv) {
     return 'Column 1,Column 2,Column 3\n'

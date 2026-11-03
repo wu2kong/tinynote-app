@@ -260,6 +260,15 @@ class _HomeScreenState extends State<HomeScreen> {
         showDirectoryButton: showDirectoryButton,
       );
     }
+    if (notebook.format == NotebookFormat.todo) {
+      return ChannelNotebookView(
+        key: ValueKey(notebook.path),
+        library: library,
+        notebook: notebook,
+        showDirectoryButton: showDirectoryButton,
+        todoOnly: true,
+      );
+    }
     if (showCsvPreview) {
       return CsvNotebookView(
         library: library,

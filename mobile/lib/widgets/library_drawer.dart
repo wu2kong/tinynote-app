@@ -400,6 +400,7 @@ class LibraryDrawer extends StatelessWidget {
       NotebookFormat.writer => s.createWriterNotebook,
       NotebookFormat.csv => s.createNotebook,
       NotebookFormat.channel => s.ch('format'),
+      NotebookFormat.todo => s.ch('todo.format'),
       NotebookFormat.unsupported => s.createNotebook,
     };
     final name = await showNamePromptDialog(
@@ -564,6 +565,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.messagesSquare,
         ),
         AppContextMenuItem(
+          value: 'todo',
+          label: s.ch('todo.format'),
+          icon: LucideIcons.listTodo,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -593,6 +599,8 @@ class LibraryDrawer extends StatelessWidget {
           parentPath,
           format: NotebookFormat.channel,
         );
+      case 'todo':
+        await _createNotebook(context, parentPath, format: NotebookFormat.todo);
       case 'writer':
         await _createNotebook(
           context,
@@ -635,6 +643,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.messagesSquare,
         ),
         AppContextMenuItem(
+          value: 'todo',
+          label: s.ch('todo.format'),
+          icon: LucideIcons.listTodo,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -670,6 +683,8 @@ class LibraryDrawer extends StatelessWidget {
           group.path,
           format: NotebookFormat.channel,
         );
+      case 'todo':
+        await _createNotebook(context, group.path, format: NotebookFormat.todo);
       case 'writer':
         await _createNotebook(
           context,
@@ -1144,6 +1159,7 @@ IconData _notebookIcon(NotebookFormat format) {
     NotebookFormat.writer => LucideIcons.penLine,
     NotebookFormat.csv => LucideIcons.table2,
     NotebookFormat.channel => LucideIcons.messagesSquare,
+    NotebookFormat.todo => LucideIcons.listTodo,
     NotebookFormat.unsupported => LucideIcons.circleAlert,
   };
 }

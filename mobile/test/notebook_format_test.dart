@@ -22,6 +22,18 @@ void main() {
     expect(doc['showTime'], isTrue);
     expect(doc['showMemberAvatars'], isTrue);
   });
+  test('todo files preserve task JSON and use document saving', () {
+    expect(detectNotebookFormat('Tasks.TODO.MD'), NotebookFormat.todo);
+    expect(notebookDisplayName('Tasks.todo.md'), 'Tasks');
+    expect(shouldSaveAsDocument(NotebookFormat.todo), isTrue);
+    expect(resolveImportedNotebookFileName('Tasks.todo.md').converted, isFalse);
+    final doc =
+        jsonDecode(initialNotebookContent(NotebookFormat.todo, 'Tasks'))
+            as Map<String, dynamic>;
+    expect(doc['todos'], isEmpty);
+    expect(doc['todoGroups'], isEmpty);
+    expect(doc.containsKey('messages'), isFalse);
+  });
   group('detectNotebookFormat', () {
     test('matches longest suffix first', () {
       expect(detectNotebookFormat('a.writer.md'), NotebookFormat.writer);

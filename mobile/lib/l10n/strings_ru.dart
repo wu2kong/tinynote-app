@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsRu = AppStrings(
   channel: {
     "tabsLabel": "Разделы канала",
+    "todo.format": "Заметка с задачами",
     "tabs.chat": "Чат",
     "tabs.todos": "Задачи",
     "tabs.links": "Ссылки",
@@ -35,6 +36,8 @@ final stringsRu = AppStrings(
     "deleteMessage": "Удалить сообщение",
     "addTodo": "Добавить",
     "todo.groupMenu": "Действия с группой",
+    "todo.listView": "Список",
+    "todo.boardView": "Доска",
     "todo.addGroupAbove": "Добавить группу выше",
     "todo.addGroupBelow": "Добавить группу ниже",
     "todo.moveTo": "Переместить в группу",
@@ -86,6 +89,9 @@ final stringsRu = AppStrings(
     "resourceUri": "Путь или URL (необязательно)",
     "resourceNote": "Заметка (необязательно)",
     "settings.title": "Название канала",
+    "settings.features": "Разделы",
+    "settings.requiredFeaturesHint":
+        "Чат, участники и настройки всегда доступны.",
     "settings.subtitle": "Подзаголовок",
     "settings.subtitlePlaceholder": "Краткое описание канала…",
     "settings.hint":
@@ -301,7 +307,7 @@ final stringsRu = AppStrings(
   importNotesRuleMarkdownOnly:
       'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
   importNotesRuleFormats:
-      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md), сохраняют исходный формат.',
+      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md), сохраняют исходный формат.',
   importNotesRuleUnmarked:
       'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
   importNotesRuleTarget:

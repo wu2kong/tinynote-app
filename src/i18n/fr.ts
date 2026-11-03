@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const frMessages = {
+  "todo": {
+    "view": "Vue",
+    "listView": "Liste",
+    "boardView": "Tableau",
+  },
   "common": {
     "cancel": "Annuler",
     "confirm": "Confirmer",
@@ -557,12 +562,14 @@ export const frMessages = {
     "newWriterNotebook": "Nouvelle note article",
     "newCsvNotebook": "Nouvelle note tableau",
     "newChannelNotebook": "Nouvelle note canal",
+    "newTodoNotebook": "Nouvelle note de tâches",
     "defaultNotebookNames": {
       "blocks": "Carnet par blocs sans titre",
       "markdown": "Note Markdown sans titre",
       "writer": "Article sans titre",
       "csv": "Tableau sans titre",
-      "channel": "Canal sans titre"
+      "channel": "Canal sans titre",
+      "todo": "Note de tâches sans titre",
     },
     "newGroup": "Nouveau répertoire",
     "renameGroup": "Renommer le répertoire",
@@ -576,6 +583,7 @@ export const frMessages = {
       "writer": "Article",
       "csv": "Tableau (CSV)",
       "channel": "Canal",
+      "todo": "Tâches",
       "unsupported": "Format inconnu"
     },
     "groupName": "Nom du répertoire",
@@ -615,7 +623,7 @@ export const frMessages = {
     "title": "Importer des notes",
     "description": "Importez des fichiers Markdown à la racine de l'espace de notes actuel. Veuillez d'abord lire les règles ci-dessous :",
     "ruleMarkdownOnly": "Seuls les fichiers se terminant par .md sont importés ; les autres fichiers sont ignorés.",
-    "ruleFormats": "Les fichiers qui portent déjà les marqueurs blk, mk, writer, csv ou channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) conservent leur format d'origine.",
+    "ruleFormats": "Les fichiers qui portent déjà les marqueurs blk, mk, writer, csv ou channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) conservent leur format d'origine.",
     "ruleUnmarked": "Les fichiers .md sans ces marqueurs sont automatiquement convertis en notes article (.writer.md).",
     "ruleTarget": "Les notes et les répertoires sont importés à la racine de l'espace de notes actuel ; les répertoires conservent leur structure interne.",
     "ruleMultiple": "Importer des notes et Importer un répertoire prennent tous deux en charge la sélection multiple.",
@@ -915,6 +923,8 @@ export const frMessages = {
     "resourceUri": "Chemin ou URL (facultatif)",
     "resourceNote": "Note (facultative)",
     "settings": {
+      "features": "Sections actives",
+      "requiredFeaturesHint": "Discussion, Membres et Paramètres restent toujours disponibles.",
       "title": "Titre du canal",
       "subtitle": "Sous-titre",
       "subtitlePlaceholder": "Une brève description de ce canal…",

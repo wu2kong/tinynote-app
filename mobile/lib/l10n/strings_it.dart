@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsIt = AppStrings(
   channel: {
     "tabsLabel": "Sezioni del canale",
+    "todo.format": "Nota attività",
     "tabs.chat": "Chat",
     "tabs.todos": "Attività",
     "tabs.links": "Link",
@@ -35,6 +36,8 @@ final stringsIt = AppStrings(
     "deleteMessage": "Elimina messaggio",
     "addTodo": "Aggiungi",
     "todo.groupMenu": "Opzioni gruppo",
+    "todo.listView": "Elenco",
+    "todo.boardView": "Bacheca",
     "todo.addGroupAbove": "Aggiungi gruppo sopra",
     "todo.addGroupBelow": "Aggiungi gruppo sotto",
     "todo.moveTo": "Sposta nel gruppo",
@@ -86,6 +89,9 @@ final stringsIt = AppStrings(
     "resourceUri": "Percorso o URL (facoltativo)",
     "resourceNote": "Nota (facoltativa)",
     "settings.title": "Titolo del canale",
+    "settings.features": "Sezioni attive",
+    "settings.requiredFeaturesHint":
+        "Chat, Membri e Impostazioni sono sempre disponibili.",
     "settings.subtitle": "Sottotitolo",
     "settings.subtitlePlaceholder": "Una breve descrizione del canale…",
     "settings.hint":
@@ -304,7 +310,7 @@ final stringsIt = AppStrings(
   importNotesRuleMarkdownOnly:
       'Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.',
   importNotesRuleFormats:
-      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) mantengono il formato originale.',
+      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) mantengono il formato originale.',
   importNotesRuleUnmarked:
       'I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).',
   importNotesRuleTarget:

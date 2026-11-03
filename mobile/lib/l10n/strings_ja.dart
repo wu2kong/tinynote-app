@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsJa = AppStrings(
   channel: {
     "tabsLabel": "チャンネルのセクション",
+    "todo.format": "タスクノート",
     "tabs.chat": "チャット",
     "tabs.todos": "タスク",
     "tabs.links": "リンク",
@@ -35,6 +36,8 @@ final stringsJa = AppStrings(
     "deleteMessage": "メッセージを削除",
     "addTodo": "追加",
     "todo.groupMenu": "グループの操作",
+    "todo.listView": "リスト",
+    "todo.boardView": "ボード",
     "todo.addGroupAbove": "上にグループを追加",
     "todo.addGroupBelow": "下にグループを追加",
     "todo.moveTo": "グループに移動",
@@ -86,6 +89,8 @@ final stringsJa = AppStrings(
     "resourceUri": "パスまたはURL（任意）",
     "resourceNote": "メモ（任意）",
     "settings.title": "チャンネル名",
+    "settings.features": "機能の切り替え",
+    "settings.requiredFeaturesHint": "チャット、メンバー、設定は常に利用できます。",
     "settings.subtitle": "サブタイトル",
     "settings.subtitlePlaceholder": "チャンネルの簡単な説明…",
     "settings.hint": "タイトルとサブタイトルはページ上部に表示されます。ファイル名は変更されません。",

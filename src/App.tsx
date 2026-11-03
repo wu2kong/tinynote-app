@@ -9,6 +9,7 @@ import WriterNotebookPanel from '@/components/WriterNotebookPanel';
 import UnsupportedNotebookPanel from '@/components/UnsupportedNotebookPanel';
 import CsvNotebookPanel from '@/components/CsvNotebookPanel';
 import ChannelNotebookPanel from '@/components/ChannelNotebookPanel';
+import TodoNotebookPanel from '@/components/TodoNotebookPanel';
 import WelcomeScreen from '@/components/WelcomeScreen';
 import SettingsModal from '@/components/SettingsModal';
 import GlobalSearchModal from '@/components/GlobalSearchModal';
@@ -316,6 +317,7 @@ const App: React.FC = () => {
   const isWriterNotebook = currentNotebook?.format === 'writer';
   const isCsvNotebook = currentNotebook?.format === 'csv';
   const isChannelNotebook = currentNotebook?.format === 'channel';
+  const isTodoNotebook = currentNotebook?.format === 'todo';
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
@@ -332,6 +334,8 @@ const App: React.FC = () => {
           <UnsupportedNotebookPanel />
         ) : isChannelNotebook ? (
           <ChannelNotebookPanel />
+        ) : isTodoNotebook ? (
+          <TodoNotebookPanel />
         ) : isCsvNotebook ? (
           <CsvNotebookPanel />
         ) : isWriterNotebook ? (

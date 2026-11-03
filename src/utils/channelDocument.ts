@@ -4,6 +4,13 @@ export const CHANNEL_DOCUMENT_VERSION = 1 as const;
 export const DEFAULT_SELF_MEMBER_ID = 'self';
 
 export type ChannelTabId = 'chat' | 'todos' | 'links' | 'resources' | 'members' | 'settings';
+export const CHANNEL_TAB_IDS: ChannelTabId[] = ['chat', 'todos', 'links', 'resources', 'members', 'settings'];
+export const REQUIRED_CHANNEL_TABS: ChannelTabId[] = ['chat', 'members', 'settings'];
+
+export function normalizeEnabledTabs(value: unknown): ChannelTabId[] {
+  if (!Array.isArray(value)) return [...CHANNEL_TAB_IDS];
+  return CHANNEL_TAB_IDS.filter((id) => REQUIRED_CHANNEL_TABS.includes(id) || value.includes(id));
+}
 
 export interface ChannelMember {
   id: string;
@@ -77,10 +84,12 @@ export interface ChannelDocument {
   subtitle: string;
   showTime?: boolean;
   showMemberAvatars?: boolean;
+  enabledTabs?: ChannelTabId[];
   members: ChannelMember[];
   messages: ChannelMessage[];
   todos: ChannelTodoItem[];
   todoGroups?: ChannelTodoGroup[];
+  todoView?: 'list' | 'board';
   links: ChannelLinkItem[];
   resources: ChannelResourceItem[];
 }
@@ -100,9 +109,11 @@ export function createEmptyChannelDocument(selfMemberName: string, title = ''): 
     subtitle: '',
     showTime: true,
     showMemberAvatars: true,
+    enabledTabs: [...CHANNEL_TAB_IDS],
     members: createDefaultMembers(selfMemberName),
     messages: [],
     todos: [],
+    todoView: 'list',
     links: [],
     resources: [],
   };
@@ -276,9 +287,11 @@ export function parseChannelDocument(raw: string, selfMemberNameFallback = 'Me')
       subtitle: readString(parsed.subtitle),
       showTime: readBool(parsed.showTime, true),
       showMemberAvatars: readBool(parsed.showMemberAvatars, true),
+      enabledTabs: normalizeEnabledTabs(parsed.enabledTabs),
       members,
       messages,
       todos,
+      todoView: parsed.todoView === 'board' ? 'board' : 'list',
       ...(Array.isArray(parsed.todoGroups) ? { todoGroups: parsed.todoGroups.filter(isRecord)
         .filter((group) => readString(group.name).trim()).map((group) => ({
           id: readString(group.id) || createChannelId(), name: readString(group.name), collapsed: readBool(group.collapsed),
@@ -298,9 +311,11 @@ export function serializeChannelDocument(doc: ChannelDocument): string {
     subtitle: doc.subtitle,
     showTime: doc.showTime ?? true,
     showMemberAvatars: doc.showMemberAvatars ?? true,
+    enabledTabs: normalizeEnabledTabs(doc.enabledTabs),
     members: doc.members,
     messages: doc.messages,
     todos: doc.todos,
+    todoView: doc.todoView === 'board' ? 'board' : 'list',
     ...(doc.todoGroups ? { todoGroups: doc.todoGroups } : {}),
     links: doc.links,
     resources: doc.resources,

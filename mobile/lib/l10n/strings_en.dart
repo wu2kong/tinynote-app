@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsEn = AppStrings(
   channel: {
     "tabsLabel": "Channel sections",
+    "todo.format": "Todo Note",
     "tabs.chat": "Chat",
     "tabs.todos": "Todos",
     "tabs.links": "Links",
@@ -35,6 +36,8 @@ final stringsEn = AppStrings(
     "deleteMessage": "Delete message",
     "addTodo": "Add",
     "todo.groupMenu": "Group options",
+    "todo.listView": "List",
+    "todo.boardView": "Board",
     "todo.addGroupAbove": "Add group above",
     "todo.addGroupBelow": "Add group below",
     "todo.moveTo": "Move to group",
@@ -86,6 +89,9 @@ final stringsEn = AppStrings(
     "resourceUri": "Path or URL (optional)",
     "resourceNote": "Note (optional)",
     "settings.title": "Channel title",
+    "settings.features": "Enabled sections",
+    "settings.requiredFeaturesHint":
+        "Chat, Members, and Settings are always available.",
     "settings.subtitle": "Subtitle",
     "settings.subtitlePlaceholder": "A short description of this channel…",
     "settings.hint":
@@ -301,7 +307,7 @@ final stringsEn = AppStrings(
   importNotesRuleMarkdownOnly:
       'Only files ending with .md are imported; other files are ignored.',
   importNotesRuleFormats:
-      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md) keep their original format.',
+      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) keep their original format.',
   importNotesRuleUnmarked:
       'Plain .md files without those markers are converted to article notes (.writer.md).',
   importNotesRuleTarget:

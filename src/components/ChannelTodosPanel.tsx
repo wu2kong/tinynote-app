@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { DndContext, DragOverlay, PointerSensor, KeyboardSensor, closestCenter, pointerWithin, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, useSortable, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ChevronDown, ChevronRight, GripVertical, Link2, MoreHorizontal, ArrowUp, ArrowDown, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { SortableContext, useSortable, sortableKeyboardCoordinates, verticalListSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { ChevronDown, ChevronRight, GripVertical, Link2, MoreHorizontal, ArrowUp, ArrowDown, Pencil, Plus, Trash2, X, Columns3, List } from 'lucide-react';
 import ContextMenuPortal from './ContextMenuPortal';
 import { useI18n } from '@/i18n/useI18n';
 import { createChannelId, type ChannelTodoGroup, type ChannelTodoItem } from '@/utils/channelDocument';
@@ -11,8 +11,10 @@ import { moveTodo, moveTodoGroup, removeTodoGroup, shouldShowTodoGroups, todoGro
 interface Props {
   todos: ChannelTodoItem[];
   groups: ChannelTodoGroup[];
+  view: 'list' | 'board';
+  onViewChange: (view: 'list' | 'board') => void;
   onChange: (todos: ChannelTodoItem[], groups: ChannelTodoGroup[]) => void;
-  onOpenSource: (id: string) => void;
+  onOpenSource?: (id: string) => void;
 }
 
 function ChecklistInput(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -40,7 +42,7 @@ function TaskRow({ item, autoFocus, onInsertAfter, groups, onMove, onPatch, onDe
   item: ChannelTodoItem;
   onPatch: (patch: Partial<ChannelTodoItem>) => void;
   onDelete: () => void;
-  onOpenSource: (id: string) => void;
+  onOpenSource?: (id: string) => void;
 }) {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver, activeIndex, index } = useSortable({ id: `task:${item.id}` });
@@ -79,7 +81,7 @@ function TaskRow({ item, autoFocus, onInsertAfter, groups, onMove, onPatch, onDe
             }
           }} />
       </div>
-      {item.sourceMessageId && <button className="checklist-icon" type="button" title={t('todo.source')} aria-label={t('todo.source')} onClick={() => onOpenSource(item.sourceMessageId!)}><Link2 size={14} /></button>}
+      {item.sourceMessageId && onOpenSource && <button className="checklist-icon" type="button" title={t('todo.source')} aria-label={t('todo.source')} onClick={() => onOpenSource(item.sourceMessageId!)}><Link2 size={14} /></button>}
       <button className="checklist-icon checklist-row-action" type="button" title={t('todo.delete')} aria-label={t('todo.delete')} onClick={onDelete}><Trash2 size={14} /></button>
       {menu && createPortal(<ContextMenuPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
         <button type="button" className="context-menu-item" autoFocus onClick={() => { setMenu(null); requestAnimationFrame(() => rowRef.current?.querySelector('textarea')?.focus()); }}><Pencil size={14} />{t('todo.edit')}</button>
@@ -162,7 +164,7 @@ function AddTask({ onAdd, autoFocus = false, onCancel }: { onAdd: (text: string)
   </form>;
 }
 
-export default function ChannelTodosPanel({ todos, groups, onChange, onOpenSource }: Props) {
+export default function ChannelTodosPanel({ todos, groups, view, onViewChange, onChange, onOpenSource }: Props) {
   const { t } = useI18n();
   const [newTaskId, setNewTaskId] = useState<string | null>(null);
   const [composerGroup, setComposerGroup] = useState<string | null>(null);
@@ -186,14 +188,14 @@ export default function ChannelTodosPanel({ todos, groups, onChange, onOpenSourc
     }}><input autoFocus value={newGroup.name} placeholder={t('todo.groupName')} aria-label={t('todo.groupName')} onChange={(event) => setNewGroup({ ...newGroup, name: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.keyCode === 229)) event.preventDefault(); if (event.key === 'Escape' && !event.nativeEvent.isComposing) setNewGroup(null); }} /><button className="btn btn-sm" disabled={!newGroup.name.trim()}>{t('common.create')}</button><button className="checklist-icon" type="button" aria-label={t('common.cancel')} onClick={() => setNewGroup(null)}><X size={14} /></button></form>
   );
   return <div className="checklist-layout"><div className="checklist">
-    <header className="checklist-header"><h2>{t('channel.tabs.todos')}</h2><button className="btn btn-sm" type="button" onClick={() => setNewGroup({ name: '', position: 'after' })}><Plus size={14} />{t('todo.addGroup')}</button></header>
+    <header className="checklist-header"><h2>{t('channel.tabs.todos')}</h2><div className="checklist-header-actions"><div className="checklist-view-switch" role="group" aria-label={t('todo.view')}><button type="button" className={view === 'list' ? 'active' : ''} aria-pressed={view === 'list'} onClick={() => onViewChange('list')} title={t('todo.listView')}><List size={15} />{t('todo.listView')}</button><button type="button" className={view === 'board' ? 'active' : ''} aria-pressed={view === 'board'} onClick={() => onViewChange('board')} title={t('todo.boardView')}><Columns3 size={15} />{t('todo.boardView')}</button></div><button className="btn btn-sm" type="button" onClick={() => setNewGroup({ name: '', position: 'after' })}><Plus size={14} />{t('todo.addGroup')}</button></div></header>
     <div className="checklist-top-entry"><AddTask onAdd={(text) => addTask(text)} /></div>
     {newGroup && !newGroup.anchor && renderGroupForm()}
     {deleted && <div className="checklist-undo" role="status">{t(deleted.group ? 'todo.groupDeleted' : 'todo.deleted', { count: deleted.tasks.length })}<button type="button" onClick={() => {
       const restored = restoreChecklistDeletion(todos, groups, deleted);
       onChange(restored.todos, restored.groups); setDeleted(null);
     }}>{t('todo.undo')}</button><button type="button" aria-label={t('common.close')} onClick={() => setDeleted(null)}><X size={13} /></button></div>}
-    <div className="checklist-scroll">
+    <div className={`checklist-scroll${view === 'board' ? ' checklist-board' : ''}`}>
     <DndContext sensors={sensors} onDragStart={({ active }) => {
       const key = String(active.id);
       const isGroup = key.startsWith('group-sort:');
@@ -219,12 +221,12 @@ export default function ChannelTodosPanel({ todos, groups, onChange, onOpenSourc
       if (!target && groupId && !groups.some((group) => group.id === groupId)) return;
       onChange(moveTodo(todos, id, groupId, target?.id), groups);
     }}>
-      <SortableContext items={groups.map((group) => `group-sort:${group.id}`)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={groups.map((group) => `group-sort:${group.id}`)} strategy={view === 'board' ? horizontalListSortingStrategy : verticalListSortingStrategy}>
       {sections.map((group) => {
         const items = todos.filter((item) => todoGroupId(item, groups) === group.id);
         return <Fragment key={group.id}>
           {newGroup?.anchor === group.id && newGroup.position === 'before' && renderGroupForm()}
-          <GroupSection {...group} count={items.length} plain={!showGroups}
+          <GroupSection {...group} count={items.length} plain={view === 'list' && !showGroups}
           onAddGroup={(position) => setNewGroup({ name: '', anchor: group.id, position })}
           onAdd={() => {
             setComposerGroup(group.id);

@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const jaMessages = {
+  "todo": {
+    "view": "表示",
+    "listView": "リスト",
+    "boardView": "ボード",
+  },
   "common": {
     "cancel": "キャンセル",
     "confirm": "確認",
@@ -557,12 +562,14 @@ export const jaMessages = {
     "newWriterNotebook": "新しい記事ノート",
     "newCsvNotebook": "新しい表ノート",
     "newChannelNotebook": "新しいチャンネルノート",
+    "newTodoNotebook": "新しいタスクノート",
     "defaultNotebookNames": {
       "blocks": "無題のブロックノートブック",
       "markdown": "無題のMarkdownノート",
       "writer": "無題の記事ノート",
       "csv": "無題の表ノート",
-      "channel": "無題のチャンネル"
+      "channel": "無題のチャンネル",
+      "todo": "無題のタスクノート",
     },
     "newGroup": "新しいディレクトリ",
     "renameGroup": "ディレクトリ名を変更",
@@ -576,6 +583,7 @@ export const jaMessages = {
       "writer": "記事",
       "csv": "表 (CSV)",
       "channel": "チャンネル",
+      "todo": "タスク",
       "unsupported": "未知の形式"
     },
     "groupName": "ディレクトリ名",
@@ -615,7 +623,7 @@ export const jaMessages = {
     "title": "ノートを読み込む",
     "description": "Markdown ファイルを現在のノートスペースのルートに読み込みます。先に以下のルールをご確認ください：",
     "ruleMarkdownOnly": ".md で終わるファイルのみ読み込みます。その他のファイルは無視されます。",
-    "ruleFormats": "すでに blk、mk、writer、csv、channel マーカー（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md）があるファイルは元の形式のままです。",
+    "ruleFormats": "すでに blk、mk、writer、csv、channel マーカー（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）があるファイルは元の形式のままです。",
     "ruleUnmarked": "これらのマーカーがない通常の .md ファイルは記事ノート（.writer.md）に自動変換されます。",
     "ruleTarget": "ノートもディレクトリも現在のノートスペースのルートに読み込まれます。ディレクトリの内部構造は保持されます。",
     "ruleMultiple": "ノートの読み込みとディレクトリの読み込みはどちらも複数選択できます。",
@@ -915,6 +923,8 @@ export const jaMessages = {
     "resourceUri": "パスまたはURL（任意）",
     "resourceNote": "メモ（任意）",
     "settings": {
+      "features": "機能の切り替え",
+      "requiredFeaturesHint": "チャット、メンバー、設定は常に利用できます。",
       "title": "チャンネル名",
       "subtitle": "サブタイトル",
       "subtitlePlaceholder": "チャンネルの簡単な説明…",

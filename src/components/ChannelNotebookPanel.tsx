@@ -14,6 +14,8 @@ import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
 import {
   createChannelId,
   createChannelMessage,
+  normalizeEnabledTabs,
+  REQUIRED_CHANNEL_TABS,
   DEFAULT_SELF_MEMBER_ID,
   getSelfMemberId,
   parseChannelDocument,
@@ -144,6 +146,7 @@ const ChannelNotebookPanel: React.FC = () => {
 
   const [doc, setDoc] = useState<ChannelDocument>(() => parseChannelDocument('', selfMemberNameFallback));
   const [activeTab, setActiveTab] = useState<ChannelTabId>('chat');
+  const enabledTabs = normalizeEnabledTabs(doc.enabledTabs);
   const [activeAuthorId, setActiveAuthorId] = useState(DEFAULT_SELF_MEMBER_ID);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const [draft, setDraft] = useState('');
@@ -264,6 +267,9 @@ const ChannelNotebookPanel: React.FC = () => {
   }, [currentNotebook?.path, activeTab]);
 
   useEffect(() => { setMessageMenu(null); setRemarkMenu(null); }, [currentNotebook?.path, activeTab]);
+  useEffect(() => {
+    if (!enabledTabs.includes(activeTab)) setActiveTab('chat');
+  }, [activeTab, doc.enabledTabs]);
 
   useEffect(() => {
     if (!messageMenu && !remarkMenu) return;
@@ -520,7 +526,7 @@ const ChannelNotebookPanel: React.FC = () => {
 
       <div className="channel-notebook-toolbar">
         <div className="channel-notebook-tabs" role="tablist" aria-label={t('channel.tabsLabel')}>
-          {TAB_DEFS.map(({ id, labelKey, icon }) => (
+          {TAB_DEFS.filter(({ id }) => enabledTabs.includes(id)).map(({ id, labelKey, icon }) => (
             <button
               key={id}
               type="button"
@@ -738,6 +744,8 @@ const ChannelNotebookPanel: React.FC = () => {
             key={currentNotebook.path}
             todos={doc.todos}
             groups={doc.todoGroups ?? []}
+            view={doc.todoView === 'board' ? 'board' : 'list'}
+            onViewChange={(todoView) => applyDoc({ ...docRef.current, todoView })}
             onChange={(todos, todoGroups) => applyDoc({ ...docRef.current, todos, todoGroups })}
             onOpenSource={(id) => {
               const message = docRef.current.messages.find((item) => item.id === id);
@@ -941,6 +949,16 @@ const ChannelNotebookPanel: React.FC = () => {
                   <span>{t(`channel.${key}`)}</span>
                 </label>
               ))}
+              <fieldset className="channel-feature-list">
+                <legend>{t('channel.settings.features')}</legend>
+                {TAB_DEFS.map(({ id, labelKey }) => (
+                  <label key={id} className="channel-display-option">
+                    <input type="checkbox" checked={enabledTabs.includes(id)} disabled={REQUIRED_CHANNEL_TABS.includes(id)} onChange={(event) => applyDoc({ ...docRef.current, enabledTabs: normalizeEnabledTabs(event.target.checked ? [...enabledTabs, id] : enabledTabs.filter((tab) => tab !== id)) })} />
+                    <span>{t(labelKey)}</span>
+                  </label>
+                ))}
+                <small>{t('channel.settings.requiredFeaturesHint')}</small>
+              </fieldset>
               <p className="channel-settings-hint">{t('channel.settings.hint')}</p>
             </div>
           </div>

@@ -630,6 +630,7 @@ class AppStrings {
       NotebookFormat.writer => formatWriter,
       NotebookFormat.csv => formatCsv,
       NotebookFormat.channel => ch('format'),
+      NotebookFormat.todo => ch('todo.format'),
       NotebookFormat.unsupported => formatUnsupported,
     };
   }

@@ -1,6 +1,11 @@
 import type { MessageTree } from './types';
 
 export const koMessages = {
+  "todo": {
+    "view": "보기",
+    "listView": "목록",
+    "boardView": "보드",
+  },
   "common": {
     "cancel": "취소",
     "confirm": "확인",
@@ -557,12 +562,14 @@ export const koMessages = {
     "newWriterNotebook": "새 글 노트",
     "newCsvNotebook": "새 표 노트",
     "newChannelNotebook": "새 채널 노트",
+    "newTodoNotebook": "새 할 일 노트",
     "defaultNotebookNames": {
       "blocks": "제목 없는 블록 노트북",
       "markdown": "제목 없는 Markdown 노트",
       "writer": "제목 없는 글 노트",
       "csv": "제목 없는 표 노트",
-      "channel": "제목 없는 채널"
+      "channel": "제목 없는 채널",
+      "todo": "제목 없는 할 일 노트",
     },
     "newGroup": "새 디렉터리",
     "renameGroup": "디렉터리 이름 변경",
@@ -576,6 +583,7 @@ export const koMessages = {
       "writer": "글",
       "csv": "표 (CSV)",
       "channel": "채널",
+      "todo": "할 일",
       "unsupported": "알 수 없는 형식"
     },
     "groupName": "디렉터리 이름",
@@ -615,7 +623,7 @@ export const koMessages = {
     "title": "노트 가져오기",
     "description": "Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:",
     "ruleMarkdownOnly": ".md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.",
-    "ruleFormats": "이미 blk, mk, writer, csv, channel 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md)가 있는 파일은 원래 형식을 유지합니다.",
+    "ruleFormats": "이미 blk, mk, writer, csv, channel 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md)가 있는 파일은 원래 형식을 유지합니다.",
     "ruleUnmarked": "위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.",
     "ruleTarget": "노트와 디렉터리 모두 현재 노트 스페이스의 루트로 가져오며, 디렉터리의 내부 구조는 유지됩니다.",
     "ruleMultiple": "노트 가져오기와 디렉터리 가져오기 모두 여러 항목을 선택할 수 있습니다.",
@@ -915,6 +923,8 @@ export const koMessages = {
     "resourceUri": "경로 또는 URL (선택)",
     "resourceNote": "메모 (선택)",
     "settings": {
+      "features": "기능 설정",
+      "requiredFeaturesHint": "채팅, 멤버, 설정은 항상 사용할 수 있습니다.",
       "title": "채널 제목",
       "subtitle": "부제목",
       "subtitlePlaceholder": "채널에 대한 간단한 설명…",

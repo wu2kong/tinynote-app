@@ -3,6 +3,7 @@ import 'app_strings.dart';
 final stringsKo = AppStrings(
   channel: {
     "tabsLabel": "채널 섹션",
+    "todo.format": "할 일 노트",
     "tabs.chat": "채팅",
     "tabs.todos": "할 일",
     "tabs.links": "링크",
@@ -35,6 +36,8 @@ final stringsKo = AppStrings(
     "deleteMessage": "메시지 삭제",
     "addTodo": "추가",
     "todo.groupMenu": "그룹 작업",
+    "todo.listView": "목록",
+    "todo.boardView": "보드",
     "todo.addGroupAbove": "위에 그룹 추가",
     "todo.addGroupBelow": "아래에 그룹 추가",
     "todo.moveTo": "그룹으로 이동",
@@ -86,6 +89,8 @@ final stringsKo = AppStrings(
     "resourceUri": "경로 또는 URL (선택)",
     "resourceNote": "메모 (선택)",
     "settings.title": "채널 제목",
+    "settings.features": "기능 설정",
+    "settings.requiredFeaturesHint": "채팅, 멤버, 설정은 항상 사용할 수 있습니다.",
     "settings.subtitle": "부제목",
     "settings.subtitlePlaceholder": "채널에 대한 간단한 설명…",
     "settings.hint": "제목과 부제목은 페이지 상단에 표시됩니다. 파일 이름은 변경되지 않습니다.",
@@ -288,7 +293,7 @@ final stringsKo = AppStrings(
   importNotesDesc: 'Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:',
   importNotesRuleMarkdownOnly: '.md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.',
   importNotesRuleFormats:
-      '이미 blk, mk, writer, csv 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md)가 있는 파일은 원래 형식을 유지합니다.',
+      '이미 blk, mk, writer, csv 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md)가 있는 파일은 원래 형식을 유지합니다.',
   importNotesRuleUnmarked: '위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.',
   importNotesRuleTarget:
       '노트와 디렉터리 모두 현재 노트 스페이스의 루트로 가져오며, 디렉터리의 내부 구조는 유지됩니다.',
