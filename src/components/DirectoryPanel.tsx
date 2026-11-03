@@ -6,7 +6,7 @@ import { isGroup, isNotebook } from '@/types/guards';
 import { Group, Notebook, NotebookFormatId } from '@/types';
 import {
   Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, Table2, MessagesSquare, ChevronRight, ChevronDown,
-  Trash2, FolderPlus, FilePlus, ListTodo, Edit3, Plus, Code, Blocks, RefreshCw,
+  Trash2, FolderPlus, FilePlus, ListTodo, Network, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
   PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
 } from 'lucide-react';
@@ -90,6 +90,7 @@ function NotebookTreeIcon({ format }: { format: NotebookFormatId }) {
   if (format === 'csv') return <Table2 size={14} className="tree-file-icon" />;
   if (format === 'channel') return <MessagesSquare size={14} className="tree-file-icon" />;
   if (format === 'todo') return <ListTodo size={14} className="tree-file-icon" />;
+  if (format === 'mind') return <Network size={14} className="tree-file-icon" />;
   if (format === 'unsupported') return <FileQuestion size={14} className="tree-file-icon" />;
   return <FileText size={14} className="tree-file-icon" />;
 }
@@ -794,6 +795,9 @@ const DirectoryPanel: React.FC = () => {
                 <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'todo'); closeContextMenu(); }}>
                   <ListTodo size={14} />{t('directory.newTodoNotebook')}
                 </button>
+                <button className="context-menu-item" onClick={() => { handleCreateNotebook((contextMenu.item as Group).path, 'mind'); closeContextMenu(); }}>
+                  <Network size={14} />{t('directory.newMindNotebook')}
+                </button>
                 <button className="context-menu-item" onClick={() => { handleAddGroup((contextMenu.item as Group).path); closeContextMenu(); }}>
                   <FolderPlus size={14} />{t('directory.newChildGroup')}
                 </button>
@@ -864,6 +868,9 @@ const DirectoryPanel: React.FC = () => {
             </button>
             <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'todo'); closeContextMenu(); }}>
               <ListTodo size={14} />{t('directory.newTodoNotebook')}
+            </button>
+            <button className="context-menu-item" onClick={() => { handleCreateNotebook(currentSpace.path, 'mind'); closeContextMenu(); }}>
+              <Network size={14} />{t('directory.newMindNotebook')}
             </button>
             <button className="context-menu-item" onClick={() => { handleAddGroup(currentSpace.path); closeContextMenu(); }}>
               <FolderPlus size={14} />{t('directory.addGroup')}

@@ -401,6 +401,7 @@ class LibraryDrawer extends StatelessWidget {
       NotebookFormat.csv => s.createNotebook,
       NotebookFormat.channel => s.ch('format'),
       NotebookFormat.todo => s.ch('todo.format'),
+      NotebookFormat.mind => s.ch('mind.format'),
       NotebookFormat.unsupported => s.createNotebook,
     };
     final name = await showNamePromptDialog(
@@ -570,6 +571,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.listTodo,
         ),
         AppContextMenuItem(
+          value: 'mind',
+          label: s.ch('mind.format'),
+          icon: LucideIcons.network,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -601,6 +607,8 @@ class LibraryDrawer extends StatelessWidget {
         );
       case 'todo':
         await _createNotebook(context, parentPath, format: NotebookFormat.todo);
+      case 'mind':
+        await _createNotebook(context, parentPath, format: NotebookFormat.mind);
       case 'writer':
         await _createNotebook(
           context,
@@ -648,6 +656,11 @@ class LibraryDrawer extends StatelessWidget {
           icon: LucideIcons.listTodo,
         ),
         AppContextMenuItem(
+          value: 'mind',
+          label: s.ch('mind.format'),
+          icon: LucideIcons.network,
+        ),
+        AppContextMenuItem(
           value: 'writer',
           label: s.createWriterNotebook,
           icon: LucideIcons.penLine,
@@ -685,6 +698,8 @@ class LibraryDrawer extends StatelessWidget {
         );
       case 'todo':
         await _createNotebook(context, group.path, format: NotebookFormat.todo);
+      case 'mind':
+        await _createNotebook(context, group.path, format: NotebookFormat.mind);
       case 'writer':
         await _createNotebook(
           context,
@@ -1160,6 +1175,7 @@ IconData _notebookIcon(NotebookFormat format) {
     NotebookFormat.csv => LucideIcons.table2,
     NotebookFormat.channel => LucideIcons.messagesSquare,
     NotebookFormat.todo => LucideIcons.listTodo,
+    NotebookFormat.mind => LucideIcons.network,
     NotebookFormat.unsupported => LucideIcons.circleAlert,
   };
 }

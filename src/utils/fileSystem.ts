@@ -15,6 +15,7 @@ import {
 import { createInitialCsvContent } from './csvTable';
 import { createInitialChannelContent } from './channelDocument';
 import { createEmptyTodoDocument, serializeTodoDocument } from './todoDocument';
+import { createEmptyMindDocument, serializeMindDocument } from './mindDocument';
 import { stableIdFromPath } from './stableId';
 import { basename, dirname, joinPath, normalizePath } from './path';
 import { isNoteSpaceDirectoryName } from './workspaceConfig';
@@ -275,6 +276,8 @@ export function getDefaultNewNotebookDisplayName(format: NotebookFormatId): stri
       return t('directory.defaultNotebookNames.channel');
     case 'todo':
       return t('directory.defaultNotebookNames.todo');
+    case 'mind':
+      return t('directory.defaultNotebookNames.mind');
     case 'blocks':
     default:
       return t('directory.defaultNotebookNames.blocks');
@@ -289,6 +292,7 @@ function initialNotebookContent(format: NotebookFormatId, displayName: string): 
     return createInitialChannelContent(t('channel.selfMemberName'), displayName);
   }
   if (format === 'todo') return serializeTodoDocument(createEmptyTodoDocument());
+  if (format === 'mind') return serializeMindDocument(createEmptyMindDocument());
   if (format === 'markdown' || format === 'writer') {
     return `# ${displayName}\n\n`;
   }

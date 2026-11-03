@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const deMessages = {
+  "mind": {
+    "copyMarkdown": "Gesamten Inhalt kopieren",
+    "copiedMarkdown": "Markdown kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen",
+    "expandAll": "Alle Unterknoten ausklappen",
+    "collapseAll": "Alle Unterknoten einklappen",
+    "moveTo": "Verschieben nach…",
+    "rootLevel": "Oberste Ebene",
+    "view": "Ansicht",
+    "outline": "Gliederung",
+    "mindmap": "Mindmap",
+    "addTopic": "Thema hinzufügen",
+    "addRoot": "Hauptthema hinzufügen",
+    "addChild": "Unterthema hinzufügen",
+    "addSibling": "Thema auf gleicher Ebene hinzufügen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "delete": "Thema löschen",
+    "expand": "Aufklappen",
+    "collapse": "Zuklappen",
+    "rootPlaceholder": "Zentrales Thema",
+    "nodePlaceholder": "Thema",
+    "empty": "Noch keine Themen. Fügen Sie eines hinzu.",
+  },
   "todo": {
     "view": "Ansicht",
     "listView": "Liste",
@@ -563,6 +587,7 @@ export const deMessages = {
     "newCsvNotebook": "Neue Tabellennotiz",
     "newChannelNotebook": "Neue Kanalnotiz",
     "newTodoNotebook": "Neue Aufgabennotiz",
+    "newMindNotebook": "Neue Gliederungsnotiz",
     "defaultNotebookNames": {
       "blocks": "Unbenanntes Block-Notizbuch",
       "markdown": "Unbenannte Markdown-Notiz",
@@ -570,6 +595,7 @@ export const deMessages = {
       "csv": "Unbenannte Tabellennotiz",
       "channel": "Unbenannter Kanal",
       "todo": "Unbenannte Aufgabennotiz",
+      "mind": "Unbenannte Gliederungsnotiz",
     },
     "newGroup": "Neues Verzeichnis",
     "renameGroup": "Verzeichnis umbenennen",
@@ -584,6 +610,7 @@ export const deMessages = {
       "csv": "Tabelle (CSV)",
       "channel": "Kanal",
       "todo": "Aufgaben",
+      "mind": "Gliederung",
       "unsupported": "Unbekanntes Format"
     },
     "groupName": "Verzeichnisname",
@@ -623,7 +650,7 @@ export const deMessages = {
     "title": "Notizen importieren",
     "description": "Importiere Markdown-Dateien in das Stammverzeichnis des aktuellen Notizbereichs. Bitte lies zuerst die folgenden Regeln:",
     "ruleMarkdownOnly": "Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.",
-    "ruleFormats": "Dateien, die bereits blk-, mk-, writer-, csv- oder channel-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) haben, behalten ihr ursprüngliches Format.",
+    "ruleFormats": "Dateien, die bereits blk-, mk-, writer-, csv- oder channel-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) haben, behalten ihr ursprüngliches Format.",
     "ruleUnmarked": "Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.",
     "ruleTarget": "Notizen und Verzeichnisse werden in das Stammverzeichnis des aktuellen Notizbereichs importiert; Verzeichnisse behalten ihre interne Struktur.",
     "ruleMultiple": "Sowohl „Notizen importieren“ als auch „Verzeichnis importieren“ unterstützen Mehrfachauswahl.",

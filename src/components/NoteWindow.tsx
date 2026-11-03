@@ -13,6 +13,7 @@ import WriterNotebookPanel from './WriterNotebookPanel';
 import CsvNotebookPanel from './CsvNotebookPanel';
 import ChannelNotebookPanel from './ChannelNotebookPanel';
 import TodoNotebookPanel from './TodoNotebookPanel';
+import MindNotebookPanel from './MindNotebookPanel';
 import UnsupportedNotebookPanel from './UnsupportedNotebookPanel';
 
 /** A dedicated editor, with its own selection and the normal note save behavior. */
@@ -68,6 +69,7 @@ export default function NoteWindow() {
         : notebook.format === 'csv' ? <CsvNotebookPanel />
         : notebook.format === 'channel' ? <ChannelNotebookPanel />
         : notebook.format === 'todo' ? <TodoNotebookPanel />
+        : notebook.format === 'mind' ? <MindNotebookPanel />
         : notebook.format === 'unsupported' ? <UnsupportedNotebookPanel />
         : notebook.isSourceMode ? <SourceEditorPanel />
         : <><NotePanel /><PropertyPanel /></>}

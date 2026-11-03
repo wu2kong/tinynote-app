@@ -3,6 +3,29 @@ import 'app_strings.dart';
 final stringsRu = AppStrings(
   channel: {
     "tabsLabel": "Разделы канала",
+    "mind.copyMarkdown": "Скопировать всё содержимое",
+    "mind.copiedMarkdown": "Markdown скопирован",
+    "mind.copyFailed": "Не удалось скопировать",
+    "mind.view": "Вид",
+    "mind.moveTo": "Переместить в…",
+    "mind.rootLevel": "Корневой уровень",
+    "mind.outline": "План",
+    "mind.mindmap": "Интеллект-карта",
+    "mind.addTopic": "Добавить тему",
+    "mind.addRoot": "Добавить корневую тему",
+    "mind.addChild": "Добавить подтему",
+    "mind.addSibling": "Добавить тему рядом",
+    "mind.moveUp": "Переместить вверх",
+    "mind.moveDown": "Переместить вниз",
+    "mind.delete": "Удалить тему",
+    "mind.expandAll": "Развернуть все дочерние узлы",
+    "mind.collapseAll": "Свернуть все дочерние узлы",
+    "mind.expand": "Развернуть",
+    "mind.collapse": "Свернуть",
+    "mind.rootPlaceholder": "Центральная тема",
+    "mind.nodePlaceholder": "Тема",
+    "mind.empty": "Тем пока нет. Добавьте первую.",
+    "mind.format": "План",
     "todo.format": "Заметка с задачами",
     "tabs.chat": "Чат",
     "tabs.todos": "Задачи",
@@ -307,7 +330,7 @@ final stringsRu = AppStrings(
   importNotesRuleMarkdownOnly:
       'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
   importNotesRuleFormats:
-      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md), сохраняют исходный формат.',
+      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md), сохраняют исходный формат.',
   importNotesRuleUnmarked:
       'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
   importNotesRuleTarget:

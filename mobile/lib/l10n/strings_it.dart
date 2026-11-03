@@ -3,6 +3,29 @@ import 'app_strings.dart';
 final stringsIt = AppStrings(
   channel: {
     "tabsLabel": "Sezioni del canale",
+    "mind.copyMarkdown": "Copia tutto il contenuto",
+    "mind.copiedMarkdown": "Markdown copiato",
+    "mind.copyFailed": "Copia non riuscita",
+    "mind.view": "Vista",
+    "mind.moveTo": "Sposta in…",
+    "mind.rootLevel": "Livello principale",
+    "mind.outline": "Schema",
+    "mind.mindmap": "Mappa mentale",
+    "mind.addTopic": "Aggiungi argomento",
+    "mind.addRoot": "Aggiungi argomento principale",
+    "mind.addChild": "Aggiungi sottoargomento",
+    "mind.addSibling": "Aggiungi argomento allo stesso livello",
+    "mind.moveUp": "Sposta su",
+    "mind.moveDown": "Sposta giù",
+    "mind.delete": "Elimina argomento",
+    "mind.expandAll": "Espandi tutti i nodi figli",
+    "mind.collapseAll": "Comprimi tutti i nodi figli",
+    "mind.expand": "Espandi",
+    "mind.collapse": "Comprimi",
+    "mind.rootPlaceholder": "Argomento centrale",
+    "mind.nodePlaceholder": "Argomento",
+    "mind.empty": "Nessun argomento. Aggiungine uno per iniziare.",
+    "mind.format": "Schema",
     "todo.format": "Nota attività",
     "tabs.chat": "Chat",
     "tabs.todos": "Attività",
@@ -310,7 +333,7 @@ final stringsIt = AppStrings(
   importNotesRuleMarkdownOnly:
       'Vengono importati solo i file che terminano con .md; gli altri file vengono ignorati.',
   importNotesRuleFormats:
-      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) mantengono il formato originale.',
+      'I file che hanno già i marcatori blk, mk, writer o csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) mantengono il formato originale.',
   importNotesRuleUnmarked:
       'I file .md senza questi marcatori vengono convertiti automaticamente in note articolo (.writer.md).',
   importNotesRuleTarget:

@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const zhHantMessages = {
+  "mind": {
+    "copyMarkdown": "複製完整內容",
+    "copiedMarkdown": "已複製 Markdown 內容",
+    "copyFailed": "複製失敗",
+    "expandAll": "展開全部子節點",
+    "collapseAll": "收起全部子節點",
+    "moveTo": "移至…",
+    "rootLevel": "最上層",
+    "view": "檢視",
+    "outline": "大綱筆記",
+    "mindmap": "心智圖",
+    "addTopic": "新增主題",
+    "addRoot": "新增根主題",
+    "addChild": "新增子主題",
+    "addSibling": "新增同層主題",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "delete": "刪除主題",
+    "expand": "展開",
+    "collapse": "收合",
+    "rootPlaceholder": "中心主題",
+    "nodePlaceholder": "主題",
+    "empty": "還沒有主題，新增一個開始。",
+  },
   "todo": {
     "view": "檢視",
     "listView": "列表",
@@ -585,6 +609,7 @@ export const zhHantMessages = {
     "newCsvNotebook": "新增表格筆記",
     "newChannelNotebook": "新增頻道筆記",
     "newTodoNotebook": "新增待辦筆記",
+    "newMindNotebook": "新增大綱筆記",
     "defaultNotebookNames": {
       "blocks": "未命名塊筆記本",
       "markdown": "未命名Markdown筆記",
@@ -592,6 +617,7 @@ export const zhHantMessages = {
       "csv": "未命名表格筆記",
       "channel": "未命名頻道",
       "todo": "未命名待辦筆記",
+      "mind": "未命名大綱筆記",
     },
     "newGroup": "新增目錄",
     "renameGroup": "重新命名目錄",
@@ -607,6 +633,7 @@ export const zhHantMessages = {
       "csv": "表格 (CSV)",
       "channel": "頻道",
       "todo": "待辦",
+      "mind": "大綱筆記",
       "unsupported": "未知格式"
     },
     "groupName": "目錄名稱",
@@ -646,7 +673,7 @@ export const zhHantMessages = {
     "title": "匯入筆記",
     "description": "將 Markdown 檔案匯入到目前筆記空間的根目錄。匯入前請閱讀以下規則：",
     "ruleMarkdownOnly": "僅匯入以 .md 結尾的檔案，其他檔案會被忽略。",
-    "ruleFormats": "已帶 blk、mk、writer、csv、channel、todo 標記（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）的檔案會保持原格式。",
+    "ruleFormats": "已帶 blk、mk、writer、csv、channel、todo、mind 標記（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md）的檔案會保持原格式。",
     "ruleUnmarked": "未帶上述標記的普通 .md 檔案會自動轉換為文章筆記（.writer.md）。",
     "ruleTarget": "筆記和目錄都會匯入到目前筆記空間的根目錄；目錄會保留其內部結構。",
     "ruleMultiple": "匯入筆記和匯入目錄都支援一次多選。",

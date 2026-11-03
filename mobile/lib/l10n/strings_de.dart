@@ -3,6 +3,29 @@ import 'app_strings.dart';
 final stringsDe = AppStrings(
   channel: {
     "tabsLabel": "Kanalbereiche",
+    "mind.copyMarkdown": "Gesamten Inhalt kopieren",
+    "mind.copiedMarkdown": "Markdown kopiert",
+    "mind.copyFailed": "Kopieren fehlgeschlagen",
+    "mind.view": "Ansicht",
+    "mind.moveTo": "Verschieben nach…",
+    "mind.rootLevel": "Oberste Ebene",
+    "mind.outline": "Gliederung",
+    "mind.mindmap": "Mindmap",
+    "mind.addTopic": "Thema hinzufügen",
+    "mind.addRoot": "Hauptthema hinzufügen",
+    "mind.addChild": "Unterthema hinzufügen",
+    "mind.addSibling": "Thema auf gleicher Ebene hinzufügen",
+    "mind.moveUp": "Nach oben",
+    "mind.moveDown": "Nach unten",
+    "mind.delete": "Thema löschen",
+    "mind.expandAll": "Alle Unterknoten ausklappen",
+    "mind.collapseAll": "Alle Unterknoten einklappen",
+    "mind.expand": "Aufklappen",
+    "mind.collapse": "Zuklappen",
+    "mind.rootPlaceholder": "Zentrales Thema",
+    "mind.nodePlaceholder": "Thema",
+    "mind.empty": "Noch keine Themen. Fügen Sie eines hinzu.",
+    "mind.format": "Gliederung",
     "todo.format": "Aufgabennotiz",
     "tabs.chat": "Chat",
     "tabs.todos": "Aufgaben",
@@ -312,7 +335,7 @@ final stringsDe = AppStrings(
   importNotesRuleMarkdownOnly:
       'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
   importNotesRuleFormats:
-      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) haben, behalten ihr ursprüngliches Format.',
+      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) haben, behalten ihr ursprüngliches Format.',
   importNotesRuleUnmarked:
       'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
   importNotesRuleTarget:

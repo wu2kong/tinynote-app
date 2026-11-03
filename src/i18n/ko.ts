@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const koMessages = {
+  "mind": {
+    "copyMarkdown": "전체 내용 복사",
+    "copiedMarkdown": "Markdown을 복사했습니다",
+    "copyFailed": "복사하지 못했습니다",
+    "expandAll": "모든 하위 노드 펼치기",
+    "collapseAll": "모든 하위 노드 접기",
+    "moveTo": "이동할 위치…",
+    "rootLevel": "최상위",
+    "view": "보기",
+    "outline": "개요",
+    "mindmap": "마인드맵",
+    "addTopic": "주제 추가",
+    "addRoot": "루트 주제 추가",
+    "addChild": "하위 주제 추가",
+    "addSibling": "같은 단계에 추가",
+    "moveUp": "위로 이동",
+    "moveDown": "아래로 이동",
+    "delete": "주제 삭제",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "rootPlaceholder": "중심 주제",
+    "nodePlaceholder": "주제",
+    "empty": "아직 주제가 없습니다. 주제를 추가해 시작하세요.",
+  },
   "todo": {
     "view": "보기",
     "listView": "목록",
@@ -563,6 +587,7 @@ export const koMessages = {
     "newCsvNotebook": "새 표 노트",
     "newChannelNotebook": "새 채널 노트",
     "newTodoNotebook": "새 할 일 노트",
+    "newMindNotebook": "새 개요 노트",
     "defaultNotebookNames": {
       "blocks": "제목 없는 블록 노트북",
       "markdown": "제목 없는 Markdown 노트",
@@ -570,6 +595,7 @@ export const koMessages = {
       "csv": "제목 없는 표 노트",
       "channel": "제목 없는 채널",
       "todo": "제목 없는 할 일 노트",
+      "mind": "제목 없는 개요 노트",
     },
     "newGroup": "새 디렉터리",
     "renameGroup": "디렉터리 이름 변경",
@@ -584,6 +610,7 @@ export const koMessages = {
       "csv": "표 (CSV)",
       "channel": "채널",
       "todo": "할 일",
+      "mind": "개요 노트",
       "unsupported": "알 수 없는 형식"
     },
     "groupName": "디렉터리 이름",
@@ -623,7 +650,7 @@ export const koMessages = {
     "title": "노트 가져오기",
     "description": "Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:",
     "ruleMarkdownOnly": ".md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.",
-    "ruleFormats": "이미 blk, mk, writer, csv, channel 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md)가 있는 파일은 원래 형식을 유지합니다.",
+    "ruleFormats": "이미 blk, mk, writer, csv, channel 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md)가 있는 파일은 원래 형식을 유지합니다.",
     "ruleUnmarked": "위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.",
     "ruleTarget": "노트와 디렉터리 모두 현재 노트 스페이스의 루트로 가져오며, 디렉터리의 내부 구조는 유지됩니다.",
     "ruleMultiple": "노트 가져오기와 디렉터리 가져오기 모두 여러 항목을 선택할 수 있습니다.",

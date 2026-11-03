@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const ruMessages = {
+  "mind": {
+    "copyMarkdown": "Скопировать всё содержимое",
+    "copiedMarkdown": "Markdown скопирован",
+    "copyFailed": "Не удалось скопировать",
+    "expandAll": "Развернуть все дочерние узлы",
+    "collapseAll": "Свернуть все дочерние узлы",
+    "moveTo": "Переместить в…",
+    "rootLevel": "Корневой уровень",
+    "view": "Вид",
+    "outline": "План",
+    "mindmap": "Интеллект-карта",
+    "addTopic": "Добавить тему",
+    "addRoot": "Добавить корневую тему",
+    "addChild": "Добавить подтему",
+    "addSibling": "Добавить тему рядом",
+    "moveUp": "Переместить вверх",
+    "moveDown": "Переместить вниз",
+    "delete": "Удалить тему",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "rootPlaceholder": "Центральная тема",
+    "nodePlaceholder": "Тема",
+    "empty": "Тем пока нет. Добавьте первую.",
+  },
   "todo": {
     "view": "Вид",
     "listView": "Список",
@@ -563,6 +587,7 @@ export const ruMessages = {
     "newCsvNotebook": "Новая табличная заметка",
     "newChannelNotebook": "Новая заметка-канал",
     "newTodoNotebook": "Новая заметка с задачами",
+    "newMindNotebook": "Новая заметка-план",
     "defaultNotebookNames": {
       "blocks": "Блокнот без названия",
       "markdown": "Markdown-заметка без названия",
@@ -570,6 +595,7 @@ export const ruMessages = {
       "csv": "Таблица без названия",
       "channel": "Канал без названия",
       "todo": "Заметка с задачами без названия",
+      "mind": "План без названия",
     },
     "newGroup": "Новый каталог",
     "renameGroup": "Переименовать каталог",
@@ -584,6 +610,7 @@ export const ruMessages = {
       "csv": "Таблица (CSV)",
       "channel": "Канал",
       "todo": "Задачи",
+      "mind": "План",
       "unsupported": "Неизвестный формат"
     },
     "groupName": "Название каталога",
@@ -623,7 +650,7 @@ export const ruMessages = {
     "title": "Импортировать заметки",
     "description": "Импортируйте файлы Markdown в корень текущего пространства заметок. Сначала ознакомьтесь с правилами:",
     "ruleMarkdownOnly": "Импортируются только файлы с расширением .md; остальные файлы игнорируются.",
-    "ruleFormats": "Файлы, у которых уже есть маркеры blk, mk, writer, csv или channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md), сохраняют исходный формат.",
+    "ruleFormats": "Файлы, у которых уже есть маркеры blk, mk, writer, csv или channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md), сохраняют исходный формат.",
     "ruleUnmarked": "Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).",
     "ruleTarget": "И заметки, и каталоги импортируются в корень текущего пространства; каталоги сохраняют внутреннюю структуру.",
     "ruleMultiple": "И «Импортировать заметки», и «Импортировать каталог» поддерживают множественный выбор.",

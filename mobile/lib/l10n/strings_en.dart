@@ -3,6 +3,29 @@ import 'app_strings.dart';
 final stringsEn = AppStrings(
   channel: {
     "tabsLabel": "Channel sections",
+    "mind.copyMarkdown": "Copy full content",
+    "mind.copiedMarkdown": "Markdown copied",
+    "mind.copyFailed": "Copy failed",
+    "mind.view": "View",
+    "mind.moveTo": "Move to…",
+    "mind.rootLevel": "Root level",
+    "mind.outline": "Outline",
+    "mind.mindmap": "Mind Map",
+    "mind.addTopic": "Add topic",
+    "mind.addRoot": "Add root topic",
+    "mind.addChild": "Add child topic",
+    "mind.addSibling": "Add sibling topic",
+    "mind.moveUp": "Move up",
+    "mind.moveDown": "Move down",
+    "mind.delete": "Delete topic",
+    "mind.expandAll": "Expand all descendants",
+    "mind.collapseAll": "Collapse all descendants",
+    "mind.expand": "Expand",
+    "mind.collapse": "Collapse",
+    "mind.rootPlaceholder": "Central topic",
+    "mind.nodePlaceholder": "Topic",
+    "mind.empty": "No topics yet. Add one to get started.",
+    "mind.format": "Outline",
     "todo.format": "Todo Note",
     "tabs.chat": "Chat",
     "tabs.todos": "Todos",
@@ -307,7 +330,7 @@ final stringsEn = AppStrings(
   importNotesRuleMarkdownOnly:
       'Only files ending with .md are imported; other files are ignored.',
   importNotesRuleFormats:
-      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) keep their original format.',
+      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) keep their original format.',
   importNotesRuleUnmarked:
       'Plain .md files without those markers are converted to article notes (.writer.md).',
   importNotesRuleTarget:

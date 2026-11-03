@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const jaMessages = {
+  "mind": {
+    "copyMarkdown": "内容全体をコピー",
+    "copiedMarkdown": "Markdown をコピーしました",
+    "copyFailed": "コピーに失敗しました",
+    "expandAll": "すべての子ノードを展開",
+    "collapseAll": "すべての子ノードを折りたたむ",
+    "moveTo": "移動先…",
+    "rootLevel": "最上位",
+    "view": "表示",
+    "outline": "アウトライン",
+    "mindmap": "マインドマップ",
+    "addTopic": "トピックを追加",
+    "addRoot": "ルートトピックを追加",
+    "addChild": "子トピックを追加",
+    "addSibling": "同階層に追加",
+    "moveUp": "上へ移動",
+    "moveDown": "下へ移動",
+    "delete": "トピックを削除",
+    "expand": "展開",
+    "collapse": "折りたたむ",
+    "rootPlaceholder": "中心トピック",
+    "nodePlaceholder": "トピック",
+    "empty": "トピックがありません。追加して始めましょう。",
+  },
   "todo": {
     "view": "表示",
     "listView": "リスト",
@@ -563,6 +587,7 @@ export const jaMessages = {
     "newCsvNotebook": "新しい表ノート",
     "newChannelNotebook": "新しいチャンネルノート",
     "newTodoNotebook": "新しいタスクノート",
+    "newMindNotebook": "新しいアウトラインノート",
     "defaultNotebookNames": {
       "blocks": "無題のブロックノートブック",
       "markdown": "無題のMarkdownノート",
@@ -570,6 +595,7 @@ export const jaMessages = {
       "csv": "無題の表ノート",
       "channel": "無題のチャンネル",
       "todo": "無題のタスクノート",
+      "mind": "無題のアウトラインノート",
     },
     "newGroup": "新しいディレクトリ",
     "renameGroup": "ディレクトリ名を変更",
@@ -584,6 +610,7 @@ export const jaMessages = {
       "csv": "表 (CSV)",
       "channel": "チャンネル",
       "todo": "タスク",
+      "mind": "アウトライン",
       "unsupported": "未知の形式"
     },
     "groupName": "ディレクトリ名",
@@ -623,7 +650,7 @@ export const jaMessages = {
     "title": "ノートを読み込む",
     "description": "Markdown ファイルを現在のノートスペースのルートに読み込みます。先に以下のルールをご確認ください：",
     "ruleMarkdownOnly": ".md で終わるファイルのみ読み込みます。その他のファイルは無視されます。",
-    "ruleFormats": "すでに blk、mk、writer、csv、channel マーカー（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）があるファイルは元の形式のままです。",
+    "ruleFormats": "すでに blk、mk、writer、csv、channel マーカー（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md）があるファイルは元の形式のままです。",
     "ruleUnmarked": "これらのマーカーがない通常の .md ファイルは記事ノート（.writer.md）に自動変換されます。",
     "ruleTarget": "ノートもディレクトリも現在のノートスペースのルートに読み込まれます。ディレクトリの内部構造は保持されます。",
     "ruleMultiple": "ノートの読み込みとディレクトリの読み込みはどちらも複数選択できます。",

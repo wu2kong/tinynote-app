@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const enMessages = {
+  "mind": {
+    "copyMarkdown": "Copy full content",
+    "copiedMarkdown": "Markdown copied",
+    "copyFailed": "Copy failed",
+    "expandAll": "Expand all descendants",
+    "collapseAll": "Collapse all descendants",
+    "moveTo": "Move to…",
+    "rootLevel": "Root level",
+    "view": "View",
+    "outline": "Outline",
+    "mindmap": "Mind Map",
+    "addTopic": "Add topic",
+    "addRoot": "Add root topic",
+    "addChild": "Add child topic",
+    "addSibling": "Add sibling topic",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "delete": "Delete topic",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "rootPlaceholder": "Central topic",
+    "nodePlaceholder": "Topic",
+    "empty": "No topics yet. Add one to get started.",
+  },
   "todo": {
     "view": "View",
     "listView": "List",
@@ -615,6 +639,7 @@ export const enMessages = {
     "newCsvNotebook": "New Table Note",
     "newChannelNotebook": "New Channel Note",
     "newTodoNotebook": "New Todo Note",
+    "newMindNotebook": "New Outline Note",
     "defaultNotebookNames": {
       "blocks": "Untitled Block Notebook",
       "markdown": "Untitled Markdown Note",
@@ -622,6 +647,7 @@ export const enMessages = {
       "csv": "Untitled Table Note",
       "channel": "Untitled Channel",
       "todo": "Untitled Todo Note",
+      "mind": "Untitled Outline Note",
     },
     "newGroup": "New Directory",
     "renameGroup": "Rename Directory",
@@ -637,6 +663,7 @@ export const enMessages = {
       "csv": "Table (CSV)",
       "channel": "Channel",
       "todo": "Todo",
+      "mind": "Outline",
       "unsupported": "Unknown format"
     },
     "groupName": "Directory Name",
@@ -676,7 +703,7 @@ export const enMessages = {
     "title": "Import Notes",
     "description": "Import Markdown files into the root of the current note space. Please read the rules below first:",
     "ruleMarkdownOnly": "Only files ending with .md are imported; other files are ignored.",
-    "ruleFormats": "Files that already have blk, mk, writer, csv, channel, or todo markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) keep their original format.",
+    "ruleFormats": "Files that already have blk, mk, writer, csv, channel, todo, or mind markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) keep their original format.",
     "ruleUnmarked": "Plain .md files without those markers are converted to article notes (.writer.md).",
     "ruleTarget": "Both notes and directories are imported into the root of the current note space; directories keep their internal structure.",
     "ruleMultiple": "Both Import Notes and Import Directory support multiple selection.",

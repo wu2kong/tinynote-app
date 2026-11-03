@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const frMessages = {
+  "mind": {
+    "copyMarkdown": "Copier tout le contenu",
+    "copiedMarkdown": "Markdown copié",
+    "copyFailed": "Échec de la copie",
+    "expandAll": "Développer tous les sous-nœuds",
+    "collapseAll": "Réduire tous les sous-nœuds",
+    "moveTo": "Déplacer vers…",
+    "rootLevel": "Niveau racine",
+    "view": "Vue",
+    "outline": "Plan",
+    "mindmap": "Carte mentale",
+    "addTopic": "Ajouter un sujet",
+    "addRoot": "Ajouter un sujet principal",
+    "addChild": "Ajouter un sous-sujet",
+    "addSibling": "Ajouter un sujet au même niveau",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "delete": "Supprimer le sujet",
+    "expand": "Développer",
+    "collapse": "Réduire",
+    "rootPlaceholder": "Sujet central",
+    "nodePlaceholder": "Sujet",
+    "empty": "Aucun sujet pour le moment. Ajoutez-en un.",
+  },
   "todo": {
     "view": "Vue",
     "listView": "Liste",
@@ -563,6 +587,7 @@ export const frMessages = {
     "newCsvNotebook": "Nouvelle note tableau",
     "newChannelNotebook": "Nouvelle note canal",
     "newTodoNotebook": "Nouvelle note de tâches",
+    "newMindNotebook": "Nouvelle note structurée",
     "defaultNotebookNames": {
       "blocks": "Carnet par blocs sans titre",
       "markdown": "Note Markdown sans titre",
@@ -570,6 +595,7 @@ export const frMessages = {
       "csv": "Tableau sans titre",
       "channel": "Canal sans titre",
       "todo": "Note de tâches sans titre",
+      "mind": "Note structurée sans titre",
     },
     "newGroup": "Nouveau répertoire",
     "renameGroup": "Renommer le répertoire",
@@ -584,6 +610,7 @@ export const frMessages = {
       "csv": "Tableau (CSV)",
       "channel": "Canal",
       "todo": "Tâches",
+      "mind": "Plan",
       "unsupported": "Format inconnu"
     },
     "groupName": "Nom du répertoire",
@@ -623,7 +650,7 @@ export const frMessages = {
     "title": "Importer des notes",
     "description": "Importez des fichiers Markdown à la racine de l'espace de notes actuel. Veuillez d'abord lire les règles ci-dessous :",
     "ruleMarkdownOnly": "Seuls les fichiers se terminant par .md sont importés ; les autres fichiers sont ignorés.",
-    "ruleFormats": "Les fichiers qui portent déjà les marqueurs blk, mk, writer, csv ou channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md) conservent leur format d'origine.",
+    "ruleFormats": "Les fichiers qui portent déjà les marqueurs blk, mk, writer, csv ou channel (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) conservent leur format d'origine.",
     "ruleUnmarked": "Les fichiers .md sans ces marqueurs sont automatiquement convertis en notes article (.writer.md).",
     "ruleTarget": "Les notes et les répertoires sont importés à la racine de l'espace de notes actuel ; les répertoires conservent leur structure interne.",
     "ruleMultiple": "Importer des notes et Importer un répertoire prennent tous deux en charge la sélection multiple.",

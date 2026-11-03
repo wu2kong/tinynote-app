@@ -34,6 +34,17 @@ void main() {
     expect(doc['todoGroups'], isEmpty);
     expect(doc.containsKey('messages'), isFalse);
   });
+  test('mind files preserve tree JSON and default to outline mode', () {
+    expect(detectNotebookFormat('Ideas.MIND.MD'), NotebookFormat.mind);
+    expect(notebookDisplayName('Ideas.mind.md'), 'Ideas');
+    expect(shouldSaveAsDocument(NotebookFormat.mind), isTrue);
+    expect(resolveImportedNotebookFileName('Ideas.mind.md').converted, isFalse);
+    final doc =
+        jsonDecode(initialNotebookContent(NotebookFormat.mind, 'Ideas'))
+            as Map<String, dynamic>;
+    expect(doc['mode'], 'outline');
+    expect(doc['nodes'], isEmpty);
+  });
   group('detectNotebookFormat', () {
     test('matches longest suffix first', () {
       expect(detectNotebookFormat('a.writer.md'), NotebookFormat.writer);

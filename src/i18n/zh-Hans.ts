@@ -1,6 +1,30 @@
 import type { MessageTree } from './types';
 
 export const zhHansMessages = {
+  "mind": {
+    "copyMarkdown": "复制完整内容",
+    "copiedMarkdown": "已复制 Markdown 内容",
+    "copyFailed": "复制失败",
+    "expandAll": "展开全部子节点",
+    "collapseAll": "收起全部子节点",
+    "moveTo": "移动到…",
+    "rootLevel": "顶层",
+    "view": "视图",
+    "outline": "大纲笔记",
+    "mindmap": "思维导图",
+    "addTopic": "添加主题",
+    "addRoot": "添加根主题",
+    "addChild": "添加子主题",
+    "addSibling": "添加同级主题",
+    "moveUp": "上移",
+    "moveDown": "下移",
+    "delete": "删除主题",
+    "expand": "展开",
+    "collapse": "折叠",
+    "rootPlaceholder": "中心主题",
+    "nodePlaceholder": "主题",
+    "empty": "还没有主题，添加一个开始。",
+  },
   "todo": {
     "view": "视图",
     "listView": "列表",
@@ -615,6 +639,7 @@ export const zhHansMessages = {
     "newCsvNotebook": "新建表格笔记",
     "newChannelNotebook": "新建频道笔记",
     "newTodoNotebook": "新建待办笔记",
+    "newMindNotebook": "新建大纲笔记",
     "defaultNotebookNames": {
       "blocks": "未命名块笔记本",
       "markdown": "未命名Markdown笔记",
@@ -622,6 +647,7 @@ export const zhHansMessages = {
       "csv": "未命名表格笔记",
       "channel": "未命名频道",
       "todo": "未命名待办笔记",
+      "mind": "未命名大纲笔记",
     },
     "newGroup": "新建目录",
     "renameGroup": "重命名目录",
@@ -637,6 +663,7 @@ export const zhHansMessages = {
       "csv": "表格 (CSV)",
       "channel": "频道",
       "todo": "待办",
+      "mind": "大纲笔记",
       "unsupported": "未知格式"
     },
     "groupName": "目录名称",
@@ -676,7 +703,7 @@ export const zhHansMessages = {
     "title": "导入笔记",
     "description": "将 Markdown 文件导入到当前笔记空间的根目录。导入前请阅读以下规则：",
     "ruleMarkdownOnly": "仅导入以 .md 结尾的文件，其他文件会被忽略。",
-    "ruleFormats": "已带 blk、mk、writer、csv、channel、todo 标记（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md）的文件会保持原格式。",
+    "ruleFormats": "已带 blk、mk、writer、csv、channel、todo、mind 标记（.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md）的文件会保持原格式。",
     "ruleUnmarked": "未带上述标记的普通 .md 文件会自动转换为文章笔记（.writer.md）。",
     "ruleTarget": "笔记和目录都会导入到当前笔记空间的根目录；目录会保留其内部结构。",
     "ruleMultiple": "导入笔记和导入目录都支持一次多选。",

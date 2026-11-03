@@ -125,7 +125,8 @@ class FileSystemService {
       if (format.isUnsupportedOnMobile ||
           format.isCsvPreview ||
           format == NotebookFormat.channel ||
-          format == NotebookFormat.todo) {
+          format == NotebookFormat.todo ||
+          format == NotebookFormat.mind) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,

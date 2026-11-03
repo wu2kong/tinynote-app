@@ -919,6 +919,7 @@ class LibraryService extends ChangeNotifier {
     if (!notebook.format.isDocument &&
         notebook.format != NotebookFormat.channel &&
         notebook.format != NotebookFormat.todo &&
+        notebook.format != NotebookFormat.mind &&
         !notebook.compatOpenAsMarkdown) {
       throw StateError(appStrings.documentBlocksUnsupported);
     }

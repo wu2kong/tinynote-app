@@ -1,4 +1,5 @@
 import '../widgets/channel_notebook_view.dart';
+import '../widgets/mind_notebook_view.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -267,6 +268,14 @@ class _HomeScreenState extends State<HomeScreen> {
         notebook: notebook,
         showDirectoryButton: showDirectoryButton,
         todoOnly: true,
+      );
+    }
+    if (notebook.format == NotebookFormat.mind) {
+      return MindNotebookView(
+        key: ValueKey(notebook.path),
+        library: library,
+        notebook: notebook,
+        showDirectoryButton: showDirectoryButton,
       );
     }
     if (showCsvPreview) {
