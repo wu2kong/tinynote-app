@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';
 import '../services/library_service.dart';
@@ -23,6 +24,7 @@ class ChannelNotebookView extends StatefulWidget {
 
 class _ChannelNotebookViewState extends State<ChannelNotebookView> {
   final _draft = TextEditingController();
+  final _todoDraft = TextEditingController();
   final _search = TextEditingController();
   final _focus = FocusNode();
   Map<String, dynamic>? _doc;
@@ -30,6 +32,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
   String _tab = 'chat';
   String _author = 'self';
   bool _saving = false;
+  bool _ungroupedCollapsed = false;
   static const _tabs = [
     'chat',
     'todos',
@@ -39,6 +42,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
     'settings',
   ];
   String tr(String key) => context.s.ch(key);
+  String todoTr(String key) => tr('todo.$key');
   List<Map<String, dynamic>> items(String key) =>
       (_doc?[key] as List? ?? [])
           .whereType<Map>()
@@ -82,6 +86,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
         'members',
         'messages',
         'todos',
+        'todoGroups',
         'links',
         'resources',
       ]) {
@@ -111,6 +116,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
   @override
   void dispose() {
     _draft.dispose();
+    _todoDraft.dispose();
     _search.dispose();
     _focus.dispose();
     super.dispose();
@@ -593,7 +599,741 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
     );
   }
 
+  List<Map<String, String>> parseLinks(String text) {
+    final links = <Map<String, String>>[];
+    final markdown = RegExp(
+      r'^\[([^\]]+)\]\((https?://[^\s)]+)\)(?:\s*[-–—|]\s*(.*))?$',
+      caseSensitive: false,
+    );
+    final pipe = RegExp(
+      r'^(.*?)\s*\|\s*(https?://[^\s|<>]+)(?:\s*\|\s*(.*))?$',
+      caseSensitive: false,
+    );
+    final dash = RegExp(
+      r'^(.*?)\s+[-–—]\s+(https?://[^\s|<>]+)$',
+      caseSensitive: false,
+    );
+    for (final raw in text.split(RegExp(r'\r?\n'))) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      final match =
+          markdown.firstMatch(line) ??
+          pipe.firstMatch(line) ??
+          dash.firstMatch(line);
+      final url =
+          match?.group(2) ??
+          (RegExp(r'^https?://\S+$', caseSensitive: false).hasMatch(line)
+              ? line
+              : '');
+      final uri = Uri.tryParse(url);
+      if (uri == null ||
+          !uri.hasAuthority ||
+          !['http', 'https'].contains(uri.scheme.toLowerCase())) {
+        continue;
+      }
+      links.add({
+        'url': url,
+        'title':
+            (match?.group(1) ?? '').trim().isEmpty
+                ? uri.host
+                : match!.group(1)!.trim(),
+        'note': (match?.group(3) ?? '').trim(),
+      });
+    }
+    return links;
+  }
+
+  Future<void> importLinks(String text) async {
+    final parsed = parseLinks(text);
+    if (parsed.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('noImportableLinks'))));
+      return;
+    }
+    await save(
+      () =>
+          _doc!['links'] = [
+            ...items('links'),
+            for (var i = 0; i < parsed.length; i++)
+              {
+                'id': '${newId()}-$i',
+                ...parsed[i],
+                'createdAt': DateTime.now().toUtc().toIso8601String(),
+              },
+          ],
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            tr('linksImported').replaceAll('{count}', '${parsed.length}'),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> bulkImportLinks() async {
+    final controller = TextEditingController();
+    final text = await showDialog<String>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(tr('bulkImportLinks')),
+            content: SizedBox(
+              width: 500,
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                minLines: 8,
+                maxLines: 12,
+                decoration: InputDecoration(
+                  hintText: tr('bulkImportPlaceholder'),
+                  helperText: tr('bulkImportHint'),
+                  helperMaxLines: 4,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.s.commonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, controller.text),
+                child: Text(tr('startImport')),
+              ),
+            ],
+          ),
+    );
+    Future.delayed(const Duration(milliseconds: 300), controller.dispose);
+    if (text != null && mounted) await importLinks(text);
+  }
+
+  Future<void> editLink(Map<String, dynamic> item) async {
+    final fields = ['url', 'title', 'note'];
+    final controllers = [
+      for (final field in fields)
+        TextEditingController(text: (item[field] ?? '').toString()),
+    ];
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(tr('editLink')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < fields.length; i++)
+                  TextField(
+                    controller: controllers[i],
+                    decoration: InputDecoration(
+                      labelText: tr(['linkUrl', 'linkTitle', 'linkNote'][i]),
+                    ),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.s.commonCancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(tr('saveLink')),
+              ),
+            ],
+          ),
+    );
+    final values = {
+      for (var i = 0; i < fields.length; i++)
+        fields[i]: controllers[i].text.trim(),
+    };
+    Future.delayed(const Duration(milliseconds: 300), () {
+      for (final c in controllers) {
+        c.dispose();
+      }
+    });
+    if (accepted == true && values['url']!.isNotEmpty && mounted) {
+      await save(
+        () =>
+            _doc!['links'] = [
+              for (final link in items('links'))
+                link['id'] == item['id'] ? {...link, ...values} : link,
+            ],
+      );
+    }
+  }
+
+  String markdownLink(Map<String, dynamic> item) {
+    final url = item['url'].toString();
+    final title = (item['title'] ?? '').toString();
+    return '[${(title.isEmpty ? url : title).replaceAllMapped(RegExp(r'([\\\]])'), (m) => '\\${m[0]}')}]($url)';
+  }
+
+  Future<void> copyLinks(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('linksCopied'))));
+    }
+  }
+
+  String todoGroupId(
+    Map<String, dynamic> task,
+    List<Map<String, dynamic>> groups,
+  ) {
+    final id = (task['groupId'] ?? '').toString();
+    return groups.any((group) => group['id'] == id) ? id : '';
+  }
+
+  Future<void> addTodo([String groupId = '']) async {
+    final text = _todoDraft.text.trim();
+    if (text.isEmpty) return;
+    await save(
+      () =>
+          _doc!['todos'] = [
+            ...items('todos'),
+            {
+              'id': newId(),
+              'text': text,
+              'done': false,
+              'createdAt': DateTime.now().toUtc().toIso8601String(),
+              if (groupId.isNotEmpty) 'groupId': groupId,
+            },
+          ],
+    );
+    if (mounted) _todoDraft.clear();
+  }
+
+  Future<void> addTodoToGroup(String groupId) async {
+    final text = await prompt(todoTr('quickPlaceholder'));
+    if (text == null || text.trim().isEmpty || !mounted) return;
+    await save(
+      () =>
+          _doc!['todos'] = [
+            ...items('todos'),
+            {
+              'id': newId(),
+              'text': text.trim(),
+              'done': false,
+              'createdAt': DateTime.now().toUtc().toIso8601String(),
+              if (groupId.isNotEmpty) 'groupId': groupId,
+            },
+          ],
+    );
+  }
+
+  Future<void> addTodoGroup({String? anchor, bool before = false}) async {
+    final name = await prompt(todoTr('groupName'));
+    if (name == null || name.trim().isEmpty || !mounted) return;
+    await save(() {
+      final groups = items('todoGroups');
+      final index = groups.indexWhere((group) => group['id'] == anchor);
+      groups.insert(index < 0 ? groups.length : index + (before ? 0 : 1), {
+        'id': newId(),
+        'name': name.trim(),
+        'collapsed': false,
+      });
+      _doc!['todoGroups'] = groups;
+    });
+  }
+
+  Future<void> deleteTodosWithUndo({String? taskId, String? groupId}) async {
+    final beforeTasks = items('todos');
+    final beforeGroups = items('todoGroups');
+    final count =
+        groupId != null
+            ? beforeTasks.where((task) => task['groupId'] == groupId).length
+            : 1;
+    await save(() {
+      _doc!['todos'] =
+          beforeTasks
+              .where(
+                (task) =>
+                    task['id'] != taskId &&
+                    (groupId == null || task['groupId'] != groupId),
+              )
+              .toList();
+      if (groupId != null) {
+        _doc!['todoGroups'] =
+            beforeGroups.where((group) => group['id'] != groupId).toList();
+      }
+    });
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          todoTr(
+            groupId != null ? 'groupDeleted' : 'deleted',
+          ).replaceAll('{count}', '$count'),
+        ),
+        action: SnackBarAction(
+          label: todoTr('undo'),
+          onPressed:
+              () => save(() {
+                _doc!['todos'] = beforeTasks;
+                _doc!['todoGroups'] = beforeGroups;
+              }),
+        ),
+      ),
+    );
+  }
+
+  Future<void> todoAction(Map<String, dynamic> task, String action) async {
+    final id = task['id'];
+    if (action == 'edit') {
+      final value = await prompt(
+        todoTr('edit'),
+        (task['text'] ?? '').toString(),
+      );
+      if (value != null && value.trim().isNotEmpty && mounted) {
+        await save(
+          () =>
+              _doc!['todos'] = [
+                for (final item in items('todos'))
+                  item['id'] == id ? {...item, 'text': value.trim()} : item,
+              ],
+        );
+      }
+    } else if (action == 'delete') {
+      await deleteTodosWithUndo(taskId: id.toString());
+    } else if (action == 'source') {
+      final source =
+          items('messages')
+              .where((message) => message['id'] == task['sourceMessageId'])
+              .firstOrNull;
+      if (source == null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(todoTr('sourceMissing'))));
+      } else {
+        setState(() {
+          _tab = 'chat';
+          _search.text = (source['content'] ?? '').toString();
+        });
+      }
+    } else if (action.startsWith('move:')) {
+      final groupId = action.substring(5);
+      await save(
+        () =>
+            _doc!['todos'] = [
+              for (final item in items('todos'))
+                item['id'] == id
+                    ? ({...item}
+                      ..remove('groupId')
+                      ..addAll(groupId.isEmpty ? {} : {'groupId': groupId}))
+                    : item,
+            ],
+      );
+    }
+  }
+
+  Widget todoTask(
+    Map<String, dynamic> task,
+    int index,
+    List<Map<String, dynamic>> groups,
+  ) => ListTile(
+    key: ValueKey('todo:${task['id']}'),
+    leading: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ReorderableDragStartListener(
+          index: index,
+          child: const Icon(Icons.drag_handle),
+        ),
+        Checkbox(
+          value: task['done'] == true,
+          onChanged:
+              _saving
+                  ? null
+                  : (value) => save(
+                    () =>
+                        _doc!['todos'] = [
+                          for (final item in items('todos'))
+                            item['id'] == task['id']
+                                ? {
+                                  ...item,
+                                  'done': value,
+                                  'completedAt':
+                                      value == true
+                                          ? DateTime.now()
+                                              .toUtc()
+                                              .toIso8601String()
+                                          : null,
+                                }
+                                : item,
+                        ],
+                  ),
+        ),
+      ],
+    ),
+    title: Text(
+      (task['text'] ?? '').toString(),
+      style: TextStyle(
+        decoration: task['done'] == true ? TextDecoration.lineThrough : null,
+      ),
+    ),
+    onTap: () => todoAction(task, 'edit'),
+    trailing: PopupMenuButton<String>(
+      tooltip: todoTr('groupMenu'),
+      onSelected: (action) => todoAction(task, action),
+      itemBuilder:
+          (_) => [
+            PopupMenuItem(value: 'edit', child: Text(todoTr('edit'))),
+            if (task['sourceMessageId'] != null)
+              PopupMenuItem(value: 'source', child: Text(todoTr('source'))),
+            if (groups.isNotEmpty) ...[
+              PopupMenuItem(enabled: false, child: Text(todoTr('moveTo'))),
+              PopupMenuItem(value: 'move:', child: Text(todoTr('ungrouped'))),
+              for (final group in groups)
+                PopupMenuItem(
+                  value: 'move:${group['id']}',
+                  child: Text(group['name'].toString()),
+                ),
+            ],
+            PopupMenuItem(value: 'delete', child: Text(todoTr('delete'))),
+          ],
+    ),
+  );
+
+  Widget todoSection(
+    String groupId,
+    String name,
+    bool collapsed,
+    List<Map<String, dynamic>> groups, {
+    bool plain = false,
+    int? groupIndex,
+  }) {
+    final tasks =
+        items(
+          'todos',
+        ).where((task) => todoGroupId(task, groups) == groupId).toList();
+    return Column(
+      key: ValueKey('group:$groupId'),
+      children: [
+        if (!plain)
+          ListTile(
+            leading:
+                groupIndex == null
+                    ? null
+                    : ReorderableDragStartListener(
+                      index: groupIndex,
+                      child: const Icon(Icons.drag_handle),
+                    ),
+            title: Text('$name (${tasks.length})'),
+            onTap: () {
+              if (groupId.isEmpty) {
+                setState(() => _ungroupedCollapsed = !_ungroupedCollapsed);
+              } else {
+                save(
+                  () =>
+                      _doc!['todoGroups'] = [
+                        for (final group in groups)
+                          group['id'] == groupId
+                              ? {...group, 'collapsed': !collapsed}
+                              : group,
+                      ],
+                );
+              }
+            },
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: tr('addTodo'),
+                  icon: const Icon(Icons.add),
+                  onPressed: () => addTodoToGroup(groupId),
+                ),
+                if (groupId.isNotEmpty)
+                  PopupMenuButton<String>(
+                    tooltip: todoTr('groupMenu'),
+                    onSelected: (action) async {
+                      if (action == 'rename') {
+                        final value = await prompt(todoTr('groupName'), name);
+                        if (value != null &&
+                            value.trim().isNotEmpty &&
+                            mounted) {
+                          await save(
+                            () =>
+                                _doc!['todoGroups'] = [
+                                  for (final group in items('todoGroups'))
+                                    group['id'] == groupId
+                                        ? {...group, 'name': value.trim()}
+                                        : group,
+                                ],
+                          );
+                        }
+                      }
+                      if (action == 'above') {
+                        await addTodoGroup(anchor: groupId, before: true);
+                      }
+                      if (action == 'below') {
+                        await addTodoGroup(anchor: groupId);
+                      }
+                      if (action == 'delete') {
+                        await deleteTodosWithUndo(groupId: groupId);
+                      }
+                    },
+                    itemBuilder:
+                        (_) => [
+                          PopupMenuItem(
+                            value: 'rename',
+                            child: Text(context.s.commonRename),
+                          ),
+                          PopupMenuItem(
+                            value: 'above',
+                            child: Text(todoTr('addGroupAbove')),
+                          ),
+                          PopupMenuItem(
+                            value: 'below',
+                            child: Text(todoTr('addGroupBelow')),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(todoTr('deleteGroup')),
+                          ),
+                        ],
+                  ),
+              ],
+            ),
+          ),
+        if (!collapsed)
+          ReorderableListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            itemCount: tasks.length,
+            onReorderItem: (oldIndex, newIndex) {
+              if (_saving) return;
+              save(() {
+                final all = items('todos');
+                final moving = tasks[oldIndex];
+                all.removeWhere((task) => task['id'] == moving['id']);
+                final target =
+                    newIndex < tasks.length - 1
+                        ? tasks
+                            .where((task) => task['id'] != moving['id'])
+                            .toList()[newIndex]
+                        : null;
+                final at =
+                    target == null
+                        ? all.length
+                        : all.indexWhere((task) => task['id'] == target['id']);
+                all.insert(at, moving);
+                _doc!['todos'] = all;
+              });
+            },
+            itemBuilder: (_, index) => todoTask(tasks[index], index, groups),
+          ),
+      ],
+    );
+  }
+
+  Widget todosPanel() {
+    final groups = items('todoGroups');
+    final showGroups =
+        groups.isNotEmpty ||
+        items(
+          'todos',
+        ).any((task) => (task['groupId'] ?? '').toString().isNotEmpty);
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _todoDraft,
+                  decoration: InputDecoration(
+                    hintText: todoTr('quickPlaceholder'),
+                  ),
+                  onSubmitted: (_) => addTodo(),
+                ),
+              ),
+              IconButton(
+                tooltip: tr('addTodo'),
+                onPressed: _saving ? null : addTodo,
+                icon: const Icon(Icons.add),
+              ),
+              TextButton(
+                onPressed: _saving ? null : () => addTodoGroup(),
+                child: Text(todoTr('addGroup')),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            children: [
+              todoSection(
+                '',
+                todoTr('ungrouped'),
+                _ungroupedCollapsed,
+                groups,
+                plain: !showGroups,
+              ),
+              if (groups.isNotEmpty)
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
+                  itemCount: groups.length,
+                  onReorderItem: (oldIndex, newIndex) {
+                    if (_saving) return;
+                    save(() {
+                      final next = items('todoGroups');
+                      next.insert(newIndex, next.removeAt(oldIndex));
+                      _doc!['todoGroups'] = next;
+                    });
+                  },
+                  itemBuilder:
+                      (_, index) => KeyedSubtree(
+                        key: ValueKey('sort-group:${groups[index]['id']}'),
+                        child: todoSection(
+                          groups[index]['id'].toString(),
+                          groups[index]['name'].toString(),
+                          groups[index]['collapsed'] == true,
+                          groups,
+                          groupIndex: index,
+                        ),
+                      ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget linksPanel() => Column(
+    children: [
+      Wrap(
+        alignment: WrapAlignment.end,
+        children: [
+          TextButton.icon(
+            onPressed: _saving ? null : addItem,
+            icon: const Icon(Icons.add),
+            label: Text(tr('addLink')),
+          ),
+          TextButton.icon(
+            onPressed:
+                _saving
+                    ? null
+                    : () async {
+                      try {
+                        final data = await Clipboard.getData('text/plain');
+                        if (mounted) await importLinks(data?.text ?? '');
+                      } catch (_) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(tr('clipboardReadFailed'))),
+                          );
+                        }
+                      }
+                    },
+            icon: const Icon(Icons.paste),
+            label: Text(tr('importFromClipboard')),
+          ),
+          TextButton(
+            onPressed: _saving ? null : bulkImportLinks,
+            child: Text(tr('bulkImportLinks')),
+          ),
+          if (items('links').isNotEmpty)
+            TextButton(
+              onPressed:
+                  () => copyLinks(items('links').map(markdownLink).join('\n')),
+              child: Text(tr('copyAllMarkdownLinks')),
+            ),
+        ],
+      ),
+      Expanded(
+        child: ReorderableListView.builder(
+          buildDefaultDragHandles: false,
+          itemCount: items('links').length,
+          onReorderItem: (oldIndex, newIndex) {
+            if (_saving) return;
+            save(() {
+              final links = items('links');
+              links.insert(newIndex, links.removeAt(oldIndex));
+              _doc!['links'] = links;
+            });
+          },
+          itemBuilder: (context, index) {
+            final item = items('links')[index];
+            final url = (item['url'] ?? '').toString();
+            final title = (item['title'] ?? '').toString();
+            return ListTile(
+              key: ValueKey(item['id']),
+              leading: ReorderableDragStartListener(
+                index: index,
+                child: const Icon(Icons.drag_handle),
+              ),
+              title: Text(title.isEmpty ? url : title),
+              subtitle: Text(
+                [
+                  if (title.isNotEmpty) url,
+                  if ((item['note'] ?? '').toString().isNotEmpty) item['note'],
+                ].join('\n'),
+              ),
+              onTap: isExternalHref(url) ? () => openExternalUrl(url) : null,
+              trailing: PopupMenuButton<String>(
+                tooltip: tr('linkActions'),
+                onSelected: (action) {
+                  switch (action) {
+                    case 'edit':
+                      editLink(item);
+                    case 'markdown':
+                      copyLinks(markdownLink(item));
+                    case 'pipe':
+                      copyLinks('${title.isEmpty ? url : title} | $url');
+                    case 'dash':
+                      copyLinks('${title.isEmpty ? url : title} - $url');
+                    case 'delete':
+                      save(
+                        () =>
+                            _doc!['links'] =
+                                items('links')
+                                    .where((link) => link['id'] != item['id'])
+                                    .toList(),
+                      );
+                  }
+                },
+                itemBuilder:
+                    (_) => [
+                      PopupMenuItem(value: 'edit', child: Text(tr('editLink'))),
+                      PopupMenuItem(
+                        value: 'markdown',
+                        child: Text(tr('copyMarkdownLink')),
+                      ),
+                      PopupMenuItem(
+                        value: 'pipe',
+                        child: Text(tr('copyTitlePipeLink')),
+                      ),
+                      PopupMenuItem(
+                        value: 'dash',
+                        child: Text(tr('copyTitleDashLink')),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(tr('deleteLink')),
+                      ),
+                    ],
+              ),
+            );
+          },
+        ),
+      ),
+    ],
+  );
+
   Widget sidePanel() {
+    if (_tab == 'todos') return todosPanel();
+    if (_tab == 'links') return linksPanel();
     if (_tab == 'settings') {
       return ListView(
         padding: const EdgeInsets.all(16),
