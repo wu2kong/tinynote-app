@@ -12,6 +12,12 @@ export interface ChannelMember {
   isSelf?: boolean;
 }
 
+export interface ChannelMessageRemark {
+  id: string;
+  text: string;
+  createdAt: string;
+}
+
 export interface ChannelMessage {
   id: string;
   /** Fixed label kept for extensibility; UI defaults to “message”. */
@@ -19,6 +25,19 @@ export interface ChannelMessage {
   content: string;
   sentAt: string;
   authorId: string;
+  remarks?: ChannelMessageRemark[];
+}
+
+export interface ChannelTodoSubtask {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
+export interface ChannelTodoGroup {
+  id: string;
+  name: string;
+  collapsed: boolean;
 }
 
 export interface ChannelTodoItem {
@@ -26,6 +45,13 @@ export interface ChannelTodoItem {
   text: string;
   done: boolean;
   createdAt: string;
+  groupId?: string;
+  priority?: 'none' | 'low' | 'medium' | 'high';
+  dueDate?: string;
+  notes?: string;
+  completedAt?: string;
+  sourceMessageId?: string;
+  subtasks?: ChannelTodoSubtask[];
 }
 
 export interface ChannelLinkItem {
@@ -54,6 +80,7 @@ export interface ChannelDocument {
   members: ChannelMember[];
   messages: ChannelMessage[];
   todos: ChannelTodoItem[];
+  todoGroups?: ChannelTodoGroup[];
   links: ChannelLinkItem[];
   resources: ChannelResourceItem[];
 }
@@ -133,18 +160,39 @@ function normalizeMessage(
     content,
     sentAt: sentAt || new Date(Date.now() - index).toISOString(),
     authorId: readString(raw.authorId) || fallbackAuthorId,
+    ...(Array.isArray(raw.remarks) ? {
+      remarks: raw.remarks.filter(isRecord).filter((remark) => readString(remark.text).trim()).map((remark) => ({
+        id: readString(remark.id) || createChannelId(),
+        text: readString(remark.text),
+        createdAt: readString(remark.createdAt) || new Date().toISOString(),
+      })),
+    } : {}),
   };
 }
 
 function normalizeTodo(raw: unknown): ChannelTodoItem | null {
   if (!isRecord(raw)) return null;
   const text = readString(raw.text);
-  if (!text) return null;
+  if (!text.trim() && !(typeof raw.text === 'string' && readString(raw.id))) return null;
+  const dueDate = readString(raw.dueDate);
+  const validDueDate = /^\d{4}-\d{2}-\d{2}$/.test(dueDate)
+    && !Number.isNaN(Date.parse(dueDate))
+    && new Date(dueDate).toISOString().slice(0, 10) === dueDate;
   return {
     id: readString(raw.id) || createChannelId(),
     text,
     done: readBool(raw.done),
     createdAt: readString(raw.createdAt) || new Date().toISOString(),
+    ...(readString(raw.groupId) ? { groupId: readString(raw.groupId) } : {}),
+    ...(raw.priority === 'none' || raw.priority === 'low' || raw.priority === 'medium' || raw.priority === 'high' ? { priority: raw.priority } : {}),
+    ...(validDueDate ? { dueDate } : {}),
+    ...(typeof raw.notes === 'string' ? { notes: raw.notes } : {}),
+    ...(readBool(raw.done) && readString(raw.completedAt) ? { completedAt: readString(raw.completedAt) } : {}),
+    ...(readString(raw.sourceMessageId) ? { sourceMessageId: readString(raw.sourceMessageId) } : {}),
+    ...(Array.isArray(raw.subtasks) ? { subtasks: raw.subtasks.filter(isRecord)
+      .filter((item) => readString(item.text).trim()).map((item) => ({
+        id: readString(item.id) || createChannelId(), text: readString(item.text), done: readBool(item.done),
+      })) } : {}),
   };
 }
 
@@ -231,6 +279,10 @@ export function parseChannelDocument(raw: string, selfMemberNameFallback = 'Me')
       members,
       messages,
       todos,
+      ...(Array.isArray(parsed.todoGroups) ? { todoGroups: parsed.todoGroups.filter(isRecord)
+        .filter((group) => readString(group.name).trim()).map((group) => ({
+          id: readString(group.id) || createChannelId(), name: readString(group.name), collapsed: readBool(group.collapsed),
+        })) } : {}),
       links,
       resources,
     };
@@ -249,6 +301,7 @@ export function serializeChannelDocument(doc: ChannelDocument): string {
     members: doc.members,
     messages: doc.messages,
     todos: doc.todos,
+    ...(doc.todoGroups ? { todoGroups: doc.todoGroups } : {}),
     links: doc.links,
     resources: doc.resources,
   };

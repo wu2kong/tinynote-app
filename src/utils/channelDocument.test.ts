@@ -63,3 +63,30 @@ test('message order survives serialization', () => {
   const parsed = parseChannelDocument(serializeChannelDocument(doc));
   assert.deepEqual(parsed.messages.map((message) => message.id), [second.id, first.id]);
 });
+
+test('multiple message remarks and message-derived todos survive saving and reopening', () => {
+  const doc = createEmptyChannelDocument('Me');
+  const message = createChannelMessage('Follow up\non the release', DEFAULT_SELF_MEMBER_ID);
+  message.remarks = [
+    { id: 'r1', text: 'First remark\nwith details', createdAt: '2026-11-02T01:00:00.000Z' },
+    { id: 'r2', text: 'Second remark', createdAt: '2026-11-02T02:00:00.000Z' },
+  ];
+  doc.messages.push(message);
+  doc.todos.push({ id: 't1', text: message.content, done: false, createdAt: message.sentAt });
+  const parsed = parseChannelDocument(serializeChannelDocument(doc));
+  assert.deepEqual(parsed.messages[0].remarks, message.remarks);
+  assert.deepEqual(parsed.todos, doc.todos);
+});
+
+test('legacy messages and malformed remarks remain readable', () => {
+  const parsed = parseChannelDocument(JSON.stringify({ messages: [
+    { content: 'Legacy' },
+    { content: 'Invalid collection', remarks: 'bad' },
+    { content: 'Mixed remarks', remarks: [null, 1, {}, { text: '  ' }, { text: 'Valid' }] },
+  ] }));
+  assert.equal(parsed.messages[0].remarks, undefined);
+  assert.equal(parsed.messages[1].remarks, undefined);
+  assert.equal(parsed.messages[2].remarks?.length, 1);
+  assert.equal(parsed.messages[2].remarks?.[0].text, 'Valid');
+  assert.ok(parsed.messages[2].remarks?.[0].id);
+});

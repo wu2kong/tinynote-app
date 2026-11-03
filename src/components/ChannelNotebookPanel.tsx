@@ -1,3 +1,4 @@
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -5,7 +6,7 @@ import React, {
   useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent,
 } from 'react';
 import {
-  GripVertical, Check, Link2, MessageSquare, PanelLeftClose, PanelLeftOpen, Paperclip, Search, Send, Settings, Trash2, Users, X,
+  Copy, StickyNote, GripVertical, Check, Link2, MessageSquare, PanelLeftClose, PanelLeftOpen, Paperclip, Search, Send, Settings, Trash2, Users, X,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
@@ -29,6 +30,7 @@ import { isExternalHref, openExternalLink } from '@/utils/openExternalLink';
 import { renderInlineLinkText } from '@/utils/renderInlineLinks';
 import { showToast } from './Toast';
 import ContextMenuPortal from './ContextMenuPortal';
+import ChannelTodosPanel from './ChannelTodosPanel';
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -142,11 +144,14 @@ const ChannelNotebookPanel: React.FC = () => {
       : doc.messages
   ), [doc.messages, searchQuery]);
   const [memberDraft, setMemberDraft] = useState('');
-  const [todoDraft, setTodoDraft] = useState('');
   const [linkDraft, setLinkDraft] = useState({ url: '', title: '', note: '' });
   const [resourceDraft, setResourceDraft] = useState({ name: '', kind: '', uri: '', note: '' });
   const [messageMenu, setMessageMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+
+  const [remarkMenu, setRemarkMenu] = useState<{ messageId: string; remarkId: string; x: number; y: number } | null>(null);
+  const [remarkTargetId, setRemarkTargetId] = useState<string | null>(null);
+  const [remarkDraft, setRemarkDraft] = useState('');
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notebookPathRef = useRef<string | null>(null);
@@ -190,6 +195,7 @@ const ChannelNotebookPanel: React.FC = () => {
   }, []);
 
   const applyDoc = useCallback((nextDoc: ChannelDocument) => {
+    docRef.current = nextDoc;
     setDoc(nextDoc);
     scheduleSave(nextDoc);
   }, [scheduleSave]);
@@ -209,6 +215,8 @@ const ChannelNotebookPanel: React.FC = () => {
       setMemberDraft('');
       setActiveTab('chat');
       setEditingMessageId(null);
+      setRemarkTargetId(null);
+      setRemarkDraft('');
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
@@ -239,16 +247,16 @@ const ChannelNotebookPanel: React.FC = () => {
     if (activeTab === 'chat') composerRef.current?.focus();
   }, [currentNotebook?.path, activeTab]);
 
-  useEffect(() => { setMessageMenu(null); }, [currentNotebook?.path, activeTab]);
+  useEffect(() => { setMessageMenu(null); setRemarkMenu(null); }, [currentNotebook?.path, activeTab]);
 
   useEffect(() => {
-    if (!messageMenu) return;
+    if (!messageMenu && !remarkMenu) return;
     const close = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') setMessageMenu(null);
+      if (event.key === 'Escape') { setMessageMenu(null); setRemarkMenu(null); }
     };
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
-  }, [messageMenu]);
+  }, [messageMenu, remarkMenu]);
 
   const sendMessage = useCallback(() => {
     const text = draft.trim();
@@ -281,6 +289,47 @@ const ChannelNotebookPanel: React.FC = () => {
       ...docRef.current,
       messages: docRef.current.messages.filter((m) => m.id !== id),
     });
+  };
+
+  const copyMessage = async (id: string) => {
+    const message = docRef.current.messages.find((item) => item.id === id);
+    setMessageMenu(null);
+    if (!message) return;
+    try {
+      try {
+        await writeText(message.content);
+      } catch {
+        await navigator.clipboard.writeText(message.content);
+      }
+      showToast(t('channel.messageCopied'));
+    } catch {
+      showToast(t('channel.copyFailed'));
+    }
+  };
+
+  const addRemark = (id: string) => {
+    const text = remarkDraft.trim();
+    const message = docRef.current.messages.find((item) => item.id === id);
+    if (!text || !message) return;
+    updateMessage(id, { remarks: [...(message.remarks ?? []), {
+      id: createChannelId(), text, createdAt: new Date().toISOString(),
+    }] });
+    setRemarkDraft('');
+    setRemarkTargetId(null);
+  };
+
+  const addMessageTodo = (id: string) => {
+    const message = docRef.current.messages.find((item) => item.id === id);
+    setMessageMenu(null);
+    if (!message?.content.trim()) {
+      showToast(t('common.emptyContent'));
+      return;
+    }
+    const item: ChannelTodoItem = {
+      id: createChannelId(), text: message.content, done: false, createdAt: new Date().toISOString(), sourceMessageId: message.id,
+    };
+    applyDoc({ ...docRef.current, todos: [...docRef.current.todos, item] });
+    showToast(t('channel.todoAdded'));
   };
 
   const resolveMemberName = (authorId: string) => (
@@ -330,35 +379,6 @@ const ChannelNotebookPanel: React.FC = () => {
     if (activeAuthorId === id) {
       setActiveAuthorId(selfMemberId);
     }
-  };
-
-  const addTodo = () => {
-    const text = todoDraft.trim();
-    if (!text) return;
-    const item: ChannelTodoItem = {
-      id: createChannelId(),
-      text,
-      done: false,
-      createdAt: new Date().toISOString(),
-    };
-    applyDoc({ ...docRef.current, todos: [...docRef.current.todos, item] });
-    setTodoDraft('');
-  };
-
-  const toggleTodo = (id: string) => {
-    applyDoc({
-      ...docRef.current,
-      todos: docRef.current.todos.map((item) => (
-        item.id === id ? { ...item, done: !item.done } : item
-      )),
-    });
-  };
-
-  const deleteTodo = (id: string) => {
-    applyDoc({
-      ...docRef.current,
-      todos: docRef.current.todos.filter((item) => item.id !== id),
-    });
   };
 
   const addLink = () => {
@@ -510,6 +530,7 @@ const ChannelNotebookPanel: React.FC = () => {
                       {!fromSelf && doc.showMemberAvatars !== false && <span className="channel-chat-avatar" aria-hidden="true">{Array.from(resolveMemberName(message.authorId))[0]}</span>}
                       <article className="channel-chat-message" onContextMenu={(event) => {
                         event.preventDefault();
+                        setRemarkMenu(null);
                         setMessageMenu({ id: message.id, x: event.clientX, y: event.clientY });
                       }}>
                         {(!fromSelf || doc.showTime !== false) && <div className="channel-chat-message-meta">
@@ -525,6 +546,45 @@ const ChannelNotebookPanel: React.FC = () => {
                           onEndEdit={() => setEditingMessageId(null)}
                           onChange={(value) => updateMessage(message.id, { content: value })}
                         />
+                        {!!message.remarks?.length && (
+                          <ul className="channel-message-remarks" aria-label={t('channel.remarks')}>
+                            {message.remarks.map((remark) => (
+                              <li key={remark.id} onContextMenu={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                setMessageMenu(null);
+                                setRemarkMenu({ messageId: message.id, remarkId: remark.id, x: event.clientX, y: event.clientY });
+                              }}>
+                                <StickyNote size={12} aria-hidden="true" />
+                                <span>{renderInlineLinkText(remark.text, 'channel-chat-inline-link')}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {remarkTargetId === message.id && (
+                          <form className="channel-remark-form" onSubmit={(event) => { event.preventDefault(); addRemark(message.id); }}>
+                            <textarea
+                              autoFocus
+                              value={remarkDraft}
+                              onChange={(event) => setRemarkDraft(event.target.value)}
+                              placeholder={t('channel.remarkPlaceholder')}
+                              aria-label={t('channel.addRemark')}
+                              rows={2}
+                              onKeyDown={(event) => {
+                                if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+                                if (event.key === 'Enter' && !event.shiftKey) {
+                                  event.preventDefault();
+                                  addRemark(message.id);
+                                }
+                                if (event.key === 'Escape') { setRemarkTargetId(null); setRemarkDraft(''); }
+                              }}
+                            />
+                            <div className="channel-remark-actions">
+                              <button type="button" className="btn btn-sm" onClick={() => { setRemarkTargetId(null); setRemarkDraft(''); }}>{t('common.cancel')}</button>
+                              <button type="submit" className="btn btn-primary btn-sm" disabled={!remarkDraft.trim()}>{t('common.save')}</button>
+                            </div>
+                          </form>
+                        )}
                       </article>
                     </SortableMessage>
                   );
@@ -613,36 +673,18 @@ const ChannelNotebookPanel: React.FC = () => {
         )}
 
         {activeTab === 'todos' && (
-          <div className="channel-side-panel">
-            <div className="channel-side-form">
-              <input
-                value={todoDraft}
-                onChange={(e) => setTodoDraft(e.target.value)}
-                placeholder={t('channel.todoPlaceholder')}
-                onKeyDown={(e) => { if (e.key === 'Enter') addTodo(); }}
-              />
-              <button type="button" className="btn btn-primary btn-sm" onClick={addTodo}>
-                {t('channel.addTodo')}
-              </button>
-            </div>
-            {doc.todos.length === 0 ? (
-              <p className="channel-side-empty">{t('channel.emptyTodos')}</p>
-            ) : (
-              <ul className="channel-todo-list">
-                {doc.todos.map((item) => (
-                  <li key={item.id} className={item.done ? 'done' : ''}>
-                    <label>
-                      <input type="checkbox" checked={item.done} onChange={() => toggleTodo(item.id)} />
-                      <span>{item.text}</span>
-                    </label>
-                    <button type="button" className="channel-row-delete" onClick={() => deleteTodo(item.id)}>
-                      <Trash2 size={13} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <ChannelTodosPanel
+            key={currentNotebook.path}
+            todos={doc.todos}
+            groups={doc.todoGroups ?? []}
+            onChange={(todos, todoGroups) => applyDoc({ ...docRef.current, todos, todoGroups })}
+            onOpenSource={(id) => {
+              const message = docRef.current.messages.find((item) => item.id === id);
+              if (!message) { showToast(t('todo.sourceMissing')); return; }
+              setSearchText(message.content);
+              setActiveTab('chat');
+            }}
+          />
         )}
 
         {activeTab === 'links' && (
@@ -801,9 +843,36 @@ const ChannelNotebookPanel: React.FC = () => {
           </div>
         )}
       </div>
+      {remarkMenu && (
+        <ContextMenuPortal x={remarkMenu.x} y={remarkMenu.y} onClose={() => setRemarkMenu(null)}>
+          <button type="button" className="context-menu-item danger" autoFocus onClick={() => {
+            const message = docRef.current.messages.find((item) => item.id === remarkMenu.messageId);
+            if (message) {
+              updateMessage(message.id, { remarks: (message.remarks ?? []).filter((remark) => remark.id !== remarkMenu.remarkId) });
+            }
+            setRemarkMenu(null);
+          }}>
+            <Trash2 size={14} />
+            {t('channel.deleteRemark')}
+          </button>
+        </ContextMenuPortal>
+      )}
       {messageMenu && (
         <ContextMenuPortal x={messageMenu.x} y={messageMenu.y} onClose={() => setMessageMenu(null)}>
-          <button type="button" className="context-menu-item danger" autoFocus onClick={() => {
+          <button type="button" className="context-menu-item" autoFocus onClick={() => void copyMessage(messageMenu.id)}>
+            <Copy size={14} />{t('channel.copyMessage')}
+          </button>
+          <button type="button" className="context-menu-item" onClick={() => {
+            setRemarkTargetId(messageMenu.id);
+            setRemarkDraft('');
+            setMessageMenu(null);
+          }}>
+            <StickyNote size={14} />{t('channel.addRemark')}
+          </button>
+          <button type="button" className="context-menu-item" onClick={() => addMessageTodo(messageMenu.id)}>
+            <Check size={14} />{t('channel.addAsTodo')}
+          </button>
+          <button type="button" className="context-menu-item danger" onClick={() => {
             deleteMessage(messageMenu.id);
             setMessageMenu(null);
           }}>
