@@ -25,6 +25,7 @@ final stringsJa = AppStrings(
     "mind.rootPlaceholder": "中心トピック",
     "mind.nodePlaceholder": "トピック",
     "mind.empty": "トピックがありません。追加して始めましょう。",
+    "link.format": "ブックマーク",
     "mind.format": "アウトライン",
     "todo.format": "タスクノート",
     "tabs.chat": "チャット",

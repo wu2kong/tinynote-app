@@ -45,6 +45,20 @@ void main() {
     expect(doc['mode'], 'outline');
     expect(doc['nodes'], isEmpty);
   });
+
+  test('bookmark files use their own suffix and link document', () {
+    expect(detectNotebookFormat('Bookmarks.LINK.MD'), NotebookFormat.link);
+    expect(notebookDisplayName('Bookmarks.link.md'), 'Bookmarks');
+    expect(shouldSaveAsDocument(NotebookFormat.link), isTrue);
+    expect(
+      resolveImportedNotebookFileName('Bookmarks.link.md').converted,
+      isFalse,
+    );
+    final doc =
+        jsonDecode(initialNotebookContent(NotebookFormat.link, 'Bookmarks'))
+            as Map;
+    expect(doc['links'], isEmpty);
+  });
   group('detectNotebookFormat', () {
     test('matches longest suffix first', () {
       expect(detectNotebookFormat('a.writer.md'), NotebookFormat.writer);

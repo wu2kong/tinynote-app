@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronsDown, ChevronsUp, Copy, CornerDownRight, ListTree, Network, PanelLeftClose, PanelLeftOpen, Plus, Trash2, ArrowUp, ArrowDown, MoveRight } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
-import { createEmptyMindDocument, createMindNode, deleteMindNode, exportMindDocumentMarkdown, indentMindNode, insertMindNode, isMindBranchFullyExpanded, mapMindNodes, moveMindNode, moveMindNodeToParent, outdentMindNode, parseMindDocument, serializeMindDocument, setMindBranchCollapsed, wrapMindNodeWithParent, type MindDocument, type MindNode } from '@/utils/mindDocument';
+import { adjacentVisibleMindNode, createEmptyMindDocument, createMindNode, deleteMindNode, exportMindDocumentMarkdown, indentMindNode, insertMindNode, isMindBranchFullyExpanded, mapMindNodes, moveMindNode, moveMindNodeToParent, outdentMindNode, parseMindDocument, serializeMindDocument, setMindBranchCollapsed, wrapMindNodeWithParent, type MindDocument, type MindNode } from '@/utils/mindDocument';
 import { showToast } from './Toast';
 import { findMindTextLinkAtOffset, splitMindTextLinks } from '@/utils/mindTextLinks';
 import { openExternalLink } from '@/utils/openExternalLink';
@@ -20,6 +20,7 @@ const MindNotebookPanel: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [modifierHeld, setModifierHeld] = useState(false);
   const pendingCaretRef = useRef<{ id: string; offset: number } | null>(null);
+  const pendingFocusRef = useRef<string | null>(null);
   const docRef = useRef(doc);
   docRef.current = doc;
   const pathRef = useRef<string | null>(null);
@@ -43,10 +44,12 @@ const MindNotebookPanel: React.FC = () => {
     window.addEventListener('blur', reset);
     return () => { window.removeEventListener('keydown', update); window.removeEventListener('keyup', update); window.removeEventListener('blur', reset); };
   }, []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editingId) return;
     const editor = document.querySelector<HTMLTextAreaElement>(`[data-mind-id="${editingId}"]`);
-    editor?.focus();
+    if (!editor) return;
+    editor.focus();
+    pendingFocusRef.current = null;
     if (editor && pendingCaretRef.current?.id === editingId) {
       const offset = Math.min(pendingCaretRef.current.offset, editor.value.length);
       editor.setSelectionRange(offset, offset);
@@ -61,6 +64,7 @@ const MindNotebookPanel: React.FC = () => {
       setDoc(parseMindDocument(notebook.content ?? ''));
       setMovingId(null);
       setEditingId(null);
+      pendingFocusRef.current = null;
     } else if (!timerRef.current && notebook.content != null && notebook.content !== serializeMindDocument(docRef.current)) {
       setDoc(parseMindDocument(notebook.content));
     }
@@ -72,7 +76,7 @@ const MindNotebookPanel: React.FC = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => { timerRef.current = null; if (pathRef.current) void saveRef.current(serializeMindDocument(next), pathRef.current); }, 400);
   };
-  const focusNode = (id: string) => setEditingId(id);
+  const focusNode = (id: string) => { pendingFocusRef.current = id; setEditingId(id); };
   const editAtClick = (id: string, text: string, event: React.MouseEvent<HTMLSpanElement>) => {
     const label = event.currentTarget;
     const position = (document as Document & { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null }).caretPositionFromPoint?.(event.clientX, event.clientY);
@@ -126,12 +130,21 @@ const MindNotebookPanel: React.FC = () => {
     const children = !node.collapsed && node.children.length > 0;
     const body = <div className="mind-node" data-depth={depth}>
       <button type="button" className="mind-collapse" disabled={!node.children.length} aria-label={node.collapsed ? t('mind.expand') : t('mind.collapse')} onClick={() => patchNode(node.id, { collapsed: !node.collapsed })}>{node.children.length ? (node.collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />) : <span className="mind-bullet" />}</button>
-      {editingId === node.id ? <textarea data-mind-id={node.id} ref={resizeNodeText} rows={1} wrap="soft" value={node.text} placeholder={depth === 0 ? t('mind.rootPlaceholder') : t('mind.nodePlaceholder')} onBlur={() => setEditingId((current) => current === node.id ? null : current)} onChange={(event) => { resizeNodeText(event.currentTarget); patchNode(node.id, { text: event.target.value }); }} onClick={(event) => {
+      {editingId === node.id ? <textarea data-mind-id={node.id} ref={resizeNodeText} autoFocus rows={1} wrap="soft" value={node.text} placeholder={depth === 0 ? t('mind.rootPlaceholder') : t('mind.nodePlaceholder')} onBlur={() => { if (pendingFocusRef.current) return; setEditingId((current) => current === node.id ? null : current); }} onChange={(event) => { resizeNodeText(event.currentTarget); patchNode(node.id, { text: event.target.value }); }} onClick={(event) => {
         if (!event.metaKey && !event.ctrlKey) return;
         const href = findMindTextLinkAtOffset(node.text, event.currentTarget.selectionStart);
         if (href) { event.preventDefault(); void openExternalLink(href); }
       }} onKeyDown={(event) => {
         if (event.nativeEvent.isComposing) return;
+        if (docRef.current.mode === 'outline' && (event.key === 'ArrowUp' || event.key === 'ArrowDown') && !event.altKey && !event.metaKey && !event.ctrlKey) {
+          const target = adjacentVisibleMindNode(docRef.current.nodes, node.id, event.key === 'ArrowUp' ? -1 : 1);
+          if (target) {
+            event.preventDefault();
+            pendingCaretRef.current = { id: target.id, offset: target.text.length };
+            focusNode(target.id);
+          }
+          return;
+        }
         if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); addNode(node.id, 'after'); }
         if (event.key === 'Tab') {
           event.preventDefault();

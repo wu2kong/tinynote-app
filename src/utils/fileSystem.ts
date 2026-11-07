@@ -278,6 +278,8 @@ export function getDefaultNewNotebookDisplayName(format: NotebookFormatId): stri
       return t('directory.defaultNotebookNames.todo');
     case 'mind':
       return t('directory.defaultNotebookNames.mind');
+    case 'link':
+      return t('directory.defaultNotebookNames.link');
     case 'blocks':
     default:
       return t('directory.defaultNotebookNames.blocks');
@@ -293,6 +295,7 @@ function initialNotebookContent(format: NotebookFormatId, displayName: string): 
   }
   if (format === 'todo') return serializeTodoDocument(createEmptyTodoDocument());
   if (format === 'mind') return serializeMindDocument(createEmptyMindDocument());
+  if (format === 'link') return `${JSON.stringify({ version: 1, links: [] }, null, 2)}\n`;
   if (format === 'markdown' || format === 'writer') {
     return `# ${displayName}\n\n`;
   }

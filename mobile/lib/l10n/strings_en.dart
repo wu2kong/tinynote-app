@@ -25,6 +25,7 @@ final stringsEn = AppStrings(
     "mind.rootPlaceholder": "Central topic",
     "mind.nodePlaceholder": "Topic",
     "mind.empty": "No topics yet. Add one to get started.",
+    "link.format": "Bookmarks",
     "mind.format": "Outline",
     "todo.format": "Todo Note",
     "tabs.chat": "Chat",
@@ -330,7 +331,7 @@ final stringsEn = AppStrings(
   importNotesRuleMarkdownOnly:
       'Only files ending with .md are imported; other files are ignored.',
   importNotesRuleFormats:
-      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) keep their original format.',
+      'Files that already have blk, mk, writer, or csv markers (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md / .link.md) keep their original format.',
   importNotesRuleUnmarked:
       'Plain .md files without those markers are converted to article notes (.writer.md).',
   importNotesRuleTarget:

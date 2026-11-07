@@ -1,5 +1,14 @@
 /** Parse CSV text into a rectangular grid of cell strings. */
 export function parseCsv(text: string): string[][] {
+  return parseDelimitedText(text, ',');
+}
+
+/** Excel/WPS plain-text clipboard format, including quoted multiline cells. */
+export function parseTsv(text: string): string[][] {
+  return parseDelimitedText(text, '\t');
+}
+
+function parseDelimitedText(text: string, delimiter: string): string[][] {
   const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
   const rows: string[][] = [];
   let row: string[] = [];
@@ -21,11 +30,11 @@ export function parseCsv(text: string): string[][] {
       }
       continue;
     }
-    if (c === '"') {
+    if (c === '"' && field === '') {
       inQuotes = true;
       continue;
     }
-    if (c === ',') {
+    if (c === delimiter) {
       row.push(field);
       field = '';
       continue;

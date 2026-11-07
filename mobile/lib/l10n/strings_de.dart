@@ -25,6 +25,7 @@ final stringsDe = AppStrings(
     "mind.rootPlaceholder": "Zentrales Thema",
     "mind.nodePlaceholder": "Thema",
     "mind.empty": "Noch keine Themen. Fügen Sie eines hinzu.",
+    "link.format": "Lesezeichen",
     "mind.format": "Gliederung",
     "todo.format": "Aufgabennotiz",
     "tabs.chat": "Chat",
@@ -335,7 +336,7 @@ final stringsDe = AppStrings(
   importNotesRuleMarkdownOnly:
       'Es werden nur Dateien mit der Endung .md importiert; andere Dateien werden ignoriert.',
   importNotesRuleFormats:
-      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md) haben, behalten ihr ursprüngliches Format.',
+      'Dateien, die bereits blk-, mk-, writer- oder csv-Kennzeichen (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md / .link.md) haben, behalten ihr ursprüngliches Format.',
   importNotesRuleUnmarked:
       'Gewöhnliche .md-Dateien ohne diese Kennzeichen werden automatisch in Artikelnotizen (.writer.md) umgewandelt.',
   importNotesRuleTarget:

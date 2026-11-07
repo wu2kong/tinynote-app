@@ -126,7 +126,8 @@ class FileSystemService {
           format.isCsvPreview ||
           format == NotebookFormat.channel ||
           format == NotebookFormat.todo ||
-          format == NotebookFormat.mind) {
+          format == NotebookFormat.mind ||
+          format == NotebookFormat.link) {
         return Notebook(
           id: stableIdFromPath(normalizedPath),
           name: name,

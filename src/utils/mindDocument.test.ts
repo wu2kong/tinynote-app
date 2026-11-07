@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createEmptyMindDocument, createMindNode, deleteMindNode, exportMindDocumentMarkdown, indentMindNode, insertMindNode, isMindBranchFullyExpanded, mapMindNodes, moveMindNode, moveMindNodeToParent, outdentMindNode, parseMindDocument, serializeMindDocument, setMindBranchCollapsed, wrapMindNodeWithParent } from './mindDocument.ts';
+import { adjacentVisibleMindNode, createEmptyMindDocument, createMindNode, deleteMindNode, exportMindDocumentMarkdown, indentMindNode, insertMindNode, isMindBranchFullyExpanded, mapMindNodes, moveMindNode, moveMindNodeToParent, outdentMindNode, parseMindDocument, serializeMindDocument, setMindBranchCollapsed, wrapMindNodeWithParent } from './mindDocument.ts';
 
 test('new mind notes open in outline mode and persist both views', () => {
   const doc = createEmptyMindDocument();
@@ -106,4 +106,22 @@ test('Markdown export uses note title, root headings, and nested bullets includi
     { id: 'd', text: 'Second', children: [] },
   ] };
   assert.equal(exportMindDocumentMarkdown('Ideas', doc), '# Ideas\n\n## First\n- Child\n  - Grandchild\n\n## Second\n');
+});
+
+test('outline arrow navigation follows visible order across levels', () => {
+  const nodes = [
+    { id: 'a', text: 'A', children: [
+      { id: 'b', text: 'B', children: [] },
+      { id: 'c', text: 'C', collapsed: true, children: [
+        { id: 'hidden', text: 'Hidden', children: [] },
+      ] },
+    ] },
+    { id: 'd', text: 'D', children: [] },
+  ];
+  assert.equal(adjacentVisibleMindNode(nodes, 'a', 1)?.id, 'b');
+  assert.equal(adjacentVisibleMindNode(nodes, 'b', 1)?.id, 'c');
+  assert.equal(adjacentVisibleMindNode(nodes, 'c', 1)?.id, 'd');
+  assert.equal(adjacentVisibleMindNode(nodes, 'd', -1)?.id, 'c');
+  assert.equal(adjacentVisibleMindNode(nodes, 'a', -1), null);
+  assert.equal(adjacentVisibleMindNode(nodes, 'hidden', 1), null);
 });

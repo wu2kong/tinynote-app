@@ -77,7 +77,8 @@ export function getContentTypeExtensions(contentType: ContentType): Extension[] 
   switch (contentType) {
     case 'markdown': return [inputAttrs, tabInput, markdown()];
     case 'json': return [inputAttrs, tabInput, json()];
-    case 'ini': return [inputAttrs, tabInput, StreamLanguage.define(properties)];
+    // Some package managers resolve legacy-modes against a separate copy of @codemirror/language.
+    case 'ini': return [inputAttrs, tabInput, StreamLanguage.define(properties as unknown as Parameters<typeof StreamLanguage.define>[0])];
     case 'sql': return [inputAttrs, tabInput, sql()];
     case 'python': return [inputAttrs, tabInput, python()];
     case 'yaml': return [inputAttrs, tabInput, yaml()];

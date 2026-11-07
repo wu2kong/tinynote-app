@@ -270,6 +270,15 @@ class _HomeScreenState extends State<HomeScreen> {
         todoOnly: true,
       );
     }
+    if (notebook.format == NotebookFormat.link) {
+      return ChannelNotebookView(
+        key: ValueKey(notebook.path),
+        library: library,
+        notebook: notebook,
+        showDirectoryButton: showDirectoryButton,
+        linksOnly: true,
+      );
+    }
     if (notebook.format == NotebookFormat.mind) {
       return MindNotebookView(
         key: ValueKey(notebook.path),

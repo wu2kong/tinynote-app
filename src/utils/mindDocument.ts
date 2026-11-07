@@ -91,6 +91,20 @@ export function findMindNode(nodes: MindNode[], id: string): MindNode | undefine
   return undefined;
 }
 
+/** Follow the visible outline order, skipping descendants of collapsed nodes. */
+export function adjacentVisibleMindNode(nodes: MindNode[], id: string, direction: -1 | 1): MindNode | null {
+  const visible: MindNode[] = [];
+  const visit = (items: MindNode[]) => {
+    for (const node of items) {
+      visible.push(node);
+      if (!node.collapsed) visit(node.children);
+    }
+  };
+  visit(nodes);
+  const index = visible.findIndex((node) => node.id === id);
+  return index < 0 ? null : visible[index + direction] ?? null;
+}
+
 export function isMindBranchFullyExpanded(node: MindNode): boolean {
   return !node.collapsed && node.children.every(isMindBranchFullyExpanded);
 }

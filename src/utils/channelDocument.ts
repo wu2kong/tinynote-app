@@ -67,7 +67,16 @@ export interface ChannelLinkItem {
   title: string;
   note: string;
   createdAt: string;
+  categoryId?: string;
+  tagIds?: string[];
 }
+
+export interface ChannelLinkGroup {
+  id: string;
+  name: string;
+}
+
+export type BookmarkView = 'list' | 'cards' | 'table';
 
 export interface ChannelResourceItem {
   id: string;
@@ -91,6 +100,11 @@ export interface ChannelDocument {
   todoGroups?: ChannelTodoGroup[];
   todoView?: 'list' | 'board';
   links: ChannelLinkItem[];
+  linkCategories?: ChannelLinkGroup[];
+  linkTags?: ChannelLinkGroup[];
+  linkNavigationCollapsed?: boolean;
+  linkView?: BookmarkView;
+  linkNavigationMode?: 'category' | 'tag';
   resources: ChannelResourceItem[];
 }
 
@@ -217,7 +231,21 @@ function normalizeLink(raw: unknown): ChannelLinkItem | null {
     title: readString(raw.title),
     note: readString(raw.note),
     createdAt: readString(raw.createdAt) || new Date().toISOString(),
+    ...(readString(raw.categoryId) ? { categoryId: readString(raw.categoryId) } : {}),
+    ...(Array.isArray(raw.tagIds) ? { tagIds: [...new Set(raw.tagIds.filter((id): id is string => typeof id === 'string' && !!id))] } : {}),
   };
+}
+
+function normalizeLinkGroups(raw: unknown): ChannelLinkGroup[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<string>();
+  return raw.filter(isRecord).flatMap((group) => {
+    const name = readString(group.name).trim();
+    const id = readString(group.id) || createChannelId();
+    if (!name || seen.has(id)) return [];
+    seen.add(id);
+    return [{ id, name }];
+  });
 }
 
 function normalizeResource(raw: unknown): ChannelResourceItem | null {
@@ -297,6 +325,11 @@ export function parseChannelDocument(raw: string, selfMemberNameFallback = 'Me')
           id: readString(group.id) || createChannelId(), name: readString(group.name), collapsed: readBool(group.collapsed),
         })) } : {}),
       links,
+      ...(Array.isArray(parsed.linkCategories) ? { linkCategories: normalizeLinkGroups(parsed.linkCategories) } : {}),
+      ...(Array.isArray(parsed.linkTags) ? { linkTags: normalizeLinkGroups(parsed.linkTags) } : {}),
+      ...(typeof parsed.linkNavigationCollapsed === 'boolean' ? { linkNavigationCollapsed: parsed.linkNavigationCollapsed } : {}),
+      ...(parsed.linkView === 'list' || parsed.linkView === 'cards' || parsed.linkView === 'table' ? { linkView: parsed.linkView } : {}),
+      ...(parsed.linkNavigationMode === 'category' || parsed.linkNavigationMode === 'tag' ? { linkNavigationMode: parsed.linkNavigationMode } : {}),
       resources,
     };
   } catch {
@@ -318,9 +351,26 @@ export function serializeChannelDocument(doc: ChannelDocument): string {
     todoView: doc.todoView === 'board' ? 'board' : 'list',
     ...(doc.todoGroups ? { todoGroups: doc.todoGroups } : {}),
     links: doc.links,
+    ...(doc.linkCategories ? { linkCategories: doc.linkCategories } : {}),
+    ...(doc.linkTags ? { linkTags: doc.linkTags } : {}),
+    ...(typeof doc.linkNavigationCollapsed === 'boolean' ? { linkNavigationCollapsed: doc.linkNavigationCollapsed } : {}),
+    ...(doc.linkView ? { linkView: doc.linkView } : {}),
+    ...(doc.linkNavigationMode ? { linkNavigationMode: doc.linkNavigationMode } : {}),
     resources: doc.resources,
   };
   return `${JSON.stringify(payload, null, 2)}\n`;
+}
+
+export function serializeLinkDocument(doc: ChannelDocument): string {
+  return `${JSON.stringify({
+    version: CHANNEL_DOCUMENT_VERSION,
+    links: doc.links,
+    ...(doc.linkCategories ? { linkCategories: doc.linkCategories } : {}),
+    ...(doc.linkTags ? { linkTags: doc.linkTags } : {}),
+    ...(typeof doc.linkNavigationCollapsed === 'boolean' ? { linkNavigationCollapsed: doc.linkNavigationCollapsed } : {}),
+    ...(doc.linkView ? { linkView: doc.linkView } : {}),
+    ...(doc.linkNavigationMode ? { linkNavigationMode: doc.linkNavigationMode } : {}),
+  }, null, 2)}\n`;
 }
 
 export function createChannelMessage(

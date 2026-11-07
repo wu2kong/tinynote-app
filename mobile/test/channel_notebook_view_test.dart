@@ -15,6 +15,73 @@ class MemoryLibrary extends LibraryService {
 }
 
 void main() {
+  testWidgets('editing bookmarks preserves desktop categories and tags', (tester) async {
+    final library = MemoryLibrary();
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    final metadata = {
+      'linkCategories': [{'id': 'work', 'name': 'Work'}],
+      'linkTags': [{'id': 'daily', 'name': 'Daily'}],
+      'linkNavigationCollapsed': true,
+      'linkView': 'table',
+      'linkNavigationMode': 'tag',
+    };
+    final notebook = Notebook(
+      id: 'organized', name: 'Organized', path: '/Organized.link.md',
+      format: NotebookFormat.link, noteBlocks: const [],
+      content: jsonEncode({'version': 1, ...metadata, 'links': [
+        {'id': 'one', 'url': 'https://example.com', 'title': 'Example', 'note': '', 'createdAt': '2026-11-04T00:00:00Z', 'categoryId': 'work', 'tagIds': ['daily']},
+      ]}),
+    );
+    await tester.pumpWidget(LocaleScope(controller: controller, child: MaterialApp(
+      home: Scaffold(body: ChannelNotebookView(library: library, notebook: notebook, linksOnly: true, showDirectoryButton: false)),
+    )));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Link actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit link'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Title (optional)'), 'Updated');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    final saved = jsonDecode(library.saved!) as Map<String, dynamic>;
+    for (final entry in metadata.entries) {
+      expect(saved[entry.key], entry.value);
+    }
+    expect(saved['links'][0]['title'], 'Updated');
+    expect(saved['links'][0]['categoryId'], 'work');
+    expect(saved['links'][0]['tagIds'], ['daily']);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
+  testWidgets('standalone bookmark note keeps only links when saving', (tester) async {
+    final library = MemoryLibrary();
+    final controller = LocaleController(initialLocale: AppLocale.en);
+    final notebook = Notebook(
+      id: 'bookmarks', name: 'Bookmarks', path: '/Bookmarks.link.md',
+      format: NotebookFormat.link, noteBlocks: const [],
+      content: jsonEncode({'version': 1, 'links': [
+        {'id': 'one', 'url': 'https://example.com', 'title': 'Example', 'note': '', 'createdAt': '2026-11-03T00:00:00Z'},
+      ]}),
+    );
+    await tester.pumpWidget(LocaleScope(controller: controller, child: MaterialApp(
+      home: Scaffold(body: ChannelNotebookView(library: library, notebook: notebook, linksOnly: true, showDirectoryButton: false)),
+    )));
+    await tester.pumpAndSettle();
+    expect(find.text('Example'), findsOneWidget);
+    expect(find.text('Chat'), findsNothing);
+    await tester.tap(find.byTooltip('Link actions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete link'));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(library.saved!).keys.toList(), ['version', 'links']);
+    expect(jsonDecode(library.saved!)['links'], isEmpty);
+    await tester.pumpWidget(const SizedBox());
+    controller.dispose();
+    library.dispose();
+  });
+
   testWidgets('todo view mode is saved and restored on reopen', (tester) async {
     final library = MemoryLibrary();
     Notebook note(String content) => Notebook(

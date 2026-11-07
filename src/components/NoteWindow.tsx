@@ -67,9 +67,10 @@ export default function NoteWindow() {
         : notebook.format === 'markdown' ? <MarkdownNotebookPanel />
         : notebook.format === 'writer' ? <WriterNotebookPanel />
         : notebook.format === 'csv' ? <CsvNotebookPanel />
-        : notebook.format === 'channel' ? <ChannelNotebookPanel />
+        : notebook.format === 'channel' ? <ChannelNotebookPanel key="channel" />
         : notebook.format === 'todo' ? <TodoNotebookPanel />
         : notebook.format === 'mind' ? <MindNotebookPanel />
+        : notebook.format === 'link' ? <ChannelNotebookPanel key="link" linksOnly />
         : notebook.format === 'unsupported' ? <UnsupportedNotebookPanel />
         : notebook.isSourceMode ? <SourceEditorPanel />
         : <><NotePanel /><PropertyPanel /></>}

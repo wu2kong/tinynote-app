@@ -632,6 +632,7 @@ class AppStrings {
       NotebookFormat.channel => ch('format'),
       NotebookFormat.todo => ch('todo.format'),
       NotebookFormat.mind => ch('mind.format'),
+      NotebookFormat.link => ch('link.format'),
       NotebookFormat.unsupported => formatUnsupported,
     };
   }

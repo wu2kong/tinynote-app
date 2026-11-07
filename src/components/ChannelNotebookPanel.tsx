@@ -20,6 +20,7 @@ import {
   getSelfMemberId,
   parseChannelDocument,
   serializeChannelDocument,
+  serializeLinkDocument,
   type ChannelDocument,
   type ChannelLinkItem,
   type ChannelMember,
@@ -34,6 +35,7 @@ import { parseChannelLinks } from '@/utils/parseChannelLinks';
 import { showToast } from './Toast';
 import ContextMenuPortal from './ContextMenuPortal';
 import ChannelTodosPanel from './ChannelTodosPanel';
+import BookmarkPanel from './BookmarkPanel';
 
 const SAVE_DEBOUNCE_MS = 400;
 
@@ -133,7 +135,7 @@ const SortableLink: React.FC<{ id: string; label: string; onMenu: (x: number, y:
   </li>;
 };
 
-const ChannelNotebookPanel: React.FC = () => {
+const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = false }) => {
   const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
   const showDirectoryPanel = useStore((s) => s.showDirectoryPanel);
@@ -145,8 +147,8 @@ const ChannelNotebookPanel: React.FC = () => {
   const defaultMessageType = t('channel.defaultMessageType');
 
   const [doc, setDoc] = useState<ChannelDocument>(() => parseChannelDocument('', selfMemberNameFallback));
-  const [activeTab, setActiveTab] = useState<ChannelTabId>('chat');
-  const enabledTabs = normalizeEnabledTabs(doc.enabledTabs);
+  const [activeTab, setActiveTab] = useState<ChannelTabId>(linksOnly ? 'links' : 'chat');
+  const enabledTabs = linksOnly ? ['links'] : normalizeEnabledTabs(doc.enabledTabs);
   const [activeAuthorId, setActiveAuthorId] = useState(DEFAULT_SELF_MEMBER_ID);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const [draft, setDraft] = useState('');
@@ -197,8 +199,8 @@ const ChannelNotebookPanel: React.FC = () => {
     saveTimerRef.current = null;
     const path = notebookPathRef.current;
     if (!path) return Promise.resolve();
-    return updateNotebookContentRef.current(serializeChannelDocument(docRef.current), path);
-  }, []);
+    return updateNotebookContentRef.current(linksOnly ? serializeLinkDocument(docRef.current) : serializeChannelDocument(docRef.current), path);
+  }, [linksOnly]);
 
   const flushPendingSaveRef = useRef(flushPendingSave);
   flushPendingSaveRef.current = flushPendingSave;
@@ -209,9 +211,9 @@ const ChannelNotebookPanel: React.FC = () => {
       saveTimerRef.current = null;
       const path = notebookPathRef.current;
       if (!path) return;
-      void updateNotebookContentRef.current(serializeChannelDocument(nextDoc), path);
+      void updateNotebookContentRef.current(linksOnly ? serializeLinkDocument(nextDoc) : serializeChannelDocument(nextDoc), path);
     }, SAVE_DEBOUNCE_MS);
-  }, []);
+  }, [linksOnly]);
 
   const applyDoc = useCallback((nextDoc: ChannelDocument) => {
     docRef.current = nextDoc;
@@ -220,7 +222,7 @@ const ChannelNotebookPanel: React.FC = () => {
   }, [scheduleSave]);
 
   useEffect(() => {
-    if (!currentNotebook || currentNotebook.format !== 'channel') return;
+    if (!currentNotebook || currentNotebook.format !== (linksOnly ? 'link' : 'channel')) return;
     const content = currentNotebook.content ?? '';
 
     if (notebookPathRef.current !== currentNotebook.path) {
@@ -232,7 +234,7 @@ const ChannelNotebookPanel: React.FC = () => {
       setDraft('');
       setSearchText('');
       setMemberDraft('');
-      setActiveTab('chat');
+      setActiveTab(linksOnly ? 'links' : 'chat');
       setEditingMessageId(null);
       setRemarkTargetId(null);
       setRemarkDraft('');
@@ -240,11 +242,11 @@ const ChannelNotebookPanel: React.FC = () => {
         clearTimeout(saveTimerRef.current);
         saveTimerRef.current = null;
       }
-    } else if (content !== serializeChannelDocument(docRef.current)) {
+    } else if (content !== (linksOnly ? serializeLinkDocument(docRef.current) : serializeChannelDocument(docRef.current))) {
       const parsed = parseChannelDocument(content, selfMemberNameFallback);
       setDoc(parsed);
     }
-  }, [currentNotebook, selfMemberNameFallback]);
+  }, [currentNotebook, selfMemberNameFallback, linksOnly]);
 
   useEffect(() => {
     if (doc.members.some((member) => member.id === activeAuthorId)) return;
@@ -268,8 +270,8 @@ const ChannelNotebookPanel: React.FC = () => {
 
   useEffect(() => { setMessageMenu(null); setRemarkMenu(null); }, [currentNotebook?.path, activeTab]);
   useEffect(() => {
-    if (!enabledTabs.includes(activeTab)) setActiveTab('chat');
-  }, [activeTab, doc.enabledTabs]);
+    if (!enabledTabs.includes(activeTab)) setActiveTab(linksOnly ? 'links' : 'chat');
+  }, [activeTab, doc.enabledTabs, linksOnly]);
 
   useEffect(() => {
     if (!messageMenu && !remarkMenu) return;
@@ -491,7 +493,7 @@ const ChannelNotebookPanel: React.FC = () => {
     });
   };
 
-  if (!currentNotebook || currentNotebook.format !== 'channel') {
+  if (!currentNotebook || currentNotebook.format !== (linksOnly ? 'link' : 'channel')) {
     return (
       <div className="channel-notebook-panel">
         <div className="channel-notebook-empty">{t('note.selectNotebook')}</div>
@@ -515,16 +517,16 @@ const ChannelNotebookPanel: React.FC = () => {
           </button>
           <div className="channel-notebook-title-wrap">
             <h3>{doc.title.trim() || currentNotebook.name}</h3>
-            {doc.subtitle.trim() ? (
+            {!linksOnly && doc.subtitle.trim() ? (
               <p className="channel-notebook-subtitle">{doc.subtitle.trim()}</p>
             ) : (
-              <span className="channel-notebook-format-badge">{t('directory.formats.channel')}</span>
+              <span className="channel-notebook-format-badge">{t(linksOnly ? 'directory.formats.link' : 'directory.formats.channel')}</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="channel-notebook-toolbar">
+      {!linksOnly && <div className="channel-notebook-toolbar">
         <div className="channel-notebook-tabs" role="tablist" aria-label={t('channel.tabsLabel')}>
           {TAB_DEFS.filter(({ id }) => enabledTabs.includes(id)).map(({ id, labelKey, icon }) => (
             <button
@@ -570,7 +572,7 @@ const ChannelNotebookPanel: React.FC = () => {
             )}
             </div>
         )}
-      </div>
+      </div>}
 
       <div className="channel-notebook-body">
         {activeTab === 'chat' && (
@@ -756,7 +758,9 @@ const ChannelNotebookPanel: React.FC = () => {
           />
         )}
 
-        {activeTab === 'links' && (
+        {activeTab === 'links' && linksOnly && <BookmarkPanel key={currentNotebook.path} doc={doc} onChange={applyDoc} />}
+
+        {activeTab === 'links' && !linksOnly && (
           <div className="channel-side-panel">
             <div className="channel-side-form channel-side-form-grid">
               <input
@@ -849,9 +853,18 @@ const ChannelNotebookPanel: React.FC = () => {
           <div className="modal-overlay" onClick={() => setEditingLinkId(null)}>
             <div className="modal channel-link-edit-modal" role="dialog" aria-modal="true" aria-label={t('channel.editLink')} onClick={(event) => event.stopPropagation()}>
               <h2 className="modal-title">{t('channel.editLink')}</h2>
-              <input autoFocus value={editingLinkDraft.url} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, url: event.target.value }))} placeholder={t('channel.linkUrl')} />
-              <input value={editingLinkDraft.title} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, title: event.target.value }))} placeholder={t('channel.linkTitle')} />
-              <textarea value={editingLinkDraft.note} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, note: event.target.value }))} placeholder={t('channel.linkNote')} />
+              <label className="channel-link-edit-field">
+                <span>{t('channel.linkUrl')}</span>
+                <input autoFocus value={editingLinkDraft.url} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, url: event.target.value }))} placeholder={t('channel.linkUrl')} />
+              </label>
+              <label className="channel-link-edit-field">
+                <span>{t('channel.linkTitle')}</span>
+                <input value={editingLinkDraft.title} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, title: event.target.value }))} placeholder={t('channel.linkTitle')} />
+              </label>
+              <label className="channel-link-edit-field">
+                <span>{t('channel.linkNote')}</span>
+                <textarea value={editingLinkDraft.note} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, note: event.target.value }))} placeholder={t('channel.linkNote')} />
+              </label>
               <div className="channel-link-import-footer"><button type="button" className="btn btn-sm" onClick={() => setEditingLinkId(null)}>{t('common.cancel')}</button><button type="button" className="btn btn-primary btn-sm" disabled={!editingLinkDraft.url.trim()} onClick={saveEditedLink}>{t('channel.saveLink')}</button></div>
             </div>
           </div>

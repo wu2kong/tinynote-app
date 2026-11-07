@@ -25,6 +25,7 @@ final stringsRu = AppStrings(
     "mind.rootPlaceholder": "Центральная тема",
     "mind.nodePlaceholder": "Тема",
     "mind.empty": "Тем пока нет. Добавьте первую.",
+    "link.format": "Закладки",
     "mind.format": "План",
     "todo.format": "Заметка с задачами",
     "tabs.chat": "Чат",
@@ -330,7 +331,7 @@ final stringsRu = AppStrings(
   importNotesRuleMarkdownOnly:
       'Импортируются только файлы с расширением .md; остальные файлы игнорируются.',
   importNotesRuleFormats:
-      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md), сохраняют исходный формат.',
+      'Файлы, у которых уже есть маркеры blk, mk, writer или csv (.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md / .link.md), сохраняют исходный формат.',
   importNotesRuleUnmarked:
       'Обычные .md файлы без этих маркеров автоматически преобразуются в статьи (.writer.md).',
   importNotesRuleTarget:

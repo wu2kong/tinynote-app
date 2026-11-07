@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../constants/app.dart';
-import '../core/notebook_format.dart';
 import '../core/path_utils.dart';
 import '../core/types.dart';
 import '../l10n/l10n.dart';

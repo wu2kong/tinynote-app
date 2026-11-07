@@ -78,7 +78,7 @@ function isMarkdownTableSeparatorLine(line: string): boolean {
   return trimmed
     .slice(1, -1)
     .split('|')
-    .every((part) => /^:?-{3,}:?$/.test(part.trim()));
+    .every((part) => /^:?-+:?$/.test(part.trim()));
 }
 
 /** Parse a Markdown pipe table into a CSV grid. */

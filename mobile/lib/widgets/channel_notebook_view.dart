@@ -15,11 +15,13 @@ class ChannelNotebookView extends StatefulWidget {
     required this.notebook,
     this.showDirectoryButton = true,
     this.todoOnly = false,
+    this.linksOnly = false,
   });
   final LibraryService library;
   final Notebook notebook;
   final bool showDirectoryButton;
   final bool todoOnly;
+  final bool linksOnly;
   @override
   State<ChannelNotebookView> createState() => _ChannelNotebookViewState();
 }
@@ -78,6 +80,7 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
   @override
   void initState() {
     super.initState();
+    if (widget.linksOnly) _tab = 'links';
     _load();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focus.requestFocus();
@@ -94,6 +97,10 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
         for (final key in ['todos', 'todoGroups']) {
           if (raw[key] is! List) raw[key] = <dynamic>[];
         }
+        return;
+      }
+      if (widget.linksOnly) {
+        if (raw['links'] is! List) raw['links'] = <dynamic>[];
         return;
       }
       if (!tabEnabled(_tab)) _tab = 'chat';
@@ -144,7 +151,9 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
       change();
       _saving = true;
     });
-    final content = '${const JsonEncoder.withIndent('  ').convert(_doc)}\n';
+    // Keep desktop bookmark categories, tags and navigation state intact.
+    final content =
+        '${const JsonEncoder.withIndent('  ').convert(_doc)}\n';
     try {
       await widget.library.updateNotebookContent(content);
       _synced = content;
@@ -1849,12 +1858,17 @@ class _ChannelNotebookViewState extends State<ChannelNotebookView> {
                 ? widget.notebook.name
                 : _doc!['title'].toString(),
           ),
-          subtitle: Text((_doc?['subtitle'] ?? '').toString()),
+          subtitle:
+              widget.linksOnly
+                  ? null
+                  : Text((_doc?['subtitle'] ?? '').toString()),
         ),
         if (_doc == null)
           Expanded(child: SelectableText(widget.notebook.documentContent))
         else if (widget.todoOnly)
           Expanded(child: todosPanel())
+        else if (widget.linksOnly)
+          Expanded(child: linksPanel())
         else ...[
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,

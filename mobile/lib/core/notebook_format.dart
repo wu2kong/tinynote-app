@@ -8,6 +8,7 @@ enum NotebookFormat {
   channel,
   todo,
   mind,
+  link,
   unsupported,
 }
 
@@ -37,6 +38,7 @@ const notebookFormats = <NotebookFormatDef>[
   NotebookFormatDef(id: NotebookFormat.channel, extension: '.channel.md'),
   NotebookFormatDef(id: NotebookFormat.todo, extension: '.todo.md'),
   NotebookFormatDef(id: NotebookFormat.mind, extension: '.mind.md'),
+  NotebookFormatDef(id: NotebookFormat.link, extension: '.link.md'),
 ];
 
 class _SuffixMatcher {
@@ -96,6 +98,7 @@ bool shouldSaveAsDocument(
       format == NotebookFormat.channel ||
       format == NotebookFormat.todo ||
       format == NotebookFormat.mind ||
+      format == NotebookFormat.link ||
       compatOpenAsMarkdown;
 }
 
@@ -273,6 +276,9 @@ String initialNotebookContent(
   }
   if (format == NotebookFormat.mind) {
     return jsonEncode({'version': 1, 'mode': 'outline', 'nodes': []});
+  }
+  if (format == NotebookFormat.link) {
+    return jsonEncode({'version': 1, 'links': []});
   }
   if (format == NotebookFormat.csv) {
     return 'Column 1,Column 2,Column 3\n'

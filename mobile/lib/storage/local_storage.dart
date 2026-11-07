@@ -153,7 +153,7 @@ class LocalStorage {
     final dir = Directory(path);
     if (!await dir.exists()) return [];
     try {
-      return dir.list(followLinks: false).toList();
+      return await dir.list(followLinks: false).toList();
     } catch (_) {
       return [];
     }

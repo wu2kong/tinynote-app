@@ -25,6 +25,7 @@ final stringsZhHant = AppStrings(
     "mind.rootPlaceholder": "中心主題",
     "mind.nodePlaceholder": "主題",
     "mind.empty": "還沒有主題，新增一個開始。",
+    "link.format": "書籤筆記",
     "mind.format": "大綱筆記",
     "todo.format": "待辦筆記",
     "tabs.chat": "聊天",

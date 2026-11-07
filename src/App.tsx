@@ -320,6 +320,7 @@ const App: React.FC = () => {
   const isChannelNotebook = currentNotebook?.format === 'channel';
   const isTodoNotebook = currentNotebook?.format === 'todo';
   const isMindNotebook = currentNotebook?.format === 'mind';
+  const isLinkNotebook = currentNotebook?.format === 'link';
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
@@ -335,11 +336,13 @@ const App: React.FC = () => {
         {isUnsupportedNotebook ? (
           <UnsupportedNotebookPanel />
         ) : isChannelNotebook ? (
-          <ChannelNotebookPanel />
+          <ChannelNotebookPanel key="channel" />
         ) : isTodoNotebook ? (
           <TodoNotebookPanel />
         ) : isMindNotebook ? (
           <MindNotebookPanel />
+        ) : isLinkNotebook ? (
+          <ChannelNotebookPanel key="link" linksOnly />
         ) : isCsvNotebook ? (
           <CsvNotebookPanel />
         ) : isWriterNotebook ? (

@@ -1,4 +1,4 @@
-/// CSV grid parse/serialize and Markdown table export (aligned with desktop `csvTable.ts`).
+// CSV grid parse/serialize and Markdown table export (aligned with desktop `csvTable.ts`).
 
 List<List<String>> parseCsv(String text) {
   final normalized = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
@@ -50,9 +50,11 @@ List<List<String>> parseCsv(String text) {
 }
 
 List<List<String>> normalizeCsvRows(List<List<String>> rows) {
-  if (rows.isEmpty) return [
-    ['']
-  ];
+  if (rows.isEmpty) {
+    return [
+      ['']
+    ];
+  }
   final maxCols = rows.map((r) => r.length).fold<int>(1, (a, b) => a > b ? a : b);
   return rows
       .map((r) {

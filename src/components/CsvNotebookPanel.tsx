@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronDown, PanelLeftClose, PanelLeftOpen,
-  SlidersHorizontal, Trash2,
+  Search, SlidersHorizontal, Trash2, X,
 } from 'lucide-react';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
 import { registerDocumentSaveFlusher } from '@/utils/documentSaveFlush';
 import { moveCsvColumn, moveCsvRow, parseCsv, serializeCsv } from '@/utils/csvTable';
+import { getCsvRowSegments } from '@/utils/csvViewport';
+import { findCsvCells } from '@/utils/csvSearch';
+import { parseClipboardTable, pasteTableAt } from '@/utils/clipboardTable';
 import { gridToMarkdownTable, MarkdownTableParseError, parseMarkdownTable } from '@/utils/markdownTable';
 import { isExternalHref, openExternalLink } from '@/utils/openExternalLink';
 import ContextMenuPortal from './ContextMenuPortal';
@@ -52,28 +55,27 @@ function renderCellLinkText(text: string): ReactNode[] {
 }
 
 interface CsvTableCellProps {
+  rowIndex: number;
+  colIndex: number;
   value: string;
   linksClickable: boolean;
-  onChange: (value: string) => void;
+  onChange: (rowIndex: number, colIndex: number, value: string) => void;
+  onPaste: (rowIndex: number, colIndex: number, event: React.ClipboardEvent<HTMLElement>) => void;
 }
 
-const CsvTableCell: React.FC<CsvTableCellProps> = ({ value, linksClickable, onChange }) => {
-  const [editing, setEditing] = useState(!linksClickable);
+const CsvTableCell = memo(function CsvTableCell({ rowIndex, colIndex, value, linksClickable, onChange, onPaste }: CsvTableCellProps) {
+  const [editing, setEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!linksClickable) {
-      setEditing(true);
-      return;
-    }
     setEditing(false);
   }, [linksClickable]);
 
   useEffect(() => {
-    if (editing) {
+    if (editing && linksClickable) {
       textareaRef.current?.focus();
     }
-  }, [editing]);
+  }, [editing, linksClickable]);
 
   if (editing || !linksClickable) {
     return (
@@ -82,7 +84,8 @@ const CsvTableCell: React.FC<CsvTableCellProps> = ({ value, linksClickable, onCh
         className="csv-table-cell-input"
         rows={1}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(rowIndex, colIndex, e.target.value)}
+        onPaste={(e) => onPaste(rowIndex, colIndex, e)}
         onBlur={() => {
           if (linksClickable) setEditing(false);
         }}
@@ -96,6 +99,7 @@ const CsvTableCell: React.FC<CsvTableCellProps> = ({ value, linksClickable, onCh
   return (
     <div
       className="csv-table-cell-link-preview"
+      onPaste={(e) => onPaste(rowIndex, colIndex, e)}
       onClick={() => setEditing(true)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -109,7 +113,7 @@ const CsvTableCell: React.FC<CsvTableCellProps> = ({ value, linksClickable, onCh
       {renderCellLinkText(value)}
     </div>
   );
-};
+});
 
 const SAVE_DEBOUNCE_MS = 400;
 const LONG_PRESS_MS = 450;
@@ -198,6 +202,22 @@ const CsvNotebookPanel: React.FC = () => {
   const [importMarkdownText, setImportMarkdownText] = useState('');
   const [columnWidths, setColumnWidths] = useState<number[] | null>(null);
   const [isResizingColumn, setIsResizingColumn] = useState(false);
+  const [viewport, setViewport] = useState({ top: 0, height: 600, rowHeight: 40 });
+  const [focusedRow, setFocusedRow] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [searchIndex, setSearchIndex] = useState(0);
+  const [searchNavigation, setSearchNavigation] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchQuery = searchText.trim().toLowerCase();
+  const searchMatches = useMemo(() => findCsvCells(grid, searchQuery), [grid, searchQuery]);
+  const activeSearchIndex = Math.min(searchIndex, Math.max(0, searchMatches.length - 1));
+  const activeMatch = searchMatches[activeSearchIndex];
+  const matchingCells = useMemo(() => new Set(searchMatches.map(({ rowIndex, colIndex }) => `${rowIndex}:${colIndex}`)), [searchMatches]);
+  const moveSearch = (direction: number) => {
+    if (searchMatches.length === 0) return;
+    setSearchIndex((activeSearchIndex + direction + searchMatches.length) % searchMatches.length);
+    setSearchNavigation((value) => value + 1);
+  };
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const columnWidthsByNotebookRef = useRef<Map<string, number[] | null>>(new Map());
@@ -213,7 +233,7 @@ const CsvNotebookPanel: React.FC = () => {
   const notebookPathRef = useRef<string | null>(null);
   const gridRef = useRef(grid);
   gridRef.current = grid;
-  const colCount = Math.max(1, ...grid.map((r) => r.length));
+  const colCount = useMemo(() => grid.reduce((count, row) => Math.max(count, row.length), 1), [grid]);
   const updateNotebookContentRef = useRef(updateNotebookContent);
   updateNotebookContentRef.current = updateNotebookContent;
   const tableScrollRef = useRef<HTMLDivElement>(null);
@@ -222,6 +242,81 @@ const CsvNotebookPanel: React.FC = () => {
   const axisDragRef = useRef(axisDrag);
   axisDragRef.current = axisDrag;
   const suppressContextMenuRef = useRef(false);
+  // Intrinsic row heights / column widths still need all rows for native table sizing.
+  const virtualizeRows = grid.length > 100 && !adaptiveRowHeight && !adaptiveColumnWidth;
+  const rowSegments = useMemo(() => virtualizeRows
+    ? getCsvRowSegments(grid.length, viewport.top, viewport.height, viewport.rowHeight, focusedRow, 8, activeMatch ? [activeMatch.rowIndex] : [])
+    : [{ kind: 'rows' as const, start: 0, end: grid.length }],
+  [virtualizeRows, grid.length, viewport, focusedRow, activeMatch?.rowIndex]);
+
+  useLayoutEffect(() => {
+    const container = tableScrollRef.current;
+    if (!container) return;
+    container.scrollTop = 0;
+    setFocusedRow(null);
+    setSearchText('');
+    setSearchIndex(0);
+    setViewport((prev) => ({ ...prev, top: 0 }));
+  }, [currentNotebook?.path]);
+
+  useLayoutEffect(() => {
+    const container = tableScrollRef.current;
+    if (!container || !virtualizeRows) return;
+    const update = () => {
+      // Rects include the app's CSS zoom; scrollTop/clientHeight use layout pixels.
+      const zoom = Number(getComputedStyle(document.documentElement).zoom) || 1;
+      const row = container.querySelector('tbody tr[data-csv-row-index]');
+      const headerHeight = (container.querySelector('thead')?.getBoundingClientRect().height ?? 0) / zoom;
+      const next = {
+        top: Math.max(0, container.scrollTop - headerHeight),
+        height: container.clientHeight,
+        rowHeight: (row?.getBoundingClientRect().height ?? 0) / zoom || 40,
+      };
+      setViewport((prev) => prev.top === next.top && prev.height === next.height && prev.rowHeight === next.rowHeight ? prev : next);
+    };
+    update();
+    container.addEventListener('scroll', update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(container);
+    const row = container.querySelector('tbody tr[data-csv-row-index]');
+    if (row) observer.observe(row);
+    return () => {
+      container.removeEventListener('scroll', update);
+      observer.disconnect();
+    };
+  }, [virtualizeRows, currentNotebook?.path, showColumnNumbers]);
+
+  useLayoutEffect(() => {
+    const container = tableScrollRef.current;
+    if (!container || !activeMatch) return;
+    const cell = container.querySelector<HTMLElement>(
+      `tr[data-csv-row-index="${activeMatch.rowIndex}"] td[data-csv-col-index="${activeMatch.colIndex}"]`,
+    );
+    if (!cell) return;
+    const zoom = Number(getComputedStyle(document.documentElement).zoom) || 1;
+    const bounds = container.getBoundingClientRect();
+    const rect = cell.getBoundingClientRect();
+    const headerHeight = container.querySelector('thead')?.getBoundingClientRect().height ?? 0;
+    const frozenRowHeight = freezeHeaderRow && activeMatch.rowIndex !== 0
+      ? container.querySelector('tr[data-csv-row-index="0"]')?.getBoundingClientRect().height ?? 0 : 0;
+    const rowNumberWidth = container.querySelector('.csv-table-row-header')?.getBoundingClientRect().width ?? 0;
+    const frozenColumnWidth = freezeHeaderColumn && activeMatch.colIndex !== 0
+      ? container.querySelector('td[data-csv-col-index="0"]')?.getBoundingClientRect().width ?? 0 : 0;
+    const top = bounds.top + headerHeight + frozenRowHeight;
+    const left = bounds.left + rowNumberWidth + frozenColumnWidth;
+    const bottom = bounds.top + container.clientHeight * zoom;
+    const right = bounds.left + container.clientWidth * zoom;
+    // Scroll this pane only, keeping search input focus and accounting for sticky titles.
+    if (rect.top < top || rect.bottom > bottom) {
+      container.scrollTop += (rect.top - top - Math.max(0, (bottom - top - rect.height) / 2)) / zoom;
+    }
+    if (rect.left < left || rect.right > right) {
+      container.scrollLeft += (rect.left - left - Math.max(0, (right - left - rect.width) / 2)) / zoom;
+    }
+    if (virtualizeRows) {
+      setViewport((prev) => ({ ...prev, top: Math.max(0, container.scrollTop - headerHeight / zoom) }));
+    }
+  }, [searchQuery, searchNavigation, activeMatch?.rowIndex, activeMatch?.colIndex, virtualizeRows, viewport.rowHeight, freezeHeaderRow, freezeHeaderColumn, showRowNumbers, showColumnNumbers]);
 
   const clearLongPress = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -280,10 +375,12 @@ const CsvNotebookPanel: React.FC = () => {
 
     if (saveTimerRef.current) return;
 
-    const normalizedRemote = serializeCsv(parseCsv(content));
     const normalizedLocal = serializeCsv(gridRef.current);
+    if (content === normalizedLocal) return;
+    const remoteGrid = parseCsv(content);
+    const normalizedRemote = serializeCsv(remoteGrid);
     if (normalizedRemote !== normalizedLocal) {
-      setGrid(parseCsv(content));
+      setGrid(remoteGrid);
     }
   }, [clearLongPress, currentNotebook?.path, currentNotebook?.content, currentNotebook?.format]);
 
@@ -410,11 +507,24 @@ const CsvNotebookPanel: React.FC = () => {
     });
   }, [scheduleSave]);
 
-  const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
-    patchGrid((prev) => prev.map((row, ri) => (
-      ri === rowIndex ? row.map((cell, ci) => (ci === colIndex ? value : cell)) : row
-    )));
-  };
+  const handleCellChange = useCallback((rowIndex: number, colIndex: number, value: string) => {
+    patchGrid((prev) => {
+      const next = [...prev];
+      next[rowIndex] = [...prev[rowIndex]];
+      next[rowIndex][colIndex] = value;
+      return next;
+    });
+  }, [patchGrid]);
+
+  const handleCellPaste = useCallback((rowIndex: number, colIndex: number, event: React.ClipboardEvent<HTMLElement>) => {
+    const pasted = parseClipboardTable(
+      event.clipboardData.getData('text/plain'),
+      event.clipboardData.getData('text/html'),
+    );
+    if (!pasted) return;
+    event.preventDefault();
+    patchGrid((prev) => pasteTableAt(prev, pasted, rowIndex, colIndex));
+  }, [patchGrid]);
 
   const insertRowAt = (atIndex: number) => {
     patchGrid((prev) => {
@@ -624,6 +734,8 @@ const CsvNotebookPanel: React.FC = () => {
 
   const cellClass = (rowIndex: number, colIndex: number) => {
     const classes: string[] = [];
+    if (matchingCells.has(`${rowIndex}:${colIndex}`)) classes.push('csv-table-search-match');
+    if (activeMatch?.rowIndex === rowIndex && activeMatch.colIndex === colIndex) classes.push('csv-table-search-active');
     if (rowIndex === 0) classes.push('csv-table-title-row-cell');
     if (colIndex === 0) classes.push('csv-table-title-col-cell');
     if (axisDrag?.axis === 'column') {
@@ -656,7 +768,16 @@ const CsvNotebookPanel: React.FC = () => {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={`csv-notebook-panel${isDraggingAxis ? ' csv-notebook-axis-dragging' : ''}${isResizingColumn ? ' csv-notebook-col-resizing' : ''}`}>
+    <div className={`csv-notebook-panel${isDraggingAxis ? ' csv-notebook-axis-dragging' : ''}${isResizingColumn ? ' csv-notebook-col-resizing' : ''}`}
+      onKeyDownCapture={(event) => {
+        if ((event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === 'f' && !importMarkdownOpen) {
+          event.preventDefault();
+          event.stopPropagation();
+          searchInputRef.current?.focus();
+          searchInputRef.current?.select();
+        }
+      }}
+    >
       <div className="csv-notebook-header">
         <div className="csv-notebook-header-left">
           <button
@@ -756,6 +877,47 @@ const CsvNotebookPanel: React.FC = () => {
         </div>
       </div>
 
+      <div className="csv-search-bar" role="search" aria-label={t('csvEditor.searchPlaceholder')}>
+        <Search size={15} aria-hidden="true" />
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={searchText}
+          placeholder={t('csvEditor.searchPlaceholder')}
+          aria-label={t('csvEditor.searchPlaceholder')}
+          onChange={(event) => { setSearchText(event.target.value); setSearchIndex(0); }}
+          onKeyDown={(event) => {
+            if (event.nativeEvent.isComposing) return;
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              moveSearch(event.shiftKey ? -1 : 1);
+            } else if (event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              setSearchText('');
+              setSearchIndex(0);
+            }
+          }}
+        />
+        <span className="csv-search-count" role="status" aria-live="polite">
+          {searchQuery && (searchMatches.length
+            ? t('csvEditor.searchCount', { current: activeSearchIndex + 1, total: searchMatches.length })
+            : t('search.noResults'))}
+        </span>
+        <button type="button" className="csv-search-button" disabled={!searchMatches.length}
+          title={t('csvEditor.previousMatch')} aria-label={t('csvEditor.previousMatch')} onClick={() => moveSearch(-1)}>
+          <ArrowUp size={15} />
+        </button>
+        <button type="button" className="csv-search-button" disabled={!searchMatches.length}
+          title={t('csvEditor.nextMatch')} aria-label={t('csvEditor.nextMatch')} onClick={() => moveSearch(1)}>
+          <ArrowDown size={15} />
+        </button>
+        {searchText && <button type="button" className="csv-search-button" title={t('search.clear')} aria-label={t('search.clear')}
+          onClick={() => { setSearchText(''); setSearchIndex(0); searchInputRef.current?.focus(); }}>
+          <X size={15} />
+        </button>}
+      </div>
+
       {importMarkdownOpen && (
         <div className="modal-overlay" onClick={() => setImportMarkdownOpen(false)}>
           <div className="modal csv-markdown-import-modal" onClick={(e) => e.stopPropagation()}>
@@ -789,8 +951,16 @@ const CsvNotebookPanel: React.FC = () => {
       )}
 
       <div className="csv-notebook-body">
-        <div className="csv-table-scroll" ref={tableScrollRef}>
-          <table className={`csv-table ${tableLayoutClass}`}>
+        <div className="csv-table-scroll" ref={tableScrollRef}
+          onFocusCapture={(event) => {
+            const row = (event.target as HTMLElement).closest('tr[data-csv-row-index]');
+            setFocusedRow(row ? Number(row.getAttribute('data-csv-row-index')) : null);
+          }}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocusedRow(null);
+          }}
+        >
+          <table className={`csv-table ${tableLayoutClass}`} aria-rowcount={grid.length + (showColumnNumbers ? 1 : 0)}>
             <colgroup>
               {showRowNumbers && <col className="csv-table-corner-col" />}
               {Array.from({ length: colCount }, (_, colIndex) => (
@@ -825,38 +995,49 @@ const CsvNotebookPanel: React.FC = () => {
               </thead>
             )}
             <tbody>
-              {grid.map((row, rowIndex) => (
-                <tr key={rowIndex} className={rowClass(rowIndex)} data-csv-row-index={rowIndex}>
-                  {showRowNumbers && (
-                    <th
-                      className={rowHeaderClass(rowIndex)}
-                      data-csv-row-index={rowIndex}
-                      title={t('csvEditor.reorderRowHint')}
-                      onPointerDown={(e) => handleHeaderPointerDown('row', rowIndex, e)}
-                      onPointerMove={(e) => handleHeaderPointerMove('row', rowIndex, e)}
-                      onPointerUp={handleHeaderPointerUp}
-                      onPointerCancel={handleHeaderPointerUp}
-                      onContextMenu={(e) => openRowContextMenu(e, rowIndex)}
-                    >
-                      <span className="csv-table-row-label">{rowIndex + 1}</span>
-                    </th>
-                  )}
-                  {Array.from({ length: colCount }, (_, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className={cellClass(rowIndex, colIndex)}
-                      data-csv-col-index={colIndex}
-                    >
-                      {!showColumnNumbers && rowIndex === 0 && renderColumnResizeHandle(colIndex)}
-                      <CsvTableCell
-                        value={row[colIndex] ?? ''}
-                        linksClickable={linksClickable}
-                        onChange={(value) => handleCellChange(rowIndex, colIndex, value)}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {rowSegments.flatMap((segment) => segment.kind === 'spacer'
+                ? [<tr key={`spacer-${segment.start}`} className="csv-table-spacer" aria-hidden="true" style={{ height: segment.height }}>
+                    <td colSpan={colCount + (showRowNumbers ? 1 : 0)} style={{ height: segment.height }} />
+                  </tr>]
+                : Array.from({ length: segment.end - segment.start }, (_, offset) => {
+                  const rowIndex = segment.start + offset;
+                  const row = grid[rowIndex];
+                  return (
+                    <tr key={rowIndex} className={rowClass(rowIndex)} data-csv-row-index={rowIndex} aria-rowindex={rowIndex + (showColumnNumbers ? 2 : 1)}>
+                      {showRowNumbers && (
+                        <th
+                          className={rowHeaderClass(rowIndex)}
+                          data-csv-row-index={rowIndex}
+                          title={t('csvEditor.reorderRowHint')}
+                          onPointerDown={(e) => handleHeaderPointerDown('row', rowIndex, e)}
+                          onPointerMove={(e) => handleHeaderPointerMove('row', rowIndex, e)}
+                          onPointerUp={handleHeaderPointerUp}
+                          onPointerCancel={handleHeaderPointerUp}
+                          onContextMenu={(e) => openRowContextMenu(e, rowIndex)}
+                        >
+                          <span className="csv-table-row-label">{rowIndex + 1}</span>
+                        </th>
+                      )}
+                      {Array.from({ length: colCount }, (_, colIndex) => (
+                        <td
+                          key={colIndex}
+                          className={cellClass(rowIndex, colIndex)}
+                          data-csv-col-index={colIndex}
+                        >
+                          {!showColumnNumbers && rowIndex === 0 && renderColumnResizeHandle(colIndex)}
+                          <CsvTableCell
+                            rowIndex={rowIndex}
+                            colIndex={colIndex}
+                            value={row[colIndex] ?? ''}
+                            linksClickable={linksClickable}
+                            onChange={handleCellChange}
+                            onPaste={handleCellPaste}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                }))}
             </tbody>
           </table>
         </div>

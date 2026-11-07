@@ -25,6 +25,7 @@ final stringsKo = AppStrings(
     "mind.rootPlaceholder": "중심 주제",
     "mind.nodePlaceholder": "주제",
     "mind.empty": "아직 주제가 없습니다. 주제를 추가해 시작하세요.",
+    "link.format": "북마크",
     "mind.format": "개요 노트",
     "todo.format": "할 일 노트",
     "tabs.chat": "채팅",
@@ -316,7 +317,7 @@ final stringsKo = AppStrings(
   importNotesDesc: 'Markdown 파일을 현재 노트 스페이스의 루트로 가져옵니다. 먼저 아래 규칙을 확인해 주세요:',
   importNotesRuleMarkdownOnly: '.md로 끝나는 파일만 가져오며, 다른 파일은 무시됩니다.',
   importNotesRuleFormats:
-      '이미 blk, mk, writer, csv 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md)가 있는 파일은 원래 형식을 유지합니다.',
+      '이미 blk, mk, writer, csv 표시(.blk.md / .mk.md / .writer.md / .csv.md / .channel.md / .todo.md / .mind.md / .link.md)가 있는 파일은 원래 형식을 유지합니다.',
   importNotesRuleUnmarked: '위 표시가 없는 일반 .md 파일은 글 노트(.writer.md)로 자동 변환됩니다.',
   importNotesRuleTarget:
       '노트와 디렉터리 모두 현재 노트 스페이스의 루트로 가져오며, 디렉터리의 내부 구조는 유지됩니다.',
