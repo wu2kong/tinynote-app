@@ -7,6 +7,22 @@ description: See TinyNote feature updates, fixes, and improvements by version.
 
 Installers: [download page](https://tinynote.wu2kong.com/download.html).
 
+## v1.3.0
+
+2026-11-08
+
+### New features
+
+- Channel notebooks bring together chat, tasks, notes, bookmarks, resources, and members. Sections can be reordered or hidden, and note previews are optional.
+- Dedicated task, outline, and table notebooks are now available. Mobile can preview and copy table notebooks.
+- Notes can open in separate windows. Channel bookmarks and tasks have improved controls.
+- Visit history supports search, arrow-key selection, and Enter to open. More space icons are available.
+
+### Fixes
+
+- Opening a note from visit history across spaces and groups now switches to the correct group.
+- The import button uses a clearer icon.
+
 ## v1.2.8
 
 2026-09-08
