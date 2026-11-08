@@ -671,6 +671,8 @@ body.app-bar-resizing {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 4px;
+  max-height: min(440px, 65vh);
+  overflow-y: auto;
 }
 
 .emoji-picker-item {
@@ -1513,10 +1515,25 @@ body.directory-panel-resizing {
 }
 
 .recent-notebooks-close:hover,
-.recent-notebooks-item:hover {
+.recent-notebooks-item:hover,
+.recent-notebooks-item.active {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+.recent-notebooks-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 20px 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+}
+
+.recent-notebooks-search:focus-within { border-color: var(--accent-color); }
+.recent-notebooks-search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: var(--text-primary); font: inherit; }
 
 .recent-notebooks-list {
   max-height: min(60vh, 520px);
@@ -2760,7 +2777,7 @@ body.directory-panel-resizing {
 .csv-table-col-resize-handle {
   position: absolute;
   top: 0;
-  right: -3px;
+  right: 0;
   width: 7px;
   height: 100%;
   cursor: col-resize;
@@ -3511,6 +3528,50 @@ body.directory-panel-resizing {
   padding: 14px 18px 20px;
 }
 
+.channel-notes-layout {
+  display: grid;
+  grid-template-columns: minmax(190px, 28%) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.channel-notes-list-pane {
+  min-width: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.channel-notes-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.channel-notes-list-header .btn { display: inline-flex; align-items: center; gap: 4px; }
+.channel-notes-list { list-style: none; margin: 0; padding: 6px; }
+.channel-note-row { display: flex; align-items: center; border-radius: 6px; min-width: 0; }
+.channel-note-row:hover { background: var(--bg-hover); }
+.channel-note-row.selected { background: color-mix(in srgb, var(--accent-color, #3b82f6) 14%, var(--bg-secondary)); }
+.channel-note-drag, .channel-note-delete { flex: none; display: grid; place-items: center; border: 0; background: none; color: var(--text-tertiary); cursor: pointer; padding: 7px; }
+.channel-note-drag { cursor: grab; }
+.channel-note-select { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; text-align: left; border: 0; background: none; color: var(--text-primary); cursor: pointer; padding: 9px 0; }
+.channel-note-select strong, .channel-note-select span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
+.channel-note-select span { font-size: 11px; color: var(--text-tertiary); }
+.channel-notes-editor { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+.channel-notes-editor input, .channel-notes-editor textarea { box-sizing: border-box; width: 100%; min-width: 0; border: 0; outline: none; background: transparent; color: var(--text-primary); font: inherit; }
+.channel-notes-editor input { font-size: 20px; font-weight: 600; }
+.channel-notes-editor textarea { flex: 1; min-height: 120px; resize: none; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; overflow-x: hidden; overflow-y: auto; }
+.channel-notes-empty { margin: 16px; color: var(--text-tertiary); font-size: 12px; }
+
+@media (max-width: 600px) {
+  .channel-notes-layout { grid-template-columns: minmax(135px, 38%) minmax(0, 1fr); }
+  .channel-notes-editor { padding: 12px; }
+}
+
 .channel-side-form {
   display: flex;
   flex-wrap: wrap;
@@ -3658,6 +3719,10 @@ body.directory-panel-resizing {
 .channel-feature-list { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 0; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; }
 .channel-feature-list legend { padding: 0 5px; font-size: 12px; font-weight: 600; }
 .channel-feature-list small { color: var(--text-tertiary); font-size: 11px; }
+.channel-feature-row { display: flex; align-items: center; gap: 6px; min-height: 28px; }
+.channel-feature-row .channel-display-option { flex: 1; }
+.channel-feature-drag { display: grid; place-items: center; padding: 4px; border: 0; background: transparent; color: var(--text-tertiary); cursor: grab; }
+.channel-feature-drag:active { cursor: grabbing; }
 
 .channel-settings-field {
   display: flex;

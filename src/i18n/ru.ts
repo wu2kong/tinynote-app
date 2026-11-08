@@ -548,6 +548,7 @@ export const ruMessages = {
   "appBar": {
     "slogan": "Упорядочьте разрозненные заметки",
     "newSpace": "Новое пространство",
+    "history": "История посещений",
     "globalSearch": "Глобальный поиск",
     "globalSearchShortcut": "Глобальный поиск (⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "Свернуть/развернуть",
@@ -928,10 +929,24 @@ export const ruMessages = {
     "tabs": {
       "chat": "Чат",
       "todos": "Задачи",
+      "notes": "Заметки",
       "links": "Ссылки",
       "resources": "Ресурсы",
       "members": "Участники",
       "settings": "Настройки"
+    },
+    "notes": {
+      "editor": "Редактор заметок",
+      "list": "Список заметок",
+      "add": "Новая заметка",
+      "untitled": "Без названия",
+      "emptyList": "Заметок пока нет.",
+      "select": "Выберите или создайте заметку.",
+      "title": "Заголовок",
+      "content": "Напишите заметку…",
+      "delete": "Удалить заметку",
+      "reorder": "Перетащите для изменения порядка",
+      "empty": "Пустая заметка",
     },
     "selfMemberName": "Я",
     "selfBadge": "я",
@@ -996,8 +1011,10 @@ export const ruMessages = {
     "resourceUri": "Путь или URL (необязательно)",
     "resourceNote": "Заметка (необязательно)",
     "settings": {
+      "showNotePreview": "Показывать предпросмотр заметок",
+      "reorderFeature": "Изменить порядок: {feature}",
       "features": "Разделы",
-      "requiredFeaturesHint": "Чат, участники и настройки всегда доступны.",
+      "requiredFeaturesHint": "Настройки всегда доступны.",
       "title": "Название канала",
       "subtitle": "Подзаголовок",
       "subtitlePlaceholder": "Краткое описание канала…",
@@ -1014,6 +1031,8 @@ export const ruMessages = {
   "recent": {
     "title": "Недавно открытые блокноты",
     "subtitle": "Отсортировано по времени последнего открытия",
+    "search": "Поиск по названию или пути",
+    "noResults": "Подходящих заметок нет",
     "empty": "Истории открытий пока нет",
     "closeShortcut": "Esc закрывает",
     "close": "Закрыть"

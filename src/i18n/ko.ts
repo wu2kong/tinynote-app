@@ -548,6 +548,7 @@ export const koMessages = {
   "appBar": {
     "slogan": "흩어진 노트를 정리하세요",
     "newSpace": "새 스페이스",
+    "history": "방문 기록",
     "globalSearch": "전체 검색",
     "globalSearchShortcut": "전체 검색(⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "접기/펼치기",
@@ -928,10 +929,24 @@ export const koMessages = {
     "tabs": {
       "chat": "채팅",
       "todos": "할 일",
+      "notes": "노트",
       "links": "링크",
       "resources": "자료",
       "members": "멤버",
       "settings": "설정"
+    },
+    "notes": {
+      "editor": "노트 편집기",
+      "list": "노트 목록",
+      "add": "새 노트",
+      "untitled": "제목 없는 노트",
+      "emptyList": "노트가 없습니다.",
+      "select": "노트를 선택하거나 만드세요.",
+      "title": "제목",
+      "content": "노트 작성…",
+      "delete": "노트 삭제",
+      "reorder": "드래그하여 순서 변경",
+      "empty": "빈 노트",
     },
     "selfMemberName": "나",
     "selfBadge": "나",
@@ -996,8 +1011,10 @@ export const koMessages = {
     "resourceUri": "경로 또는 URL (선택)",
     "resourceNote": "메모 (선택)",
     "settings": {
+      "showNotePreview": "노트 내용 미리보기 표시",
+      "reorderFeature": "{feature} 순서 변경",
       "features": "기능 설정",
-      "requiredFeaturesHint": "채팅, 멤버, 설정은 항상 사용할 수 있습니다.",
+      "requiredFeaturesHint": "설정은 항상 사용할 수 있습니다.",
       "title": "채널 제목",
       "subtitle": "부제목",
       "subtitlePlaceholder": "채널에 대한 간단한 설명…",
@@ -1014,6 +1031,8 @@ export const koMessages = {
   "recent": {
     "title": "최근에 연 노트북",
     "subtitle": "최근에 연 시간순으로 정렬",
+    "search": "노트 이름 또는 경로 검색",
+    "noResults": "일치하는 노트가 없습니다",
     "empty": "아직 열어 본 기록이 없습니다",
     "closeShortcut": "Esc로 닫기",
     "close": "닫기"

@@ -548,6 +548,7 @@ export const jaMessages = {
   "appBar": {
     "slogan": "散らばったノートを整理",
     "newSpace": "新しいスペース",
+    "history": "閲覧履歴",
     "globalSearch": "全体検索",
     "globalSearchShortcut": "全体検索（⌘⇧F / Ctrl+Shift+F）",
     "collapseExpand": "折りたたみ/展開",
@@ -928,10 +929,24 @@ export const jaMessages = {
     "tabs": {
       "chat": "チャット",
       "todos": "タスク",
+      "notes": "ノート",
       "links": "リンク",
       "resources": "リソース",
       "members": "メンバー",
       "settings": "設定"
+    },
+    "notes": {
+      "editor": "ノート編集",
+      "list": "ノート一覧",
+      "add": "新しいノート",
+      "untitled": "無題のノート",
+      "emptyList": "ノートはありません。",
+      "select": "ノートを選択または作成してください。",
+      "title": "タイトル",
+      "content": "ノートを入力…",
+      "delete": "ノートを削除",
+      "reorder": "ドラッグして並べ替え",
+      "empty": "空のノート",
     },
     "selfMemberName": "自分",
     "selfBadge": "自分",
@@ -996,8 +1011,10 @@ export const jaMessages = {
     "resourceUri": "パスまたはURL（任意）",
     "resourceNote": "メモ（任意）",
     "settings": {
+      "showNotePreview": "ノート内容のプレビューを表示",
+      "reorderFeature": "{feature}の順序を変更",
       "features": "機能の切り替え",
-      "requiredFeaturesHint": "チャット、メンバー、設定は常に利用できます。",
+      "requiredFeaturesHint": "設定は常に利用できます。",
       "title": "チャンネル名",
       "subtitle": "サブタイトル",
       "subtitlePlaceholder": "チャンネルの簡単な説明…",
@@ -1014,6 +1031,8 @@ export const jaMessages = {
   "recent": {
     "title": "最近開いたノートブック",
     "subtitle": "最近開いた時間順に並べ替え",
+    "search": "ノート名またはパスで検索",
+    "noResults": "一致するノートがありません",
     "empty": "開いた履歴はまだありません",
     "closeShortcut": "Esc で閉じる",
     "close": "閉じる"

@@ -324,7 +324,7 @@ const App: React.FC = () => {
 
   return (
     <div className="app-layout" style={{ width: `calc(100vw / ${zoomLevel})`, height: `calc(100vh / ${zoomLevel})` }}>
-      {showAppBar && <AppBar onOpenGlobalSearch={() => setShowGlobalSearch(true)} />}
+      {showAppBar && <AppBar onOpenGlobalSearch={() => setShowGlobalSearch(true)} onOpenHistory={() => setShowRecentNotebooks(true)} />}
       {showDirectoryPanel && <DirectoryPanel />}
       <EditorAreaErrorBoundary
         fallback={

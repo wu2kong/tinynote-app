@@ -3,9 +3,15 @@ export const CHANNEL_DOCUMENT_VERSION = 1 as const;
 /** Stable id for the default “myself” member in new and migrated documents. */
 export const DEFAULT_SELF_MEMBER_ID = 'self';
 
-export type ChannelTabId = 'chat' | 'todos' | 'links' | 'resources' | 'members' | 'settings';
-export const CHANNEL_TAB_IDS: ChannelTabId[] = ['chat', 'todos', 'links', 'resources', 'members', 'settings'];
-export const REQUIRED_CHANNEL_TABS: ChannelTabId[] = ['chat', 'members', 'settings'];
+export type ChannelTabId = 'chat' | 'todos' | 'notes' | 'links' | 'resources' | 'members' | 'settings';
+export const CHANNEL_TAB_IDS: ChannelTabId[] = ['chat', 'todos', 'notes', 'links', 'resources', 'members', 'settings'];
+export const REQUIRED_CHANNEL_TABS: ChannelTabId[] = ['settings'];
+
+export function normalizeTabOrder(value: unknown): ChannelTabId[] {
+  if (!Array.isArray(value)) return [...CHANNEL_TAB_IDS];
+  const ordered = [...new Set(value.filter((id): id is ChannelTabId => CHANNEL_TAB_IDS.includes(id)))];
+  return [...ordered, ...CHANNEL_TAB_IDS.filter((id) => !ordered.includes(id))];
+}
 
 export function normalizeEnabledTabs(value: unknown): ChannelTabId[] {
   if (!Array.isArray(value)) return [...CHANNEL_TAB_IDS];
@@ -71,6 +77,13 @@ export interface ChannelLinkItem {
   tagIds?: string[];
 }
 
+export interface ChannelNoteItem {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface ChannelLinkGroup {
   id: string;
   name: string;
@@ -94,9 +107,12 @@ export interface ChannelDocument {
   showTime?: boolean;
   showMemberAvatars?: boolean;
   enabledTabs?: ChannelTabId[];
+  tabOrder?: ChannelTabId[];
+  showNotePreview?: boolean;
   members: ChannelMember[];
   messages: ChannelMessage[];
   todos: ChannelTodoItem[];
+  notes: ChannelNoteItem[];
   todoGroups?: ChannelTodoGroup[];
   todoView?: 'list' | 'board';
   links: ChannelLinkItem[];
@@ -124,9 +140,12 @@ export function createEmptyChannelDocument(selfMemberName: string, title = ''): 
     showTime: true,
     showMemberAvatars: true,
     enabledTabs: [...CHANNEL_TAB_IDS],
+    tabOrder: [...CHANNEL_TAB_IDS],
+    showNotePreview: false,
     members: createDefaultMembers(selfMemberName),
     messages: [],
     todos: [],
+    notes: [],
     todoView: 'list',
     links: [],
     resources: [],
@@ -236,6 +255,16 @@ function normalizeLink(raw: unknown): ChannelLinkItem | null {
   };
 }
 
+function normalizeNote(raw: unknown): ChannelNoteItem | null {
+  if (!isRecord(raw)) return null;
+  return {
+    id: readString(raw.id) || createChannelId(),
+    title: readString(raw.title),
+    content: readString(raw.content),
+    createdAt: readString(raw.createdAt) || new Date().toISOString(),
+  };
+}
+
 function normalizeLinkGroups(raw: unknown): ChannelLinkGroup[] {
   if (!Array.isArray(raw)) return [];
   const seen = new Set<string>();
@@ -315,10 +344,14 @@ export function parseChannelDocument(raw: string, selfMemberNameFallback = 'Me')
       subtitle: readString(parsed.subtitle),
       showTime: readBool(parsed.showTime, true),
       showMemberAvatars: readBool(parsed.showMemberAvatars, true),
-      enabledTabs: normalizeEnabledTabs(parsed.enabledTabs),
+      enabledTabs: normalizeEnabledTabs(Array.isArray(parsed.enabledTabs) && !Array.isArray(parsed.notes)
+        ? [...parsed.enabledTabs, 'notes'] : parsed.enabledTabs),
+      tabOrder: normalizeTabOrder(parsed.tabOrder),
+      showNotePreview: readBool(parsed.showNotePreview, false),
       members,
       messages,
       todos,
+      notes: Array.isArray(parsed.notes) ? parsed.notes.map(normalizeNote).filter((item): item is ChannelNoteItem => item != null) : [],
       todoView: parsed.todoView === 'board' ? 'board' : 'list',
       ...(Array.isArray(parsed.todoGroups) ? { todoGroups: parsed.todoGroups.filter(isRecord)
         .filter((group) => readString(group.name).trim()).map((group) => ({
@@ -345,9 +378,12 @@ export function serializeChannelDocument(doc: ChannelDocument): string {
     showTime: doc.showTime ?? true,
     showMemberAvatars: doc.showMemberAvatars ?? true,
     enabledTabs: normalizeEnabledTabs(doc.enabledTabs),
+    tabOrder: normalizeTabOrder(doc.tabOrder),
+    showNotePreview: doc.showNotePreview === true,
     members: doc.members,
     messages: doc.messages,
     todos: doc.todos,
+    notes: doc.notes,
     todoView: doc.todoView === 'board' ? 'board' : 'list',
     ...(doc.todoGroups ? { todoGroups: doc.todoGroups } : {}),
     links: doc.links,

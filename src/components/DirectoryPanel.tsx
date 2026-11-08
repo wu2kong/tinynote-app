@@ -8,7 +8,7 @@ import {
   Search, X, Folder, FileText, FileCode, FileQuestion, PenLine, Table2, MessagesSquare, ChevronRight, ChevronDown,
   Trash2, FolderPlus, FilePlus, ListTodo, Network, Link2, Edit3, Plus, Code, Blocks, RefreshCw,
   ChevronsDown, ChevronsUp, ArrowRight, FolderOpen, ExternalLink, Copy,
-  PanelLeftOpen, PanelLeftClose, GripVertical, FileDown
+  PanelLeftOpen, PanelLeftClose, GripVertical, FileInput
 } from 'lucide-react';
 import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -678,7 +678,7 @@ const DirectoryPanel: React.FC = () => {
           title={t('directory.importNotes')}
           aria-label={t('directory.importNotes')}
         >
-          <FileDown size={18} />
+          <FileInput size={18} />
         </button>
       </div>
 
@@ -883,7 +883,7 @@ const DirectoryPanel: React.FC = () => {
               <FolderPlus size={14} />{t('directory.addGroup')}
             </button>
             <button className="context-menu-item" onClick={() => { handleOpenImportNotes(); closeContextMenu(); }}>
-              <FileDown size={14} />{t('directory.importNotes')}
+              <FileInput size={14} />{t('directory.importNotes')}
             </button>
             <div className="context-menu-divider" />
             <button className="context-menu-item" onClick={() => { expandAllGroups(); closeContextMenu(); }}>

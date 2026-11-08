@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Clock3, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Clock3, Search, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { RecentNotebookHistoryItem } from '@/types';
 import { useI18n } from '@/i18n/useI18n';
@@ -13,9 +13,20 @@ const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClo
   const history = useStore((s) => s.recentNotebookHistory);
   const selectRecentNotebook = useStore((s) => s.selectRecentNotebook);
   const { t } = useI18n();
+  const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(0);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const activeItemRef = useRef<HTMLButtonElement>(null);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const filteredHistory = normalizedQuery
+    ? history.filter((item) => `${item.name} ${item.path}`.toLocaleLowerCase().includes(normalizedQuery))
+    : history;
 
   useEffect(() => {
     if (!open) return;
+    setQuery('');
+    setActiveIndex(0);
+    searchRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -25,6 +36,10 @@ const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClo
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
+
+  useEffect(() => {
+    if (open) activeItemRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [activeIndex, query, open]);
 
   const handleSelect = async (item: RecentNotebookHistoryItem) => {
     onClose();
@@ -45,14 +60,40 @@ const RecentNotebooksModal: React.FC<RecentNotebooksModalProps> = ({ open, onClo
             <X size={16} />
           </button>
         </div>
-        <div className="recent-notebooks-list">
+        <div className="recent-notebooks-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={(event) => { setQuery(event.target.value); setActiveIndex(0); }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (filteredHistory.length) setActiveIndex((index) => (index + (event.key === 'ArrowDown' ? 1 : -1) + filteredHistory.length) % filteredHistory.length);
+              } else if (event.key === 'Enter' && filteredHistory[activeIndex]) {
+                event.preventDefault();
+                void handleSelect(filteredHistory[activeIndex]);
+              }
+            }}
+            placeholder={t('recent.search')}
+            aria-label={t('recent.search')}
+            aria-controls="recent-notebooks-results"
+            aria-activedescendant={filteredHistory[activeIndex] ? `recent-notebook-result-${activeIndex}` : undefined}
+          />
+        </div>
+        <div className="recent-notebooks-list" id="recent-notebooks-results">
           {history.length === 0 ? (
             <div className="recent-notebooks-empty">{t('recent.empty')}</div>
-          ) : history.map((item) => (
+          ) : filteredHistory.length === 0 ? (
+            <div className="recent-notebooks-empty">{t('recent.noResults')}</div>
+          ) : filteredHistory.map((item, index) => (
             <button
               key={item.path}
+              id={`recent-notebook-result-${index}`}
+              ref={index === activeIndex ? activeItemRef : undefined}
               type="button"
-              className="recent-notebooks-item"
+              className={`recent-notebooks-item${index === activeIndex ? ' active' : ''}`}
               onClick={() => handleSelect(item)}
             >
               <Clock3 size={15} />

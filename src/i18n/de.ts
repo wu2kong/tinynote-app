@@ -548,6 +548,7 @@ export const deMessages = {
   "appBar": {
     "slogan": "Verstreute Notizen organisieren",
     "newSpace": "Neuer Bereich",
+    "history": "Besuchsverlauf",
     "globalSearch": "Globale Suche",
     "globalSearchShortcut": "Globale Suche (⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "Ein-/Ausklappen",
@@ -928,10 +929,24 @@ export const deMessages = {
     "tabs": {
       "chat": "Chat",
       "todos": "Aufgaben",
+      "notes": "Notizen",
       "links": "Links",
       "resources": "Ressourcen",
       "members": "Mitglieder",
       "settings": "Einstellungen"
+    },
+    "notes": {
+      "editor": "Notizeditor",
+      "list": "Notizen",
+      "add": "Neue Notiz",
+      "untitled": "Unbenannte Notiz",
+      "emptyList": "Noch keine Notizen.",
+      "select": "Notiz auswählen oder erstellen.",
+      "title": "Titel",
+      "content": "Notiz schreiben…",
+      "delete": "Notiz löschen",
+      "reorder": "Notiz ziehen, um sie zu sortieren",
+      "empty": "Leere Notiz",
     },
     "selfMemberName": "Ich",
     "selfBadge": "ich",
@@ -996,8 +1011,10 @@ export const deMessages = {
     "resourceUri": "Pfad oder URL (optional)",
     "resourceNote": "Notiz (optional)",
     "settings": {
+      "showNotePreview": "Notizvorschau anzeigen",
+      "reorderFeature": "{feature} verschieben",
       "features": "Bereiche aktivieren",
-      "requiredFeaturesHint": "Chat, Mitglieder und Einstellungen sind immer verfügbar.",
+      "requiredFeaturesHint": "Einstellungen sind immer verfügbar.",
       "title": "Kanaltitel",
       "subtitle": "Untertitel",
       "subtitlePlaceholder": "Eine kurze Beschreibung dieses Kanals…",
@@ -1014,6 +1031,8 @@ export const deMessages = {
   "recent": {
     "title": "Zuletzt geöffnete Notizbücher",
     "subtitle": "Nach letzter Öffnungszeit sortiert",
+    "search": "Verlauf nach Name oder Pfad durchsuchen",
+    "noResults": "Keine passenden Notizen",
     "empty": "Noch kein Öffnungsverlauf",
     "closeShortcut": "Esc schließt",
     "close": "Schließen"

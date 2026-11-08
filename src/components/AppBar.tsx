@@ -12,7 +12,7 @@ const COLLAPSED_APP_BAR_WIDTH = 52;
 import {
   Plus, Sun, Moon, Settings, PanelLeftClose, PanelLeftOpen,
   Edit3, Trash2, Smile, GripVertical, FolderOpen, Search, Copy,
-  Tags, Check, ChevronDown, ChevronRight,
+  Tags, Check, ChevronDown, ChevronRight, History,
 } from 'lucide-react';
 import { revealItemInDir } from '@tauri-apps/plugin-opener';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
@@ -241,9 +241,10 @@ const SortableGroupMenuItem: React.FC<SortableGroupMenuItemProps> = (props) => {
 
 interface AppBarProps {
   onOpenGlobalSearch: () => void;
+  onOpenHistory: () => void;
 }
 
-const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
+const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch, onOpenHistory }) => {
   const { t } = useI18n();
   const spaces = useStore((s) => s.spaces);
   const currentSpace = useStore((s) => s.currentSpace);
@@ -607,6 +608,9 @@ const AppBar: React.FC<AppBarProps> = ({ onOpenGlobalSearch }) => {
             aria-label={t('appBar.globalSearch')}
           >
             <Search size={16} />
+          </button>
+          <button type="button" className="app-bar-group-toolbar-btn" onClick={onOpenHistory} title={t('appBar.history')} aria-label={t('appBar.history')}>
+            <History size={16} />
           </button>
         </div>
       )}

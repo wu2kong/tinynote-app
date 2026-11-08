@@ -5,6 +5,7 @@ import {
   createChannelMessage,
   createEmptyChannelDocument,
   DEFAULT_SELF_MEMBER_ID,
+  normalizeTabOrder,
   parseChannelDocument,
   serializeChannelDocument,
 } from './channelDocument.ts';
@@ -63,11 +64,36 @@ test('todo view defaults to list and survives reopening', () => {
   assert.equal(parseChannelDocument('{"todoView":"unknown"}').todoView, 'list');
 });
 
-test('channel section switches default on and always retain required sections', () => {
-  assert.deepEqual(parseChannelDocument('{"messages":[]}').enabledTabs, ['chat', 'todos', 'links', 'resources', 'members', 'settings']);
+test('channel section switches default on and only retain settings', () => {
+  assert.deepEqual(parseChannelDocument('{"messages":[]}').enabledTabs, ['chat', 'todos', 'notes', 'links', 'resources', 'members', 'settings']);
   const parsed = parseChannelDocument('{"enabledTabs":["links","invalid"]}');
-  assert.deepEqual(parsed.enabledTabs, ['chat', 'links', 'members', 'settings']);
+  assert.deepEqual(parsed.enabledTabs, ['notes', 'links', 'settings']);
   assert.deepEqual(parseChannelDocument(serializeChannelDocument(parsed)).enabledTabs, parsed.enabledTabs);
+  parsed.enabledTabs = ['settings'];
+  assert.deepEqual(parseChannelDocument(serializeChannelDocument(parsed)).enabledTabs, parsed.enabledTabs);
+  assert.deepEqual(parseChannelDocument('{"enabledTabs":[],"notes":[]}').enabledTabs, ['settings']);
+});
+
+test('channel notes preserve content and list order when reopened', () => {
+  const doc = createEmptyChannelDocument('Me');
+  doc.notes = [
+    { id: 'second', title: 'Second', content: 'Details\ncontinued', createdAt: '2026-11-07T00:00:00.000Z' },
+    { id: 'first', title: 'First', content: '', createdAt: '2026-11-06T00:00:00.000Z' },
+  ];
+  assert.deepEqual(parseChannelDocument(serializeChannelDocument(doc)).notes, doc.notes);
+  assert.deepEqual(parseChannelDocument('{"notes":[null,{"title":"Draft","content":"Text"}]}').notes.map((note) => note.title), ['Draft']);
+});
+
+test('tab order and note preview settings survive reopening', () => {
+  const legacy = parseChannelDocument('{"messages":[]}');
+  assert.equal(legacy.showNotePreview, false);
+  assert.deepEqual(legacy.tabOrder, ['chat', 'todos', 'notes', 'links', 'resources', 'members', 'settings']);
+  legacy.tabOrder = ['notes', 'chat', 'members', 'settings', 'todos', 'links', 'resources'];
+  legacy.showNotePreview = true;
+  const reopened = parseChannelDocument(serializeChannelDocument(legacy));
+  assert.deepEqual(reopened.tabOrder, legacy.tabOrder);
+  assert.equal(reopened.showNotePreview, true);
+  assert.deepEqual(normalizeTabOrder(['notes', 'notes', 'invalid', 'chat']), ['notes', 'chat', 'todos', 'links', 'resources', 'members', 'settings']);
 });
 
 test('message order survives serialization', () => {

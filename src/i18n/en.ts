@@ -600,6 +600,7 @@ export const enMessages = {
   "appBar": {
     "slogan": "Organize scattered notes",
     "newSpace": "New Space",
+    "history": "Visit history",
     "globalSearch": "Global Search",
     "globalSearchShortcut": "Global Search (⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "Collapse/Expand",
@@ -985,10 +986,24 @@ export const enMessages = {
     "tabs": {
       "chat": "Chat",
       "todos": "Todos",
+      "notes": "Notes",
       "links": "Links",
       "resources": "Resources",
       "members": "Members",
       "settings": "Settings"
+    },
+    "notes": {
+      "editor": "Note editor",
+      "list": "Notes",
+      "add": "New note",
+      "untitled": "Untitled note",
+      "emptyList": "No notes yet.",
+      "select": "Select a note or create one.",
+      "title": "Title",
+      "content": "Write a note…",
+      "delete": "Delete note",
+      "reorder": "Drag to reorder note",
+      "empty": "Empty note",
     },
     "selfMemberName": "Me",
     "selfBadge": "me",
@@ -1053,8 +1068,10 @@ export const enMessages = {
     "resourceUri": "Path or URL (optional)",
     "resourceNote": "Note (optional)",
     "settings": {
+      "showNotePreview": "Show note content preview",
+      "reorderFeature": "Reorder {feature}",
       "features": "Enabled sections",
-      "requiredFeaturesHint": "Chat, Members, and Settings are always available.",
+      "requiredFeaturesHint": "Settings is always available.",
       "title": "Channel title",
       "subtitle": "Subtitle",
       "subtitlePlaceholder": "A short description of this channel…",
@@ -1071,6 +1088,8 @@ export const enMessages = {
   "recent": {
     "title": "Recently Opened Notes",
     "subtitle": "Sorted by most recent open time",
+    "search": "Search history by name or path",
+    "noResults": "No matching notes",
     "empty": "No open history yet",
     "closeShortcut": "Esc closes",
     "close": "Close"

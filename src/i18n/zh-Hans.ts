@@ -600,6 +600,7 @@ export const zhHansMessages = {
   "appBar": {
     "slogan": "零碎笔记管理",
     "newSpace": "新建空间",
+    "history": "访问历史",
     "globalSearch": "全局搜索",
     "globalSearchShortcut": "全局搜索（⌘⇧F / Ctrl+Shift+F）",
     "collapseExpand": "折叠/展开",
@@ -985,10 +986,24 @@ export const zhHansMessages = {
     "tabs": {
       "chat": "聊天",
       "todos": "待办",
+      "notes": "笔记",
       "links": "链接",
       "resources": "资源",
       "members": "成员",
       "settings": "设置"
+    },
+    "notes": {
+      "editor": "笔记编辑区",
+      "list": "笔记列表",
+      "add": "新建笔记",
+      "untitled": "未命名笔记",
+      "emptyList": "暂无笔记。",
+      "select": "选择或新建一条笔记。",
+      "title": "标题",
+      "content": "输入笔记内容…",
+      "delete": "删除笔记",
+      "reorder": "拖拽调整笔记顺序",
+      "empty": "空白笔记",
     },
     "selfMemberName": "我自己",
     "selfBadge": "我",
@@ -1053,8 +1068,10 @@ export const zhHansMessages = {
     "resourceUri": "路径或 URL（可选）",
     "resourceNote": "备注（可选）",
     "settings": {
+      "showNotePreview": "显示笔记内容预览",
+      "reorderFeature": "调整{feature}顺序",
       "features": "功能开关",
-      "requiredFeaturesHint": "聊天、成员和设置始终保留。",
+      "requiredFeaturesHint": "设置始终保留。",
       "title": "频道标题",
       "subtitle": "副标题",
       "subtitlePlaceholder": "一句话介绍这个频道…",
@@ -1071,6 +1088,8 @@ export const zhHansMessages = {
   "recent": {
     "title": "最近打开的笔记",
     "subtitle": "按最近打开时间排序",
+    "search": "搜索笔记名称或路径",
+    "noResults": "没有匹配的笔记",
     "empty": "暂无打开历史",
     "closeShortcut": "Esc 关闭",
     "close": "关闭"

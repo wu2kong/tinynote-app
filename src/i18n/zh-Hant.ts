@@ -570,6 +570,7 @@ export const zhHantMessages = {
   "appBar": {
     "slogan": "整理零散筆記",
     "newSpace": "新增空間",
+    "history": "造訪記錄",
     "globalSearch": "全域搜尋",
     "globalSearchShortcut": "全域搜尋（⌘⇧F / Ctrl+Shift+F）",
     "collapseExpand": "摺疊/展開",
@@ -955,10 +956,24 @@ export const zhHantMessages = {
     "tabs": {
       "chat": "聊天",
       "todos": "待辦",
+      "notes": "筆記",
       "links": "連結",
       "resources": "資源",
       "members": "成員",
       "settings": "設定"
+    },
+    "notes": {
+      "editor": "筆記編輯區",
+      "list": "筆記列表",
+      "add": "新增筆記",
+      "untitled": "未命名筆記",
+      "emptyList": "暫無筆記。",
+      "select": "選擇或新增一則筆記。",
+      "title": "標題",
+      "content": "輸入筆記內容…",
+      "delete": "刪除筆記",
+      "reorder": "拖曳調整筆記順序",
+      "empty": "空白筆記",
     },
     "selfMemberName": "我自己",
     "selfBadge": "我",
@@ -1023,8 +1038,10 @@ export const zhHantMessages = {
     "resourceUri": "路徑或 URL（可選）",
     "resourceNote": "備註（可選）",
     "settings": {
+      "showNotePreview": "顯示筆記內容預覽",
+      "reorderFeature": "調整{feature}順序",
       "features": "功能開關",
-      "requiredFeaturesHint": "聊天、成員和設定會始終保留。",
+      "requiredFeaturesHint": "設定會始終保留。",
       "title": "頻道標題",
       "subtitle": "副標題",
       "subtitlePlaceholder": "一句話介紹這個頻道…",
@@ -1041,6 +1058,8 @@ export const zhHantMessages = {
   "recent": {
     "title": "最近開啟的筆記",
     "subtitle": "依最近開啟時間排序",
+    "search": "搜尋筆記名稱或路徑",
+    "noResults": "沒有符合的筆記",
     "empty": "暫無開啟歷史",
     "closeShortcut": "Esc 關閉",
     "close": "關閉"

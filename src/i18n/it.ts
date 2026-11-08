@@ -548,6 +548,7 @@ export const itMessages = {
   "appBar": {
     "slogan": "Organizza note sparse",
     "newSpace": "Nuovo spazio",
+    "history": "Cronologia visite",
     "globalSearch": "Ricerca globale",
     "globalSearchShortcut": "Ricerca globale (⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "Comprimi/Espandi",
@@ -928,10 +929,24 @@ export const itMessages = {
     "tabs": {
       "chat": "Chat",
       "todos": "Attività",
+      "notes": "Note",
       "links": "Link",
       "resources": "Risorse",
       "members": "Membri",
       "settings": "Impostazioni"
+    },
+    "notes": {
+      "editor": "Editor note",
+      "list": "Elenco note",
+      "add": "Nuova nota",
+      "untitled": "Nota senza titolo",
+      "emptyList": "Nessuna nota.",
+      "select": "Seleziona o crea una nota.",
+      "title": "Titolo",
+      "content": "Scrivi una nota…",
+      "delete": "Elimina nota",
+      "reorder": "Trascina per riordinare la nota",
+      "empty": "Nota vuota",
     },
     "selfMemberName": "Io",
     "selfBadge": "io",
@@ -996,8 +1011,10 @@ export const itMessages = {
     "resourceUri": "Percorso o URL (facoltativo)",
     "resourceNote": "Nota (facoltativa)",
     "settings": {
+      "showNotePreview": "Mostra anteprima delle note",
+      "reorderFeature": "Riordina {feature}",
       "features": "Sezioni attive",
-      "requiredFeaturesHint": "Chat, Membri e Impostazioni sono sempre disponibili.",
+      "requiredFeaturesHint": "Le Impostazioni sono sempre disponibili.",
       "title": "Titolo del canale",
       "subtitle": "Sottotitolo",
       "subtitlePlaceholder": "Una breve descrizione del canale…",
@@ -1014,6 +1031,8 @@ export const itMessages = {
   "recent": {
     "title": "Taccuini aperti di recente",
     "subtitle": "Ordinati per ora di apertura più recente",
+    "search": "Cerca per nome o percorso",
+    "noResults": "Nessuna nota corrispondente",
     "empty": "Ancora nessuna cronologia di apertura",
     "closeShortcut": "Esc chiude",
     "close": "Chiudi"

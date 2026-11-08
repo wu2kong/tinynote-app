@@ -42,7 +42,7 @@ interface AppActions {
   setSearchQuery: (query: string) => void;
   setStoragePath: (path: string | null) => Promise<void>;
   initApp: () => Promise<void>;
-  selectSpace: (space: Space) => Promise<void>;
+  selectSpace: (space: Space, spaceGroupId?: string) => Promise<void>;
   selectGroup: (group: Group) => Promise<void>;
   selectNotebook: (notebook: Notebook) => Promise<void>;
   selectRecentNotebook: (historyItem: RecentNotebookHistoryItem) => Promise<void>;
@@ -567,7 +567,7 @@ export const useStore = create<AppStore>((set, get) => ({
     }
   },
 
-  selectSpace: async (space) => {
+  selectSpace: async (space, spaceGroupId) => {
     const children = await fs.loadSpaceChildren(space.path);
     const cfg = config.getConfig();
     const sortedChildren = sortTreeRecursively(children, cfg.groupOrder, space.path);
@@ -577,12 +577,14 @@ export const useStore = create<AppStore>((set, get) => ({
       currentGroup: null,
       currentNotebook: null,
       currentNoteBlock: null,
+      ...(spaceGroupId ? { currentSpaceGroupId: spaceGroupId } : {}),
       spaces: state.spaces.map((s) => s.id === space.id ? updatedSpace : s),
     }));
     config.saveConfig({
       currentSpacePath: space.path,
       currentGroupPath: null,
       currentNotebookPath: null,
+      ...(spaceGroupId ? { currentSpaceGroupId: spaceGroupId } : {}),
     });
   },
 
@@ -606,11 +608,19 @@ export const useStore = create<AppStore>((set, get) => ({
 
   selectRecentNotebook: async (historyItem) => {
     let currentSpace = get().currentSpace;
+    const targetSpace = get().spaces.find((space) => normalizePath(space.path) === normalizePath(historyItem.spacePath));
+    if (!targetSpace) return;
+    const { currentSpaceGroupId, spaceGroupDisplayMode, spaceGroups } = get();
+    const targetGroupId = spaceGroupDisplayMode === 'dropdown'
+      && currentSpaceGroupId !== ALL_SPACE_GROUP_ID
+      && !(targetSpace.groupIds ?? []).includes(currentSpaceGroupId)
+      ? (targetSpace.groupIds ?? []).find((id) => spaceGroups.some((group) => group.id === id)) ?? ALL_SPACE_GROUP_ID
+      : currentSpaceGroupId;
     if (!currentSpace || normalizePath(currentSpace.path) !== normalizePath(historyItem.spacePath)) {
-      const targetSpace = get().spaces.find((space) => normalizePath(space.path) === normalizePath(historyItem.spacePath));
-      if (!targetSpace) return;
-      await get().selectSpace(targetSpace);
+      await get().selectSpace(targetSpace, targetGroupId);
       currentSpace = get().currentSpace;
+    } else if (targetGroupId !== currentSpaceGroupId) {
+      get().setCurrentSpaceGroup(targetGroupId);
     }
     if (!currentSpace) return;
 

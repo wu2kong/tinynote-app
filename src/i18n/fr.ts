@@ -548,6 +548,7 @@ export const frMessages = {
   "appBar": {
     "slogan": "Organiser les notes éparses",
     "newSpace": "Nouvel espace",
+    "history": "Historique des visites",
     "globalSearch": "Recherche globale",
     "globalSearchShortcut": "Recherche globale (⌘⇧F / Ctrl+Shift+F)",
     "collapseExpand": "Réduire/Développer",
@@ -928,10 +929,24 @@ export const frMessages = {
     "tabs": {
       "chat": "Discussion",
       "todos": "Tâches",
+      "notes": "Notes",
       "links": "Liens",
       "resources": "Ressources",
       "members": "Membres",
       "settings": "Paramètres"
+    },
+    "notes": {
+      "editor": "Éditeur de notes",
+      "list": "Notes",
+      "add": "Nouvelle note",
+      "untitled": "Note sans titre",
+      "emptyList": "Aucune note.",
+      "select": "Sélectionnez ou créez une note.",
+      "title": "Titre",
+      "content": "Écrire une note…",
+      "delete": "Supprimer la note",
+      "reorder": "Glisser pour réorganiser la note",
+      "empty": "Note vide",
     },
     "selfMemberName": "Moi",
     "selfBadge": "moi",
@@ -996,8 +1011,10 @@ export const frMessages = {
     "resourceUri": "Chemin ou URL (facultatif)",
     "resourceNote": "Note (facultative)",
     "settings": {
+      "showNotePreview": "Afficher un aperçu des notes",
+      "reorderFeature": "Réorganiser {feature}",
       "features": "Sections actives",
-      "requiredFeaturesHint": "Discussion, Membres et Paramètres restent toujours disponibles.",
+      "requiredFeaturesHint": "Les Paramètres restent toujours disponibles.",
       "title": "Titre du canal",
       "subtitle": "Sous-titre",
       "subtitlePlaceholder": "Une brève description de ce canal…",
@@ -1014,6 +1031,8 @@ export const frMessages = {
   "recent": {
     "title": "Carnets ouverts récemment",
     "subtitle": "Triés par heure d'ouverture la plus récente",
+    "search": "Rechercher par nom ou chemin",
+    "noResults": "Aucune note correspondante",
     "empty": "Aucun historique d'ouverture pour le moment",
     "closeShortcut": "Esc ferme",
     "close": "Fermer"

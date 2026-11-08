@@ -1,4 +1,4 @@
-import { readText, writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -6,7 +6,7 @@ import React, {
   useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent,
 } from 'react';
 import {
-  Copy, StickyNote, GripVertical, Check, Link2, MessageSquare, MoreHorizontal, Pencil, PanelLeftClose, PanelLeftOpen, Paperclip, Search, Send, Settings, Trash2, Users, X,
+  Copy, StickyNote, GripVertical, Check, Link2, MessageSquare, NotebookPen, PanelLeftClose, PanelLeftOpen, Paperclip, Search, Send, Settings, Trash2, Users, X,
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useI18n } from '@/i18n/useI18n';
@@ -15,6 +15,7 @@ import {
   createChannelId,
   createChannelMessage,
   normalizeEnabledTabs,
+  normalizeTabOrder,
   REQUIRED_CHANNEL_TABS,
   DEFAULT_SELF_MEMBER_ID,
   getSelfMemberId,
@@ -22,7 +23,6 @@ import {
   serializeChannelDocument,
   serializeLinkDocument,
   type ChannelDocument,
-  type ChannelLinkItem,
   type ChannelMember,
   type ChannelMessage,
   type ChannelResourceItem,
@@ -31,22 +31,35 @@ import {
 } from '@/utils/channelDocument';
 import { isExternalHref, openExternalLink } from '@/utils/openExternalLink';
 import { renderInlineLinkText } from '@/utils/renderInlineLinks';
-import { parseChannelLinks } from '@/utils/parseChannelLinks';
 import { showToast } from './Toast';
 import ContextMenuPortal from './ContextMenuPortal';
 import ChannelTodosPanel from './ChannelTodosPanel';
 import BookmarkPanel from './BookmarkPanel';
+import ChannelNotesPanel from './ChannelNotesPanel';
 
 const SAVE_DEBOUNCE_MS = 400;
 
 const TAB_DEFS: { id: ChannelTabId; labelKey: string; icon: React.ReactNode }[] = [
   { id: 'chat', labelKey: 'channel.tabs.chat', icon: <MessageSquare size={14} /> },
   { id: 'todos', labelKey: 'channel.tabs.todos', icon: <Check size={14} /> },
+  { id: 'notes', labelKey: 'channel.tabs.notes', icon: <NotebookPen size={14} /> },
   { id: 'links', labelKey: 'channel.tabs.links', icon: <Link2 size={14} /> },
   { id: 'resources', labelKey: 'channel.tabs.resources', icon: <Paperclip size={14} /> },
   { id: 'members', labelKey: 'channel.tabs.members', icon: <Users size={14} /> },
   { id: 'settings', labelKey: 'channel.tabs.settings', icon: <Settings size={14} /> },
 ];
+
+const firstEnabledTab = (doc: ChannelDocument): ChannelTabId =>
+  normalizeTabOrder(doc.tabOrder).find((id) => normalizeEnabledTabs(doc.enabledTabs).includes(id)) ?? 'chat';
+
+const SortableFeature: React.FC<{ id: ChannelTabId; label: string; enabled: boolean; required: boolean; onToggle: (enabled: boolean) => void }> = ({ id, label, enabled, required, onToggle }) => {
+  const { t } = useI18n();
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return <div ref={setNodeRef} className="channel-feature-row" style={{ transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined, transition, opacity: isDragging ? 0.5 : 1 }}>
+    <button type="button" className="channel-feature-drag" {...attributes} {...listeners} aria-label={t('channel.settings.reorderFeature', { feature: label })} title={t('channel.settings.reorderFeature', { feature: label })}><GripVertical size={15} /></button>
+    <label className="channel-display-option"><input type="checkbox" checked={enabled} disabled={required} onChange={(event) => onToggle(event.target.checked)} /><span>{label}</span></label>
+  </div>;
+};
 
 function formatSentAt(iso: string): string {
   const date = new Date(iso);
@@ -125,16 +138,6 @@ const SortableMessage: React.FC<{ id: string; fromSelf: boolean; label: string; 
   );
 };
 
-const SortableLink: React.FC<{ id: string; label: string; onMenu: (x: number, y: number) => void; children: React.ReactNode }> = ({ id, label, onMenu, children }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  return <li ref={setNodeRef} className="channel-sortable-link"
-    onContextMenu={(event) => { event.preventDefault(); onMenu(event.clientX, event.clientY); }}
-    style={{ transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined, transition, opacity: isDragging ? 0.5 : 1, position: 'relative', zIndex: isDragging ? 1 : undefined }}>
-    <button type="button" className="channel-link-drag" {...attributes} {...listeners} aria-label={label} title={label}><GripVertical size={15} /></button>
-    {children}
-  </li>;
-};
-
 const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = false }) => {
   const { t } = useI18n();
   const currentNotebook = useStore((s) => s.currentNotebook);
@@ -149,6 +152,7 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
   const [doc, setDoc] = useState<ChannelDocument>(() => parseChannelDocument('', selfMemberNameFallback));
   const [activeTab, setActiveTab] = useState<ChannelTabId>(linksOnly ? 'links' : 'chat');
   const enabledTabs = linksOnly ? ['links'] : normalizeEnabledTabs(doc.enabledTabs);
+  const tabOrder = normalizeTabOrder(doc.tabOrder);
   const [activeAuthorId, setActiveAuthorId] = useState(DEFAULT_SELF_MEMBER_ID);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
   const [draft, setDraft] = useState('');
@@ -160,12 +164,6 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
       : doc.messages
   ), [doc.messages, searchQuery]);
   const [memberDraft, setMemberDraft] = useState('');
-  const [linkDraft, setLinkDraft] = useState({ url: '', title: '', note: '' });
-  const [bulkLinksOpen, setBulkLinksOpen] = useState(false);
-  const [bulkLinksText, setBulkLinksText] = useState('');
-  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
-  const [editingLinkDraft, setEditingLinkDraft] = useState({ url: '', title: '', note: '' });
-  const [linkMenu, setLinkMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [resourceDraft, setResourceDraft] = useState({ name: '', kind: '', uri: '', note: '' });
   const [messageMenu, setMessageMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -234,7 +232,7 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
       setDraft('');
       setSearchText('');
       setMemberDraft('');
-      setActiveTab(linksOnly ? 'links' : 'chat');
+      setActiveTab(linksOnly ? 'links' : firstEnabledTab(parsed));
       setEditingMessageId(null);
       setRemarkTargetId(null);
       setRemarkDraft('');
@@ -270,8 +268,8 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
 
   useEffect(() => { setMessageMenu(null); setRemarkMenu(null); }, [currentNotebook?.path, activeTab]);
   useEffect(() => {
-    if (!enabledTabs.includes(activeTab)) setActiveTab(linksOnly ? 'links' : 'chat');
-  }, [activeTab, doc.enabledTabs, linksOnly]);
+    if (!enabledTabs.includes(activeTab)) setActiveTab(linksOnly ? 'links' : firstEnabledTab(doc));
+  }, [activeTab, doc, linksOnly]);
 
   useEffect(() => {
     if (!messageMenu && !remarkMenu) return;
@@ -405,72 +403,6 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
     }
   };
 
-  const addLink = () => {
-    const url = linkDraft.url.trim();
-    if (!url) return;
-    const item: ChannelLinkItem = {
-      id: createChannelId(),
-      url,
-      title: linkDraft.title.trim(),
-      note: linkDraft.note.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    applyDoc({ ...docRef.current, links: [...docRef.current.links, item] });
-    setLinkDraft({ url: '', title: '', note: '' });
-  };
-
-  const importLinks = (text: string) => {
-    const parsed = parseChannelLinks(text);
-    if (!parsed.length) { showToast(t('channel.noImportableLinks')); return; }
-    const createdAt = new Date().toISOString();
-    applyDoc({
-      ...docRef.current,
-      links: [...docRef.current.links, ...parsed.map((item) => ({ ...item, id: createChannelId(), createdAt }))],
-    });
-    showToast(t('channel.linksImported', { count: parsed.length }));
-    setBulkLinksOpen(false);
-    setBulkLinksText('');
-  };
-
-  const importLinksFromClipboard = async () => {
-    try {
-      let text: string;
-      try { text = await readText(); }
-      catch { text = await navigator.clipboard.readText(); }
-      importLinks(text);
-    } catch { showToast(t('channel.clipboardReadFailed')); }
-  };
-
-  const deleteLink = (id: string) => {
-    applyDoc({
-      ...docRef.current,
-      links: docRef.current.links.filter((item) => item.id !== id),
-    });
-  };
-
-  const startEditingLink = (item: ChannelLinkItem) => {
-    setEditingLinkId(item.id);
-    setEditingLinkDraft({ url: item.url, title: item.title, note: item.note });
-    setLinkMenu(null);
-  };
-
-  const saveEditedLink = () => {
-    const url = editingLinkDraft.url.trim();
-    if (!editingLinkId || !url) return;
-    applyDoc({ ...docRef.current, links: docRef.current.links.map((item) => item.id === editingLinkId
-      ? { ...item, url, title: editingLinkDraft.title.trim(), note: editingLinkDraft.note.trim() } : item) });
-    setEditingLinkId(null);
-  };
-
-  const markdownLink = (item: ChannelLinkItem) => `[${(item.title || item.url).replace(/([\\\]])/g, '\\$1')}](${item.url})`;
-  const copyLinkText = async (text: string) => {
-    setLinkMenu(null);
-    try {
-      try { await writeText(text); } catch { await navigator.clipboard.writeText(text); }
-      showToast(t('channel.linksCopied'));
-    } catch { showToast(t('channel.copyFailed')); }
-  };
-
   const addResource = () => {
     const name = resourceDraft.name.trim();
     if (!name) return;
@@ -528,7 +460,9 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
 
       {!linksOnly && <div className="channel-notebook-toolbar">
         <div className="channel-notebook-tabs" role="tablist" aria-label={t('channel.tabsLabel')}>
-          {TAB_DEFS.filter(({ id }) => enabledTabs.includes(id)).map(({ id, labelKey, icon }) => (
+          {tabOrder.filter((id) => enabledTabs.includes(id)).map((id) => {
+            const { labelKey, icon } = TAB_DEFS.find((tab) => tab.id === id)!;
+            return (
             <button
               key={id}
               type="button"
@@ -540,7 +474,8 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
               {icon}
               <span>{t(labelKey)}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
         {activeTab === 'chat' && (
           <div className="note-panel-search channel-chat-search">
@@ -758,117 +693,9 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
           />
         )}
 
-        {activeTab === 'links' && linksOnly && <BookmarkPanel key={currentNotebook.path} doc={doc} onChange={applyDoc} />}
+        {activeTab === 'links' && <BookmarkPanel key={currentNotebook.path} doc={doc} onChange={applyDoc} />}
 
-        {activeTab === 'links' && !linksOnly && (
-          <div className="channel-side-panel">
-            <div className="channel-side-form channel-side-form-grid">
-              <input
-                value={linkDraft.url}
-                onChange={(e) => setLinkDraft((s) => ({ ...s, url: e.target.value }))}
-                placeholder={t('channel.linkUrl')}
-              />
-              <input
-                value={linkDraft.title}
-                onChange={(e) => setLinkDraft((s) => ({ ...s, title: e.target.value }))}
-                placeholder={t('channel.linkTitle')}
-              />
-              <input
-                value={linkDraft.note}
-                onChange={(e) => setLinkDraft((s) => ({ ...s, note: e.target.value }))}
-                placeholder={t('channel.linkNote')}
-              />
-              <button type="button" className="btn btn-primary btn-sm" onClick={addLink}>
-                {t('channel.addLink')}
-              </button>
-            </div>
-            <div className="channel-link-import-actions">
-              <button type="button" className="btn btn-sm" onClick={() => void importLinksFromClipboard()}>{t('channel.importFromClipboard')}</button>
-              <button type="button" className="btn btn-sm" onClick={() => setBulkLinksOpen(true)}>{t('channel.bulkImportLinks')}</button>
-              {doc.links.length > 0 && <button type="button" className="btn btn-sm" onClick={() => void copyLinkText(docRef.current.links.map(markdownLink).join('\n'))}>{t('channel.copyAllMarkdownLinks')}</button>}
-            </div>
-            {doc.links.length === 0 ? (
-              <p className="channel-side-empty">{t('channel.emptyLinks')}</p>
-            ) : (
-              <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={({ active, over }) => {
-                if (!over || active.id === over.id) return;
-                const links = docRef.current.links;
-                const from = links.findIndex((item) => item.id === active.id);
-                const to = links.findIndex((item) => item.id === over.id);
-                if (from >= 0 && to >= 0) applyDoc({ ...docRef.current, links: arrayMove(links, from, to) });
-              }}>
-              <SortableContext items={doc.links.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-              <ul className="channel-link-list">
-                {doc.links.map((item) => (
-                  <SortableLink key={item.id} id={item.id} label={t('channel.reorderLink')} onMenu={(x, y) => setLinkMenu({ id: item.id, x, y })}>
-                    <div className="channel-link-main">
-                      {isExternalHref(item.url) ? (
-                        <a
-                          href={item.url}
-                          className="channel-chat-inline-link"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            void openExternalLink(item.url);
-                          }}
-                        >
-                          {item.title || item.url}
-                        </a>
-                      ) : (
-                        <span>{item.title || item.url}</span>
-                      )}
-                      {item.title && item.url !== item.title && (
-                        <span className="channel-link-url">{item.url}</span>
-                      )}
-                      {item.note && <p className="channel-link-note">{item.note}</p>}
-                      <time dateTime={item.createdAt}>{formatSentAt(item.createdAt)}</time>
-                    </div>
-                    <button type="button" className="channel-row-delete channel-link-menu-button" aria-label={t('channel.linkActions')} title={t('channel.linkActions')} onClick={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setLinkMenu({ id: item.id, x: rect.left, y: rect.bottom }); }}><MoreHorizontal size={16} /></button>
-                    <button type="button" className="channel-row-delete" onClick={() => deleteLink(item.id)}>
-                      <Trash2 size={13} />
-                    </button>
-                  </SortableLink>
-                ))}
-              </ul>
-              </SortableContext>
-              </DndContext>
-            )}
-          </div>
-        )}
-
-        {bulkLinksOpen && activeTab === 'links' && (
-          <div className="modal-overlay" onClick={() => setBulkLinksOpen(false)}>
-            <div className="modal channel-link-import-modal" role="dialog" aria-modal="true" aria-label={t('channel.bulkImportLinks')} onClick={(e) => e.stopPropagation()}>
-              <h2 className="modal-title">{t('channel.bulkImportLinks')}</h2>
-              <p className="modal-message">{t('channel.bulkImportHint')}</p>
-              <textarea autoFocus value={bulkLinksText} onChange={(e) => setBulkLinksText(e.target.value)} placeholder={t('channel.bulkImportPlaceholder')} />
-              <div className="channel-link-import-footer">
-                <button type="button" className="btn btn-sm" onClick={() => setBulkLinksOpen(false)}>{t('common.cancel')}</button>
-                <button type="button" className="btn btn-primary btn-sm" disabled={!bulkLinksText.trim()} onClick={() => importLinks(bulkLinksText)}>{t('channel.startImport')}</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {editingLinkId && activeTab === 'links' && (
-          <div className="modal-overlay" onClick={() => setEditingLinkId(null)}>
-            <div className="modal channel-link-edit-modal" role="dialog" aria-modal="true" aria-label={t('channel.editLink')} onClick={(event) => event.stopPropagation()}>
-              <h2 className="modal-title">{t('channel.editLink')}</h2>
-              <label className="channel-link-edit-field">
-                <span>{t('channel.linkUrl')}</span>
-                <input autoFocus value={editingLinkDraft.url} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, url: event.target.value }))} placeholder={t('channel.linkUrl')} />
-              </label>
-              <label className="channel-link-edit-field">
-                <span>{t('channel.linkTitle')}</span>
-                <input value={editingLinkDraft.title} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, title: event.target.value }))} placeholder={t('channel.linkTitle')} />
-              </label>
-              <label className="channel-link-edit-field">
-                <span>{t('channel.linkNote')}</span>
-                <textarea value={editingLinkDraft.note} onChange={(event) => setEditingLinkDraft((draft) => ({ ...draft, note: event.target.value }))} placeholder={t('channel.linkNote')} />
-              </label>
-              <div className="channel-link-import-footer"><button type="button" className="btn btn-sm" onClick={() => setEditingLinkId(null)}>{t('common.cancel')}</button><button type="button" className="btn btn-primary btn-sm" disabled={!editingLinkDraft.url.trim()} onClick={saveEditedLink}>{t('channel.saveLink')}</button></div>
-            </div>
-          </div>
-        )}
+        {activeTab === 'notes' && <ChannelNotesPanel key={currentNotebook.path} notes={doc.notes} showPreview={doc.showNotePreview === true} onChange={(notes) => applyDoc({ ...docRef.current, notes })} />}
 
         {activeTab === 'resources' && (
           <div className="channel-side-panel">
@@ -962,14 +789,22 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
                   <span>{t(`channel.${key}`)}</span>
                 </label>
               ))}
+              <label className="channel-display-option">
+                <input type="checkbox" checked={doc.showNotePreview === true} onChange={(event) => applyDoc({ ...docRef.current, showNotePreview: event.target.checked })} />
+                <span>{t('channel.settings.showNotePreview')}</span>
+              </label>
               <fieldset className="channel-feature-list">
                 <legend>{t('channel.settings.features')}</legend>
-                {TAB_DEFS.map(({ id, labelKey }) => (
-                  <label key={id} className="channel-display-option">
-                    <input type="checkbox" checked={enabledTabs.includes(id)} disabled={REQUIRED_CHANNEL_TABS.includes(id)} onChange={(event) => applyDoc({ ...docRef.current, enabledTabs: normalizeEnabledTabs(event.target.checked ? [...enabledTabs, id] : enabledTabs.filter((tab) => tab !== id)) })} />
-                    <span>{t(labelKey)}</span>
-                  </label>
-                ))}
+                <DndContext sensors={sensors} collisionDetection={closestCenter} modifiers={[restrictToVerticalAxis]} onDragEnd={({ active, over }) => {
+                  if (!over || active.id === over.id) return;
+                  const from = tabOrder.indexOf(active.id as ChannelTabId);
+                  const to = tabOrder.indexOf(over.id as ChannelTabId);
+                  if (from >= 0 && to >= 0) applyDoc({ ...docRef.current, tabOrder: arrayMove(tabOrder, from, to) });
+                }}>
+                  <SortableContext items={tabOrder} strategy={verticalListSortingStrategy}>
+                    {tabOrder.map((id) => <SortableFeature key={id} id={id} label={t(TAB_DEFS.find((tab) => tab.id === id)!.labelKey)} enabled={enabledTabs.includes(id)} required={REQUIRED_CHANNEL_TABS.includes(id)} onToggle={(enabled) => applyDoc({ ...docRef.current, enabledTabs: normalizeEnabledTabs(enabled ? [...enabledTabs, id] : enabledTabs.filter((tab) => tab !== id)) })} />)}
+                  </SortableContext>
+                </DndContext>
                 <small>{t('channel.settings.requiredFeaturesHint')}</small>
               </fieldset>
               <p className="channel-settings-hint">{t('channel.settings.hint')}</p>
@@ -1015,17 +850,7 @@ const ChannelNotebookPanel: React.FC<{ linksOnly?: boolean }> = ({ linksOnly = f
           </button>
         </ContextMenuPortal>
       )}
-      {linkMenu && (() => {
-        const item = doc.links.find((link) => link.id === linkMenu.id);
-        if (!item) return null;
-        return <ContextMenuPortal x={linkMenu.x} y={linkMenu.y} onClose={() => setLinkMenu(null)}>
-          <button type="button" className="context-menu-item" onClick={() => startEditingLink(item)}><Pencil size={14} />{t('channel.editLink')}</button>
-          <button type="button" className="context-menu-item" onClick={() => void copyLinkText(markdownLink(item))}><Copy size={14} />{t('channel.copyMarkdownLink')}</button>
-          <button type="button" className="context-menu-item" onClick={() => void copyLinkText(`${item.title || item.url} | ${item.url}`)}><Copy size={14} />{t('channel.copyTitlePipeLink')}</button>
-          <button type="button" className="context-menu-item" onClick={() => void copyLinkText(`${item.title || item.url} - ${item.url}`)}><Copy size={14} />{t('channel.copyTitleDashLink')}</button>
-          <button type="button" className="context-menu-item danger" onClick={() => { deleteLink(item.id); setLinkMenu(null); }}><Trash2 size={14} />{t('channel.deleteLink')}</button>
-        </ContextMenuPortal>;
-      })()}
+
     </div>
   );
 };
